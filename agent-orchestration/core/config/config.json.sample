@@ -1,0 +1,7 @@
+{
+  "env": "production",
+  "debug": false,
+  "port": ":9090",
+  "db_url": "",
+  "wallet_salt": ""
+}

@@ -1,0 +1,1 @@
+export const SOLANA_RPC_ENDPOINT = process.env.SOLANA_RPC_ENDPOINT
