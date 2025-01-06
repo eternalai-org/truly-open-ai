@@ -1,0 +1,41 @@
+{
+    "proxyAdmin": {
+        "address": ""
+    },
+    "uniswapV3Factory": {
+        "address": "",
+        "implAddress": ""
+    },
+    "uniswapV3Pool": {
+        "address": "",
+        "implAddress": ""
+    },
+    "nftDescriptor": {
+        "address": "",
+        "implAddress": ""
+    },
+    "nonfungibleTokenPositionDescriptor": {
+        "address": "",
+        "implAddress": ""
+    },
+    "uniswapV3Broker": {
+        "address": "",
+        "implAddress": ""
+    },
+    "nonfungiblePositionManager": {
+        "address": "",
+        "implAddress": ""
+    },
+    "swapRouter": {
+        "address": "",
+        "implAddress": ""
+    },
+    "quoterV2": {
+        "address": "",
+        "implAddress": ""
+    },
+    "WETH": {
+        "address": "",
+        "implAddress": ""
+    }
+}

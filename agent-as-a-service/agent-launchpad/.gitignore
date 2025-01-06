@@ -1,0 +1,26 @@
+node_modules
+
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+
+artifacts/
+artifacts-zk/
+cache/
+cache-zk/
+crytic-export/
+node_modules/
+typechain/
+
+deployments
+.env
+wwwrd.rd*
+.vscode
+
