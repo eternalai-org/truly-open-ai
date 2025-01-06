@@ -1,0 +1,6 @@
+# Virtual Neurons
+
+While running a Neuron device at home is the easiest way to power Eternal AI, other options exist. You can run the Neuron software on your existing computer, use a Neuron-as-a-Service solution, or simply join a pool.
+
+<table data-view="cards"><thead><tr><th></th><th></th><th></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td></td><td><strong>Solo Neuron</strong></td><td>For experience node operator who want to earn full mining rewards.</td><td><a href="../../.gitbook/assets/rtx-4090-review-featured.webp">rtx-4090-review-featured.webp</a></td><td><a href="solo-neuron.md">solo-neuron.md</a></td></tr><tr><td></td><td><strong>Neuron as a Service</strong></td><td>For those who don't want to deal with hardware but still want to stake EAI.</td><td><a href="../../.gitbook/assets/data-center-576x324.jpg">data-center-576x324.jpg</a></td><td><a href="neuron-as-a-service.md">neuron-as-a-service.md</a></td></tr><tr><td></td><td><strong>Pooled Neuron</strong></td><td>For those who want to start small and stake as little as 1 EAI.</td><td><a href="../../.gitbook/assets/join-pool4.png">join-pool4.png</a></td><td><a href="pooled-neuron.md">pooled-neuron.md</a></td></tr></tbody></table>
+
