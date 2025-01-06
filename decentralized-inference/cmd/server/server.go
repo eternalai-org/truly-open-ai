@@ -2,10 +2,10 @@ package server
 
 import (
 	"context"
-	"decentralized-inference/config"
+	"decentralized-inference/internal/config"
 	"decentralized-inference/internal/database"
 	"decentralized-inference/internal/logger"
-	"decentralized-inference/services"
+	"decentralized-inference/internal/services"
 	"fmt"
 	"os"
 	"os/signal"
