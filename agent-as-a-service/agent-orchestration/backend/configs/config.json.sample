@@ -1,0 +1,286 @@
+{
+  "env": "production",
+  "port": 8480,
+  "debug": false,
+  "job": false,
+  "db_url": "",
+  "encrypt_authen_key": "",
+  "twitter": {
+    "oauth_client_id": "",
+    "oauth_client_secret": "",
+    "token": "",
+    "redirect_uri": "",
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token": "",
+    "access_secret": "",
+    "oauth_client_id_for_twitter_data": "",
+    "oauth_client_secret_for_twitter_data": "",
+    "token_for_twitter_data": "",
+    "access_token_for_twitter_data": "",
+    "access_secret_for_twitter_data": ""
+  },
+  "token_twiter_id_for_internal": "",
+  "google_storage": {
+    "credentials_file": "",
+    "bucket_name": "",
+    "url": ""
+  },
+  "redis": {
+    "addr": "",
+    "password": "",
+    "db": 0,
+    "prefix_naka": "",
+    "prefix_rune": ""
+  },
+  "core": {
+    "url": ""
+  },
+  "cmc_api_key": "",
+  "ai_image_api_key": "",
+  "btc": {
+    "network": "main",
+    "bcy_token": "",
+    "qn_url": ""
+  },
+  "blockchain_util": {
+    "url": ""
+  },
+  "ai": {
+    "read_image_url": "",
+    "api_key": "",
+    "auto_agent_api_url": "",
+    "ai_image_api_key": ""
+  },
+  "ai_dojo_backend": {
+    "url": "",
+    "mention_api_key": "",
+    "api_key": ""
+  },
+  "token_twiter_id": "",
+  "eternal_ai_agent_info_id": 0,
+  "hiro_url": "",
+  "opensea_api_key": "",
+  "delegate_cash": {
+    "api_key": "",
+    "url": ""
+  },
+  "lighthouse": {
+    "apikey": ""
+  },
+  "moralis_api_key": "",
+  "rapid_api_key": "",
+  "generate_image_url": "",
+  "agent_offchain_chat_url": "",
+  "agent_offchain_async_url": "",
+  "agent_offchain_url": "",
+  "eternalai_bridges_url": "",
+  "telebot": {
+    "tracker": {
+      "botkey": "",
+      "chat_id": 0,
+      "message_thread_id": 0
+    },
+    "alert": {
+      "botkey": "",
+      "chat_id": 0,
+      "message_thread_id": 0
+    },
+    "trade_analytics": {
+      "botkey": ""
+    }
+  },
+  "networks": {
+    "0": {
+      "agent_token_admin_address": ""
+    },
+    "42161": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0xDB8C67e6CA293F43C75e106c70b97033cC2909E3",
+      "explorer_url": "https://arbiscan.io",
+      "meme_pool_address": "",
+      "network_id": "42161",
+      "rpc_url": "",
+      "memeswap_factory_contract_address": "",
+      "memeswap_position_mamanger_address": "",
+      "uniswap_factory_contract_address": "0x1a3c9B1d2F0529D97f2afC5136Cc23e58f1FD35B",
+      "uniswap_position_mamanger_address": "0x00c7f3082833e796A5b3e4Bd59f6642FF44DCD15",
+      "weth9_contract_address": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
+    },
+    "8453": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0x4B6bF1d365ea1A8d916Da37FaFd4ae8C86d061D7",
+      "explorer_url": "https://basescan.org",
+      "meme_pool_address": "",
+      "network_id": "8453",
+      "rpc_url": "",
+      "memeswap_factory_contract_address": "",
+      "memeswap_position_mamanger_address": "",
+      "uniswap_factory_contract_address": "0x33128a8fC17869897dcE68Ed026d694621f6FDfD",
+      "uniswap_position_mamanger_address": "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1",
+      "weth9_contract_address": "0x4200000000000000000000000000000000000006"
+    },
+    "56": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0x4B6bF1d365ea1A8d916Da37FaFd4ae8C86d061D7",
+      "explorer_url": "https://bscscan.com",
+      "meme_pool_address": "",
+      "network_id": "56",
+      "rpc_url": "",
+      "memeswap_factory_contract_address": "",
+      "memeswap_position_mamanger_address": "",
+      "uniswap_factory_contract_address": "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865",
+      "uniswap_position_mamanger_address": "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364",
+      "weth9_contract_address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+    },
+    "1": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0xa84f95eb3dabdc1bbd613709ef5f2fd42ce5be8d",
+      "explorer_url": "https://etherscan.io",
+      "meme_pool_address": "",
+      "network_id": "1",
+      "rpc_url": "",
+      "uniswap_factory_contract_address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "uniswap_position_mamanger_address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+      "weth9_contract_address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+    },
+    "137": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0xf7883f847Ae9b790b4b313f0f2e38Fa90965FB43",
+      "explorer_url": "https://polygonscan.com",
+      "meme_pool_address": "",
+      "min_gas_price": "0",
+      "network_id": "137",
+      "rpc_url": "",
+      "uniswap_factory_contract_address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+      "uniswap_position_mamanger_address": "0xC36442b4a4522E871399CD717aBDD847Ab11FE88",
+      "uniswap_quoterv2_contract_address": "0x61fFE014bA17989E743c5F6cB21bF9697530B21e",
+      "uniswap_swaprouter02_contract_address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45",
+      "weth9_contract_address": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270"
+    },
+    "1111": {
+      "agent_contract_address": "",
+      "agent_token_account_address": "",
+      "eai_contract_address": "12KwPzKewFGgzs69pvHmUKvhiDBtkAFCKoNjv6344Rkm",
+      "network_id": "1111"
+    },
+    "45762": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "",
+      "explorer_url": "https://explorer.symbiosis.eternalai.org",
+      "network_id": "45762",
+      "paymaster_address": "",
+      "paymaster_fee_zero": "true",
+      "paymaster_token": "",
+      "rpc_url": "https://rpc.hermeschain.eternalai.org",
+      "weth9_contract_address": "",
+      "zk_sync": "true"
+    },
+    "222671": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "",
+      "explorer_url": "",
+      "meme_pool_address": "",
+      "min_gas_price": "0",
+      "network_id": "222671",
+      "rpc_url": "https://rpc.shard-ai.l2aas.com",
+      "is_btc_l1": "true"
+    },
+    "324": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0xf3EF1Bd0368F5bF2769c70e3379cdB9cAA09769A",
+      "explorer_url": "https://explorer.zksync.io",
+      "meme_pool_address": "",
+      "network_id": "324",
+      "rpc_url": "",
+      "uniswap_factory_contract_address": "",
+      "uniswap_position_mamanger_address": "",
+      "weth9_contract_address": "0x5AEa5775959fBC2557Cc8789bC1bf90A239D9a91",
+      "zk_sync": "true"
+    },
+    "43114": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0xe30f980a7cE39805fD2B75f34a8BEf30b4c38859",
+      "explorer_url": "https://snowtrace.io",
+      "meme_pool_address": "",
+      "network_id": "43114",
+      "rpc_url": "",
+      "uniswap_factory_contract_address": "0x740b1c1de25031C31FF4fC9A62f554A55cdC1baD",
+      "uniswap_position_mamanger_address": "0x655C406EBFa14EE2006250925e54ec43AD184f8B",
+      "weth9_contract_address": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7"
+    },
+    "43338": {
+      "explorer_url": "https://explorer.eternalai.org",
+      "network_id": "43338",
+      "rpc_url": "https://node.eternalai.org"
+    },
+    "11124": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0x9F06C611474666693b8c3D662eeF03ab7aA3C56E",
+      "explorer_url": "https://explorer.testnet.abs.xyz",
+      "meme_pool_address": "",
+      "network_id": "11124",
+      "rpc_url": "https://api.testnet.abs.xyz",
+      "uniswap_factory_contract_address": "",
+      "uniswap_position_mamanger_address": "",
+      "weth9_contract_address": "",
+      "zk_sync": "true"
+    },
+    "964": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0x4B6bF1d365ea1A8d916Da37FaFd4ae8C86d061D7",
+      "explorer_url": "https://taostats.io/evm",
+      "meme_pool_address": "",
+      "network_id": "964",
+      "rpc_url": "",
+      "uniswap_factory_contract_address": "",
+      "uniswap_position_mamanger_address": "",
+      "weth9_contract_address": "0xef71f3bab4136e87ec34d47f83f310a1998d0e13"
+    },
+    "33139": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0x4b6bf1d365ea1a8d916da37fafd4ae8c86d061d7",
+      "explorer_url": "https://apescan.io",
+      "meme_pool_address": "",
+      "network_id": "33139",
+      "rpc_url": "",
+      "memeswap_factory_contract_address": "",
+      "memeswap_position_mamanger_address": "",
+      "uniswap_factory_contract_address": "0x10aA510d94E094Bd643677bd2964c3EE085Daffc",
+      "uniswap_position_mamanger_address": "0xC216fCdEb961EEF95657Cb45dEe20e379C7624B8",
+      "weth9_contract_address": "0x48b62137EdfA95a428D35C09E44256a739F6B557"
+    },
+    "5545": {
+      "agent_admin_address": "",
+      "agent_contract_address": "",
+      "eai_contract_address": "0x4B6bF1d365ea1A8d916Da37FaFd4ae8C86d061D7",
+      "explorer_url": "https://scan.duckchain.io",
+      "meme_pool_address": "",
+      "network_id": "5545",
+      "rpc_url": "https://rpc-hk.duckchain.io",
+      "memeswap_factory_contract_address": "",
+      "memeswap_position_mamanger_address": "",
+      "uniswap_factory_contract_address": "",
+      "uniswap_position_mamanger_address": "",
+      "weth9_contract_address": "0x7F9308E8d724e724EC31395f3af52e0593BB2e3f"
+    }
+  },
+  "tool_lists": {
+    "farcaster_post": "",
+    "farcaster_reply": "",
+    "trade_news": "",
+    "trade_analytic": ""
+  }
+}
