@@ -200,11 +200,12 @@ async function deploy() {
     }
     // 
     {
-        // await upgradeContract(proxyAdmin, deployData.uniswapV3Factory.address, deployData.uniswapV3Factory.implAddress)
-        // await upgradeContract(proxyAdmin, deployData.nonfungibleTokenPositionDescriptor.address, deployData.nonfungibleTokenPositionDescriptor.implAddress)
-        // await upgradeContract(proxyAdmin, deployData.nonfungiblePositionManager.address, deployData.nonfungiblePositionManager.implAddress)
-        // await upgradeContract(proxyAdmin, deployData.swapRouter.address, deployData.swapRouter.implAddress)
-        // await upgradeContract(proxyAdmin, deployData.quoterV2.address, deployData.quoterV2.implAddress)
+        await upgradeContract(proxyAdmin, deployData.uniswapV3Factory.address, deployData.uniswapV3Factory.implAddress)
+        await upgradeContract(proxyAdmin, deployData.nonfungibleTokenPositionDescriptor.address, deployData.nonfungibleTokenPositionDescriptor.implAddress)
+        await upgradeContract(proxyAdmin, deployData.nonfungiblePositionManager.address, deployData.nonfungiblePositionManager.implAddress)
+        await upgradeContract(proxyAdmin, deployData.swapRouter.address, deployData.swapRouter.implAddress)
+        await upgradeContract(proxyAdmin, deployData.quoterV2.address, deployData.quoterV2.implAddress)
+        // 
         var uniswapV3Factory = await hre.ethers.getContractAt('UniswapV3Factory', deployData.uniswapV3Factory.address) as UniswapV3Factory;
         if ((await uniswapV3Factory.getUniswapV3PoolImplementation()).toLowerCase() != deployData.uniswapV3Pool.implAddress.toLowerCase()) {
             await waitForTx(
