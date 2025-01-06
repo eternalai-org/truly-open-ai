@@ -1,3 +1,35 @@
-# I need mongo db service to store the data. I will use the same mongo db service that I used in the previous task.
 version: '3.7'
 services:
+  golang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8481:8481"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha.4
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo-data:
