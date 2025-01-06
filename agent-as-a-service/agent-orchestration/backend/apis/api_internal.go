@@ -17,6 +17,7 @@ func (s *Server) GetTwitterUserByID(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
+
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: user})
 }
 

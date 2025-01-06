@@ -255,7 +255,6 @@ func (s *Server) Routers() {
 
 		memeAPI := rootAPI.Group("/meme")
 		{
-			// memeAPI.GET("/configs", s.GetMemeConfigs)
 			memeAPI.GET("/memes-by-address", s.GetListMemeByAddress)
 
 			memeAPI.GET("/list", s.GetListMemeReport)
