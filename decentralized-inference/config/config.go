@@ -12,11 +12,17 @@ func GetConfig() *Config {
 }
 
 type Config struct {
-	MongoDB MongoConfig `json:"mongodb"`
+	Server  ServerConfig `json:"server"`
+	Mongodb MongoConfig  `json:"mongodb"`
+}
+
+type ServerConfig struct {
+	Port int `json:"port"`
 }
 
 type MongoConfig struct {
 	Uri string `json:"uri"`
+	Db  string `json:"db"`
 }
 
 func Load() (*Config, error) {

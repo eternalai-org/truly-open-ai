@@ -1,5 +1,9 @@
 {
+  "server": {
+    "port": 8484
+  },
   "mongodb": {
-    "uri": "",
+    "uri": "mongodb://localhost:27017",
+    "db": "decentralized-inference"
   }
 }

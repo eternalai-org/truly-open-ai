@@ -3,8 +3,10 @@ package server
 import (
 	"context"
 	"decentralized-inference/config"
+	"decentralized-inference/internal/database"
 	"decentralized-inference/internal/logger"
-	"decentralized-inference/service"
+	"decentralized-inference/services"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,18 +16,41 @@ import (
 
 type Server struct {
 	Cfg     *config.Config
-	Service *service.Service
+	Service *services.Service
 }
 
 func NewServer() (*Server, error) {
+
+	cfg := config.GetConfig()
+	mongoDB, err := database.InitMongo(cfg.Mongodb.Db, cfg.Mongodb.Uri)
+	if err != nil {
+		return nil, err
+	}
+
+	svc := services.NewService()
+	svc.WithOptions(
+		services.WithDatabase(mongoDB),
+	)
+
 	return &Server{
-		Cfg:     config.GetConfig(),
-		Service: service.NewService(),
+		Cfg:     cfg,
+		Service: svc,
 	}, nil
 }
 
 func (s *Server) Start() {
-	// Start the server
+	app := s.startRouter()
+
+	port := s.Cfg.Server.Port
+	if port == 0 {
+		port = 8484
+	}
+
+	go func() {
+		if err := app.Run(fmt.Sprintf(":%d", port)); err != nil {
+			logger.AtLog.Fatalf("server start error: %v", err)
+		}
+	}()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
