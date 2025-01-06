@@ -41,4 +41,3 @@ node_modules
 .env
 dist
 build
-server_test.go
