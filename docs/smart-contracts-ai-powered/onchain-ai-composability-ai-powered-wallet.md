@@ -74,7 +74,7 @@ function send(uint256 _inferenceId) external payable {
 
 
 
-The complete example code is available at: [https://github.com/eternalai-org/ai-powered-dapps/tree/master/examples/AIPoweredWallet](https://github.com/eternalai-org/ai-powered-dapps/tree/master/examples/AIPoweredWallet)
+The complete example code is available at: [https://github.com/eternalai-org/eternal-ai/tree/master/examples/AIPoweredWallet](https://github.com/eternalai-org/eternal-ai/tree/master/examples/AIPoweredWallet)
 
 You can run the code with the following command:
 
