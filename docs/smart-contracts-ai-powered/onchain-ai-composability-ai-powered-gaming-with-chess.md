@@ -63,7 +63,7 @@ Basically, the function will:
 * update the game context based on the player's move.
 * send a new inference request for the next move.
 
-The complete code is available at: [https://github.com/eternalai-org/ai-powered-dapps/tree/main/examples/DagentPlayChess](https://github.com/eternalai-org/ai-powered-dapps/tree/main/examples/DagentPlayChess)
+The complete code is available at: [https://github.com/eternalai-org/eternal-ai/tree/master/examples/DagentPlayChess](https://github.com/eternalai-org/eternal-ai/tree/master/examples/DagentPlayChess)
 
 You can run the code with the following command:&#x20;
 
