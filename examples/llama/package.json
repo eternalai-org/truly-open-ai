@@ -1,0 +1,47 @@
+{
+  "name": "hardhat-project",
+  "scripts": {
+    "hh:network": "npx hardhat node",
+    "hh:compile": "npx hardhat compile",
+    "hh:test": "npx hardhat test",
+    "hh:size": "hardhat size-contracts"
+  },
+  "devDependencies": {
+    "@ericxstone/hardhat-blockscout-verify": "^1.0.2",
+    "@matterlabs/hardhat-zksync": "^1.1.0",
+    "@nomicfoundation/hardhat-foundry": "^1.1.2",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.11",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomiclabs/hardhat-solhint": "^3.1.0",
+    "@openzeppelin/contracts": "^4.9.6",
+    "@openzeppelin/contracts-upgradeable": "^4.9.6",
+    "@openzeppelin/hardhat-upgrades": "^3.2.1",
+    "@prb/math": "^4.0.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/random-seed": "^0.3.5",
+    "chai": "^4.4.1",
+    "dotenv": "^16.0.3",
+    "ethers": "^6.13.2",
+    "hardhat": "^2.22.14",
+    "hardhat-contract-sizer": "^2.10.0",
+    "hardhat-deploy": "^0.11.45",
+    "hardhat-gas-reporter": "^1.0.10",
+    "js-big-decimal": "^2.0.7",
+    "mocha-junit-reporter": "^2.2.1",
+    "mocha-multi-reporters": "^1.5.1",
+    "random-seed": "^0.3.0",
+    "sharp": "^0.32.0",
+    "solidity-coverage": "^0.8.11",
+    "solmate": "^6.7.0",
+    "ts-node": "^10.9.2",
+    "typechain": "^8.3.2",
+    "typescript": "^5.4.3",
+    "zksync-ethers": "^6.11.0"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-verify": "^2.0.5",
+    "js-levenshtein": "^1.1.6"
+  }
+}

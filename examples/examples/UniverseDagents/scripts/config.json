@@ -1,0 +1,47 @@
+{
+    "base_mainnet": {
+        "promptSchedulerAddress": "0xA1d2F74C345Ff1d97B8FC72E061903cD84C66F69",
+        "models": [
+            {
+                "modelName": "DeepSeek V3",
+                "modelAddress": "0xfC2875Ac6148aaf332e2991A27b4f0251807759A",
+                "description": "UniverseDagents"
+            }
+        ]
+    },
+    "symbiosis_mainnet": {
+        "promptSchedulerAddress": "0x87e9B8630c1E20dd86451AE15aF7663D006f089c",
+        "models": [
+            {
+                "modelName": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
+                "modelAddress": "0xdBb2CDdbD9fe47Cc1971dF416d2A18D8c344222d",
+                "description": "UniverseDagents"
+            },
+            {
+                "modelName": "DeepSeek V3",
+                "modelAddress": "0xD953b8f1DF45277c34e9e098E99d8F9922eAB030",
+                "description": "UniverseDagents"
+            }
+        ]
+    },
+    "abstract_testnet": {
+        "promptSchedulerAddress": "0xF958069b13D26FeeBc43Df7Bd7e0D2B71212101B",
+        "models": [
+            {
+                "modelName": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
+                "modelAddress": "0xf7E27f352bD7dA3c17DC0c42B1087815354AB2D4",
+                "description": "UniverseDagents"
+            }
+        ]
+    },
+    "bittensor_mainnet": {
+        "promptSchedulerAddress": "0x0A77958AB03E60a7e939f660D4cdC8862Ae0e966",
+        "models": [
+            {
+                "modelName": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
+                "modelAddress": "0xC47E14AC0ea793e25e9644b555cb5902423F78E7",
+                "description": "UniverseDagents"
+            }
+        ]
+    }
+}
