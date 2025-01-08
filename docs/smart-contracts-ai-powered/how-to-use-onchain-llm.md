@@ -56,7 +56,7 @@ Complete example code can be found at: [https://github.com/eternalai-org/eternal
 You can run the code with the following command:
 
 ```
-npx hardhat compile && RPC_URL=https://base-mainnet.infura.io/v3/eb492201628143a094aa7afaeb9f32d2  PRIVATE_KEY=<YOUR_KEY>  CHOSEN_MODEL="DeepSeek V3"  USER_PROMPT="Hello, how are you?"  npm run sendUniverseAgentRequest:base_mainnet
+npx hardhat compile && RPC_URL=https://base-mainnet.infura.io/v3/eb492201628143a094aa7afaeb9f32d2  PRIVATE_KEY=<YOUR_KEY>  CHOSEN_MODEL="unsloth/Llama-3.3-70B-Instruct-bnb-4bit"  USER_PROMPT="Hello, how are you?"  npm run sendUniverseAgentRequest:base_mainnet
 ```
 
 **Note**: replace \<YOUR\_KEY> with your actual wallet private key and the wallet should have some ETH on Base network for paying network fee.
