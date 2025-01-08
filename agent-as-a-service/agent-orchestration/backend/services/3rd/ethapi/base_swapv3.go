@@ -225,7 +225,7 @@ func (c *Client) BaseNonfungiblePositionManagerMint(contractAddr string, private
 				if err != nil {
 					return "", err
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 				err = c.WaitMined(approveHash)
 				if err != nil {
 					return "", err
@@ -250,7 +250,7 @@ func (c *Client) BaseNonfungiblePositionManagerMint(contractAddr string, private
 				if err != nil {
 					return "", err
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 				err = c.WaitMined(approveHash)
 				if err != nil {
 					return "", err
@@ -471,7 +471,7 @@ func (c *Client) BaseSwapRouterExactInputSingle(contractAddr, privateHex string,
 			if err != nil {
 				return "", err
 			}
-			time.Sleep(5 * time.Second)
+			time.Sleep(10 * time.Second)
 			err = c.WaitMined(approveHash)
 			if err != nil {
 				return "", err

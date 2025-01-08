@@ -44,9 +44,6 @@ const (
 	ABSTRACT_TESTNET_CHAIN_ID = uint64(11124)
 	BITTENSOR_CHAIN_ID        = uint64(964)
 	DUCK_CHAIN_ID             = uint64(5545)
-
-	NOBULLSHIT_EXE_AGENT_INFO_ID = 763
-	ETERNAL_AI_AGENT_INFO_ID     = 301
 )
 
 var CHAIN_NAME_MAP = map[uint64]string{

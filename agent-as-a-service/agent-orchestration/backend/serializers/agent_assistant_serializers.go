@@ -37,6 +37,9 @@ type AssistantsReq struct {
 	UserPrompt         string                     `json:"user_prompt"`
 	SystemContent      string                     `json:"system_content"`
 	Ticker             string                     `json:"ticker"`
+	TokenName          string                     `json:"token_name"`
+	TokenImageUrl      string                     `json:"token_image_url"`
+	TokenDesc          string                     `json:"token_desc"`
 	AssistantCharacter `json:",inline"`
 	TokenChainId       string               `json:"token_chain_id"`
 	SocialInfo         []*models.SocialInfo `json:"social_info"`

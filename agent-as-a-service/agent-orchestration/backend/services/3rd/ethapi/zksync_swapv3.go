@@ -7,14 +7,14 @@ import (
 	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/polygonnonfungiblepositionmanager"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/zksyncnonfungiblepositionmanager"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (c *Client) PolygonNonfungiblePositionManagerMint(contractAddr string, privateHex string, weth9 common.Address, sqrtPriceX96 *big.Int, params *polygonnonfungiblepositionmanager.INonfungiblePositionManagerMintParams) (string, error) {
+func (c *Client) ZksyncNonfungiblePositionManagerMint(contractAddr string, privateHex string, weth9 common.Address, sqrtPriceX96 *big.Int, params *zksyncnonfungiblepositionmanager.INonfungiblePositionManagerMintParams) (string, error) {
 	addressHex, prk, err := c.parsePrkAuth(privateHex)
 	if err != nil {
 		return "", err
@@ -80,7 +80,7 @@ func (c *Client) PolygonNonfungiblePositionManagerMint(contractAddr string, priv
 	}
 	contractAddress := helpers.HexToAddress(contractAddr)
 	// EstimateGas
-	instanceABI, err := abi.JSON(strings.NewReader(polygonnonfungiblepositionmanager.NonfungiblePositionManagerABI))
+	instanceABI, err := abi.JSON(strings.NewReader(zksyncnonfungiblepositionmanager.NonfungiblePositionManagerABI))
 	if err != nil {
 		return "", err
 	}
@@ -104,7 +104,7 @@ func (c *Client) PolygonNonfungiblePositionManagerMint(contractAddr string, priv
 	{
 		multicallData, err := instanceABI.Pack(
 			"mint",
-			polygonnonfungiblepositionmanager.INonfungiblePositionManagerMintParams{
+			zksyncnonfungiblepositionmanager.INonfungiblePositionManagerMintParams{
 				Token0:         params.Token0,
 				Token1:         params.Token1,
 				Fee:            params.Fee,

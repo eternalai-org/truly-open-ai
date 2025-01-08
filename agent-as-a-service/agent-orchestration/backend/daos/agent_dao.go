@@ -198,6 +198,7 @@ func (d *DAO) GetAgentSummaryReport(tx *gorm.DB) ([]*models.AgentInfo, error) {
 		from agent_infos
 		where 1=1
 		and network_id not in (43338, 222672, 0)
+		and deleted_at is null
 		group by network_id, network_name
 		order by counts desc
 	`)

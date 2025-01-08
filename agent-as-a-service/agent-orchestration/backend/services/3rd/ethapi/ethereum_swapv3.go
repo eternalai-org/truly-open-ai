@@ -44,7 +44,7 @@ func (c *Client) EthereumNonfungiblePositionManagerMint(contractAddr string, pri
 				if err != nil {
 					return "", err
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(30 * time.Second)
 				err = c.WaitMined(approveHash)
 				if err != nil {
 					return "", err
@@ -69,7 +69,7 @@ func (c *Client) EthereumNonfungiblePositionManagerMint(contractAddr string, pri
 				if err != nil {
 					return "", err
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(30 * time.Second)
 				err = c.WaitMined(approveHash)
 				if err != nil {
 					return "", err

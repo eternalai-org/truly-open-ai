@@ -1108,6 +1108,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 					mission.AgentType = item.AgentType
 					mission.UserTwitterIds = item.UserTwitterIDs
 					mission.Tokens = item.Tokens
+					mission.AgentBaseModel = item.AgentBaseModel
 					//farcaster
 					if mission.ToolSet == models.ToolsetTypePostFarcaster {
 						toolList := fmt.Sprintf(s.conf.ToolLists.FarcasterPost, agentInfo.FarcasterID, authHeader, agentInfo.AgentID)

@@ -142,6 +142,8 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	gocron.Every(1).Minute().Do(
 		func() error {
 			s.JobAgentMintNft(context.Background())
+			s.JobRetryAgentMintNft(context.Background())
+			s.JobRetryAgentMintNftError(context.Background())
 			return nil
 		},
 	)
@@ -202,11 +204,21 @@ func (s *Service) RunJobs(ctx context.Context) error {
 
 	gocron.Every(30).Second().Do(
 		func() {
-			s.JobAgentDeployToken(context.Background())
-			s.JobMemeAddPositionInternal(context.Background())
-			s.JobMemeRemovePositionInternal(context.Background())
-			s.JobCheckMemeReachMarketCap(context.Background())
-			s.JobMemeAddPositionUniswap(context.Background())
+			s.JobRunCheck(
+				context.Background(),
+				"JobAgentLiquidity",
+				func() error {
+					s.JobAgentDeployToken(context.Background())
+					s.JobMemeAddPositionInternal(context.Background())
+					s.JobMemeRemovePositionInternal(context.Background())
+					s.JobCheckMemeReachMarketCap(context.Background())
+					s.JobMemeAddPositionUniswap(context.Background())
+					s.JobRetryAddPool1(context.Background())
+					s.JobRetryAddPool2(context.Background())
+					s.JobRetryAgentDeployToken(context.Background())
+					return nil
+				},
+			)
 		},
 	)
 

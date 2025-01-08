@@ -23,6 +23,18 @@ func (s *Server) GetListAgent(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfoRespArry(ms), Count: &count})
 }
 
+func (s *Server) GetListAgentUnClaimed(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	search := s.stringFromContextQuery(c, "search")
+	ms, count, err := s.nls.GetListAgentUnClaimed(ctx, search, page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfoRespArry(ms), Count: &count})
+}
+
 func (s *Server) GetListAgentForDojo(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)

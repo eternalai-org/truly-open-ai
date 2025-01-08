@@ -179,6 +179,7 @@ type AgentSnapshotMission struct {
 	Tokens         string `gorm:"type:longtext"`
 	ReactMaxSteps  int    `gorm:"default:0"`
 	NotDelay       bool   `gorm:"default:0"`
+	AgentBaseModel string
 }
 
 type TeleMsgStatus string

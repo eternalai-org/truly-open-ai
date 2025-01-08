@@ -24,7 +24,6 @@ func (s *Service) JobScanAgentTwitterPostForCreateAgent(ctx context.Context) err
 			agents, err := s.dao.FindAgentInfo(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					// `id in (?)`: {[]uint{s.conf.BaseAiAgentInfoId, s.conf.SolanaAiAgentInfoId}},
 					`id in (?)`: {[]uint{s.conf.EternalAiAgentInfoId}},
 				},
 				map[string][]interface{}{},
@@ -335,6 +334,21 @@ func (s *Service) AgentTwitterPostCreateAgent(ctx context.Context, twitterPostID
 								tokenNetworkID = networkID
 							}
 
+							creator := strings.ToLower(s.conf.GetConfigKeyString(models.BASE_CHAIN_ID, "meme_pool_address"))
+							user, _ := s.dao.FirstUser(
+								tx,
+								map[string][]interface{}{
+									"network_id = ?": {models.GENERTAL_NETWORK_ID},
+									"twitter_id = ?": {twitterPost.GetOwnerTwitterID()},
+								},
+								map[string][]interface{}{},
+								false,
+							)
+
+							if user != nil {
+								creator = user.Address
+							}
+
 							agentInfo := &models.AgentInfo{
 								NetworkID:      networkID,
 								NetworkName:    models.GetChainName(networkID),
@@ -347,7 +361,7 @@ func (s *Service) AgentTwitterPostCreateAgent(ctx context.Context, twitterPostID
 								Version:        "2",
 								AgentID:        helpers.RandomBigInt(12).Text(16),
 								ScanEnabled:    true,
-								Creator:        strings.ToLower(s.conf.GetConfigKeyString(models.BASE_CHAIN_ID, "meme_pool_address")),
+								Creator:        creator,
 							}
 
 							if networkID == models.BASE_CHAIN_ID && twitterPost.ExtractContent != "" {
@@ -719,7 +733,7 @@ func (s *Service) GetImageUrlForBase64(stringBase64 string) (string, error) {
 func (s *Service) CreateAgentTwitterPostByTweetID(tx *gorm.DB, tweetID string) error {
 	agentInfo, err := s.dao.FirstAgentInfoByID(
 		tx,
-		uint(models.ETERNAL_AI_AGENT_INFO_ID),
+		s.conf.EternalAiAgentInfoId,
 		map[string][]interface{}{},
 		false,
 	)

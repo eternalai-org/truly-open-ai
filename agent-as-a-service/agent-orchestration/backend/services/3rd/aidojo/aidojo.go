@@ -410,9 +410,6 @@ func (c AiDojoBackend) GenerateImage(systemContent, baseUrl string) (string, err
 		},
 	}
 
-	b, err := json.Marshal(bodyReq)
-	fmt.Println(string(b))
-
 	chatResp := ""
 	bodyBytes, _ := json.Marshal(bodyReq)
 	req, err := http.NewRequest("POST", baseUrl, bytes.NewBuffer(bodyBytes))
@@ -426,7 +423,6 @@ func (c AiDojoBackend) GenerateImage(systemContent, baseUrl string) (string, err
 
 	defer resp.Body.Close()
 
-	fmt.Println(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return chatResp, err
@@ -459,4 +455,28 @@ type OffchainAutoAgentRequest struct {
 	BatchItemInput  string             `json:"batch_item_input" bson:"batch_item_input"`
 	Toolset         string             `json:"toolset" bson:"toolset"`
 	Task            string             `json:"task" bson:"task"`
+}
+
+// ////
+type ChainConfigsDetailResp struct {
+	ChainId           string            `json:"chain_id"`
+	SupportModelNames map[string]string `json:"support_model_names"`
+}
+
+type ChainConfigsResp struct {
+	Data []*ChainConfigsDetailResp `json:"data"`
+}
+
+func (c *AiDojoBackend) GetChainConfigs() ([]*ChainConfigsDetailResp, error) {
+	var resp ChainConfigsResp
+	_, err := c.getJSON(
+		fmt.Sprintf("%s/api/chain-config/list", c.BaseURL),
+		map[string]string{},
+		&resp,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
 }

@@ -17,12 +17,7 @@ import (
 type OpenAI struct {
 	BaseURL         string
 	ApiKey          string
-	ImageURL        string
-	ReadImageURL    string
-	ChatModel       string
-	SystemContent   string
 	AutoAgentApiUrl string
-	ImageKey        string
 }
 
 type ChatResponse struct {
@@ -45,29 +40,16 @@ type ChatResponse struct {
 	} `json:"usage"`
 }
 
-func NewOpenAI(baseUrl, readImageUrl, apiKey, chatModel, systemContent string) *OpenAI {
+func NewOpenAI(baseUrl, apiKey string) *OpenAI {
 	return &OpenAI{
-		BaseURL:       baseUrl,
-		ReadImageURL:  readImageUrl,
-		ApiKey:        apiKey,
-		ChatModel:     chatModel,
-		SystemContent: systemContent,
-		ImageURL:      "https://api-dojo2.eternalai.org",
-		ImageKey:      "",
+		BaseURL: baseUrl,
+		ApiKey:  apiKey,
 	}
 }
 
-func NewAgentAI(apiKey, imageKey string) *OpenAI {
+func NewAgentAI(apiKey string) *OpenAI {
 	return &OpenAI{
-		ApiKey:   apiKey,
-		ImageKey: imageKey,
-		ImageURL: "https://api-dojo2.eternalai.org",
-	}
-}
-
-func NewAutoAgentAPI(autoAgentApiUrl string) *OpenAI {
-	return &OpenAI{
-		AutoAgentApiUrl: autoAgentApiUrl,
+		ApiKey: apiKey,
 	}
 }
 
@@ -75,7 +57,7 @@ func (c OpenAI) ChatMessage(msgChat string) (string, error) {
 	seed := models.RandSeed()
 	path := fmt.Sprintf("%s/v1/chat/completions", c.BaseURL)
 	bodyReq := map[string]interface{}{
-		"model":  c.ChatModel,
+		"model":  "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
 		"stream": false,
 		"seed":   seed,
 	}
@@ -96,7 +78,7 @@ func (c OpenAI) ChatMessage(msgChat string) (string, error) {
 	}()
 
 	contents := []map[string]string{}
-	contents = append(contents, map[string]string{"role": "system", "content": c.SystemContent})
+	contents = append(contents, map[string]string{"role": "system", "content": "You are a helpful assistant"})
 	contents = append(contents, map[string]string{"role": "user", "content": msgChat})
 	bodyReq["messages"] = contents
 
@@ -147,7 +129,7 @@ func (c OpenAI) ChatMessageWithSystemPromp(msgChat, systemContent string) (strin
 	seed := models.RandSeed()
 	path := fmt.Sprintf("%s/v1/chat/completions", c.BaseURL)
 	bodyReq := map[string]interface{}{
-		"model":  c.ChatModel,
+		"model":  "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
 		"stream": false,
 		"seed":   seed,
 	}
@@ -156,58 +138,6 @@ func (c OpenAI) ChatMessageWithSystemPromp(msgChat, systemContent string) (strin
 	contents = append(contents, map[string]string{"role": "system", "content": systemContent})
 	contents = append(contents, map[string]string{"role": "user", "content": msgChat})
 	bodyReq["messages"] = contents
-
-	chatResp := ""
-	bodyBytes, _ := json.Marshal(bodyReq)
-	req, err := http.NewRequest("POST", path, bytes.NewBuffer(bodyBytes))
-	if err != nil {
-		return chatResp, err
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.ApiKey))
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return chatResp, err
-	}
-
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return chatResp, err
-	}
-
-	m := ChatResponse{}
-	err = json.Unmarshal(body, &m)
-	if err != nil {
-		return chatResp, err
-	}
-	if m.Choices != nil && len(m.Choices) > 0 {
-		data := m.Choices[0]
-		if data.Message != nil && data.Message.Content != "" {
-			chatResp = data.Message.Content
-		}
-	}
-
-	return chatResp, nil
-}
-
-func (c OpenAI) ReadImage(imageUrl, msgText string) (string, error) {
-	path := fmt.Sprintf("%s/v1/chat/completions", c.ReadImageURL)
-	bodyReq := map[string]interface{}{
-		"model":      "meta-llama/Llama-3.2-11B-Vision-Instruct",
-		"max_tokens": 300,
-	}
-
-	imageUrlTag := map[string]interface{}{
-		"url": imageUrl,
-	}
-	content := []map[string]interface{}{}
-	content = append(content, map[string]interface{}{"type": "text", "text": msgText})
-	content = append(content, map[string]interface{}{"type": "image_url", "image_url": imageUrlTag})
-
-	messages := []map[string]interface{}{}
-	messages = append(messages, map[string]interface{}{"role": "user", "content": content})
-	bodyReq["messages"] = messages
 
 	chatResp := ""
 	bodyBytes, _ := json.Marshal(bodyReq)

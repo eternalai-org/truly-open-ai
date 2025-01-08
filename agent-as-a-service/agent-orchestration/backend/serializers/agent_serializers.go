@@ -51,6 +51,7 @@ type AgentSnapshotMissionInfo struct {
 	UserTwitterIDs string                    `json:"user_twitter_ids"`
 	ToolList       string                    `json:"tool_list"`
 	Tokens         string                    `json:"tokens"`
+	AgentBaseModel string                    `json:"agent_base_model"`
 }
 
 type AgentInfoResp struct {
@@ -284,6 +285,9 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 	} else {
 		if m.TokenInfo != nil && m.TokenAddress != "" && m.TokenInfo.PriceUsd.Cmp(big.NewFloat(0)) > 0 {
 			resp.Meme = NewMemeFromTokenInfoResp(m.TokenInfo, m)
+			if m.Meme != nil {
+				resp.Meme.Supply = m.Meme.Supply
+			}
 		} else if m.Meme != nil {
 			resp.Meme = NewMemeRespWithToken(m.Meme)
 			resp.Meme.Percent = m.MemePercent

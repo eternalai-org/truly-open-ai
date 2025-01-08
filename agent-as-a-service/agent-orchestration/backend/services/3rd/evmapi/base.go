@@ -13,4 +13,5 @@ type BaseClient interface {
 	InscribeTxs(txHashs []string) (string, error)
 	SystemPromptManagerTopup(contractAddr string, prkHex string, agentId int64, amount *big.Int) (string, error)
 	SystemPromptManagerMint(contractAddr string, prkHex string, to common.Address, uri string, data []byte, fee *big.Int) (string, error)
+	IsContract(address string) (bool, error)
 }
