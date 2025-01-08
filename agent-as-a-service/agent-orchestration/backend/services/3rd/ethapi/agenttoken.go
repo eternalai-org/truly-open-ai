@@ -31,6 +31,11 @@ func (c *Client) DeployAGENTToken(prkHex string, name string, symbol string, amo
 	if err != nil {
 		return "", "", err
 	}
+	gasPrice, err := c.getGasPrice()
+	if err != nil {
+		return "", "", err
+	}
+	auth.GasPrice = gasPrice
 	address, tx, _, err := agenttoken.DeployAGENTToken(auth, client, name, symbol, amount, helpers.HexToAddress(recipient))
 	if err != nil {
 		return "", "", err

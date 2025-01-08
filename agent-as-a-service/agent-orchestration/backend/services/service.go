@@ -79,10 +79,8 @@ func NewService(conf *configs.Config) *Service {
 		},
 		gsClient: googlestorage.InitClient(conf.GsStorage.CredentialsFile, conf.GsStorage.BucketName),
 		openais: map[string]*openai.OpenAI{
-			"Agent": openai.NewAgentAI(conf.Ai.ApiKey, conf.AiImageApiKey),
-			"Lama": openai.NewOpenAI(conf.Ai.ChatUrl, conf.Ai.ReadImageUrl,
-				conf.Ai.ApiKey, "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
-				"You are a helpful assistant"),
+			"Agent": openai.NewAgentAI(conf.Ai.ApiKey),
+			"Lama":  openai.NewOpenAI(conf.Ai.ChatUrl, conf.Ai.ApiKey),
 		},
 		ethApiMap: map[uint64]*ethapi.Client{},
 		zkApiMap:  map[uint64]*zkapi.Client{},

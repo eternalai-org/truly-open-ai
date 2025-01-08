@@ -26,17 +26,35 @@ import (
 )
 
 func (s *Service) GetModelDefaultByChainID(chainID uint64) string {
-	var mapModelNameToModelID = models.MAP_CHAIN_ID_TO_LLM_MODEL[chainID]
-	for modelName, _ := range mapModelNameToModelID {
-		return modelName
-	}
-	return "NousResearch/Hermes-3-Llama-3.1-70B-FP8"
+	var baseModel string
+	s.RedisCached(
+		fmt.Sprintf("GetModelDefaultByChainID_%d", chainID),
+		true,
+		10*time.Minute,
+		&baseModel,
+		func() (interface{}, error) {
+			baseModel = "NousResearch/Hermes-3-Llama-3.1-70B-FP8"
+			listConfig, _ := s.dojoAPI.GetChainConfigs()
+			for _, chain := range listConfig {
+				if strings.EqualFold(chain.ChainId, fmt.Sprintf("%d", chainID)) {
+					for modelName, _ := range chain.SupportModelNames {
+						baseModel = modelName
+					}
+					break
+				}
+			}
+			return baseModel, nil
+		},
+	)
+	fmt.Println(baseModel)
+	return baseModel
 }
 
 func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string, req *serializers.AssistantsReq) (*models.AgentInfo, error) {
-	//if req.SystemContent == "" {
-	//	return nil, errs.NewError(errs.ErrBadRequest)
-	//}
+	if req.SystemContent == "" {
+		req.SystemContent = "default"
+	}
+
 	agent := &models.AgentInfo{
 		Version:          "2",
 		AgentType:        models.AgentInfoAgentTypeReasoning,
@@ -66,7 +84,18 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		NftOwnerAddress:  req.NFTOwnerAddress,
 		Thumbnail:        req.Thumbnail,
 		NftTokenImage:    req.NFTTokenImage,
+		TokenImageUrl:    req.TokenImageUrl,
 	}
+	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, req.AgentName, req.SystemContent)
+	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
+		agent.TokenSymbol = tokenInfo.TokenSymbol
+		agent.TokenName = req.AgentName
+		agent.TokenDesc = tokenInfo.TokenDesc
+		if req.TokenImageUrl == "" {
+			agent.TokenImageUrl = tokenInfo.TokenImageUrl
+		}
+	}
+
 	if req.TokenChainId != "" {
 		tokenChainId, _ := strconv.ParseUint(req.TokenChainId, 0, 64)
 		if !(tokenChainId == models.POLYGON_CHAIN_ID || tokenChainId == models.ZKSYNC_CHAIN_ID) {
@@ -353,15 +382,25 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 				agent.Adjectives = req.GetAssistantCharacter(req.Adjectives)
 				agent.SocialInfo = req.GetAssistantCharacter(req.SocialInfo)
 
+				if req.TokenImageUrl != "" {
+					agent.TokenImageUrl = req.TokenImageUrl
+				}
+
 				if agent.TokenStatus == "" && agent.TokenAddress == "" {
 					if req.TokenChainId != "" {
 						tokenChainId, _ := strconv.ParseUint(req.TokenChainId, 0, 64)
 						if !(tokenChainId == models.POLYGON_CHAIN_ID || tokenChainId == models.ZKSYNC_CHAIN_ID) {
 							agent.TokenNetworkID = tokenChainId
-							agent.TokenSymbol = req.Ticker
 							if req.CreateTokenMode != "" {
 								agent.TokenMode = string(req.CreateTokenMode)
 							}
+							tokenName := req.TokenName
+							if req.TokenName == "" {
+								tokenName = req.Ticker
+							}
+							agent.TokenSymbol = req.Ticker
+							agent.TokenName = tokenName
+							agent.TokenDesc = req.TokenDesc
 
 							if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && agent.AgentNftMinted {
 								agent.TokenStatus = "pending"
@@ -469,4 +508,52 @@ func (s *Service) UploadDataToLightHouse(ctx context.Context, address string, re
 		return "", errs.NewError(err)
 	}
 	return fmt.Sprintf("ipfs://%v", hash), nil
+}
+
+func (s *Service) GenerateTokenInfoFromSystemPrompt(ctx context.Context, tokenName, sysPrompt string) (*models.TweetParseInfo, error) {
+	info := &models.TweetParseInfo{}
+	sysPrompt = strings.ReplaceAll(sysPrompt, "@CryptoEternalAI", "")
+	promptGenerateToken := fmt.Sprintf(`
+						I want to generate my token base on this info
+						'%s'
+
+						token-name (generate if not provided, make sure it not empty)
+						token-symbol (generate if not provided, make sure it not empty)
+						token-story (generate if not provided, make sure it not empty)
+
+						Please return in string in json format including token-name, token-symbol, token-story, just only json without explanation  and token name limit with 15 characters
+					`, sysPrompt)
+	aiStr, err := s.openais["Lama"].ChatMessage(promptGenerateToken)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	fmt.Println(aiStr)
+	if aiStr != "" {
+		mapInfo := helpers.ExtractMapInfoFromOpenAI(aiStr)
+		tokenSymbol := ""
+		tokenDesc := ""
+		imageUrl := ""
+		if mapInfo != nil {
+
+			if v, ok := mapInfo["token-symbol"]; ok {
+				tokenSymbol = fmt.Sprintf(`%v`, v)
+			}
+
+			if v, ok := mapInfo["token-story"]; ok {
+				tokenDesc = fmt.Sprintf(`%v`, v)
+			}
+
+			imageUrl, err = s.GetGifImageUrlFromTokenInfo(tokenSymbol, tokenName, tokenDesc)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+		}
+		info = &models.TweetParseInfo{
+			TokenSymbol:   tokenSymbol,
+			TokenDesc:     tokenDesc,
+			TokenImageUrl: imageUrl,
+		}
+	}
+
+	return info, nil
 }

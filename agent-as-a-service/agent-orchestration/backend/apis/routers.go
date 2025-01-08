@@ -83,6 +83,7 @@ func (s *Server) Routers() {
 		{
 			agentAPI.GET("/report", s.GetAgentSummaryReport)
 			agentAPI.GET("/list", s.GetListAgent)
+			agentAPI.GET("/unclaimed", s.GetListAgentUnClaimed)
 			agentAPI.GET("/:id", s.GetAgentDetailByAgentID)
 			agentAPI.GET("/admin/:id", s.GetAgentDetailByAgentID)
 			agentAPI.GET("/by-contract/:address/:id", s.GetAgentDetailByContract)
@@ -172,6 +173,7 @@ func (s *Server) Routers() {
 				twitterAPI.GET("/user/following", s.GetTwitterUserFollowingByQuery)
 
 				twitterAPI.GET("/tweets/:id", s.GetListUserTweets)
+				twitterAPI.GET("/tweets/:id/all", s.GetListUserTweetsAll)
 				twitterAPI.GET("/tweets-by-id", s.GetListUserTweetsByQuery)
 
 				twitterAPI.GET("/tweets", s.LookupUserTweets)
@@ -248,6 +250,14 @@ func (s *Server) Routers() {
 			subcriptionAPI.POST("/create-test", s.CreateAcctForTest)
 		}
 
+		missionStoreAPI := rootAPI.Group("/mission-store")
+		{
+			missionStoreAPI.POST("/save", s.UploadMissionStore)
+			missionStoreAPI.GET("/list", s.GetListMissionStore)
+			missionStoreAPI.POST("/rating", s.RateMissionStore)
+			missionStoreAPI.POST("/claim-fee", s.ClaimFeeMissionStore)
+		}
+
 		bubbleAPI := rootAPI.Group("/bubble")
 		{
 			bubbleAPI.GET("/list", s.GetListBubbleCrypto)
@@ -255,6 +265,7 @@ func (s *Server) Routers() {
 
 		memeAPI := rootAPI.Group("/meme")
 		{
+			// memeAPI.GET("/configs", s.GetMemeConfigs)
 			memeAPI.GET("/memes-by-address", s.GetListMemeByAddress)
 
 			memeAPI.GET("/list", s.GetListMemeReport)

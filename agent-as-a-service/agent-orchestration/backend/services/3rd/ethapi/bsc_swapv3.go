@@ -43,7 +43,7 @@ func (c *Client) BscNonfungiblePositionManagerMint(contractAddr string, privateH
 				if err != nil {
 					return "", err
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 				err = c.WaitMined(approveHash)
 				if err != nil {
 					return "", err
@@ -68,7 +68,7 @@ func (c *Client) BscNonfungiblePositionManagerMint(contractAddr string, privateH
 				if err != nil {
 					return "", err
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 				err = c.WaitMined(approveHash)
 				if err != nil {
 					return "", err

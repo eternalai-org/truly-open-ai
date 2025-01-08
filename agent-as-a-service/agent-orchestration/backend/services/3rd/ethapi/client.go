@@ -305,7 +305,7 @@ func (c *Client) getGasPrice() (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-	var gasPrice *big.Int
+	gasPrice := common.Big0
 	if c.MinGasPrice != "" {
 		minGasPriceNum, err := strconv.ParseInt(c.MinGasPrice, 10, 0)
 		if err == nil {
@@ -317,8 +317,13 @@ func (c *Client) getGasPrice() (*big.Int, error) {
 		if err != nil {
 			return nil, err
 		}
+		gasPrice = common.Big0.Quo(
+			common.Big0.Mul(gasPrice, big.NewInt(12)),
+			big.NewInt(10),
+		)
 	}
-	return gasPrice, nil
+	gasPriceRes, _ := common.Big0.SetString(gasPrice.Text(10), 10)
+	return gasPriceRes, nil
 }
 
 func (c *Client) getGasTipCap() (*big.Int, error) {
@@ -326,7 +331,7 @@ func (c *Client) getGasTipCap() (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-	var gasPrice *big.Int
+	gasPrice := common.Big0
 	if c.MinGasPrice != "" {
 		minGasPriceNum, err := strconv.ParseInt(c.MinGasPrice, 10, 0)
 		if err == nil {
@@ -338,8 +343,19 @@ func (c *Client) getGasTipCap() (*big.Int, error) {
 		if err != nil {
 			return nil, err
 		}
+		if gasPrice.Cmp(big.NewInt(0)) <= 0 {
+			gasPrice, err = client.SuggestGasPrice(context.Background())
+			if err != nil {
+				return nil, err
+			}
+		}
+		gasPrice = common.Big0.Quo(
+			common.Big0.Mul(gasPrice, big.NewInt(12)),
+			big.NewInt(10),
+		)
 	}
-	return gasPrice, nil
+	gasPriceRes, _ := common.Big0.SetString(gasPrice.Text(10), 10)
+	return gasPriceRes, nil
 }
 
 func (c *Client) GetCachedGasPriceAndTipCap() (*big.Int, *big.Int, error) {
@@ -350,6 +366,30 @@ func (c *Client) GetCachedGasPriceAndTipCap() (*big.Int, *big.Int, error) {
 	cachedGasTipCap, err := c.getGasTipCap()
 	if err != nil {
 		return nil, nil, err
+	}
+	chainID, err := c.GetChainID()
+	if err != nil {
+		return nil, nil, err
+	}
+	switch chainID {
+	case 43114:
+		{
+			if cachedGasPrice.Cmp(big.NewInt(1000000000)) < 0 {
+				cachedGasPrice = big.NewInt(1000000000)
+			}
+			if cachedGasTipCap.Cmp(big.NewInt(1000000000)) < 0 {
+				cachedGasTipCap = big.NewInt(1000000000)
+			}
+		}
+	case 8453:
+		{
+			if cachedGasPrice.Cmp(big.NewInt(20000000)) < 0 {
+				cachedGasPrice = big.NewInt(20000000)
+			}
+			if cachedGasTipCap.Cmp(big.NewInt(20000000)) < 0 {
+				cachedGasTipCap = big.NewInt(20000000)
+			}
+		}
 	}
 	return cachedGasPrice, cachedGasTipCap, nil
 }
@@ -905,4 +945,17 @@ func (c *Client) Transact(contractAddr string, prkHex string, dataBytes []byte, 
 		return "", err
 	}
 	return signedTx.Hash().Hex(), nil
+}
+
+func (c *Client) IsContract(address string) (bool, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return false, err
+	}
+	bytecode, err := client.CodeAt(context.Background(), helpers.HexToAddress(address), nil) // nil is latest block
+	if err != nil {
+		return false, err
+	}
+	isContract := len(bytecode) > 0
+	return isContract, nil
 }

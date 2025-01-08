@@ -179,40 +179,42 @@ func (s *Service) AgentTeleAlertTopupNotActionByID(ctx context.Context, agentInf
 							if action != nil {
 								actionResult = "trigger result is received"
 							}
-							title := "💀💀💀 Not Action Alert! 💀💀💀"
-							msg := fmt.Sprintf(
-								`%s (@%s - %s - %s) deposited money but haven't seen any action yet (note: %s, %s, %s)`,
-								agent.AgentName,
-								agent.TwitterUsername,
-								agent.NetworkName,
-								agent.AgentContractID,
-								balanceStr,
-								triggerResult,
-								actionResult,
-							)
-							_, err = bot.SendMessage(
-								&telego.SendMessageParams{
-									ChatID: telego.ChatID{
-										ID: s.conf.Telebot.Alert.ChatID,
-									},
-									MessageThreadID: s.conf.Telebot.Alert.MessageThreadID,
-									Text: strings.TrimSpace(
-										fmt.Sprintf(
-											`
+							if post == nil || action == nil {
+								title := "💀💀💀 Not Action Alert! 💀💀💀"
+								msg := fmt.Sprintf(
+									`%s (@%s - %s - %s) deposited money but haven't seen any action yet (note: %s, %s, %s)`,
+									agent.AgentName,
+									agent.TwitterUsername,
+									agent.NetworkName,
+									agent.AgentContractID,
+									balanceStr,
+									triggerResult,
+									actionResult,
+								)
+								_, err = bot.SendMessage(
+									&telego.SendMessageParams{
+										ChatID: telego.ChatID{
+											ID: s.conf.Telebot.Alert.ChatID,
+										},
+										MessageThreadID: s.conf.Telebot.Alert.MessageThreadID,
+										Text: strings.TrimSpace(
+											fmt.Sprintf(
+												`
 %s
 
 %s
 
 Hey, @zoro_521, let's check about this!
-				`,
-											title,
-											msg,
+					`,
+												title,
+												msg,
+											),
 										),
-									),
-								},
-							)
-							if err != nil {
-								return errs.NewError(err)
+									},
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
 							}
 						}
 						return nil

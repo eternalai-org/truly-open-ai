@@ -411,6 +411,7 @@ type TweetParseInfo struct {
 	TokenName     string
 	TokenDesc     string
 	TokenSymbol   string
+	TokenImageUrl string
 	ChainName     string
 	Owner         string
 	Personality   string

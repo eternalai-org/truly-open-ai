@@ -17,7 +17,6 @@ func (s *Server) GetTwitterUserByID(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: user})
 }
 
@@ -119,6 +118,19 @@ func (s *Server) GetListUserTweets(c *gin.Context) {
 	paginationToken := s.stringFromContextQuery(c, "pagination_token")
 	maxResults := s.maxResultFromContextQuery(c)
 	user, err := s.nls.GetListUserTweets(ctx, twitterID, paginationToken, maxResults)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: user})
+}
+
+func (s *Server) GetListUserTweetsAll(c *gin.Context) {
+	ctx := s.requestContext(c)
+	twitterID := s.stringFromContextParam(c, "id")
+	paginationToken := s.stringFromContextQuery(c, "pagination_token")
+	maxResults := s.maxResultFromContextQuery(c)
+	user, err := s.nls.GetListUserTweetsAll(ctx, twitterID, paginationToken, maxResults)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

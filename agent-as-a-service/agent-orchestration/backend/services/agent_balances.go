@@ -78,6 +78,49 @@ func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creat
 	return keys, 0, nil
 }
 
+func (s *Service) GetListAgentUnClaimed(ctx context.Context, search string, page, limit int) ([]*models.AgentInfo, uint, error) {
+	selected := []string{
+		"agent_infos.*",
+	}
+	joinFilters := map[string][]interface{}{}
+
+	admin1 := strings.ToLower(s.conf.GetConfigKeyString(models.BASE_CHAIN_ID, "meme_pool_address"))
+	admin2 := s.conf.AdminAutoCreateAgentAddress
+	filters := map[string][]interface{}{
+		`creator in (?)`:   {[]string{admin1, admin2}},
+		`ref_tweet_id > 0`: {},
+	}
+	if search != "" {
+		search = fmt.Sprintf("%%%s%%", strings.ToLower(search))
+		filters[`
+			LOWER(agent_infos.token_name) like ? 
+			or LOWER(agent_infos.token_symbol) like ? 
+			or LOWER(agent_infos.token_address) like ?
+			or LOWER(agent_infos.twitter_username) like ?
+			or LOWER(agent_infos.agent_name) like ?
+			or ifnull(twitter_users.twitter_username, "") like ?
+			or ifnull(twitter_users.name, "") like ?
+		`] = []interface{}{search, search, search, search, search, search, search}
+	}
+	keys, err := s.dao.FindAgentInfoJoinSelect(
+		daos.GetDBMainCtx(ctx),
+		selected,
+		joinFilters,
+		filters,
+		map[string][]interface{}{
+			"TwitterInfo":    {},
+			"TmpTwitterInfo": {},
+			"Meme":           {`deleted_at IS NULL`},
+			"TokenInfo":      {},
+		},
+		[]string{"created_at desc"}, page, limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return keys, 0, nil
+}
+
 func (s *Service) GetAgentInfoDetail(ctx context.Context, networkID uint64, agentID string) (*models.AgentInfo, error) {
 	selected := []string{
 		"agent_infos.*",
@@ -804,7 +847,7 @@ func (s *Service) UpdateTokenPriceInfo(ctx context.Context, agentID uint) error 
 							"dex_id":            coinInfo.DexId,
 						},
 					)
-				} else {
+				} else if agentInfo.TokenNetworkID == models.SOLANA_CHAIN_ID {
 					coinInfo, err := s.pumfunAPI.GetPumpFunCoinInfo(agentInfo.TokenAddress)
 					if err != nil {
 						return errs.NewError(err)
@@ -836,4 +879,50 @@ func (s *Service) UpdateTokenPriceInfo(ctx context.Context, agentID uint) error 
 	}
 	return nil
 
+}
+
+func (s *Service) JobUpdateAgentImage(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobUpdateTokenPriceInfo",
+		func() error {
+			agents, err := s.dao.FindAgentInfo(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					`
+						(token_image_url is null or token_image_url="")
+						and (thumbnail is NULL or thumbnail="")
+						and (nft_token_image is NULL or nft_token_image="")
+						and twitter_info_id = 0
+						and agent_nft_minted = 1
+						and network_id not in (43338, 0, 1, 45761, 222671)
+						and system_prompt != ""
+					`: {},
+				},
+				map[string][]interface{}{},
+				[]string{"created_at desc"},
+				0,
+				200,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var retErr error
+			for _, agent := range agents {
+				tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, agent.AgentName, agent.SystemPrompt)
+				if tokenInfo != nil && tokenInfo.TokenImageUrl != "" {
+					_ = daos.GetDBMainCtx(ctx).Model(agent).Updates(
+						map[string]interface{}{
+							"token_image_url": tokenInfo.TokenImageUrl,
+						},
+					).Error
+				}
+				time.Sleep(20 * time.Millisecond)
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

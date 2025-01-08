@@ -178,14 +178,69 @@ func (c *Client) GetListUserTweets(userTwitterID, paginationToken, accessToken s
 		},
 		Expansions: []Expansion{
 			ExpansionAuthorID,
-			ExpansionReferencedTweetsID,
-			ExpansionReferencedTweetsIDAuthorID,
+			// ExpansionReferencedTweetsID,
+			// ExpansionReferencedTweetsIDAuthorID,
 			ExpansionAttachmentsMediaKeys,
 			ExpansionInReplyToUserID,
 		},
 		Excludes: []Exclude{
 			ExcludeReplies,
 			ExcludeRetweets,
+		},
+		MediaFields: []MediaField{
+			MediaFieldMediaKey,
+			MediaFieldURL,
+			MediaFieldType,
+		},
+		MaxResults:      maxResults,
+		PaginationToken: paginationToken,
+	}
+
+	userTweets, err := c.user.Tweets(context.Background(), *&userTwitterID, tweetOpts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return userTweets, nil
+
+}
+
+func (c *Client) GetAllUserTweets(userTwitterID, paginationToken, accessToken string, maxResults int) (*UserTimeline, error) {
+	c.user = &User{
+		Authorizer: authorize{
+			Token: accessToken,
+		},
+		Client: http.DefaultClient,
+		Host:   "https://api.x.com",
+	}
+
+	tweetOpts := UserTimelineOpts{
+		TweetFields: []TweetField{
+			TweetFieldAttachments,
+			TweetFieldAuthorID,
+			TweetFieldConversationID,
+			TweetFieldCreatedAt,
+			TweetFieldEntities,
+			TweetFieldID,
+			TweetFieldInReplyToUserID,
+			TweetFieldPublicMetrics,
+			TweetFieldReferencedTweets,
+			TweetFieldSource,
+			TweetFieldText,
+			TweetFieldNoteText,
+		},
+		UserFields: []UserField{
+			UserFieldCreatedAt,
+			UserFieldDescription,
+			UserFieldEntities,
+			UserFieldName,
+			UserFieldUserName,
+		},
+		Expansions: []Expansion{
+			ExpansionAuthorID,
+			ExpansionAttachmentsMediaKeys,
+			ExpansionInReplyToUserID,
 		},
 		MediaFields: []MediaField{
 			MediaFieldMediaKey,

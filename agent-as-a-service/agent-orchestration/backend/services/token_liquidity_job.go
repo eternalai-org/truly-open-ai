@@ -13,9 +13,12 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/apechainnonfungiblepositionmanager"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/arbitrumnonfungiblepositionmanager"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/avaxnonfungiblepositionmanager"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/basenonfungiblepositionmanager"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/bscnonfungiblepositionmanager"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/memenonfungiblepositionmanager"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/polygonnonfungiblepositionmanager"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/zksyncnonfungiblepositionmanager"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
 )
@@ -52,7 +55,7 @@ func (s *Service) JobAgentDeployToken(ctx context.Context) error {
 				} else {
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 			}
 			return retErr
 		},
@@ -87,7 +90,8 @@ func (s *Service) AgentDeployToken(ctx context.Context, memeID uint) error {
 				case models.BASE_CHAIN_ID,
 					models.ARBITRUM_CHAIN_ID,
 					models.BSC_CHAIN_ID,
-					models.APE_CHAIN_ID:
+					models.APE_CHAIN_ID,
+					models.AVALANCHE_C_CHAIN_ID:
 					{
 						if m.Fee.Float.Cmp(big.NewFloat(0)) > 0 {
 							agent, err := s.dao.FirstAgentInfoByID(
@@ -125,7 +129,8 @@ func (s *Service) AgentDeployToken(ctx context.Context, memeID uint) error {
 				case models.BASE_CHAIN_ID,
 					models.ARBITRUM_CHAIN_ID,
 					models.BSC_CHAIN_ID,
-					models.APE_CHAIN_ID:
+					models.APE_CHAIN_ID,
+					models.AVALANCHE_C_CHAIN_ID:
 					{
 						tokenSupply := &m.TotalSuply.Float
 						if tokenSupply.Cmp(big.NewFloat(1)) <= 0 {
@@ -194,6 +199,128 @@ func (s *Service) AgentDeployToken(ctx context.Context, memeID uint) error {
 	return nil
 }
 
+func (s *Service) JobRetryAgentDeployToken(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobRetryAgentDeployToken",
+		func() error {
+			memes, err := s.dao.FindMeme(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"updated_at <= ?":       {time.Now().Add(-5 * time.Minute)},
+					"status = ?":            {models.MemeStatusCreated},
+					"add_pool1_tx_hash = ?": {""},
+					"network_id in (?)": {
+						[]uint64{
+							models.BASE_CHAIN_ID,
+							models.ARBITRUM_CHAIN_ID,
+							models.BSC_CHAIN_ID,
+							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
+						},
+					},
+				},
+				map[string][]interface{}{},
+				[]string{
+					"rand()",
+				},
+				0,
+				5,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var retErr error
+			for _, meme := range memes {
+				err = s.RetryAgentDeployToken(ctx, meme.ID)
+				if err != nil {
+					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
+				} else {
+					s.DeleteFilterAddrs(ctx, meme.NetworkID)
+				}
+				time.Sleep(10 * time.Second)
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) RetryAgentDeployToken(ctx context.Context, memeID uint) error {
+	err := s.JobRunCheck(
+		ctx,
+		fmt.Sprintf("RetryAgentDeployToken_%d", memeID),
+		func() error {
+			m, err := s.dao.FirstMemeByID(
+				daos.GetDBMainCtx(ctx),
+				memeID,
+				map[string][]interface{}{
+					"AgentInfo": {},
+				},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if m == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if m.TokenAddress != "" && m.Status == models.MemeStatusCreated {
+				switch m.NetworkID {
+				case models.BASE_CHAIN_ID,
+					models.ARBITRUM_CHAIN_ID,
+					models.BSC_CHAIN_ID,
+					models.APE_CHAIN_ID,
+					models.AVALANCHE_C_CHAIN_ID:
+					{
+						isContact, err := s.GetEthereumClient(ctx, m.NetworkID).IsContract(m.TokenAddress)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if !isContact {
+							tokenSupply := &m.TotalSuply.Float
+							if tokenSupply.Cmp(big.NewFloat(1)) <= 0 {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							memePoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "meme_pool_address"))
+							tokenAddress, _, err := s.GetEthereumClient(ctx, m.NetworkID).
+								DeployAGENTToken(
+									s.GetAddressPrk(memePoolAddress),
+									m.Name,
+									m.Ticker,
+									models.ConvertBigFloatToWei(tokenSupply, 18),
+									memePoolAddress,
+								)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							err = daos.GetDBMainCtx(ctx).Model(&m).
+								Updates(
+									map[string]interface{}{
+										"token_address": strings.ToLower(tokenAddress),
+										"token_supply":  numeric.NewBigFloatFromFloat(tokenSupply),
+										"status":        models.MemeStatusCreated,
+									},
+								).Error
+							if err != nil {
+								return errs.NewError(err)
+							}
+							_ = s.ReplyAferAutoCreateAgent(daos.GetDBMainCtx(ctx), m.AgentInfo.RefTweetID, m.AgentInfo.ID)
+						}
+					}
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *Service) JobMemeAddPositionInternal(ctx context.Context) error {
 	err := s.JobRunCheck(
 		ctx,
@@ -208,6 +335,7 @@ func (s *Service) JobMemeAddPositionInternal(ctx context.Context) error {
 							models.ARBITRUM_CHAIN_ID,
 							models.BSC_CHAIN_ID,
 							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
 						},
 					},
 					"status = ?":             {models.MemeStatusCreated},
@@ -229,7 +357,7 @@ func (s *Service) JobMemeAddPositionInternal(ctx context.Context) error {
 				} else {
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 			}
 			return retErr
 		},
@@ -356,7 +484,7 @@ func (s *Service) MemeAddPositionInternal(ctx context.Context, memeID uint) erro
 						}
 						//update cache pair detail
 						go func() {
-							time.Sleep(5 * time.Second)
+							time.Sleep(10 * time.Second)
 							_ = s.MemeEventsByTransaction(context.Background(), meme.NetworkID, addPoolTxHash)
 						}()
 					}
@@ -401,7 +529,7 @@ func (s *Service) JobMemeRemovePositionInternal(ctx context.Context) error {
 				} else {
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 			}
 			return retErr
 		},
@@ -470,7 +598,7 @@ func (s *Service) MemeRemovePositionInternal(ctx context.Context, memeID uint) e
 				}
 				// snapshot token holder
 				go func() {
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 					_ = s.MemeEventsByTransaction(context.Background(), meme.NetworkID, removePoolTxHash)
 				}()
 			}
@@ -497,6 +625,7 @@ func (s *Service) JobMemeAddPositionUniswap(ctx context.Context) error {
 							models.ARBITRUM_CHAIN_ID,
 							models.BSC_CHAIN_ID,
 							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
 						},
 					},
 					"status = ?":             {models.MemeStatusRemovePoolLelve1},
@@ -521,7 +650,7 @@ func (s *Service) JobMemeAddPositionUniswap(ctx context.Context) error {
 				} else {
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
-				time.Sleep(5 * time.Second)
+				time.Sleep(10 * time.Second)
 			}
 			return retErr
 		},
@@ -664,9 +793,6 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 									},
 								)
-								if err != nil {
-									return errs.NewError(err)
-								}
 							}
 						case models.BSC_CHAIN_ID:
 							{
@@ -690,9 +816,6 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 									},
 								)
-								if err != nil {
-									return errs.NewError(err)
-								}
 							}
 						case models.APE_CHAIN_ID:
 							{
@@ -715,9 +838,78 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 									},
 								)
-								if err != nil {
-									return errs.NewError(err)
-								}
+							}
+						case models.AVALANCHE_C_CHAIN_ID:
+							{
+								addPoolTxHash, err = s.GetEthereumClient(ctx, meme.NetworkID).AvaxNonfungiblePositionManagerMint(
+									s.conf.GetConfigKeyString(meme.NetworkID, "uniswap_position_mamanger_address"),
+									s.GetAddressPrk(
+										memePoolAddress,
+									),
+									helpers.HexToAddress(s.conf.GetConfigKeyString(meme.NetworkID, "weth9_contract_address")),
+									sqrtPriceX96,
+									&avaxnonfungiblepositionmanager.INonfungiblePositionManagerMintParams{
+										Token0:         helpers.HexToAddress(token0),
+										Token1:         helpers.HexToAddress(token1),
+										Fee:            big.NewInt(poolFee),
+										TickLower:      tickLower,
+										TickUpper:      tickUpper,
+										Amount0Desired: amount0,
+										Amount1Desired: amount1,
+										Amount0Min:     big.NewInt(0),
+										Amount1Min:     big.NewInt(0),
+										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Recipient:      helpers.HexToAddress(memePoolAddress),
+									},
+								)
+							}
+						case models.POLYGON_CHAIN_ID:
+							{
+								addPoolTxHash, err = s.GetEthereumClient(ctx, meme.NetworkID).PolygonNonfungiblePositionManagerMint(
+									s.conf.GetConfigKeyString(meme.NetworkID, "uniswap_position_mamanger_address"),
+									s.GetAddressPrk(
+										memePoolAddress,
+									),
+									helpers.HexToAddress(s.conf.GetConfigKeyString(meme.NetworkID, "weth9_contract_address")),
+									sqrtPriceX96,
+									&polygonnonfungiblepositionmanager.INonfungiblePositionManagerMintParams{
+										Token0:         helpers.HexToAddress(token0),
+										Token1:         helpers.HexToAddress(token1),
+										Fee:            big.NewInt(poolFee),
+										TickLower:      tickLower,
+										TickUpper:      tickUpper,
+										Amount0Desired: amount0,
+										Amount1Desired: amount1,
+										Amount0Min:     big.NewInt(0),
+										Amount1Min:     big.NewInt(0),
+										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Recipient:      helpers.HexToAddress(memePoolAddress),
+									},
+								)
+							}
+						case models.ZKSYNC_CHAIN_ID:
+							{
+								addPoolTxHash, err = s.GetEthereumClient(ctx, meme.NetworkID).ZksyncNonfungiblePositionManagerMint(
+									s.conf.GetConfigKeyString(meme.NetworkID, "uniswap_position_mamanger_address"),
+									s.GetAddressPrk(
+										memePoolAddress,
+									),
+									helpers.HexToAddress(s.conf.GetConfigKeyString(meme.NetworkID, "weth9_contract_address")),
+									sqrtPriceX96,
+									&zksyncnonfungiblepositionmanager.INonfungiblePositionManagerMintParams{
+										Token0:         helpers.HexToAddress(token0),
+										Token1:         helpers.HexToAddress(token1),
+										Fee:            big.NewInt(poolFee),
+										TickLower:      tickLower,
+										TickUpper:      tickUpper,
+										Amount0Desired: amount0,
+										Amount1Desired: amount1,
+										Amount0Min:     big.NewInt(0),
+										Amount1Min:     big.NewInt(0),
+										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Recipient:      helpers.HexToAddress(memePoolAddress),
+									},
+								)
 							}
 						default:
 							{
@@ -747,7 +939,7 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 						go func() {
 							_ = s.CreateMemeNotifications(daos.GetDBMainCtx(ctx), 0, meme.ID, 0, models.NotiTypeNewMeme, fmt.Sprintf("%s_%d", models.NotiTypeNewMeme, meme.ID))
 							_ = s.CacheMemeDetail(daos.GetDBMainCtx(ctx), meme.TokenAddress)
-							time.Sleep(5 * time.Second)
+							time.Sleep(10 * time.Second)
 							_ = s.MemeEventsByTransaction(context.Background(), meme.NetworkID, addPoolTxHash)
 						}()
 					}
@@ -968,7 +1160,7 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 // 				}
 // 				//update cache pair detail
 // 				go func() {
-// 					time.Sleep(5 * time.Second)
+// 					time.Sleep(10 * time.Second)
 // 					_ = s.MemeEventsByTransaction(context.Background(), meme.NetworkID, addPoolTxHash)
 // 				}()
 // 			}
@@ -1071,6 +1263,7 @@ func (s *Service) JobRetryAddPool1(ctx context.Context) error {
 			memes, err := s.dao.FindMeme(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
+					"updated_at <= ?":        {time.Now().Add(-5 * time.Minute)},
 					"status = ?":             {models.MemeStatusCreated},
 					"add_pool1_tx_hash != ?": {""},
 					"network_id in (?)": {
@@ -1079,6 +1272,7 @@ func (s *Service) JobRetryAddPool1(ctx context.Context) error {
 							models.ARBITRUM_CHAIN_ID,
 							models.BSC_CHAIN_ID,
 							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
 						},
 					},
 				},
@@ -1113,6 +1307,67 @@ func (s *Service) JobRetryAddPool1(ctx context.Context) error {
 					}
 				} else {
 					s.MemeEventsByTransaction(ctx, meme.NetworkID, meme.AddPool1TxHash)
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) JobRetryAddPool2(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobRetryAddPool1",
+		func() error {
+			memes, err := s.dao.FindMeme(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"updated_at <= ?":        {time.Now().Add(-5 * time.Minute)},
+					"status = ?":             {models.MemeStatusRemovePoolLelve1},
+					"add_pool2_tx_hash != ?": {""},
+					"network_id in (?)": {
+						[]uint64{
+							models.BASE_CHAIN_ID,
+							models.ARBITRUM_CHAIN_ID,
+							models.BSC_CHAIN_ID,
+							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
+						},
+					},
+				},
+				map[string][]interface{}{},
+				[]string{
+					"rand()",
+				},
+				0,
+				10,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var retErr error
+			for _, meme := range memes {
+				err = s.GetEVMClient(ctx, meme.NetworkID).TransactionConfirmed(meme.AddPool2TxHash)
+				if err != nil {
+					fmt.Println(err.Error())
+					if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "transaction is not Successful") {
+						err = daos.GetDBMainCtx(ctx).
+							Model(meme).
+							Updates(
+								map[string]interface{}{
+									"add_pool2_tx_hash": "",
+								},
+							).
+							Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
+				} else {
+					s.MemeEventsByTransaction(ctx, meme.NetworkID, meme.AddPool2TxHash)
 				}
 			}
 			return retErr

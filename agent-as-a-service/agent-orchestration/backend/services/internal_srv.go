@@ -220,6 +220,24 @@ func (s *Service) GetListUserTweets(ctx context.Context, twitterID, paginationTo
 	return nil, errs.NewError(errs.ErrBadRequest)
 }
 
+func (s *Service) GetListUserTweetsAll(ctx context.Context, twitterID, paginationToken string, maxResults int) (*twitter.UserTimeline, error) {
+	twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"twitter_id = ?": {s.conf.TokenTwiterIdForInternal},
+		},
+		map[string][]interface{}{},
+		false,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+
+	if twitterInfo != nil {
+		return s.GetAllUserTweetsFromTwitterInfoToken(ctx, twitterInfo, twitterID, paginationToken, maxResults)
+	}
+	return nil, errs.NewError(errs.ErrBadRequest)
+}
+
 func (s *Service) GetListUserTweetsV1(ctx context.Context, twitterID, paginationToken string, maxResults int) (*twitter.UserTimeline, error) {
 	twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
@@ -254,6 +272,18 @@ func (s *Service) GetListUserTweetsFromTwitterInfoToken(ctx context.Context, twi
 
 	if twitterInfo != nil {
 		twitterUser, err := s.twitterWrapAPI.GetListUserTweets(twitterID, paginationToken, twitterInfo.AccessToken, maxResults)
+		if err != nil {
+			return nil, errs.NewTwitterError(err)
+		}
+		return twitterUser, nil
+	}
+	return nil, errs.NewError(errs.ErrBadRequest)
+}
+
+func (s *Service) GetAllUserTweetsFromTwitterInfoToken(ctx context.Context, twitterInfo *models.TwitterInfo, twitterID, paginationToken string, maxResults int) (*twitter.UserTimeline, error) {
+
+	if twitterInfo != nil {
+		twitterUser, err := s.twitterWrapAPI.GetAllUserTweets(twitterID, paginationToken, twitterInfo.AccessToken, maxResults)
 		if err != nil {
 			return nil, errs.NewTwitterError(err)
 		}

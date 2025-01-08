@@ -121,10 +121,8 @@ type Config struct {
 	AiImageApiKey string `json:"ai_image_api_key"`
 	CMCApiKey     string `json:"cmc_api_key"`
 	Ai            struct {
-		ChatUrl         string `json:"chat_url"`
-		ReadImageUrl    string `json:"read_image_url"`
-		AutoAgentApiUrl string `json:"auto_agent_api_url"`
-		ApiKey          string `json:"api_key"`
+		ChatUrl string `json:"chat_url"`
+		ApiKey  string `json:"api_key"`
 	} `json:"ai"`
 	Lighthouse struct {
 		Apikey string `json:"apikey"`
@@ -171,7 +169,8 @@ type Config struct {
 		TradeNews      string `json:"trade_news"`
 		TradeAnalytic  string `json:"trade_analytic"`
 	} `json:"tool_lists"`
-	Networks map[string]map[string]string `json:"networks"`
+	Networks                    map[string]map[string]string `json:"networks"`
+	AdminAutoCreateAgentAddress string                       `json:"admin_auto_create_agent_address"`
 }
 
 func (cf *Config) ExistsedConfigKey(networkID uint64, name string) bool {

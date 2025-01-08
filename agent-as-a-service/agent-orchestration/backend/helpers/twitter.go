@@ -65,7 +65,11 @@ func SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(originText string, 
 		return []string{originText}
 	}
 	text := strings.TrimSuffix(originText, ".")
-	sentences := strings.Split(text, ".")
+	strs := strings.Split(text, ". ")
+	var sentences []string
+	for _, str := range strs {
+		sentences = append(sentences, strings.Split(str, ".\n")...)
+	}
 	var result []string
 	var line string
 	for _, sentence := range sentences {

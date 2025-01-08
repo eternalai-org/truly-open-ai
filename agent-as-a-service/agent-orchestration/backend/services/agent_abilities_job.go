@@ -128,6 +128,7 @@ func (s *Service) JobAgentSnapshotPostActionExecuted(ctx context.Context) error 
 								agent_infos.reply_latest_time is null
 								or agent_infos.reply_latest_time <= adddate(now(), interval -agent_infos.action_delayed second)
 								or agent_snapshot_post_actions.tool_set in ('follow', 'reply_mentions', 'inscribe_tweet', 'post', 'trading', 'post_search', 'trade_analytics', 'trade_analytics_twitter')
+								or agent_snapshot_post_actions.type in ('reply_multi_unlimited')
 								or agent_snapshot_missions.not_delay = true
 							)
 					)`: {},
@@ -371,9 +372,12 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint) e
 						SystemPrompt:           agentInfo.SystemPrompt,
 						SystemReminder:         agentInfo.SystemReminder,
 						Toolset:                string(mission.ToolSet),
-						AgentBaseModel:         agentInfo.AgentBaseModel,
+						AgentBaseModel:         mission.AgentBaseModel,
 						ReactMaxSteps:          mission.ReactMaxSteps,
 						InferTxHash:            inferTxHash,
+					}
+					if inferPost.AgentBaseModel == "" {
+						inferPost.AgentBaseModel = agentInfo.AgentBaseModel
 					}
 					if inferPost.Fee.Float.Cmp(big.NewFloat(0)) <= 0 {
 						return errs.NewError(errs.ErrBadRequest)
