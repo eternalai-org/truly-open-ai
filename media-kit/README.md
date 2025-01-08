@@ -1,4 +1,4 @@
-![EternalAI](banner.webp)
+![EternalAI](banner.jpg)
 
 # EternalAI brand-kit
 
