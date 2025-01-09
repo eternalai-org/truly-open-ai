@@ -11,8 +11,8 @@ Download and install Miniconda by following the instructions here: [Miniconda In
 ### 2. Clone the repository
 
 ```
-git clone https://github.com/eternalai-org/dagent.git
-cd dagent
+git clone https://github.com/eternalai-org/eternal-ai.git
+cd eternal-ai/examples/decentralized-chatgpt
 ```
 
 ### 3. Activate Conda Environment
