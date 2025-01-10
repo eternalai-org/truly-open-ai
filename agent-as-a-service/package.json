@@ -1,0 +1,43 @@
+{
+  "name": "eternal-dagent",
+  "version": "1.0.0",
+  "main": "index.js",
+  "engines": {
+    "node": ">=23.3.0"
+  },
+  "scripts": {
+    "build": "lerna run build --stream",
+    "clean": "lerna clean && rimraf node_modules plugins/**/node_modules plugins/**/dist",
+    "start:client": "node scripts/client-start.js",
+    "build:pkgs": "node scripts/build.js",
+    "build:pkg": "node scripts/build.js <package-name>",
+    "task": "node scripts/task.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "private": true,
+  "workspaces": [
+    "plugins/*",
+    "client/*",
+    "dagent",
+    "characters"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^9.17.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "inquirer": "^12.2.0",
+    "lerna": "^8.1.9",
+    "rimraf": "^5.0.10",
+    "typescript-eslint": "^8.18.1"
+  }
+}

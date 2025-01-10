@@ -1,0 +1,28 @@
+{
+  "name": "@eternal-dagent/plugin-farcaster",
+  "version": "1.0.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TrustlessComputer/eternal-dagent"
+  },
+  "homepage": "https://eternalai.org/",
+  "private": false,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "watch": "tsup --watch",
+    "publish:skip-tag": "yarn publish --no-git-tag-version"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@eternal-dagent/core": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "resolutions": {}
+}
