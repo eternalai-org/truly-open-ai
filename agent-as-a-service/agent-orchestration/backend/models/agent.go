@@ -78,7 +78,7 @@ func GetAgentFee(networkID uint64) numeric.BigFloat {
 		}
 	case TRON_CHAIN_ID:
 		{
-			return numeric.NewBigFloatFromString("180")
+			return numeric.NewBigFloatFromString("50")
 		}
 	default:
 		{
