@@ -44,7 +44,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 						or (network_id = ? and eai_balance >= 299.9)
 						or (network_id = ? and eai_balance >= 174.9)
 						or (network_id = ? and eai_balance >= 569.9)
-						or (network_id = ? and eai_balance >= 749.9)
+						or (network_id = ? and eai_balance >= 549.9)
 						or (network_id not in (?) and eai_balance >= 9.99)
 						or (ref_tweet_id > 0 and eai_balance >= 0)
 					)
@@ -153,8 +153,8 @@ func (s *Service) AgentMintNft(ctx context.Context, agentInfoID uint) error {
 					}
 				case models.TRON_CHAIN_ID:
 					{
-						checkFee = numeric.NewFloatFromString("1999.9")
-						mintFee = numeric.NewFloatFromString("200")
+						checkFee = numeric.NewFloatFromString("549.9")
+						mintFee = numeric.NewFloatFromString("50")
 					}
 				default:
 					{
