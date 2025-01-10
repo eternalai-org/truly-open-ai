@@ -129,13 +129,18 @@ func SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(originText string, 
 	return result
 }
 
-func ReplyTweetByToken(bearerToken string, replyContent string, tweetID string) (string, error) {
+func ReplyTweetByToken(bearerToken string, replyContent string, tweetID, mediaID string) (string, error) {
 	url := "https://api.twitter.com/2/tweets"
 	payload := map[string]interface{}{
 		"text": replyContent,
 		"reply": map[string]string{
 			"in_reply_to_tweet_id": tweetID,
 		},
+	}
+	if mediaID != "" {
+		payload["media"] = map[string]interface{}{
+			"media_ids": []string{mediaID},
+		}
 	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {

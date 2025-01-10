@@ -242,7 +242,7 @@ func (s *Service) SyncAgentInfoDetailByAgentID(ctx context.Context, agentID stri
 }
 
 func (s *Service) GetAgentSummaryReport(ctx context.Context) ([]*models.AgentInfo, error) {
-	agent, err := s.dao.GetAgentSummaryReport(daos.GetDBMainCtx(ctx))
+	agent, err := s.dao.GetAgentSummaryReport(daos.GetDBMainCtx(ctx), s.conf.HiddenNetworkId)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
@@ -895,6 +895,7 @@ func (s *Service) JobUpdateAgentImage(ctx context.Context) error {
 						and twitter_info_id = 0
 						and agent_nft_minted = 1
 						and network_id not in (43338, 0, 1, 45761, 222671)
+						and network_id = 43114
 						and system_prompt != ""
 					`: {},
 				},

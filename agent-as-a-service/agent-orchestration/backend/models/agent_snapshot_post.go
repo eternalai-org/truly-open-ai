@@ -19,6 +19,7 @@ const (
 	AgentSnapshotPostStatusInferFailed      AgentSnapshotPostStatus = "infer_failed"
 	AgentSnapshotPostStatusInferExpired     AgentSnapshotPostStatus = "infer_expired"
 	AgentSnapshotPostStatusInferResolved    AgentSnapshotPostStatus = "infer_resolved"
+	AgentSnapshotPostStatusInferRefund      AgentSnapshotPostStatus = "infer_refund"
 	AgentSnapshotPostStatusReplied          AgentSnapshotPostStatus = "replied"
 	AgentSnapshotPostStatusRepliedError     AgentSnapshotPostStatus = "replied_error"
 	AgentSnapshotPostStatusRepliedCancelled AgentSnapshotPostStatus = "replied_cancelled"
@@ -57,6 +58,8 @@ type AgentSnapshotPost struct {
 	AgentBaseModel          string
 	ReactMaxSteps           int `gorm:"default:0"`
 	AgentSnapshotPostAction []*AgentSnapshotPostAction
+	OrgTweetID              string
+	Token                   string
 }
 
 type (
@@ -151,6 +154,7 @@ const (
 	ToolsetTypeTradeNews               ToolsetType = "trade_news"
 	ToolsetTypeTradeAnalytics          ToolsetType = "trade_analytics"
 	ToolsetTypeTradeAnalyticsOnTwitter ToolsetType = "trade_analytics_twitter"
+	ToolsetTypeTradeAnalyticsMentions  ToolsetType = "trade_analytics_mentions"
 
 	ToolsetTypeReplyMentionsFarcaster    ToolsetType = "reply_mentions_farcaster"
 	ToolsetTypeReplyNonMentionsFarcaster ToolsetType = "reply_non_mentions_farcaster"

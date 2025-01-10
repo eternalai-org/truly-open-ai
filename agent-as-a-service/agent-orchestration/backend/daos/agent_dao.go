@@ -1,6 +1,9 @@
 package daos
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/jinzhu/gorm"
@@ -191,17 +194,25 @@ func (d *DAO) GetAgentSocialInfo(tx *gorm.DB, agentID uint) (*models.AgentTokenI
 	return &rs, nil
 }
 
-func (d *DAO) GetAgentSummaryReport(tx *gorm.DB) ([]*models.AgentInfo, error) {
+func (d *DAO) GetAgentSummaryReport(tx *gorm.DB, hiddenNetworkId string) ([]*models.AgentInfo, error) {
 	var rs []*models.AgentInfo
+	hideNetwork := []int64{43338, 222672, 0}
+	if hiddenNetworkId != "" {
+		hiddenNetworkIdArry := strings.Split(hiddenNetworkId, ",")
+		for _, s := range hiddenNetworkIdArry {
+			i64, _ := strconv.ParseInt(s, 10, 64)
+			hideNetwork = append(hideNetwork, i64)
+		}
+	}
 	query := tx.Raw(`
 		select network_id, network_name,  count(1) counts
 		from agent_infos
 		where 1=1
-		and network_id not in (43338, 222672, 0)
+		and network_id not in (?)
 		and deleted_at is null
 		group by network_id, network_name
 		order by counts desc
-	`)
+	`, hideNetwork)
 
 	if err := query.Scan(&rs).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

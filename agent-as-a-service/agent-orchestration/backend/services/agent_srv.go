@@ -1072,13 +1072,14 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 					}
 				}
 
+				listTestToolSet := strings.Split(s.conf.ListTestToolSet, ",")
 				if len(listID) > 0 {
-					err = tx.Where("agent_info_id = ? and id not in (?)", agentInfo.ID, listID).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and id not in (?) and tool_set not in (?)", agentInfo.ID, listID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
 				} else {
-					err = tx.Where("agent_info_id = ?", agentInfo.ID).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and tool_set not in (?)", agentInfo.ID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -1127,10 +1128,10 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 							mission.Tokens = item.Tokens
 						}
 						if item.UserPrompt == "" {
-							mission.UserPrompt = `Conduct a technical analysis of ${token_symbol} price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`
+							mission.UserPrompt = fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, item.Tokens)
 						}
 						toolList = strings.ReplaceAll(toolList, "{api_key}", s.conf.InternalApiKey)
-						toolList = strings.ReplaceAll(toolList, "{token}", item.Tokens)
+						toolList = strings.ReplaceAll(toolList, "{token_symbol}", item.Tokens)
 
 						mission.ToolList = toolList
 					} else if item.ToolList != "" {

@@ -18,14 +18,13 @@ func (s *Service) JobUpdateMarketPrice(ctx context.Context) error {
 		ctx,
 		"JobUpdateMarketPrice",
 		func() error {
-
 			eaiPrice, err := s.cmc.GetQuotesLatest([]string{"31401"})
 			if err != nil {
 				return err
 			}
 			_ = s.CreateOrUpdateTokenPrice(ctx, "EAI", numeric.NewBigFloatFromFloat(&eaiPrice["31401"].Quote.USD.Price.Float))
 
-			//BTC - ETH price
+			// BTC - ETH price
 			mapSymbol := map[string]string{
 				"BTCUSDT": "BTC",
 				"ETHUSDT": "ETH",
@@ -133,7 +132,10 @@ func (s *Service) DisableJobs() {
 }
 
 func (s *Service) RunJobs(ctx context.Context) error {
-	//
+	gocron.Every(60).Second().Do(func() {
+		s.KnowledgeUsecase.WatchWalletChange(context.Background())
+	})
+
 	gocron.Every(30).Second().Do(func() {
 		s.JobScanEventsByChain(context.Background())
 	})
@@ -161,6 +163,10 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	// create agent
 	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateAgent, context.Background())
 	gocron.Every(1).Minute().Do(s.JobAgentTwitterPostCreateAgent, context.Background())
+
+	// NBS trading analyze
+	// gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForTA, context.Background())
+	// gocron.Every(1).Minute().Do(s.JobAgentTwitterPostTA, context.Background())
 
 	gocron.Every(5).Minute().Do(s.JobUpdateOffchainAutoOutput, context.Background())
 	gocron.Every(30).Minute().Do(s.JobUpdateOffchainAutoOutput3Hour, context.Background())
@@ -219,6 +225,12 @@ func (s *Service) RunJobs(ctx context.Context) error {
 					return nil
 				},
 			)
+		},
+	)
+
+	gocron.Every(30).Second().Do(
+		func() {
+			s.JobCreateAgentKnowledgeBase(context.Background())
 		},
 	)
 

@@ -18,6 +18,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/evmapi"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -92,7 +93,7 @@ func (c *Client) BlockByNumber(blockNumber int64) (*zktypes.Block, error) {
 	return block, nil
 }
 
-func (c *Client) GetLastBlock() (int64, error) {
+func (c *Client) GetLastBlockNumber() (int64, error) {
 	client, err := c.getZkClient()
 	if err != nil {
 		return 0, err
@@ -404,10 +405,6 @@ func (c *Client) GetCachedGasPriceAndTipCap() (*big.Int, *big.Int, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	fmt.Println(
-		cachedGasPrice.Text(10),
-		cachedGasTipCap.Text(10),
-	)
 	return cachedGasPrice, cachedGasTipCap, nil
 }
 
@@ -786,4 +783,26 @@ func (c *Client) Transact(contractAddr string, prkHex string, dataBytes []byte, 
 		return "", err
 	}
 	return hash.Hex(), nil
+}
+
+func (c *Client) ConvertAddressForIn(addr string) string {
+	chainID, err := c.GetChainID()
+	if err != nil {
+		panic(err)
+	}
+	if chainID == 728126428 {
+		return trxapi.AddrTronToEvm(addr)
+	}
+	return addr
+}
+
+func (c *Client) ConvertAddressForOut(addr string) string {
+	chainID, err := c.GetChainID()
+	if err != nil {
+		panic(err)
+	}
+	if chainID == 728126428 {
+		return trxapi.AddrEvmToTron(addr)
+	}
+	return addr
 }

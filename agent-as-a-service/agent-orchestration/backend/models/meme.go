@@ -23,6 +23,7 @@ const (
 	MemeStatusReachedMC        MemeStatus = "reached_mc"
 	MemeStatusRemovePoolLelve1 MemeStatus = "remove_pool_1"
 	MemeStatusAddPoolLevel2    MemeStatus = "add_pool_2"
+	MemeStatusAddPoolExternal  MemeStatus = "add_pool_external"
 
 	MemeCatStatusProcessing MemeCatStatus = "processing"
 	MemeCatStatusDone       MemeCatStatus = "done"
@@ -98,6 +99,8 @@ type Meme struct {
 	ReqSyncAt         *time.Time
 	SyncAt            *time.Time
 	Fee               numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	ExternalTradeUrl  string
+	NumRetries        int `gorm:"default:0"`
 
 	//
 	Percent                float64 `gorm:"-"`

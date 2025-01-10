@@ -31,6 +31,7 @@ const (
 	CONTEXT_ERROR_DATA      = "context_error_data"
 	CONTEXT_STACKTRACE_DATA = "context_stacktrace_data"
 )
+
 const (
 	userIDKey         = "id"
 	userEmailKey      = "email"
@@ -146,6 +147,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	w.body.Write(b)
 	return w.ResponseWriter.Write(b)
 }
+
 func (w bodyLogWriter) WriteString(s string) (int, error) {
 	w.body.WriteString(s)
 	return w.ResponseWriter.WriteString(s)

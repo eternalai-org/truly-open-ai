@@ -282,5 +282,6 @@
     "farcaster_reply": "",
     "trade_news": "",
     "trade_analytic": ""
-  }
+  },
+  "secret_key": ""
 }

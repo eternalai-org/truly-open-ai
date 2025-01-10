@@ -70,7 +70,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.ExternalWallet)(nil),
 		(*models.ExternalWalletOrder)(nil),
 		(*models.ExternalWalletToken)(nil),
-		//meme
+		// meme
 		(*models.Meme)(nil),
 
 		(*models.ApiSubscriptionPackage)(nil),
@@ -92,7 +92,14 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.ModelPredictHistory)(nil),
 		(*models.ModelMarket)(nil),
 		(*models.JobConfig)(nil),
+		(*models.KnowledgeBase)(nil),
+		(*models.KnowledgeBaseFile)(nil),
+		//missionstore
+		(*models.MissionStore)(nil),
+		(*models.MissionStoreRating)(nil),
+		(*models.MissionStoreHistory)(nil),
 	}
+
 	if err := db.AutoMigrate(allTables...).Error; err != nil {
 		return err
 	}

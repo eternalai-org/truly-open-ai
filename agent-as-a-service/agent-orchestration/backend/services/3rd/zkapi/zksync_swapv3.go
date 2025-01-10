@@ -1,7 +1,8 @@
-package ethapi
+package zkapi
 
 import (
 	"context"
+	"encoding/hex"
 	"math/big"
 	"strings"
 	"time"
@@ -11,19 +12,21 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/zksync-sdk/zksync2-go/accounts"
+	zktypes "github.com/zksync-sdk/zksync2-go/types"
+	"github.com/zksync-sdk/zksync2-go/utils"
 )
 
 func (c *Client) ZksyncNonfungiblePositionManagerMint(contractAddr string, privateHex string, weth9 common.Address, sqrtPriceX96 *big.Int, params *zksyncnonfungiblepositionmanager.INonfungiblePositionManagerMintParams) (string, error) {
-	addressHex, prk, err := c.parsePrkAuth(privateHex)
+	addressHex, _, err := c.parsePrkAuth(privateHex)
 	if err != nil {
 		return "", err
 	}
-	gasPrice, gasTipCap, err := c.GetCachedGasPriceAndTipCap()
+	gasPrice, err := c.getGasPrice()
 	if err != nil {
 		return "", err
 	}
-	client, err := c.getClient()
+	client, err := c.getZkClient()
 	if err != nil {
 		return "", err
 	}
@@ -39,6 +42,7 @@ func (c *Client) ZksyncNonfungiblePositionManagerMint(contractAddr string, priva
 					params.Token0.Hex(),
 					privateHex,
 					contractAddr,
+					false,
 				)
 				if err != nil {
 					return "", err
@@ -64,6 +68,7 @@ func (c *Client) ZksyncNonfungiblePositionManagerMint(contractAddr string, priva
 					params.Token1.Hex(),
 					privateHex,
 					contractAddr,
+					false,
 				)
 				if err != nil {
 					return "", err
@@ -145,12 +150,40 @@ func (c *Client) ZksyncNonfungiblePositionManagerMint(contractAddr string, priva
 	if err != nil {
 		return "", err
 	}
-	gasNumber, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
-		From:  addressHex,
-		To:    &contractAddress,
-		Data:  dataBytes,
-		Value: value,
-	})
+	gasNumber, err := client.EstimateGasL2(
+		context.Background(),
+		zktypes.CallMsg{
+			CallMsg: ethereum.CallMsg{
+				From:  addressHex,
+				To:    &contractAddress,
+				Data:  dataBytes,
+				Value: value,
+			},
+			Meta: &zktypes.Eip712Meta{
+				GasPerPubdata:   utils.NewBig(utils.DefaultGasPerPubdataLimit.Int64()),
+				PaymasterParams: c.PaymasterParams(),
+			},
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	preparedTx, err := c.PopulateTransaction(
+		context.Background(),
+		addressHex,
+		accounts.Transaction{
+			GasFeeCap: gasPrice,
+			GasTipCap: gasPrice,
+			Gas:       gasNumber,
+			To:        &contractAddress,
+			Value:     value,
+			Data:      dataBytes,
+			Meta: &zktypes.Eip712Meta{
+				GasPerPubdata:   utils.NewBig(utils.DefaultGasPerPubdataLimit.Int64()),
+				PaymasterParams: c.PaymasterParams(),
+			},
+		},
+	)
 	if err != nil {
 		return "", err
 	}
@@ -158,27 +191,22 @@ func (c *Client) ZksyncNonfungiblePositionManagerMint(contractAddr string, priva
 	if err != nil {
 		return "", err
 	}
-	nonceAt, err := client.PendingNonceAt(context.Background(), addressHex)
+	prkBytes, err := hex.DecodeString(privateHex)
 	if err != nil {
 		return "", err
 	}
-	rawTx := types.NewTx(&types.DynamicFeeTx{
-		ChainID:   big.NewInt(int64(chainID)),
-		Nonce:     nonceAt,
-		GasFeeCap: gasPrice,
-		GasTipCap: gasTipCap,
-		Gas:       (gasNumber * 12 / 10),
-		To:        &contractAddress,
-		Value:     value,
-		Data:      dataBytes,
-	})
-	signedTx, err := types.SignTx(rawTx, types.NewLondonSigner(big.NewInt(int64(chainID))), prk)
+	baseSigner, err := accounts.NewBaseSignerFromRawPrivateKey(prkBytes, int64(chainID))
 	if err != nil {
 		return "", err
 	}
-	err = client.SendTransaction(context.Background(), signedTx)
+	signer := accounts.Signer(baseSigner)
+	rawTx, err := c.SignTransaction(signer, preparedTx)
 	if err != nil {
 		return "", err
 	}
-	return signedTx.Hash().Hex(), nil
+	hash, err := client.SendRawTransaction(context.Background(), rawTx)
+	if err != nil {
+		return "", err
+	}
+	return hash.Hex(), nil
 }

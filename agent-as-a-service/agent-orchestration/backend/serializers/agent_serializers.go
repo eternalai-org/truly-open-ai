@@ -111,6 +111,7 @@ type AgentInfoResp struct {
 	TotalMintTwinFee          float64                `json:"total_mint_twin_fee"`
 	EstimateTwinDoneTimestamp *time.Time             `json:"estimate_twin_done_timestamp"`
 	TokenDesc                 string                 `json:"token_desc"`
+	ExternalChartUrl          string                 `json:"external_chart_url"`
 }
 
 type AgentTwitterPostResp struct {
@@ -183,6 +184,8 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		AgentType:      m.AgentType,
 		UserTwitterIDs: m.UserTwitterIds,
 		Tokens:         m.Tokens,
+		AgentBaseModel: m.AgentBaseModel,
+		ToolList:       m.ToolList,
 	}
 	return resp
 }
@@ -235,6 +238,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		InferenceCalls:       m.InferenceCalls,
 		TotalMintTwinFee:     m.TotalMintTwinFee,
 		TokenDesc:            m.TokenDesc,
+		ExternalChartUrl:     m.ExternalChartUrl,
 	}
 
 	if m.NftTokenImage != "" {
@@ -287,6 +291,10 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 			resp.Meme = NewMemeFromTokenInfoResp(m.TokenInfo, m)
 			if m.Meme != nil {
 				resp.Meme.Supply = m.Meme.Supply
+				if m.Meme.Status == models.MemeStatusAddPoolExternal {
+					resp.Meme.Status = string(models.MemeStatusAddPoolExternal)
+					resp.Meme.TradeUrl = m.Meme.ExternalTradeUrl
+				}
 			}
 		} else if m.Meme != nil {
 			resp.Meme = NewMemeRespWithToken(m.Meme)

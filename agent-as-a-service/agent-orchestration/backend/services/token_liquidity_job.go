@@ -36,6 +36,7 @@ func (s *Service) JobAgentDeployToken(ctx context.Context) error {
 				map[string][]interface{}{
 					"memes.status = ?": {models.MemeStatusNew},
 					"memes.fee = 0 or agent_infos.eai_balance >= memes.fee or agent_infos.ref_tweet_id > 0": {},
+					"memes.num_retries < 3": {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -51,8 +52,24 @@ func (s *Service) JobAgentDeployToken(ctx context.Context) error {
 			for _, meme := range memes {
 				err = s.AgentDeployToken(ctx, meme.ID)
 				if err != nil {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": gorm.Expr("num_retries + ?", 1),
+								"updated_at":  time.Now(),
+							},
+						).Error
 					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
 				} else {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": 0,
+								"updated_at":  time.Now(),
+							},
+						).Error
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
 				time.Sleep(10 * time.Second)
@@ -152,8 +169,9 @@ func (s *Service) AgentDeployToken(ctx context.Context, memeID uint) error {
 							Updates(
 								map[string]interface{}{
 									"token_address": strings.ToLower(tokenAddress),
-									"token_supply":  numeric.NewBigFloatFromFloat(tokenSupply),
+									"total_suply":   numeric.NewBigFloatFromFloat(tokenSupply),
 									"status":        models.MemeStatusCreated,
+									"num_retries":   0,
 								},
 							).Error
 						if err != nil {
@@ -206,9 +224,10 @@ func (s *Service) JobRetryAgentDeployToken(ctx context.Context) error {
 			memes, err := s.dao.FindMeme(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"updated_at <= ?":       {time.Now().Add(-5 * time.Minute)},
+					"updated_at <= ?":       {time.Now().Add(-120 * time.Minute)},
 					"status = ?":            {models.MemeStatusCreated},
 					"add_pool1_tx_hash = ?": {""},
+					"num_retries < 3":       {},
 					"network_id in (?)": {
 						[]uint64{
 							models.BASE_CHAIN_ID,
@@ -234,7 +253,23 @@ func (s *Service) JobRetryAgentDeployToken(ctx context.Context) error {
 				err = s.RetryAgentDeployToken(ctx, meme.ID)
 				if err != nil {
 					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": gorm.Expr("num_retries + ?", 1),
+								"updated_at":  time.Now(),
+							},
+						).Error
 				} else {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": 0,
+								"updated_at":  time.Now(),
+							},
+						).Error
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
 				time.Sleep(10 * time.Second)
@@ -300,7 +335,7 @@ func (s *Service) RetryAgentDeployToken(ctx context.Context, memeID uint) error 
 								Updates(
 									map[string]interface{}{
 										"token_address": strings.ToLower(tokenAddress),
-										"token_supply":  numeric.NewBigFloatFromFloat(tokenSupply),
+										"total_suply":   numeric.NewBigFloatFromFloat(tokenSupply),
 										"status":        models.MemeStatusCreated,
 									},
 								).Error
@@ -340,6 +375,7 @@ func (s *Service) JobMemeAddPositionInternal(ctx context.Context) error {
 					},
 					"status = ?":             {models.MemeStatusCreated},
 					"add_pool1_tx_hash = ''": {},
+					"num_retries < 3":        {},
 				},
 				map[string][]interface{}{},
 				[]string{},
@@ -354,7 +390,23 @@ func (s *Service) JobMemeAddPositionInternal(ctx context.Context) error {
 				err = s.MemeAddPositionInternal(ctx, meme.ID)
 				if err != nil {
 					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": gorm.Expr("num_retries + ?", 1),
+								"updated_at":  time.Now(),
+							},
+						).Error
 				} else {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": 0,
+								"updated_at":  time.Now(),
+							},
+						).Error
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
 				time.Sleep(10 * time.Second)
@@ -510,6 +562,7 @@ func (s *Service) JobMemeRemovePositionInternal(ctx context.Context) error {
 					"status = ?":                {models.MemeStatusReachedMC},
 					"remove_pool1_tx_hash = ''": {},
 					`network_id != ?`:           {models.BITTENSOR_CHAIN_ID},
+					"num_retries < 3":           {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -525,8 +578,24 @@ func (s *Service) JobMemeRemovePositionInternal(ctx context.Context) error {
 			for _, meme := range memes {
 				err = s.MemeRemovePositionInternal(ctx, meme.ID)
 				if err != nil {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": gorm.Expr("num_retries + ?", 1),
+								"updated_at":  time.Now(),
+							},
+						).Error
 					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
 				} else {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": 0,
+								"updated_at":  time.Now(),
+							},
+						).Error
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
 				time.Sleep(10 * time.Second)
@@ -631,6 +700,7 @@ func (s *Service) JobMemeAddPositionUniswap(ctx context.Context) error {
 					"status = ?":             {models.MemeStatusRemovePoolLelve1},
 					"add_pool2_tx_hash = ''": {},
 					`network_id != ?`:        {models.BITTENSOR_CHAIN_ID},
+					"num_retries < 3":        {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -644,10 +714,25 @@ func (s *Service) JobMemeAddPositionUniswap(ctx context.Context) error {
 			}
 			var retErr error
 			for _, meme := range memes {
-				err = s.MemeAddPositionUniswap(ctx, meme.ID)
 				if err != nil {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": gorm.Expr("num_retries + ?", 1),
+								"updated_at":  time.Now(),
+							},
+						).Error
 					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
 				} else {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": 0,
+								"updated_at":  time.Now(),
+							},
+						).Error
 					s.DeleteFilterAddrs(ctx, meme.NetworkID)
 				}
 				time.Sleep(10 * time.Second)
@@ -889,7 +974,7 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 							}
 						case models.ZKSYNC_CHAIN_ID:
 							{
-								addPoolTxHash, err = s.GetEthereumClient(ctx, meme.NetworkID).ZksyncNonfungiblePositionManagerMint(
+								addPoolTxHash, err = s.GetZkClient(ctx, meme.NetworkID).ZksyncNonfungiblePositionManagerMint(
 									s.conf.GetConfigKeyString(meme.NetworkID, "uniswap_position_mamanger_address"),
 									s.GetAddressPrk(
 										memePoolAddress,
@@ -1263,7 +1348,7 @@ func (s *Service) JobRetryAddPool1(ctx context.Context) error {
 			memes, err := s.dao.FindMeme(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"updated_at <= ?":        {time.Now().Add(-5 * time.Minute)},
+					"updated_at <= ?":        {time.Now().Add(-120 * time.Minute)},
 					"status = ?":             {models.MemeStatusCreated},
 					"add_pool1_tx_hash != ?": {""},
 					"network_id in (?)": {
@@ -1325,7 +1410,7 @@ func (s *Service) JobRetryAddPool2(ctx context.Context) error {
 			memes, err := s.dao.FindMeme(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"updated_at <= ?":        {time.Now().Add(-5 * time.Minute)},
+					"updated_at <= ?":        {time.Now().Add(-120 * time.Minute)},
 					"status = ?":             {models.MemeStatusRemovePoolLelve1},
 					"add_pool2_tx_hash != ?": {""},
 					"network_id in (?)": {

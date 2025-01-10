@@ -73,6 +73,7 @@ func (s *Service) CreateMeme(ctx context.Context, address string, networkID uint
 	case models.BASE_CHAIN_ID,
 		models.ARBITRUM_CHAIN_ID,
 		models.BSC_CHAIN_ID,
+		models.AVALANCHE_C_CHAIN_ID,
 		models.APE_CHAIN_ID:
 		{
 			meme.Fee = numeric.NewBigFloatFromString("50")

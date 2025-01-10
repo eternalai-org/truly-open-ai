@@ -44,6 +44,7 @@ const (
 	ABSTRACT_TESTNET_CHAIN_ID = uint64(11124)
 	BITTENSOR_CHAIN_ID        = uint64(964)
 	DUCK_CHAIN_ID             = uint64(5545)
+	TRON_CHAIN_ID             = uint64(728126428)
 )
 
 var CHAIN_NAME_MAP = map[uint64]string{
@@ -61,8 +62,9 @@ var CHAIN_NAME_MAP = map[uint64]string{
 	APE_CHAIN_ID:              "APECHAIN",
 	AVALANCHE_C_CHAIN_ID:      "AVALANCHE C-CHAIN",
 	ABSTRACT_TESTNET_CHAIN_ID: "ABSTRACT TESTNET",
-	BITTENSOR_CHAIN_ID:        "ABSTRACT TESTNET",
+	BITTENSOR_CHAIN_ID:        "BITTENSOR",
 	DUCK_CHAIN_ID:             "DUCK CHAIN",
+	TRON_CHAIN_ID:             "TRON",
 }
 
 var MAP_CHAIN_ID_TO_LLM_MODEL = map[uint64]map[string]string{

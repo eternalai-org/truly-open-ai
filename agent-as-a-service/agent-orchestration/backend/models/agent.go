@@ -70,11 +70,15 @@ func GetAgentFee(networkID uint64) numeric.BigFloat {
 		}
 	case SOLANA_CHAIN_ID:
 		{
-			return numeric.NewBigFloatFromString("5")
+			return numeric.NewBigFloatFromString("50")
 		}
 	case BITTENSOR_CHAIN_ID:
 		{
-			return numeric.NewBigFloatFromString("55")
+			return numeric.NewBigFloatFromString("100")
+		}
+	case TRON_CHAIN_ID:
+		{
+			return numeric.NewBigFloatFromString("180")
 		}
 	default:
 		{
@@ -153,6 +157,7 @@ type AgentInfo struct {
 	TokenNetworkID       uint64
 	Priority             int
 	ETHAddress           string `gorm:"index"`
+	TronAddress          string `gorm:"index"`
 	SOLAddress           string `gorm:"index"`
 	SummaryLatestTime    *time.Time
 	EaiBalance           numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
@@ -204,6 +209,7 @@ type AgentInfo struct {
 	Adjectives           string `gorm:"type:longtext"`
 	SocialInfo           string `gorm:"type:longtext"`
 	InferenceCalls       int64
+	ExternalChartUrl     string
 
 	TwinTwitterUsernames    string           `gorm:"index"` // multiple twitter usernames, split by ,
 	TwinStatus              TwinStatus       `gorm:"index"`
@@ -512,6 +518,7 @@ const (
 	AgentEaiTopupTypeDeposit         AgentEaiTopupType = "deposit"
 	AgentEaiTopupTypeFaucet          AgentEaiTopupType = "faucet"
 	AgentEaiTopupTypeSpent           AgentEaiTopupType = "spent"
+	AgentEaiTopupTypeRefund          AgentEaiTopupType = "refund"
 	AgentEaiTopupTypeRefundTrainFail AgentEaiTopupType = "refund_train_fail"
 
 	AgentEaiTopupStatusNew        AgentEaiTopupStatus = "new"

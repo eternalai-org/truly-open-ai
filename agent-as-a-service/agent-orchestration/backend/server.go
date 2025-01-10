@@ -33,6 +33,7 @@ func main() {
 	conf := configs.GetConfig()
 	logger.NewLogger("image-ai-api", conf.Env, "", true)
 	defer logger.Sync()
+
 	defer func() {
 		if err := recover(); err != nil {
 			panicErr := errors.Wrap(errors.New("panic start server"), string(debug.Stack()))
@@ -46,28 +47,22 @@ func main() {
 			return
 		}
 	}()
+
 	jobEnabled := strings.ToLower(os.Getenv("JOB")) == "true" || os.Getenv("JOB") == "1" || conf.Job
 	migrateDBMain := databases.MigrateDBMain
 	if os.Getenv("DEV") == "true" || !jobEnabled {
 		migrateDBMain = nil
 	}
-	dbMain, err := databases.Init(
-		conf.DbURL,
-		migrateDBMain,
-		5,
-		20,
-		conf.Debug,
-	)
+
+	dbMain, err := databases.Init(conf.DbURL, migrateDBMain, 5, 20, conf.Debug)
 	if err != nil {
-		panic(err)
+		logger.Fatal("databases.Init", zap.Error(err))
 	}
 
 	daos.InitDBConn(
 		dbMain,
 	)
-	var (
-		s = services.NewService(conf)
-	)
+	s := services.NewService(conf)
 	r := gin.New()
 	srv := apis.NewServer(
 		r,
@@ -96,23 +91,24 @@ func main() {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
-	quit := make(chan os.Signal)
+
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutdown Server ...")
 	srv.DisableJobs()
+
 	delayTs := 10 * time.Second
 	if jobEnabled {
 		delayTs = 30 * time.Second
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), delayTs)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
 	}
-	select {
-	case <-ctx.Done():
-		log.Println("timeout of 30s seconds.")
-	}
-	log.Println("Server exiting")
+
+	<-ctx.Done()
+	log.Println("Server is down")
 }

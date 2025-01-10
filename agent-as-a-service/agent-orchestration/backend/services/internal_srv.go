@@ -480,6 +480,13 @@ func (s *Service) TweetIsMention(tweets twitter.TweetObj, username string) bool 
 				return true
 			}
 		}
+
+		if len(tweets.Entities.Mentions) > 2 {
+			lastMentions = tweets.Entities.Mentions[len(tweets.Entities.Mentions)-3]
+			if strings.EqualFold(lastMentions.UserName, username) {
+				return true
+			}
+		}
 	}
 	return false
 }

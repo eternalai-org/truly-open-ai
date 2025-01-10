@@ -44,6 +44,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 						or (network_id = ? and eai_balance >= 299.9)
 						or (network_id = ? and eai_balance >= 174.9)
 						or (network_id = ? and eai_balance >= 569.9)
+						or (network_id = ? and eai_balance >= 1999.9)
 						or (network_id not in (?) and eai_balance >= 9.99)
 						or (ref_tweet_id > 0 and eai_balance >= 0)
 					)
@@ -52,11 +53,13 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 						models.ETHEREUM_CHAIN_ID,
 						models.SOLANA_CHAIN_ID,
 						models.BITTENSOR_CHAIN_ID,
+						models.TRON_CHAIN_ID,
 						[]uint64{
 							models.SHARDAI_CHAIN_ID,
 							models.ETHEREUM_CHAIN_ID,
 							models.SOLANA_CHAIN_ID,
 							models.BITTENSOR_CHAIN_ID,
+							models.TRON_CHAIN_ID,
 						},
 					},
 					"network_id in (?)": {
@@ -74,6 +77,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 							models.AVALANCHE_C_CHAIN_ID,
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
+							models.TRON_CHAIN_ID,
 						},
 					},
 				},
@@ -146,6 +150,11 @@ func (s *Service) AgentMintNft(ctx context.Context, agentInfoID uint) error {
 					{
 						checkFee = numeric.NewFloatFromString("569.9")
 						mintFee = numeric.NewFloatFromString("20.0")
+					}
+				case models.TRON_CHAIN_ID:
+					{
+						checkFee = numeric.NewFloatFromString("1999.9")
+						mintFee = numeric.NewFloatFromString("200")
 					}
 				default:
 					{
@@ -241,7 +250,7 @@ func (s *Service) AgentMintNft(ctx context.Context, agentInfoID uint) error {
 
 func (s *Service) JobRetryAgentMintNft(ctx context.Context) error {
 	err := s.JobRunCheck(
-		ctx, "JobAgentMintNft",
+		ctx, "JobRetryAgentMintNft",
 		func() error {
 			agents, err := s.dao.FindAgentInfo(
 				daos.GetDBMainCtx(ctx),
@@ -311,7 +320,7 @@ func (s *Service) JobRetryAgentMintNft(ctx context.Context) error {
 
 func (s *Service) JobRetryAgentMintNftError(ctx context.Context) error {
 	err := s.JobRunCheck(
-		ctx, "JobAgentMintNft",
+		ctx, "JobRetryAgentMintNftError",
 		func() error {
 			agents, err := s.dao.FindAgentInfo(
 				daos.GetDBMainCtx(ctx),
@@ -333,6 +342,7 @@ func (s *Service) JobRetryAgentMintNftError(ctx context.Context) error {
 							models.AVALANCHE_C_CHAIN_ID,
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
+							models.TRON_CHAIN_ID,
 						},
 					},
 				},
@@ -422,7 +432,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
 							),
 						),
-						common.HexToAddress(agentInfo.Creator),
+						helpers.HexToAddress(agentInfo.Creator),
 						"ipfs://"+uriHash,
 						[]byte("ipfs://"+systemContentHash),
 						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
@@ -437,7 +447,6 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
-								"enabled":                true,
 								"reply_enabled":          true,
 							},
 						).Error
@@ -454,7 +463,52 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
 								"agent_contract_id":      strconv.FormatUint(uint64(agentInfo.ID), 10),
 								"status":                 models.AssistantStatusReady,
-								"enabled":                true,
+								"reply_enabled":          true,
+							},
+						).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			case models.TRON_CHAIN_ID:
+				{
+					agentUriData := models.AgentUriData{
+						Name: agentInfo.AgentName,
+					}
+					agentUriBytes, err := json.Marshal(agentUriData)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					uriHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "uri"), agentUriBytes)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					systemContentHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "system_content"), []byte(agentInfo.SystemPrompt))
+					if err != nil {
+						return errs.NewError(err)
+					}
+					txHash, err := s.trxApi.SystemPromptManagerMint(
+						s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+						s.GetAddressPrk(
+							helpers.RandomInStrings(
+								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
+							),
+						),
+						common.HexToAddress(agentInfo.Creator),
+						"ipfs://"+uriHash,
+						[]byte("ipfs://"+systemContentHash),
+						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = daos.GetDBMainCtx(ctx).
+						Model(agentInfo).
+						Updates(
+							map[string]interface{}{
+								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+								"mint_hash":              txHash,
+								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,
 							},
 						).Error
@@ -513,11 +567,10 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 			Updates(
 				map[string]interface{}{
 					"agent_name":        info.Name,
-					"creator":           strings.ToLower(event.Minter.Hex()),
+					"creator":           s.GetEVMClient(ctx, networkID).ConvertAddressForOut(strings.ToLower(event.Minter.Hex())),
 					"agent_contract_id": event.TokenId.String(),
 					"status":            models.AssistantStatusReady,
 					"system_prompt":     string(systemPrompt),
-					"enabled":           true,
 					"reply_enabled":     true,
 				},
 			).Error
@@ -542,7 +595,7 @@ func (s *Service) SystemPromptManagerAgentDataUpdateEvent(ctx context.Context, n
 	err = daos.GetDBMainCtx(ctx).
 		Model(&models.AgentInfo{}).
 		Where("network_id = ?", networkID).
-		Where("agent_contract_address = ?", strings.ToLower(event.Raw.Address.Hex())).
+		Where("agent_contract_address = ?", s.GetEVMClient(ctx, networkID).ConvertAddressForOut(strings.ToLower(event.Raw.Address.Hex()))).
 		Where("agent_contract_id = ?", contractAgentID).
 		Updates(
 			map[string]interface{}{
@@ -570,7 +623,7 @@ func (s *Service) SystemPromptManagerAgentURIUpdateEvent(ctx context.Context, ne
 	err = daos.GetDBMainCtx(ctx).
 		Model(&models.AgentInfo{}).
 		Where("network_id = ?", networkID).
-		Where("agent_contract_address = ?", strings.ToLower(event.Raw.Address.Hex())).
+		Where("agent_contract_address = ?", s.GetEVMClient(ctx, networkID).ConvertAddressForOut(strings.ToLower(event.Raw.Address.Hex()))).
 		Where("agent_contract_id = ?", contractAgentID).
 		Updates(
 			map[string]interface{}{

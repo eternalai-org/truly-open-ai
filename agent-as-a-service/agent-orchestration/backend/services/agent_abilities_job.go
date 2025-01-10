@@ -37,8 +37,8 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 				map[string][]interface{}{
 					"agent_snapshot_missions.enabled = 1":       {},
 					"agent_snapshot_missions.reply_enabled = 1": {},
-					"agent_snapshot_missions.tool_set != ''":    {},
-					"agent_snapshot_missions.interval_sec > 0":  {},
+					"agent_snapshot_missions.tool_set != '' and agent_snapshot_missions.tool_set != 'trade_analytics_mentions' ": {},
+					"agent_snapshot_missions.interval_sec > 0": {},
 					`(
 						agent_infos.agent_type = 1
 						and agent_infos.agent_contract_id != ''
@@ -73,6 +73,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.BITTENSOR_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
+							models.TRON_CHAIN_ID,
 						},
 					},
 					`agent_snapshot_missions.infer_at is null
@@ -90,7 +91,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 			var retErr error
 			if len(missions) > 0 {
 				for _, mission := range missions {
-					err = s.AgentSnapshotPostCreate(ctx, mission.ID)
+					err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "")
 					if err != nil {
 						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, mission.ID))
 					}
@@ -127,7 +128,7 @@ func (s *Service) JobAgentSnapshotPostActionExecuted(ctx context.Context) error 
 						and (
 								agent_infos.reply_latest_time is null
 								or agent_infos.reply_latest_time <= adddate(now(), interval -agent_infos.action_delayed second)
-								or agent_snapshot_post_actions.tool_set in ('follow', 'reply_mentions', 'inscribe_tweet', 'post', 'trading', 'post_search', 'trade_analytics', 'trade_analytics_twitter')
+								or agent_snapshot_post_actions.tool_set in ('follow', 'reply_mentions', 'inscribe_tweet', 'post', 'trading', 'post_search', 'trade_analytics', 'trade_analytics_twitter', 'trade_analytics_mentions')
 								or agent_snapshot_post_actions.type in ('reply_multi_unlimited')
 								or agent_snapshot_missions.not_delay = true
 							)
@@ -296,7 +297,7 @@ func (s *Service) JobAgentSnapshotPostActionCancelled(ctx context.Context) error
 	return nil
 }
 
-func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint) error {
+func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, orgTweetID, tokenSymbol string) error {
 	err := s.JobRunCheck(
 		ctx,
 		fmt.Sprintf("AgentSnapshotPostCreate_%d", missionID),
@@ -342,9 +343,14 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint) e
 					headSystemPrompt = strings.ReplaceAll(headSystemPrompt, "<token_address>", agentInfo.TokenAddress)
 
 					inferTxHash := helpers.RandomBigInt(12).Text(16)
-					if mission.ToolList != "" && (mission.ToolSet == models.ToolsetTypeTradeAnalytics || mission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter) {
+					if mission.ToolList != "" &&
+						(mission.ToolSet == models.ToolsetTypeTradeAnalytics || mission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter || mission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions) {
+						if mission.Tokens == "" {
+							mission.Tokens = tokenSymbol
+						}
 						mission.UserPrompt = strings.ReplaceAll(mission.UserPrompt, "{token_symbol}", mission.Tokens)
 						mission.ToolList = strings.ReplaceAll(mission.ToolList, "{ref_id}", inferTxHash)
+						mission.ToolList = strings.ReplaceAll(mission.ToolList, "{token_symbol}", mission.Tokens)
 					}
 
 					inferItems := []*models.UserAgentInferDataItem{
@@ -375,6 +381,8 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint) e
 						AgentBaseModel:         mission.AgentBaseModel,
 						ReactMaxSteps:          mission.ReactMaxSteps,
 						InferTxHash:            inferTxHash,
+						OrgTweetID:             orgTweetID,
+						Token:                  tokenSymbol,
 					}
 					if inferPost.AgentBaseModel == "" {
 						inferPost.AgentBaseModel = agentInfo.AgentBaseModel
@@ -466,7 +474,7 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 		func() error {
 			var snapshotPostAction *models.AgentSnapshotPostAction
 			contentLines := []string{}
-			var accessToken string
+			var accessToken, missionToolSet string
 			postIds := []string{}
 			err := daos.WithTransaction(
 				daos.GetDBMainCtx(ctx),
@@ -526,6 +534,7 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 								models.ToolsetTypeTrading,
 								models.ToolsetTypeTradeAnalytics,
 								models.ToolsetTypeTradeAnalyticsOnTwitter,
+								models.ToolsetTypeTradeAnalyticsMentions,
 								models.ToolsetType("post_search"):
 								{
 									isPassed = true
@@ -539,6 +548,7 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 								}
 							}
 						}
+						missionToolSet = string(agentSnapshotMission.ToolSet)
 						switch snapshotPostAction.Type {
 						case models.AgentSnapshotPostActionTypeReplyMultiUnlimited:
 							{
@@ -694,15 +704,35 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 										models.AgentSnapshotPostActionTypeReplyMulti,
 										models.AgentSnapshotPostActionTypeReplyMultiUnlimited:
 										{
-											maxChars, err := s.GetTwitterPostMaxChars(tx, snapshotPostAction.AgentInfoID)
-											if err != nil {
-												return errs.NewError(err)
+											if snapshotPostAction.ToolSet == models.ToolsetTypeTradeAnalyticsMentions {
+												err = json.Unmarshal([]byte(snapshotPostAction.Content), &contentLines)
+												if err != nil {
+													return errs.NewError(err)
+												}
+												contentLines = helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(strings.Join(contentLines, ". "), 250)
+												if len(contentLines) <= 0 {
+													return errs.NewError(errs.ErrBadRequest)
+												}
+											} else {
+												maxChars, err := s.GetTwitterPostMaxChars(tx, snapshotPostAction.AgentInfoID)
+												if err != nil {
+													return errs.NewError(err)
+												}
+												contentLines = helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(snapshotPostAction.Content, int(maxChars))
+												if len(contentLines) <= 0 {
+													return errs.NewError(errs.ErrBadRequest)
+												}
 											}
-											contentLines = helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(snapshotPostAction.Content, int(maxChars))
-											if len(contentLines) <= 0 {
-												return errs.NewError(errs.ErrBadRequest)
+
+											mediaID := ""
+											if snapshotPostAction.TokenImageUrl != "" {
+												mediaID, err = s.twitterAPI.UploadImage(models.GetImageUrl(snapshotPostAction.TokenImageUrl), []string{snapshotPostAction.AgentTwitterId})
+												if err != nil {
+													return errs.NewError(err)
+												}
 											}
-											refId, err = helpers.ReplyTweetByToken(agent.TwitterInfo.AccessToken, strings.TrimPrefix(contentLines[0], "."), snapshotPostAction.Tweetid)
+
+											refId, err = helpers.ReplyTweetByToken(agent.TwitterInfo.AccessToken, strings.TrimPrefix(contentLines[0], "."), snapshotPostAction.Tweetid, mediaID)
 											if err != nil {
 												errText = err.Error()
 											}
@@ -897,7 +927,6 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 													errText = "not supported"
 												}
 											}
-
 										}
 									default:
 										{
@@ -952,15 +981,25 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 						models.AgentSnapshotPostActionTypeCreateToken,
 						models.AgentSnapshotPostActionTypeTweetV2:
 						{
-							postId, err = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[0])
+							postId, err = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[0], "")
 							if err != nil {
 								return errs.NewError(err)
 							}
 						}
 					case models.AgentSnapshotPostActionTypeReply,
-						models.AgentSnapshotPostActionTypeTweetMulti:
+						models.AgentSnapshotPostActionTypeTweetMulti,
+						models.AgentSnapshotPostActionTypeReplyMulti:
 						{
-							postId, _ = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[len(postIds)-1])
+							postId, _ = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[len(postIds)-1], "")
+						}
+					case models.AgentSnapshotPostActionTypeTradeHold, models.AgentSnapshotPostActionTypeTradeBuy, models.AgentSnapshotPostActionTypeTradeSell, models.AgentSnapshotPostActionTypeTradeAnalytic:
+						{
+							switch missionToolSet {
+							case string(models.ToolsetTypeTradeAnalyticsOnTwitter):
+								{
+									postId, _ = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[len(postIds)-1], "")
+								}
+							}
 						}
 					}
 					if postId != "" {
@@ -987,16 +1026,152 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 	return nil
 }
 
+// func (s *Service) RetryAgentSnapshotPostActionExecuted(ctx context.Context, twitterPostID uint) error {
+// 	err := s.JobRunCheck(
+// 		ctx,
+// 		fmt.Sprintf("RetryAgentSnapshotPostActionExecuted_%d", twitterPostID),
+// 		func() error {
+// 			var snapshotPostAction *models.AgentSnapshotPostAction
+// 			contentLines := []string{}
+// 			var accessToken, missionToolSet string
+// 			postIds := []string{}
+// 			err := daos.WithTransaction(
+// 				daos.GetDBMainCtx(ctx),
+// 				func(tx *gorm.DB) error {
+// 					var err error
+// 					snapshotPostAction, err = s.dao.FirstAgentSnapshotPostActionByID(
+// 						tx,
+// 						twitterPostID,
+// 						map[string][]interface{}{},
+// 						true,
+// 					)
+// 					if err != nil {
+// 						return errs.NewError(err)
+// 					}
+// 					if snapshotPostAction.Status == models.AgentSnapshotPostActionStatusDone {
+// 						agent, err := s.dao.FirstAgentInfoByID(
+// 							tx,
+// 							snapshotPostAction.AgentInfoID,
+// 							map[string][]interface{}{
+// 								"TwitterInfo": {},
+// 							},
+// 							false,
+// 						)
+// 						if err != nil {
+// 							return errs.NewError(err)
+// 						}
+// 						//
+// 						var refId, errText string
+// 						agentSnapshotMission, err := s.dao.FirstAgentSnapshotMissionByID(
+// 							tx,
+// 							snapshotPostAction.AgentSnapshotMissionID,
+// 							map[string][]interface{}{},
+// 							false,
+// 						)
+// 						if err != nil {
+// 							return errs.NewError(err)
+// 						}
+// 						missionToolSet = string(agentSnapshotMission.ToolSet)
+// 						accessToken = agent.TwitterInfo.AccessToken
+// 						switch snapshotPostAction.Type {
+// 						case models.AgentSnapshotPostActionTypeTradeHold, models.AgentSnapshotPostActionTypeTradeBuy, models.AgentSnapshotPostActionTypeTradeSell, models.AgentSnapshotPostActionTypeTradeAnalytic:
+// 							{
+// 								switch missionToolSet {
+// 								case string(models.ToolsetTypeTradeAnalyticsOnTwitter):
+// 									{
+// 										err = json.Unmarshal([]byte(snapshotPostAction.Content), &contentLines)
+// 										if err != nil {
+// 											return errs.NewError(err)
+// 										}
+// 										contentLines = helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(strings.Join(contentLines, ". "), 250)
+// 										if len(contentLines) <= 0 {
+// 											return errs.NewError(errs.ErrBadRequest)
+// 										}
+// 										refId = snapshotPostAction.RefId
+// 										postIds = append(postIds, refId)
+// 									}
+// 								default:
+// 									{
+// 										return errs.NewError(errs.ErrBadRequest)
+// 									}
+// 								}
+// 							}
+// 						default:
+// 							{
+// 								return errs.NewError(errs.ErrBadRequest)
+// 							}
+// 						}
+// 						_ = errText
+// 					}
+// 					return nil
+// 				},
+// 			)
+// 			if err != nil {
+// 				return errs.NewError(err)
+// 			}
+// 			if len(postIds) > 0 && len(contentLines) > 1 {
+// 				for i := 1; i < len(contentLines); i++ {
+// 					var postId string
+// 					switch snapshotPostAction.Type {
+// 					case models.AgentSnapshotPostActionTypeTweet,
+// 						models.AgentSnapshotPostActionTypeQuoteTweet,
+// 						models.AgentSnapshotPostActionTypeCreateToken,
+// 						models.AgentSnapshotPostActionTypeTweetV2:
+// 						{
+// 							postId, err = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[0])
+// 							if err != nil {
+// 								return errs.NewError(err)
+// 							}
+// 						}
+// 					case models.AgentSnapshotPostActionTypeReply,
+// 						models.AgentSnapshotPostActionTypeTweetMulti:
+// 						{
+// 							postId, _ = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[len(postIds)-1])
+// 						}
+// 					case models.AgentSnapshotPostActionTypeTradeHold, models.AgentSnapshotPostActionTypeTradeBuy, models.AgentSnapshotPostActionTypeTradeSell, models.AgentSnapshotPostActionTypeTradeAnalytic:
+// 						{
+// 							switch missionToolSet {
+// 							case string(models.ToolsetTypeTradeAnalyticsOnTwitter):
+// 								{
+// 									postId, _ = helpers.ReplyTweetByToken(accessToken, contentLines[i], postIds[len(postIds)-1])
+// 								}
+// 							}
+// 						}
+// 					}
+// 					if postId != "" {
+// 						postIds = append(postIds, postId)
+// 						err = daos.
+// 							GetDBMainCtx(ctx).
+// 							Model(&models.AgentSnapshotPostAction{}).
+// 							Where("id = ?", twitterPostID).
+// 							UpdateColumn("ref_ids", strings.Join(postIds, ",")).
+// 							Error
+// 						if err != nil {
+// 							return errs.NewError(err)
+// 						}
+// 					}
+// 				}
+// 			}
+// 			return nil
+// 		},
+// 	)
+// 	if err != nil {
+// 		return errs.NewError(err)
+// 	}
+// 	_ = s.UpdateOffchainAutoOutputV2(ctx, twitterPostID)
+// 	return nil
+// }
+
 func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID uint) error {
 	err := s.JobRunCheck(
 		ctx,
-		fmt.Sprintf("UpdateOffchainAutoOutputV2_%d", snapshotPostID),
+		fmt.Sprintf("UpdateOffchainAutoOutputV2x_%d", snapshotPostID),
 		func() error {
 			var rs bool
 			err := s.RedisCached(
-				fmt.Sprintf("UpdateOffchainAutoOutputV2_%d", snapshotPostID),
+				fmt.Sprintf("UpdateOffchainAutoOutputV2x_%d", snapshotPostID),
 				false,
-				5*time.Hour,
+				15*time.Minute,
 				&rs,
 				func() (interface{}, error) {
 					err := func() error {
@@ -1052,16 +1227,26 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 											return errs.NewError(err)
 										}
 									}
-									if aiOutput["state"].(string) == "done" {
-										err = daos.GetDBMainCtx(ctx).
-											Model(agentSnapshotPost).
-											UpdateColumn("status", models.AgentSnapshotPostStatusInferResolved).
-											Error
-										if err != nil {
-											return errs.NewError(err)
+									state, ok := aiOutput["state"]
+									if ok {
+										if state.(string) == "done" {
+											err = daos.GetDBMainCtx(ctx).
+												Model(agentSnapshotPost).
+												UpdateColumn("status", models.AgentSnapshotPostStatusInferResolved).
+												Error
+											if err != nil {
+												return errs.NewError(err)
+											}
+											go s.UpdateDataMissionTradeAnalytics(context.Background(), agentSnapshotPost.ID)
+										} else if state.(string) == "error" {
+											err = daos.GetDBMainCtx(ctx).
+												Model(agentSnapshotPost).
+												UpdateColumn("status", models.AgentSnapshotPostStatusInferFailed).
+												Error
+											if err != nil {
+												return errs.NewError(err)
+											}
 										}
-
-										go s.UpdateDataMissionTradeAnalytics(context.Background(), agentSnapshotPost.ID)
 									}
 								}
 							} else {
@@ -1121,7 +1306,7 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 				if snapshotPost != nil && snapshotPost.AgentInfo != nil &&
 					snapshotPost.ResponseId != "" &&
 					snapshotPost.AgentSnapshotMission != nil &&
-					snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter {
+					(snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter || snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions) {
 					if snapshotPost.Status == models.AgentSnapshotPostStatusInferResolved {
 						var rs struct {
 							Data struct {
@@ -1153,7 +1338,10 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 						}
 
 						listThough := []string{}
-						for _, item := range rs.Data.AIOutput.Scratchpad {
+						for i, item := range rs.Data.AIOutput.Scratchpad {
+							if i == 0 {
+								continue
+							}
 							if item.Thought != "" {
 								listThough = append(listThough, item.Thought)
 							}
@@ -1165,21 +1353,36 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 
 						j, err := json.Marshal(listThough)
 
+						imageUrl := ""
+						if snapshotPost.Token != "" {
+							imageUrl, _ = s.GetChartImage(ctx, snapshotPost.Token)
+						}
+						action := &models.AgentSnapshotPostAction{
+							NetworkID:              snapshotPost.AgentInfo.NetworkID,
+							AgentInfoID:            snapshotPost.AgentInfo.ID,
+							AgentSnapshotPostID:    snapshotPostID,
+							AgentSnapshotMissionID: snapshotPost.AgentSnapshotMissionID,
+							AgentTwitterId:         snapshotPost.AgentInfo.TwitterID,
+							Content:                string(j),
+							Status:                 status,
+							ScheduleAt:             helpers.TimeNow(),
+							ReqRefID:               snapshotPost.InferTxHash,
+							ToolSet:                snapshotPost.AgentSnapshotMission.ToolSet,
+							Tweetid:                snapshotPost.OrgTweetID,
+							TokenImageUrl:          imageUrl,
+						}
+
+						if snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter {
+							action.Type = models.AgentSnapshotPostActionTypeTweetMulti
+						} else {
+							if snapshotPost.OrgTweetID == "" {
+								action.Status = models.AgentSnapshotPostActionStatusInvalid
+							}
+							action.Type = models.AgentSnapshotPostActionTypeReplyMulti
+						}
+
 						err = s.dao.Create(
-							daos.GetDBMainCtx(ctx),
-							&models.AgentSnapshotPostAction{
-								NetworkID:              snapshotPost.AgentInfo.NetworkID,
-								AgentInfoID:            snapshotPost.AgentInfo.ID,
-								AgentSnapshotPostID:    snapshotPostID,
-								AgentSnapshotMissionID: snapshotPost.AgentSnapshotMissionID,
-								AgentTwitterId:         snapshotPost.AgentInfo.TwitterID,
-								Type:                   models.AgentSnapshotPostActionTypeTradeAnalytic,
-								Content:                string(j),
-								Status:                 status,
-								ScheduleAt:             helpers.TimeNow(),
-								ReqRefID:               snapshotPost.InferTxHash,
-								ToolSet:                snapshotPost.AgentSnapshotMission.ToolSet,
-							},
+							daos.GetDBMainCtx(ctx), action,
 						)
 						if err != nil {
 							return errs.NewError(err)
@@ -1240,7 +1443,7 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 					map[string][]interface{}{
 						"agent_snapshot_posts.created_at <= adddate(now(), interval -5 minute)": {},
 						"agent_snapshot_posts.created_at >= adddate(now(), interval -12 hour)":  {},
-						"agent_snapshot_missions.tool_set = ?":                                  {models.ToolsetTypeTradeAnalyticsOnTwitter},
+						"agent_snapshot_missions.tool_set in (?)":                               {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions}},
 						"agent_snapshot_posts.status = ?":                                       {models.AgentSnapshotPostStatusInferSubmitted},
 					},
 					map[string][]interface{}{},
@@ -1300,9 +1503,27 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"status = ?": {models.AgentSnapshotPostStatusInferSubmitted},
 					},
 					map[string][]interface{}{},
-					[]string{
-						"updated_at asc",
-					}, 0, 999,
+					[]string{}, 0, 999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, m := range ms {
+					err := s.UpdateOffchainAutoOutputV2(ctx, m.ID)
+					if err != nil {
+						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+					}
+				}
+			}
+			{
+				ms, err := s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"created_at <= adddate(now(), interval -24 hour)": {},
+						"created_at >= adddate(now(), interval -36 hour)": {},
+						"status = ?": {models.AgentSnapshotPostStatusInferSubmitted},
+					},
+					map[string][]interface{}{},
+					[]string{}, 0, 999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1322,9 +1543,7 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"agent_snapshot_post_id > 0":                     {},
 					},
 					map[string][]interface{}{},
-					[]string{
-						"updated_at asc",
-					}, 0, 999,
+					[]string{}, 0, 999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1344,9 +1563,7 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"agent_snapshot_post_id > 0":                     {},
 					},
 					map[string][]interface{}{},
-					[]string{
-						"updated_at asc",
-					}, 0, 999,
+					[]string{}, 0, 999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1483,4 +1700,74 @@ func (s *Service) BatchPromptItemV2(ctx context.Context, agentInfo *models.Agent
 		request.ResponseId = id
 	}
 	return request, nil
+}
+
+func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapshotPostID uint) error {
+	err := s.JobRunCheck(
+		ctx,
+		fmt.Sprintf("AgentSnapshotPostStatusInferRefund_%d", snapshotPostID),
+		func() error {
+			err := daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					inferPost, err := s.dao.FirstAgentSnapshotPostByID(
+						tx,
+						snapshotPostID,
+						map[string][]interface{}{
+							"AgentInfo":            {},
+							"AgentSnapshotMission": {},
+						},
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if inferPost != nil &&
+						inferPost.Status == models.AgentSnapshotPostStatusInferFailed &&
+						inferPost.AgentInfo != nil &&
+						inferPost.AgentSnapshotMission != nil {
+						//
+						agentInfo := inferPost.AgentInfo
+						agentSnapshotMission := inferPost.AgentSnapshotMission
+						//
+						err = tx.Model(inferPost).
+							UpdateColumn("status", models.AgentSnapshotPostStatusInferRefund).
+							Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+						err = tx.Model(agentInfo).
+							UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
+							Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+						_ = s.dao.Create(
+							tx,
+							&models.AgentEaiTopup{
+								NetworkID:      agentInfo.NetworkID,
+								EventId:        fmt.Sprintf("agent_trigger_refund_%d", inferPost.ID),
+								AgentInfoID:    agentInfo.ID,
+								Type:           models.AgentEaiTopupTypeRefund,
+								Amount:         inferPost.Fee,
+								Status:         models.AgentEaiTopupStatusDone,
+								DepositAddress: agentInfo.ETHAddress,
+								ToAddress:      agentInfo.ETHAddress,
+								Toolset:        string(agentSnapshotMission.ToolSet),
+							},
+						)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

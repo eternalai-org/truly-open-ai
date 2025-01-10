@@ -10,6 +10,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/google/uuid"
@@ -378,6 +379,7 @@ func (s *Service) AgentTwitterPostCreateAgent(ctx context.Context, twitterPostID
 								return errs.NewError(err)
 							}
 							agentInfo.ETHAddress = strings.ToLower(ethAddress)
+							agentInfo.TronAddress = trxapi.AddrEvmToTron(ethAddress)
 							solAddress, err := s.CreateSOLAddress(ctx)
 							if err != nil {
 								return errs.NewError(err)
@@ -505,7 +507,7 @@ func (s *Service) ReplyAferAutoCreateAgent(tx *gorm.DB, twitterPostID, agentInfo
 			// replyContent := s.getContentTwiterForCreateAgent(twitterPost.GetAgentOnwerName(), agentInfo.AgentName, agentInfo.TokenSymbol, agentInfo.TokenDesc, agentInfo.TokenAddress)
 			replyContent := s.getContentTwiterForCreateAgentV1(twitterPost.GetAgentOnwerName(), agentInfo.AgentName, agentInfo.TokenSymbol,
 				agentInfo.TokenDesc, agentInfo.TokenAddress, agentInfo.NetworkName, agentInfo.ID)
-			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID)
+			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID, "")
 			if err != nil {
 				tx.Model(twitterPost).Updates(
 					map[string]interface{}{
@@ -581,7 +583,6 @@ func (s *Service) GetGifImageUrlFromTokenInfo(tokenSymbol, tokenName, tokenDesc 
 			return "", errs.NewError(err)
 		}
 		url := fmt.Sprintf("%s%s", s.conf.GsStorage.Url, urlPath)
-		fmt.Println(url)
 		return url, nil
 	}
 	return "", errs.NewError(errs.ErrBadRequest)

@@ -11,6 +11,13 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/core/ports"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/repository"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/knowledge"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/drivers/mysql"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/secret_manager"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/aidojo"
 	blockchainutils "github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/bridgeapi"
@@ -26,10 +33,12 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/pumfun"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/rapid"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/taapi"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/zkapi"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
 )
 
 type Service struct {
@@ -45,6 +54,7 @@ type Service struct {
 	openais         map[string]*openai.OpenAI
 	ethApiMap       map[uint64]*ethapi.Client
 	zkApiMap        map[uint64]*zkapi.Client
+	trxApi          *trxapi.Client
 	rapid           *rapid.Rapid
 	blockchainUtils *blockchainutils.Client
 	btcAPI          *btcapi.Client
@@ -60,6 +70,8 @@ type Service struct {
 	taapi           *taapi.TaApi
 	// daos
 	dao *daos.DAO
+
+	KnowledgeUsecase ports.IKnowledgeUsecase
 }
 
 func NewService(conf *configs.Config) *Service {
@@ -84,7 +96,13 @@ func NewService(conf *configs.Config) *Service {
 		},
 		ethApiMap: map[uint64]*ethapi.Client{},
 		zkApiMap:  map[uint64]*zkapi.Client{},
-		rapid:     rapid.NewRapid(conf.RapidApiKey),
+		trxApi: &trxapi.Client{
+			RpcURL:  conf.Tron.RpcUrl,
+			ApiURL:  "https://api.trongrid.io",
+			GrpcURL: "grpc.trongrid.io:50051",
+			APIKey:  conf.Tron.ApiKey,
+		},
+		rapid: rapid.NewRapid(conf.RapidApiKey),
 		blockchainUtils: &blockchainutils.Client{
 			BaseURL: conf.BlockchainUtils.Url,
 		},
@@ -118,6 +136,27 @@ func NewService(conf *configs.Config) *Service {
 		openseaService: opensea.NewOpensea(conf.OpenseaAPIKey),
 		taapi:          taapi.NewTaApi(conf.TaApiKey),
 	}
+
+	gormDB := mysql.NewDefaultMysqlGormConn(nil, s.conf.DbURL)
+	knowledgeBaseRepo := repository.NewKnowledgeBaseRepository(gormDB)
+	knowledgeBaseFileRepo := repository.NewKnowledgeBaseFileRepository(gormDB)
+	secretKey := conf.SecretKey
+	var googleSecretKey string
+	if utils.IsEnvProduction(conf.Env) {
+		key, err := secret_manager.GetGoogleSecretKey(context.Background(), secretKey)
+		googleSecretKey = key
+		if err != nil {
+			logger.Error("", "GetGoogleSecretKey", zap.Error(err))
+		}
+	} else {
+		googleSecretKey = secretKey
+	}
+
+	s.KnowledgeUsecase = knowledge.NewKnowledgeUsecase(
+		knowledgeBaseRepo, knowledgeBaseFileRepo, googleSecretKey,
+		s.ethApiMap, conf.Networks, s.trxApi, conf.RagApi,
+	)
+
 	return s
 }
 
@@ -242,6 +281,7 @@ func (s *Service) GetMapTokenPrice(ctx context.Context) map[string]*big.Float {
 	}
 	return mapTokenPrice
 }
+
 func (s *Service) GetDao() *daos.DAO {
 	return s.dao
 }
