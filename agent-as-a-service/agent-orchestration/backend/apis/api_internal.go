@@ -248,6 +248,18 @@ func (s *Server) GetListUserMentionsByUsername(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: user})
 }
 
+func (s *Server) GetAllUserMentionsByUsername(c *gin.Context) {
+	ctx := s.requestContext(c)
+	username := s.stringFromContextParam(c, "username")
+	paginationToken := s.stringFromContextQuery(c, "pagination_token")
+	user, err := s.nls.GetAllUserMentionsByUsername(ctx, username, paginationToken)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: user})
+}
+
 func (s *Server) GetListUserMentionsByUsernameByQuery(c *gin.Context) {
 	ctx := s.requestContext(c)
 	username := s.stringFromContextQuery(c, "username")

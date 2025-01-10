@@ -192,6 +192,7 @@ func (s *Server) Routers() {
 				twitterAPI.GET("/tweets/by/agent", s.GetListUserTweetsByAgentForTradeMission)
 
 				twitterAPI.GET("/user/by/username/:username/mentions", s.GetListUserMentionsByUsername)
+				twitterAPI.GET("/user/by/username/:username/mentions/all", s.GetAllUserMentionsByUsername)
 				twitterAPI.GET("/user/by/username/mentions", s.GetListUserMentionsByUsernameByQuery)
 
 				twitterAPI.GET("/tweets/search/recent", s.SearchRecentTweet)
@@ -308,6 +309,7 @@ func (s *Server) Routers() {
 		knowledgeHookApi := rootAPI.Group("/knowledge")
 		{
 			knowledgeHookApi.POST("/webhook", s.webhookKnowledge)
+			knowledgeHookApi.POST("/webhook-file/:id", s.webhookKnowledgeFile)
 		}
 
 		knowledgeApi := rootAPI.Group("/knowledge", s.authCheckTK1TokenMiddleware())

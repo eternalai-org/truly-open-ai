@@ -1170,7 +1170,7 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 			var rs bool
 			err := s.RedisCached(
 				fmt.Sprintf("UpdateOffchainAutoOutputV2x_%d", snapshotPostID),
-				false,
+				true,
 				15*time.Minute,
 				&rs,
 				func() (interface{}, error) {

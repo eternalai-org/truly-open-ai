@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/encrypt"
+
 	"github.com/gagliardetto/solana-go/rpc"
 
 	"github.com/gagliardetto/solana-go"
@@ -25,7 +26,10 @@ func GenerateSolanaAddress(secretKey string) (string, string, error) {
 }
 
 func GetBalanceOnSolanaChain(ctx context.Context, address string) (*big.Int, error) {
-	pubKey := solana.MustPublicKeyFromBase58(address)
+	pubKey, err := solana.PublicKeyFromBase58(address)
+	if err != nil {
+		return nil, err
+	}
 	endpoint := rpc.MainNetBeta_RPC
 	client := rpc.New(endpoint)
 	out, err := client.GetBalance(

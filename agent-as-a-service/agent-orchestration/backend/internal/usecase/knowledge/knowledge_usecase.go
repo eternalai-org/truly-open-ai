@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/core/ports"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/repository"
@@ -14,6 +15,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/ethapi"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	resty "github.com/go-resty/resty/v2"
 
@@ -25,13 +27,30 @@ type knowledgeUsecase struct {
 	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo
 	secretKey             string
 
-	networks  map[string]map[string]string
-	ethApiMap map[uint64]*ethapi.Client
-	trxApi    *trxapi.Client
-	ragApi    string
+	networks      map[string]map[string]string
+	ethApiMap     map[uint64]*ethapi.Client
+	trxApi        *trxapi.Client
+	ragApi        string
+	lighthouseKey string
 }
 
-func (uc knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse) (*models.KnowledgeBase, error) {
+func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
+	kn, err := uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	hash, err := lighthouse.UploadDataWithRetry(uc.lighthouseKey, fmt.Sprintf("%d_%s", time.Now().Unix(), filename), bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, map[string]interface{}{"filecoin_hash": hash}); err != nil {
+		return nil, err
+	}
+	return kn, nil
+}
+
+func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse) (*models.KnowledgeBase, error) {
 	logger.Info("knowledgeUsecase", "Webhook", zap.Any("data", req))
 	if req.Result == nil {
 		return nil, nil
@@ -66,6 +85,7 @@ func NewKnowledgeUsecase(
 	networks map[string]map[string]string,
 	trxApi *trxapi.Client,
 	ragApi string,
+	lighthousekey string,
 ) ports.IKnowledgeUsecase {
 	return &knowledgeUsecase{
 		knowledgeBaseRepo:     knowledgeBaseRepo,
@@ -75,6 +95,7 @@ func NewKnowledgeUsecase(
 		networks:              networks,
 		trxApi:                trxApi,
 		ragApi:                ragApi,
+		lighthouseKey:         lighthousekey,
 	}
 }
 
@@ -203,6 +224,18 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 		zap.Any("_knPrice", _knPrice),
 	)
 
+	balance, err := utils.GetBalanceOnSolanaChain(ctx, kn.SolanaDepositAddress)
+	if err != nil {
+		logger.Logger().Error("GetBalanceOnSolanaChain", zap.Error(err))
+	}
+
+	if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() >= 0 {
+		kn.Status = models.KnowledgeBaseStatusPaymentReceipt
+		if err := uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
+			return err
+		}
+	}
+
 	for networkId, net := range uc.networks {
 		nId, err := strconv.ParseUint(networkId, 10, 64)
 		if err != nil {
@@ -274,9 +307,11 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	body := struct {
 		FileUrls []string `json:"file_urls"`
 		Ref      string   `json:"ref"`
+		Hook     string   `json:"hook"`
 	}{
 		FileUrls: kn.FileUrls(),
 		Ref:      fmt.Sprintf("%d", kn.ID),
+		Hook:     fmt.Sprintf("%s/%d", "https://agent.api.eternalai.org/api/knowledge/webhook-file", kn.ID),
 	}
 	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).

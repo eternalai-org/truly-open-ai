@@ -16,4 +16,5 @@ type IKnowledgeUsecase interface {
 	GetKnowledgeBaseByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error)
 	UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
 	Webhook(context.Context, *models.RagResponse) (*models.KnowledgeBase, error)
+	WebhookFile(context.Context, string, []byte, uint) (*models.KnowledgeBase, error)
 }

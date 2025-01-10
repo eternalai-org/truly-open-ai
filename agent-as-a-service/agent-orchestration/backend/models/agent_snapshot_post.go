@@ -155,6 +155,7 @@ const (
 	ToolsetTypeTradeAnalytics          ToolsetType = "trade_analytics"
 	ToolsetTypeTradeAnalyticsOnTwitter ToolsetType = "trade_analytics_twitter"
 	ToolsetTypeTradeAnalyticsMentions  ToolsetType = "trade_analytics_mentions"
+	ToolsetTypeLuckyMoneys             ToolsetType = "lucky_moneys"
 
 	ToolsetTypeReplyMentionsFarcaster    ToolsetType = "reply_mentions_farcaster"
 	ToolsetTypeReplyNonMentionsFarcaster ToolsetType = "reply_non_mentions_farcaster"

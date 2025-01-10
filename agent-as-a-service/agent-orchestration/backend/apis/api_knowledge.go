@@ -2,6 +2,7 @@ package apis
 
 import (
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -50,6 +51,31 @@ func (s *Server) webhookKnowledge(c *gin.Context) {
 		return
 	}
 
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: "success"})
+}
+
+func (s *Server) webhookKnowledgeFile(c *gin.Context) {
+	ctx := s.requestContext(c)
+
+	fileHeader, err := c.FormFile("file")
+	file, err := fileHeader.Open()
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	fileBytes, err := io.ReadAll(file)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	id := s.uintFromContextParam(c, "id")
+	_, err = s.nls.KnowledgeUsecase.WebhookFile(ctx, fileHeader.Filename, fileBytes, id)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: "success"})
 }
 

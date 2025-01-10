@@ -153,8 +153,11 @@ func NewService(conf *configs.Config) *Service {
 	}
 
 	s.KnowledgeUsecase = knowledge.NewKnowledgeUsecase(
-		knowledgeBaseRepo, knowledgeBaseFileRepo, googleSecretKey,
-		s.ethApiMap, conf.Networks, s.trxApi, conf.RagApi,
+		knowledgeBaseRepo, knowledgeBaseFileRepo,
+		googleSecretKey,
+		s.ethApiMap, conf.Networks, s.trxApi,
+		conf.RagApi,
+		conf.Lighthouse.Apikey,
 	)
 
 	return s
