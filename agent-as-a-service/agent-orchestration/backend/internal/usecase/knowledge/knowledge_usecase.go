@@ -32,6 +32,7 @@ type knowledgeUsecase struct {
 	trxApi        *trxapi.Client
 	ragApi        string
 	lighthouseKey string
+	webhookUrl    string
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
@@ -98,6 +99,7 @@ func NewKnowledgeUsecase(
 	trxApi *trxapi.Client,
 	ragApi string,
 	lighthousekey string,
+	webhookUrl string,
 ) ports.IKnowledgeUsecase {
 	return &knowledgeUsecase{
 		knowledgeBaseRepo:     knowledgeBaseRepo,
@@ -108,6 +110,7 @@ func NewKnowledgeUsecase(
 		trxApi:                trxApi,
 		ragApi:                ragApi,
 		lighthouseKey:         lighthousekey,
+		webhookUrl:            webhookUrl,
 	}
 }
 
@@ -327,7 +330,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	}{
 		FileUrls: kn.FileUrls(),
 		Ref:      fmt.Sprintf("%d", kn.ID),
-		Hook:     fmt.Sprintf("%s/%d", "https://agent.api.eternalai.org/api/knowledge/webhook-file", kn.ID),
+		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
 	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).

@@ -41,3 +41,4 @@ node_modules
 .env
 dist
 build
+Makefile
