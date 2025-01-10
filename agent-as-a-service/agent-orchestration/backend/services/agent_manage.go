@@ -19,6 +19,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/hiro"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/magiceden"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -85,6 +86,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		Thumbnail:        req.Thumbnail,
 		NftTokenImage:    req.NFTTokenImage,
 		TokenImageUrl:    req.TokenImageUrl,
+		MissionTopics:    req.MissionTopics,
 	}
 	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, req.AgentName, req.SystemContent)
 	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
@@ -157,6 +159,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 			return nil, errs.NewError(err)
 		}
 		agent.ETHAddress = strings.ToLower(ethAddress)
+		agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
 
 		solAddress, err := s.CreateSOLAddress(ctx)
 		if err != nil {
@@ -486,10 +489,10 @@ func (s *Service) UpdateAgentInfoInContract(ctx context.Context, address string,
 					return errs.NewError(err)
 				}
 
-				_, err = s.ExecuteUpdateAgentInfoInContract(ctx, agent, req)
-				if err != nil {
-					return errs.NewError(err)
-				}
+				// _, err = s.ExecuteUpdateAgentInfoInContract(ctx, agent, req)
+				// if err != nil {
+				// 	return errs.NewError(err)
+				// }
 			}
 			return nil
 		},
@@ -556,4 +559,44 @@ func (s *Service) GenerateTokenInfoFromSystemPrompt(ctx context.Context, tokenNa
 	}
 
 	return info, nil
+}
+
+func (s *Service) JobMigrateTronAddress(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobMigrateTronAddress",
+		func() error {
+			agents, err := s.dao.FindAgentInfo(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"tron_address = '' or tron_address is null": {},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				1000,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var retErr error
+			for _, agent := range agents {
+				err = daos.GetDBMainCtx(ctx).
+					Model(agent).
+					Updates(
+						map[string]interface{}{
+							"tron_address": trxapi.AddrEvmToTron(agent.ETHAddress),
+						},
+					).
+					Error
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

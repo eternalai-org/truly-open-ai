@@ -480,6 +480,13 @@ func (s *Service) TweetIsMention(tweets twitter.TweetObj, username string) bool 
 				return true
 			}
 		}
+
+		if len(tweets.Entities.Mentions) > 2 {
+			lastMentions = tweets.Entities.Mentions[len(tweets.Entities.Mentions)-3]
+			if strings.EqualFold(lastMentions.UserName, username) {
+				return true
+			}
+		}
 	}
 	return false
 }
@@ -581,6 +588,55 @@ func (s *Service) GetListUserMentionsByUsername(ctx context.Context, username, p
 					}
 				}
 				tweetMentions.Tweets = listRealMentions
+				return tweetMentions, nil
+			}
+			return nil, errs.NewError(errs.ErrBadRequest)
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return tweetMentions, nil
+
+}
+
+func (s *Service) GetAllUserMentionsByUsername(ctx context.Context, username, paginationToken string) (*twitter.UserTimeline, error) {
+	var tweetMentions *twitter.UserTimeline
+	err := s.RedisCached(
+		fmt.Sprintf("GetAllUserMentionsByUsername_%s_%s", username, paginationToken),
+		true,
+		1*time.Minute,
+		&tweetMentions,
+		func() (interface{}, error) {
+			twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"twitter_id = ?": {s.conf.TokenTwiterIdForInternal},
+				},
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+
+			if twitterInfo != nil {
+				user, err := s.SyncGetTwitterUserByUsername(ctx, username)
+				if err != nil {
+					return nil, errs.NewError(err)
+				}
+
+				if user == nil {
+					return nil, errs.NewError(errs.ErrBadRequest)
+				}
+
+				if user.TwitterID == "" {
+					return nil, errs.NewError(errs.ErrTwitterIdNotFound)
+				}
+
+				tweetMentions, err = s.twitterWrapAPI.GetListUserMentions(user.TwitterID, paginationToken, twitterInfo.AccessToken)
+				if err != nil {
+					return nil, errs.NewTwitterError(err)
+				}
 				return tweetMentions, nil
 			}
 			return nil, errs.NewError(errs.ErrBadRequest)

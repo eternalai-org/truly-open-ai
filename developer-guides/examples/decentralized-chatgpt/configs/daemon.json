@@ -1,0 +1,5 @@
+{
+    "serve_interactive_agents": false,
+    "http_host": "127.0.0.1",
+    "http_port": 8080
+}

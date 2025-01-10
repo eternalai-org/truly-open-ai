@@ -9,12 +9,6 @@ Block Explorer: https://explorer.symbiosis.eternalai.org
 
 ### Models deployed on Symbiosis
 
-#### DeepSeek V3
-
-```
-DeepSeek V3
-```
-
 #### **LLAMA 3.3 Instruct**
 
 ```
@@ -41,12 +35,6 @@ Block Explorer: https://basescan.org
 ```
 
 ### Models deployed on Base
-
-#### DeepSeek V3
-
-```
-DeepSeek V3
-```
 
 #### Hermes
 

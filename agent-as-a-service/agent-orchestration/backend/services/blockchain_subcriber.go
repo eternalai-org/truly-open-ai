@@ -10,6 +10,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/ethapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/evmapi"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/zkapi"
 	"github.com/google/uuid"
 )
@@ -29,6 +30,23 @@ func (s *Service) CreateETHAddress(ctx context.Context) (string, error) {
 		return "", err
 	}
 	return strings.ToLower(addr), nil
+}
+
+func (s *Service) CreateTRONAddress(ctx context.Context) (string, error) {
+	addr, prk, err := trxapi.CreateTRONAddress()
+	if err != nil {
+		return "", err
+	}
+	addr, _, err = s.coreClient.StoreAddress(
+		addr,
+		prk,
+		0,
+		"tron",
+	)
+	if err != nil {
+		return "", err
+	}
+	return addr, nil
 }
 
 func (s *Service) StoreAddress(ctx context.Context, address, prk string) (string, error) {

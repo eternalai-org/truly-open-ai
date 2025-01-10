@@ -169,7 +169,7 @@ curl https://api.eternalai.org/v1/completions \
   -H "Authorization: Bearer $ETERNALAI_API_KEY" \
   -d '{
     "chain_id":"45762",
-    "model": "PrimeIntellect/INTELLECT-1-Instruct",
+    "model": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
     "prompt": "Say this is a test",
     "max_tokens": 7,
     "temperature": 0
@@ -183,7 +183,7 @@ curl https://api.eternalai.org/v1/completions \
     "id": "cmpl-7b18ee81f5574489acf3cd9e55eaee9e",
     "object": "text_completion",
     "created": 1732269168,
-    "model": "PrimeIntellect/INTELLECT-1-Instruct",
+    "model": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
     "choices": [
         {
             "text": "\nThis is indeed a test",

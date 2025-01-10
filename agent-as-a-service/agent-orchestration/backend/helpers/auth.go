@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/ecies"
@@ -146,7 +145,7 @@ func VerifySignature(fromAddress, signatureHex, message string) error {
 		return err
 	}
 
-	if common.HexToAddress(fromAddress) != crypto.PubkeyToAddress(*pubKey) {
+	if HexToAddress(fromAddress) != crypto.PubkeyToAddress(*pubKey) {
 		return fmt.Errorf("failed to verify signature")
 	}
 

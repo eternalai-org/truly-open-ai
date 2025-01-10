@@ -78,7 +78,7 @@ func (s *Server) Routers() {
 			adminAPI.GET("/snapshot_post_acctions", s.AdminGetSnapshotPostActionByAgent)
 		}
 
-		//Agent management
+		// Agent management
 		agentAPI := rootAPI.Group("/agent")
 		{
 			agentAPI.GET("/report", s.GetAgentSummaryReport)
@@ -121,7 +121,7 @@ func (s *Server) Routers() {
 				brainAPI.GET("/:id", s.GetAgentBrainHistory)
 			}
 
-			//abilities
+			// abilities
 			abilitiesAPI := agentAPI.Group("/mission")
 			{
 				abilitiesAPI.POST("update/:id", s.CreateUpdateAgentSnapshotMission)
@@ -133,14 +133,14 @@ func (s *Server) Routers() {
 			agentAPI.GET("/dashboard/:token_address", s.GetDashBoardAgentDetail)
 			agentAPI.GET("/token-info/:id", s.GetTokenInfoByContract)
 
-			//dojo
+			// dojo
 			agentAPI.GET("/dojo/list", s.GetListAgentForDojo)
 			agentAPI.GET("/dojo/:id", s.GetAgentDetailByAgentIDForDojo)
 			agentAPI.POST("/create_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentCreateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant_in_contract", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistantInContract)
 			agentAPI.POST("/update_twin_status", s.UpdateTwinStatus)
-			//infer
+			// infer
 			agentAPI.POST("/async-batch-prompt", s.AsyncBatchPrompt)
 			agentAPI.GET("/get-async-prompt-output/:id", s.GetBatchItem)
 
@@ -187,11 +187,12 @@ func (s *Server) Routers() {
 				twitterAPI.GET("/tweets/by/username/:username", s.GetListUserTweetsByUserName)
 				twitterAPI.GET("/tweets/by/username", s.GetListUserTweetsByUserNameByQuery)
 
-				//get tweets by list users for mission
+				// get tweets by list users for mission
 				twitterAPI.GET("/tweets/by/users", s.GetListUserTweetsByUsersForTradeMission)
 				twitterAPI.GET("/tweets/by/agent", s.GetListUserTweetsByAgentForTradeMission)
 
 				twitterAPI.GET("/user/by/username/:username/mentions", s.GetListUserMentionsByUsername)
+				twitterAPI.GET("/user/by/username/:username/mentions/all", s.GetAllUserMentionsByUsername)
 				twitterAPI.GET("/user/by/username/mentions", s.GetListUserMentionsByUsernameByQuery)
 
 				twitterAPI.GET("/tweets/search/recent", s.SearchRecentTweet)
@@ -216,7 +217,7 @@ func (s *Server) Routers() {
 				twitterAPI.POST("/user/action-by-ref", s.CreateAgentInternalActionByRefID)
 			}
 
-			//Token management
+			// Token management
 			tokenAPI := internalAPI.Group("/trade")
 			{
 				tokenAPI.GET("tokens", s.GetAgentTradeTokens)
@@ -227,7 +228,7 @@ func (s *Server) Routers() {
 				tokenAPI.GET("/analytic", s.GetTradeAnalytic)
 			}
 		}
-		//deprecated
+		// deprecated
 		externalWalletAPI := rootAPI.Group("/external-wallet")
 		{
 			externalWalletAPI.POST("/address", s.ExternalWalletCreateSOL)
@@ -254,8 +255,10 @@ func (s *Server) Routers() {
 		{
 			missionStoreAPI.POST("/save", s.UploadMissionStore)
 			missionStoreAPI.GET("/list", s.GetListMissionStore)
+			missionStoreAPI.GET("/:id", s.GetMissionStoreDetail)
+			missionStoreAPI.GET("/history/:id", s.GetMissionStoreHistory)
 			missionStoreAPI.POST("/rating", s.RateMissionStore)
-			missionStoreAPI.POST("/claim-fee", s.ClaimFeeMissionStore)
+			missionStoreAPI.GET("/rating/:id", s.GetMissionStoreRating)
 		}
 
 		bubbleAPI := rootAPI.Group("/bubble")
@@ -303,5 +306,20 @@ func (s *Server) Routers() {
 				userAPI.POST("/notification/seen/:id", s.UserSeenMemeNotification)
 			}
 		}
+		knowledgeHookApi := rootAPI.Group("/knowledge")
+		{
+			knowledgeHookApi.POST("/webhook", s.webhookKnowledge)
+			knowledgeHookApi.POST("/webhook-file/:id", s.webhookKnowledgeFile)
+		}
+
+		knowledgeApi := rootAPI.Group("/knowledge", s.authCheckTK1TokenMiddleware())
+		{
+			knowledgeApi.POST("", s.createKnowledge)
+			knowledgeApi.GET("", s.listKnowledge)
+			knowledgeApi.PATCH("/:id", s.updateKnowledge)
+			knowledgeApi.GET("/:id", s.detailKnowledge)
+			knowledgeApi.DELETE("/:id", s.deleteKnowledge)
+		}
+
 	}
 }

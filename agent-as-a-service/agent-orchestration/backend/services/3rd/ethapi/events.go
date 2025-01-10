@@ -16,6 +16,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/erc721"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/imagehub"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/iworkerhub"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/orderpayment"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/systempromptmanager"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/uniswapv3factory"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/uniswapv3pool"
@@ -145,6 +146,7 @@ type BlockChainEventResp struct {
 	SystemPromptManagerNewTokens        []*systempromptmanager.SystemPromptManagerNewToken        `json:"system_prompt_manager_new_tokens"`
 	SystemPromptManagerAgentDataUpdates []*systempromptmanager.SystemPromptManagerAgentDataUpdate `json:"system_prompt_manager_agent_data_updates"`
 	SystemPromptManagerAgentURIUpdates  []*systempromptmanager.SystemPromptManagerAgentURIUpdate  `json:"system_prompt_manager_agent_uri_updates"`
+	OrderpaymentOrderPaids              []*orderpayment.OrderpaymentOrderPaid                     `json:"orderpayment_order_paid"`
 }
 
 func (c *Client) NewEventResp() *BlockChainEventResp {
@@ -182,16 +184,16 @@ func (c *Client) ScanEvents(contractAddrs []string, startBlock, endBlock int64) 
 		contractAddresses = []common.Address{}
 		for _, contractAddr := range contractAddrs {
 			if contractAddr != "" {
-				contractAddresses = append(contractAddresses, helpers.HexToAddress(contractAddr))
+				contractAddresses = append(contractAddresses, helpers.HexToAddress(c.ConvertAddressForIn(contractAddr)))
 			}
 		}
 	}
 	ctx := context.Background()
-	lastBlock, err := client.HeaderByNumber(ctx, nil)
+	lastBlock, err := client.BlockNumber(ctx)
 	if err != nil {
 		return nil, err
 	}
-	lastNumber := lastBlock.Number.Int64()
+	lastNumber := int64(lastBlock)
 	if endBlock > lastNumber {
 		endBlock = lastNumber
 	}
@@ -199,8 +201,7 @@ func (c *Client) ScanEvents(contractAddrs []string, startBlock, endBlock int64) 
 		return nil, nil
 	}
 	resp.LastBlockNumber = lastNumber
-	resp.BlockNumber = lastBlock.Number.Uint64()
-
+	resp.BlockNumber = lastBlock
 	logs, err := client.FilterLogs(
 		ctx,
 		ethereum.FilterQuery{
@@ -236,6 +237,8 @@ func (c *Client) ScanEvents(contractAddrs []string, startBlock, endBlock int64) 
 					common.HexToHash("0x61beab98a81083e3c0239c33e149bef1316ca78f15b9f29125039f5521a06d06"),
 					common.HexToHash("0xe42abf7d4a793286da8cc1399cb577a1f5a0e133dfee371bb3a5abbdd77b011e"),
 					common.HexToHash("0x706a4e8eb2f354c7f4d96e5ea1984f36e72482629987edad78c9940ea037c362"),
+					// OrderPayment
+					common.HexToHash("0xc2522570932e6dff27df2e5c31cfd70be3653d564375e29575d4360aafca4eb5"),
 				},
 			},
 		},
@@ -271,10 +274,10 @@ func (c *Client) ParseEventResp(resp *BlockChainEventResp, log *types.Log) error
 				&Erc20TokenTransferEventResp{
 					NetworkID:       c.ChainID(),
 					TxHash:          log.TxHash.Hex(),
-					ContractAddress: logParsed.Raw.Address.Hex(),
+					ContractAddress: c.ConvertAddressForOut(logParsed.Raw.Address.Hex()),
 					Timestamp:       blockTime,
-					From:            logParsed.From.Hex(),
-					To:              logParsed.To.Hex(),
+					From:            c.ConvertAddressForOut(logParsed.From.Hex()),
+					To:              c.ConvertAddressForOut(logParsed.To.Hex()),
 					Value:           logParsed.Value,
 					Index:           log.Index,
 					BlockNumber:     log.BlockNumber,
@@ -754,6 +757,21 @@ func (c *Client) ParseEventResp(resp *BlockChainEventResp, log *types.Log) error
 			if err == nil {
 				resp.SystemPromptManagerAgentURIUpdates = append(
 					resp.SystemPromptManagerAgentURIUpdates,
+					logParsed,
+				)
+			}
+		}
+	}
+	{
+		instance, err := orderpayment.NewOrderpayment(log.Address, client)
+		if err != nil {
+			return err
+		}
+		{
+			logParsed, err := instance.ParseOrderPaid(*log)
+			if err == nil {
+				resp.OrderpaymentOrderPaids = append(
+					resp.OrderpaymentOrderPaids,
 					logParsed,
 				)
 			}

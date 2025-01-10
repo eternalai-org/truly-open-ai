@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -26,26 +27,21 @@ func (s *Service) UploadMisstionStore(ctx context.Context, req *serializers.Miss
 				if missionStore == nil {
 					return errs.NewError(errs.ErrBadRequest)
 				}
+				//update name vs description only
 				missionStore.Name = req.Name
 				missionStore.Description = req.Description
-				missionStore.UserPrompt = req.Prompt
-				missionStore.Price = req.Price
-				missionStore.ToolList = req.ToolList
-				missionStore.DurationDay = req.DurationDay
 			} else {
-				depositAddress, err := s.CreateETHAddress(ctx)
-				if err != nil {
-					return errs.NewError(err)
-				}
+				params, _ := json.Marshal(req.Params)
 				missionStore = &models.MissionStore{
-					Name:           req.Name,
-					Description:    req.Description,
-					UserPrompt:     req.Prompt,
-					Price:          req.Price,
-					OwnerAddress:   req.OwnerAddress,
-					ToolList:       req.ToolList,
-					DepositAddress: depositAddress,
-					DurationDay:    req.DurationDay,
+					Name:         req.Name,
+					Description:  req.Description,
+					UserPrompt:   req.Prompt,
+					Price:        req.Price,
+					OwnerAddress: req.OwnerAddress,
+					ToolList:     req.ToolList,
+					Icon:         req.Icon,
+					OutputType:   models.OutputType(req.OutputType),
+					Params:       string(params),
 				}
 			}
 			if err != nil {
@@ -139,7 +135,61 @@ func (s *Service) GetListMisstionStore(ctx context.Context, page, limit int) ([]
 	return res, count, nil
 }
 
+func (s *Service) GetMisstionStoreDetail(ctx context.Context, id uint) (*models.MissionStore, error) {
+	res, err := s.dao.FirstMissionStoreByID(daos.GetDBMainCtx(ctx),
+		id,
+		map[string][]interface{}{}, false)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return res, nil
+}
+
 func (s *Service) ClaimFeeMisstionStore(ctx context.Context) error {
 
 	return nil
+}
+
+func (s *Service) GetMissionStoreRating(ctx context.Context, id uint, page, limit int) ([]*models.MissionStoreRating, uint, error) {
+	res, count, err := s.dao.FindMissionStoreRating4Page(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"mission_store_id = ?": {id},
+		},
+		map[string][]interface{}{}, []string{"rating desc"}, page, limit)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
+}
+
+func (s *Service) GetMissionStoreHistory(ctx context.Context, id uint, page, limit int) ([]*models.MissionStoreHistory, uint, error) {
+	res, count, err := s.dao.FindMissionStoreHistory4Page(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"mission_store_id = ?": {id},
+		},
+		map[string][]interface{}{}, []string{"id desc"}, page, limit)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
+}
+
+func (s *Service) addToolPostTwitter(toollist string, appendTool string) (string, error) {
+	var initialData []map[string]interface{}
+	if err := json.Unmarshal([]byte(toollist), &initialData); err != nil {
+		return toollist, errs.NewError(err)
+	}
+
+	var appendData map[string]interface{}
+	if err := json.Unmarshal([]byte(appendTool), &appendData); err != nil {
+		return toollist, errs.NewError(err)
+	}
+
+	initialData = append(initialData, appendData)
+
+	updatedJSON, err := json.Marshal(initialData)
+	if err != nil {
+		return toollist, errs.NewError(err)
+	}
+	return string(updatedJSON), nil
 }

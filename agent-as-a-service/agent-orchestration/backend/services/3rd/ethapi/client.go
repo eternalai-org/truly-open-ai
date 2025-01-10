@@ -20,6 +20,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/erc20"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/evmapi"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -46,6 +47,21 @@ func CreateETHAddress() (string, string, error) {
 type BlockResp struct {
 	time uint64
 	hash string
+}
+
+type RPCResponse struct {
+	JSONRPC string          `json:"jsonrpc"`
+	Result  *ResultResponse `json:"result"`
+	ID      int             `json:"id"`
+}
+
+type ResultResponse struct {
+	Hash          string  `json:"hash"`
+	BlockHash     *string `json:"blockHash"`
+	BlockNumber   *string `json:"blockNumber"`
+	Number        *string `json:"number"`
+	ChainID       string  `json:"chainId"`
+	L1BlockNumber *string `json:"l1BlockNumber"`
 }
 
 func (b *BlockResp) Time() uint64 {
@@ -83,6 +99,10 @@ func (c *Client) getClient() (*ethclient.Client, error) {
 }
 
 func (c *Client) ChainID() uint64 {
+	_, err := c.GetChainID()
+	if err != nil {
+		panic(err)
+	}
 	return c.chainID
 }
 
@@ -102,17 +122,16 @@ func (c *Client) BlockByNumber(blockNumber int64) (*types.Block, error) {
 	return block, nil
 }
 
-func (c *Client) GetLastBlock() (int64, error) {
+func (c *Client) GetLastBlockNumber() (int64, error) {
 	client, err := c.getClient()
 	if err != nil {
 		return 0, err
 	}
-	lastBlock, err := client.HeaderByNumber(context.Background(), nil)
+	blockNumber, err := client.BlockNumber(context.Background())
 	if err != nil {
 		return 0, err
 	}
-	lastNumber := lastBlock.Number.Int64()
-	return lastNumber, nil
+	return int64(blockNumber), nil
 }
 
 func (c *Client) GetBlockTime(n uint64) (uint64, error) {
@@ -262,6 +281,38 @@ func (c *Client) WaitMined(hash string) error {
 		return errors.New("transaction is not Successful")
 	}
 	return nil
+}
+
+func (c *Client) WaitMinedTxReceipt(ctx context.Context, txHash common.Hash) (*types.Receipt, error) {
+	client, err := c.getClient()
+	if err != nil {
+		return nil, err
+	}
+	queryTicker := time.NewTicker(time.Second)
+	maxRetry := 100
+	defer queryTicker.Stop()
+	retry := 0
+	for {
+		retry++
+		receipt, err := client.TransactionReceipt(ctx, txHash)
+		if err == nil && receipt != nil && receipt.BlockNumber != nil {
+			return receipt, nil
+		}
+		_, _, err = c.CheckTxPendingByHash(txHash)
+		if errors.Is(err, ethereum.NotFound) {
+			return nil, err
+		}
+
+		if retry > maxRetry {
+			return nil, err
+		}
+		// Wait for the next round.
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-queryTicker.C:
+		}
+	}
 }
 
 func (c *Client) validateAddress(address string) {
@@ -908,15 +959,23 @@ func (c *Client) Transact(contractAddr string, prkHex string, dataBytes []byte, 
 	if err != nil {
 		return "", err
 	}
-	contractAddress := helpers.HexToAddress(contractAddr)
+	var contractAddress *common.Address
+	//contractAddr = "" , tx create new contract ,tx.To = nil
+	if len(contractAddr) > 0 {
+		contractAddress = new(common.Address)
+		*contractAddress = helpers.HexToAddress(contractAddr)
+	}
 	gasNumber, err := client.EstimateGas(context.Background(), ethereum.CallMsg{
 		From:  pbkHex,
-		To:    &contractAddress,
+		To:    contractAddress,
 		Data:  dataBytes,
 		Value: value,
 	})
 	if err != nil {
 		return "", err
+	}
+	if contractAddress == nil {
+		gasNumber = gasNumber * 2
 	}
 	chainID, err := c.GetChainID()
 	if err != nil {
@@ -928,7 +987,7 @@ func (c *Client) Transact(contractAddr string, prkHex string, dataBytes []byte, 
 		GasFeeCap: gasPrice,
 		GasTipCap: gasTipCap,
 		Gas:       (gasNumber * 12 / 10),
-		To:        &contractAddress,
+		To:        contractAddress,
 		Data:      dataBytes,
 		Value:     value,
 	})
@@ -958,4 +1017,51 @@ func (c *Client) IsContract(address string) (bool, error) {
 	}
 	isContract := len(bytecode) > 0
 	return isContract, nil
+}
+
+func (c *Client) CheckTxPendingByHash(txHash common.Hash) (*RPCResponse, bool, error) {
+	jsonData := "{\"jsonrpc\":\"2.0\",\"method\":\"eth_getTransactionByHash\",\"params\":[\"" + txHash.Hex() + "\"],\"id\":1}"
+	resp, err := http.Post(c.BaseURL, "application/json", bytes.NewBuffer([]byte(jsonData)))
+	if err != nil {
+		return nil, false, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, false, fmt.Errorf("status code :%v = 200", resp.StatusCode)
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, false, err
+	}
+	var rpcResponse RPCResponse
+	err = json.Unmarshal(body, &rpcResponse)
+	if err != nil {
+		return nil, false, err
+	}
+	if rpcResponse.Result == nil {
+		return nil, false, ethereum.NotFound
+	}
+	return &rpcResponse, rpcResponse.Result.BlockHash == nil, nil
+}
+
+func (c *Client) ConvertAddressForIn(addr string) string {
+	chainID, err := c.GetChainID()
+	if err != nil {
+		panic(err)
+	}
+	if chainID == 728126428 {
+		return trxapi.AddrTronToEvm(addr)
+	}
+	return addr
+}
+
+func (c *Client) ConvertAddressForOut(addr string) string {
+	chainID, err := c.GetChainID()
+	if err != nil {
+		panic(err)
+	}
+	if chainID == 728126428 {
+		return trxapi.AddrEvmToTron(addr)
+	}
+	return addr
 }

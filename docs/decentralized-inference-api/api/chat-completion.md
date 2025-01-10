@@ -229,7 +229,7 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' \
 --header 'Authorization: Bearer $ETERNALAI_API_KEY' \
 --data '{
     "chain_id": "45762",
-    "model": "PrimeIntellect/INTELLECT-1-Instruct",
+    "model": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
     "messages": [
         {
             "role": "system",

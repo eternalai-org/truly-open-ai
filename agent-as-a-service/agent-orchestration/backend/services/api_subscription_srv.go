@@ -131,10 +131,7 @@ func (s *Service) CreateApiSubscriptionKeyForTest(ctx context.Context, address, 
 	}
 
 	if userSubApi == nil {
-		apiKeyStr, err := s.GenerateAPIKey()
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
+
 		lstFreePackages, err := s.dao.FindApiSubscriptionPackage(daos.GetDBMainCtx(ctx), map[string][]interface{}{
 			"type = ?": {models.PackageTypeFree},
 		}, map[string][]interface{}{}, []string{}, 0, 100)
@@ -143,6 +140,10 @@ func (s *Service) CreateApiSubscriptionKeyForTest(ctx context.Context, address, 
 		}
 		now := time.Now()
 		for _, v := range lstFreePackages {
+			apiKeyStr, err := s.GenerateAPIKey()
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
 			expiresAt := now.Add(time.Duration(v.DurationDay) * 24 * time.Hour)
 			depositAddress, err := s.CreateETHAddress(ctx)
 			if err != nil {

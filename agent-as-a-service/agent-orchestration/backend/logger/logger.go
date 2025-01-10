@@ -18,6 +18,10 @@ const (
 
 var logger *zap.Logger
 
+func Logger() *zap.Logger {
+	return logger
+}
+
 func NewLogger(appName string, env string, logPath string, stdout bool) {
 	var err error
 	outputPaths := []string{}
@@ -38,7 +42,7 @@ func NewLogger(appName string, env string, logPath string, stdout bool) {
 		if err != nil {
 			panic(err)
 		}
-		os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0666)
+		os.OpenFile(logPath, os.O_RDONLY|os.O_CREATE|os.O_APPEND, 0o666)
 		outputPaths = append(outputPaths, logPath)
 	}
 	cfg := zap.NewProductionConfig()

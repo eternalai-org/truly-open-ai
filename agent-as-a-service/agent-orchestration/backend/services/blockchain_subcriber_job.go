@@ -23,10 +23,12 @@ func (s *Service) MemeEventsByTransaction(ctx context.Context, networkID uint64,
 	if !strings.EqualFold(txHash, common.HexToHash(txHash).Hex()) {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	evmClient := s.GetEthereumClient(ctx, networkID)
-	err := evmClient.WaitMined(txHash)
-	if err != nil {
-		return errs.NewError(err)
+	if networkID != models.TRON_CHAIN_ID {
+		evmClient := s.GetEthereumClient(ctx, networkID)
+		err := evmClient.WaitMined(txHash)
+		if err != nil {
+			return errs.NewError(err)
+		}
 	}
 	ethClient := s.GetEthereumClient(ctx, networkID)
 	eventResp, err := ethClient.EventsByTransaction(
@@ -306,6 +308,16 @@ func (s *Service) MemeEventsByTransactionEventResp(ctx context.Context, networkI
 			}
 		}
 	}
+	{
+		for _, event := range eventResp.OrderpaymentOrderPaids {
+			err := s.OrderpaymentOrderPaidEvent(
+				ctx, networkID, event,
+			)
+			if err != nil {
+				retErr = errs.MergeError(retErr, err)
+			}
+		}
+	}
 	return retErr
 }
 
@@ -457,9 +469,16 @@ func (s *Service) CreateErc20TransferEvent(ctx context.Context, networkID uint64
 					fmt.Println(err.Error())
 				}
 			} else {
-				balance, err = ethClient.Erc20Balance(conAddress, userAddress)
-				if err != nil {
-					fmt.Println(err.Error())
+				if ethClient.ChainID() == models.TRON_CHAIN_ID {
+					balance, err = s.trxApi.Trc20Balance(conAddress, userAddress)
+					if err != nil {
+						fmt.Println(err.Error())
+					}
+				} else {
+					balance, err = ethClient.Erc20Balance(conAddress, userAddress)
+					if err != nil {
+						fmt.Println(err.Error())
+					}
 				}
 			}
 			if balance == nil {
@@ -847,6 +866,9 @@ func (s *Service) GetFilterAddrs(ctx context.Context, networkID uint64) ([]strin
 			if s.conf.ExistsedConfigKey(networkID, "agent_contract_address") {
 				addrs = append(addrs, s.conf.GetConfigKeyString(networkID, "agent_contract_address"))
 			}
+			if s.conf.ExistsedConfigKey(networkID, "order_payment_contract_address") {
+				addrs = append(addrs, s.conf.GetConfigKeyString(networkID, "order_payment_contract_address"))
+			}
 			return addrs, nil
 
 		},
@@ -958,7 +980,7 @@ func (s *Service) ScanEventsByChain(ctx context.Context, networkID uint64) error
 								NetworkID: networkID,
 								NumBlocks: 100,
 							}
-							lastBlockNumber, err := ethClient.GetLastBlock()
+							lastBlockNumber, err := ethClient.GetLastBlockNumber()
 							if err != nil {
 								return errs.NewError(err)
 							}

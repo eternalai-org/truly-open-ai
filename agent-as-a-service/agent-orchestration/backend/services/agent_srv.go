@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -1072,13 +1071,14 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 					}
 				}
 
+				listTestToolSet := strings.Split(s.conf.ListTestToolSet, ",")
 				if len(listID) > 0 {
-					err = tx.Where("agent_info_id = ? and id not in (?)", agentInfo.ID, listID).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and id not in (?) and tool_set not in (?)", agentInfo.ID, listID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
 				} else {
-					err = tx.Where("agent_info_id = ?", agentInfo.ID).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and tool_set not in (?)", agentInfo.ID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -1109,6 +1109,11 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 					mission.UserTwitterIds = item.UserTwitterIDs
 					mission.Tokens = item.Tokens
 					mission.AgentBaseModel = item.AgentBaseModel
+					mission.Topics = item.Topics
+					mission.IsBingSearch = item.IsBingSearch
+					mission.IsTwitterSearch = item.IsTwitterSearch
+					mission.RewardAmount = item.RewardAmount
+					mission.RewardUser = item.RewardUser
 					//farcaster
 					if mission.ToolSet == models.ToolsetTypePostFarcaster {
 						toolList := fmt.Sprintf(s.conf.ToolLists.FarcasterPost, agentInfo.FarcasterID, authHeader, agentInfo.AgentID)
@@ -1120,19 +1125,41 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						toolList := fmt.Sprintf(s.conf.ToolLists.TradeNews, s.conf.InternalApiKey, agentInfo.ID)
 						mission.ToolList = toolList
 						mission.UserPrompt = "Analyze the coin price fluctuations in the past 24 hours, suggest which coin to buy or sell and post it on twitter"
-					} else if mission.ToolSet == models.ToolsetTypeTradeAnalytics || mission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter {
+					} else if mission.ToolSet == models.ToolsetTypeTradeAnalytics || mission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter || mission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions {
 						toolList := s.conf.ToolLists.TradeAnalytic
 						if item.Tokens == "" {
 							item.Tokens = "BTC"
 							mission.Tokens = item.Tokens
 						}
 						if item.UserPrompt == "" {
-							mission.UserPrompt = `Conduct a technical analysis of ${token_symbol} price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`
+							mission.UserPrompt = fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, item.Tokens)
 						}
 						toolList = strings.ReplaceAll(toolList, "{api_key}", s.conf.InternalApiKey)
-						toolList = strings.ReplaceAll(toolList, "{token}", item.Tokens)
+						toolList = strings.ReplaceAll(toolList, "{token_symbol}", item.Tokens)
 
 						mission.ToolList = toolList
+					} else if item.MissionStoreID != 0 {
+						//
+						missionStore, err := s.dao.FirstMissionStoreByID(tx, item.MissionStoreID, map[string][]interface{}{}, false)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if missionStore == nil {
+							return errs.NewError(errs.ErrBadRequest)
+						}
+						toolList := missionStore.ToolList
+						if missionStore.OutputType == models.OutputTypeTwitter {
+							toolList, err = s.addToolPostTwitter(toolList, s.conf.ToolLists.PostTwitter)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
+						//assign value
+						for key, value := range item.MissionStoreParams {
+							placeholder := fmt.Sprintf("<%s>", key)
+							toolList = strings.ReplaceAll(toolList, placeholder, value)
+						}
+						mission.MissionStoreID = item.MissionStoreID
 					} else if item.ToolList != "" {
 						mission.ToolList = item.ToolList
 					}
@@ -1166,26 +1193,6 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 		return nil, errs.NewError(err)
 	}
 	return s.GetAgentInfoDetailByAgentID(ctx, agentID)
-}
-
-func (s *Service) addToolPostTwitter(ctx context.Context, toollist string, appendTool string) (string, error) {
-	var initialData []map[string]interface{}
-	if err := json.Unmarshal([]byte(toollist), &initialData); err != nil {
-		return toollist, errs.NewError(err)
-	}
-
-	var appendData map[string]interface{}
-	if err := json.Unmarshal([]byte(appendTool), &appendData); err != nil {
-		return toollist, errs.NewError(err)
-	}
-
-	initialData = append(initialData, appendData)
-
-	updatedJSON, err := json.Marshal(initialData)
-	if err != nil {
-		return toollist, errs.NewError(err)
-	}
-	return string(updatedJSON), nil
 }
 
 func (s *Service) FollowListDefaultTwitters(ctx context.Context, agentID uint) error {

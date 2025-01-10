@@ -1,0 +1,24 @@
+node_modules
+.env
+.idea
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+cache-zk
+deployments
+test-results
+out.log
+artifacts
+artifacts-zk
+
+.DS_Store
+_data
+_models
+_outputs
+migrate-data
+cache_forge
+out

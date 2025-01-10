@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"encoding/base64"
 	"html/template"
 )
 
@@ -22,4 +23,9 @@ func GenerateTemplateContent(templateContent string, data interface{}) (string, 
 		return "", err
 	}
 	return tpl.String(), nil
+}
+
+func Base64Encode(data []byte) string {
+	sDec := base64.StdEncoding.EncodeToString(data)
+	return sDec
 }
