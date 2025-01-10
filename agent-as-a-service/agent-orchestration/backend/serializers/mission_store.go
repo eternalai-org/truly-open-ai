@@ -1,22 +1,29 @@
 package serializers
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 )
 
+type MissionParam struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
 type MissionStoreReq struct {
-	ID           uint   `json:"id"`
-	OwnerAddress string `json:"owner_address"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Prompt       string `json:"prompt"`
-	Price        uint   `json:"price"`
-	DurationDay  uint   `json:"duration_day"`
-	ToolList     string `json:"tool_list"`
-	Icon         string `json:"icon"`
-	OutputType   string `json:"output_type"`
+	ID           uint            `json:"id"`
+	OwnerAddress string          `json:"owner_address"`
+	Name         string          `json:"name"`
+	Description  string          `json:"description"`
+	Prompt       string          `json:"prompt"`
+	Price        uint            `json:"price"`
+	DurationDay  uint            `json:"duration_day"`
+	ToolList     string          `json:"tool_list"`
+	Icon         string          `json:"icon"`
+	OutputType   string          `json:"output_type"`
+	Params       []*MissionParam `json:"params"`
 }
 
 type MissionStoreRatingReq struct {
@@ -27,21 +34,22 @@ type MissionStoreRatingReq struct {
 }
 
 type MissionStoreResp struct {
-	ID             uint      `json:"id"`
-	CreatedAt      time.Time `json:"created_at"`
-	Name           string    `json:"name"`
-	Description    string    `json:"description"`
-	UserPrompt     string    `json:"user_prompt"`
-	Price          uint      `json:"price"`
-	OwnerAddress   string    `json:"owner_address"`
-	ToolList       string    `json:"tool_list"`
-	DepositAddress string    `json:"deposit_address"`
-	DurationDay    uint      `json:"duration_day"`
-	Rating         float64   `json:"rating"`
-	NumRating      uint      `json:"num_rating"`
-	NumUsed        uint      `json:"num_used"`
-	Icon           string    `json:"icon"`
-	OutputType     string    `json:"output_type"`
+	ID             uint            `json:"id"`
+	CreatedAt      time.Time       `json:"created_at"`
+	Name           string          `json:"name"`
+	Description    string          `json:"description"`
+	UserPrompt     string          `json:"user_prompt"`
+	Price          uint            `json:"price"`
+	OwnerAddress   string          `json:"owner_address"`
+	ToolList       string          `json:"tool_list"`
+	DepositAddress string          `json:"deposit_address"`
+	DurationDay    uint            `json:"duration_day"`
+	Rating         float64         `json:"rating"`
+	NumRating      uint            `json:"num_rating"`
+	NumUsed        uint            `json:"num_used"`
+	Icon           string          `json:"icon"`
+	OutputType     string          `json:"output_type"`
+	Params         []*MissionParam `json:"params"`
 }
 
 type MissionStoreHistoryResp struct {
@@ -73,6 +81,10 @@ func NewMissionStoreResp(m *models.MissionStore) *MissionStoreResp {
 	if m == nil {
 		return nil
 	}
+	params := []*MissionParam{}
+	if m.Params != "" {
+		json.Unmarshal([]byte(m.Params), &params)
+	}
 	return &MissionStoreResp{
 		ID:           m.ID,
 		CreatedAt:    m.CreatedAt,
@@ -87,6 +99,7 @@ func NewMissionStoreResp(m *models.MissionStore) *MissionStoreResp {
 		NumRating:    m.NumRating,
 		NumUsed:      m.NumUsed,
 		OutputType:   string(m.OutputType),
+		Params:       params,
 	}
 }
 

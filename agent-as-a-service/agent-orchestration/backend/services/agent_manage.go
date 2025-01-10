@@ -86,6 +86,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		Thumbnail:        req.Thumbnail,
 		NftTokenImage:    req.NFTTokenImage,
 		TokenImageUrl:    req.TokenImageUrl,
+		MissionTopics:    req.MissionTopics,
 	}
 	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, req.AgentName, req.SystemContent)
 	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {

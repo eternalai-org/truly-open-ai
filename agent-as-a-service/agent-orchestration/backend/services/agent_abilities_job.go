@@ -128,7 +128,7 @@ func (s *Service) JobAgentSnapshotPostActionExecuted(ctx context.Context) error 
 						and (
 								agent_infos.reply_latest_time is null
 								or agent_infos.reply_latest_time <= adddate(now(), interval -agent_infos.action_delayed second)
-								or agent_snapshot_post_actions.tool_set in ('follow', 'reply_mentions', 'inscribe_tweet', 'post', 'trading', 'post_search', 'trade_analytics', 'trade_analytics_twitter', 'trade_analytics_mentions')
+								or agent_snapshot_post_actions.tool_set in ('follow', 'reply_mentions', 'inscribe_tweet', 'post', 'trading', 'post_search', 'trade_analytics', 'trade_analytics_twitter', 'trade_analytics_mentions', 'lucky_moneys')
 								or agent_snapshot_post_actions.type in ('reply_multi_unlimited')
 								or agent_snapshot_missions.not_delay = true
 							)
@@ -535,6 +535,7 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 								models.ToolsetTypeTradeAnalytics,
 								models.ToolsetTypeTradeAnalyticsOnTwitter,
 								models.ToolsetTypeTradeAnalyticsMentions,
+								models.ToolsetTypeLuckyMoneys,
 								models.ToolsetType("post_search"):
 								{
 									isPassed = true
@@ -1306,7 +1307,9 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 				if snapshotPost != nil && snapshotPost.AgentInfo != nil &&
 					snapshotPost.ResponseId != "" &&
 					snapshotPost.AgentSnapshotMission != nil &&
-					(snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter || snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions) {
+					(snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter ||
+						snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions ||
+						snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeLuckyMoneys) {
 					if snapshotPost.Status == models.AgentSnapshotPostStatusInferResolved {
 						var rs struct {
 							Data struct {
@@ -1372,13 +1375,22 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 							TokenImageUrl:          imageUrl,
 						}
 
-						if snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter {
-							action.Type = models.AgentSnapshotPostActionTypeTweetMulti
-						} else {
-							if snapshotPost.OrgTweetID == "" {
-								action.Status = models.AgentSnapshotPostActionStatusInvalid
+						switch snapshotPost.AgentSnapshotMission.ToolSet {
+						case models.ToolsetTypeTradeAnalyticsOnTwitter:
+							{
+								action.Type = models.AgentSnapshotPostActionTypeTweetMulti
 							}
-							action.Type = models.AgentSnapshotPostActionTypeReplyMulti
+						case models.ToolsetTypeTradeAnalyticsMentions:
+							{
+								if snapshotPost.OrgTweetID == "" {
+									action.Status = models.AgentSnapshotPostActionStatusInvalid
+								}
+								action.Type = models.AgentSnapshotPostActionTypeReplyMulti
+							}
+						case models.ToolsetTypeLuckyMoneys:
+							{
+								action.Type = models.AgentSnapshotPostActionTypeTweet
+							}
 						}
 
 						err = s.dao.Create(
@@ -1443,7 +1455,7 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 					map[string][]interface{}{
 						"agent_snapshot_posts.created_at <= adddate(now(), interval -5 minute)": {},
 						"agent_snapshot_posts.created_at >= adddate(now(), interval -12 hour)":  {},
-						"agent_snapshot_missions.tool_set in (?)":                               {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions}},
+						"agent_snapshot_missions.tool_set in (?)":                               {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions, models.ToolsetTypeLuckyMoneys}},
 						"agent_snapshot_posts.status = ?":                                       {models.AgentSnapshotPostStatusInferSubmitted},
 					},
 					map[string][]interface{}{},
@@ -1700,6 +1712,38 @@ func (s *Service) BatchPromptItemV2(ctx context.Context, agentInfo *models.Agent
 		request.ResponseId = id
 	}
 	return request, nil
+}
+
+func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobAgentSnapshotPostStatusInferRefund",
+		func() error {
+			var retErr error
+			{
+				ms, err := s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"status = ?": {models.AgentSnapshotPostStatusInferFailed},
+					},
+					map[string][]interface{}{},
+					[]string{}, 0, 999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, m := range ms {
+					err := s.AgentSnapshotPostStatusInferRefund(ctx, m.ID)
+					if err != nil {
+						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+					}
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }
 
 func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapshotPostID uint) error {

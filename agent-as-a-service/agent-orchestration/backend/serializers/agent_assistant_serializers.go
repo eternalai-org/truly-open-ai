@@ -56,6 +56,7 @@ type AssistantsReq struct {
 
 	AgentBaseModel       string `json:"agent_base_model"`
 	TwinTwitterUsernames string `json:"twin_twitter_usernames"`
+	MissionTopics        string `json:"mission_topics"`
 }
 
 func (m *AssistantsReq) GetAssistantCharacter(character interface{}) string {

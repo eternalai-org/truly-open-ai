@@ -169,6 +169,7 @@ type Config struct {
 		FarcasterReply string `json:"farcaster_reply"`
 		TradeNews      string `json:"trade_news"`
 		TradeAnalytic  string `json:"trade_analytic"`
+		PostTwitter    string `json:"post_twitter"`
 	} `json:"tool_lists"`
 	Tron struct {
 		RpcUrl string `json:"rpc_url"`

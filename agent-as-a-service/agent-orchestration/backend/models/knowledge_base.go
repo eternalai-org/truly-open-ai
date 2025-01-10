@@ -10,6 +10,7 @@ const (
 	KnowledgeBaseStatusProcessing
 	KnowledgeBaseStatusDone
 	KnowledgeBaseStatusMinted
+	KnowledgeBaseStatusProcessingFailed
 )
 
 type KnowledgeBase struct {
@@ -31,6 +32,7 @@ type KnowledgeBase struct {
 	SolanaDepositAddress string               `json:"solana_deposit_address"`
 	SolanaDepositPrivKey string               `json:"-"`
 	FilecoinHash         string               `json:"filecoin_hash"`
+	DepositChainId       uint64               `json:"deposit_chain_id"`
 }
 
 type KnowledgeBaseFile struct {

@@ -17,19 +17,18 @@ const (
 
 type MissionStore struct {
 	gorm.Model
-	Name             string
-	Description      string `gorm:"type:text"`
-	UserPrompt       string `gorm:"type:longtext"`
-	Price            uint
-	OwnerAddress     string
-	ToolList         string  `gorm:"type:longtext"`
-	Rating           float64 `gorm:"type:decimal(5,2);default:0"`
-	NumRating        uint
-	NumUsed          uint
-	Icon             string `gorm:"type:text"`
-	OutputType       OutputType
-	ListHeaderParams string `gorm:"type:longtext"` //[{"name" : "token", "type" : "text", "description" : "this token is used to authenticate in xxx server side"}]
-	ListBodyParams   string `gorm:"type:longtext"` //[{"name" : "token", "type" : "text", "description" : "this token is used to authenticate in xxx server side"}]
+	Name         string
+	Description  string `gorm:"type:text"`
+	UserPrompt   string `gorm:"type:longtext"`
+	Price        uint
+	OwnerAddress string
+	ToolList     string  `gorm:"type:longtext"`
+	Rating       float64 `gorm:"type:decimal(5,2);default:0"`
+	NumRating    uint
+	NumUsed      uint
+	Icon         string `gorm:"type:text"`
+	OutputType   OutputType
+	Params       string `gorm:"type:longtext"` //[{"name" : "token", "type" : "text", "description" : "this token is used to authenticate in xxx server side"}]
 
 }
 

@@ -43,15 +43,22 @@ type TwitterInfoResp struct {
 }
 
 type AgentSnapshotMissionInfo struct {
-	ID             uint                      `json:"id"`
-	UserPrompt     string                    `json:"user_prompt"`
-	Interval       int                       `json:"interval"`
-	ToolSet        models.ToolsetType        `json:"tool_set"`
-	AgentType      models.AgentInfoAgentType `json:"agent_type"`
-	UserTwitterIDs string                    `json:"user_twitter_ids"`
-	ToolList       string                    `json:"tool_list"`
-	Tokens         string                    `json:"tokens"`
-	AgentBaseModel string                    `json:"agent_base_model"`
+	ID                 uint                      `json:"id"`
+	UserPrompt         string                    `json:"user_prompt"`
+	Interval           int                       `json:"interval"`
+	ToolSet            models.ToolsetType        `json:"tool_set"`
+	AgentType          models.AgentInfoAgentType `json:"agent_type"`
+	UserTwitterIDs     string                    `json:"user_twitter_ids"`
+	ToolList           string                    `json:"tool_list"`
+	Tokens             string                    `json:"tokens"`
+	AgentBaseModel     string                    `json:"agent_base_model"`
+	MissionStoreID     uint                      `json:"mission_store_id"`
+	MissionStoreParams map[string]string         `json:"mission_store_params"`
+	Topics             string                    `json:"topics"`
+	IsTwitterSearch    bool                      `json:"is_twitter_search"`
+	IsBingSearch       bool                      `json:"is_bing_search"`
+	RewardAmount       numeric.BigFloat          `json:"reward_amount"`
+	RewardUser         int                       `json:"reward_user"`
 }
 
 type AgentInfoResp struct {
@@ -112,6 +119,7 @@ type AgentInfoResp struct {
 	EstimateTwinDoneTimestamp *time.Time             `json:"estimate_twin_done_timestamp"`
 	TokenDesc                 string                 `json:"token_desc"`
 	ExternalChartUrl          string                 `json:"external_chart_url"`
+	MissionTopics             string                 `json:"mission_topics"`
 }
 
 type AgentTwitterPostResp struct {
@@ -177,15 +185,20 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		return nil
 	}
 	resp := &AgentSnapshotMissionInfo{
-		ID:             m.ID,
-		UserPrompt:     m.UserPrompt,
-		Interval:       m.IntervalSec,
-		ToolSet:        m.ToolSet,
-		AgentType:      m.AgentType,
-		UserTwitterIDs: m.UserTwitterIds,
-		Tokens:         m.Tokens,
-		AgentBaseModel: m.AgentBaseModel,
-		ToolList:       m.ToolList,
+		ID:              m.ID,
+		UserPrompt:      m.UserPrompt,
+		Interval:        m.IntervalSec,
+		ToolSet:         m.ToolSet,
+		AgentType:       m.AgentType,
+		UserTwitterIDs:  m.UserTwitterIds,
+		Tokens:          m.Tokens,
+		AgentBaseModel:  m.AgentBaseModel,
+		ToolList:        m.ToolList,
+		Topics:          m.Topics,
+		IsTwitterSearch: m.IsTwitterSearch,
+		IsBingSearch:    m.IsBingSearch,
+		RewardAmount:    m.RewardAmount,
+		RewardUser:      m.RewardUser,
 	}
 	return resp
 }
@@ -239,6 +252,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		TotalMintTwinFee:     m.TotalMintTwinFee,
 		TokenDesc:            m.TokenDesc,
 		ExternalChartUrl:     m.ExternalChartUrl,
+		MissionTopics:        m.MissionTopics,
 	}
 
 	if m.NftTokenImage != "" {

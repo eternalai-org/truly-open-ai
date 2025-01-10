@@ -210,6 +210,7 @@ type AgentInfo struct {
 	SocialInfo           string `gorm:"type:longtext"`
 	InferenceCalls       int64
 	ExternalChartUrl     string
+	MissionTopics        string `gorm:"type:longtext"`
 
 	TwinTwitterUsernames    string           `gorm:"index"` // multiple twitter usernames, split by ,
 	TwinStatus              TwinStatus       `gorm:"index"`

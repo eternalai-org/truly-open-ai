@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -30,6 +31,7 @@ func (s *Service) UploadMisstionStore(ctx context.Context, req *serializers.Miss
 				missionStore.Name = req.Name
 				missionStore.Description = req.Description
 			} else {
+				params, _ := json.Marshal(req.Params)
 				missionStore = &models.MissionStore{
 					Name:         req.Name,
 					Description:  req.Description,
@@ -39,6 +41,7 @@ func (s *Service) UploadMisstionStore(ctx context.Context, req *serializers.Miss
 					ToolList:     req.ToolList,
 					Icon:         req.Icon,
 					OutputType:   models.OutputType(req.OutputType),
+					Params:       string(params),
 				}
 			}
 			if err != nil {
@@ -169,4 +172,24 @@ func (s *Service) GetMissionStoreHistory(ctx context.Context, id uint, page, lim
 		return nil, 0, errs.NewError(err)
 	}
 	return res, count, nil
+}
+
+func (s *Service) addToolPostTwitter(toollist string, appendTool string) (string, error) {
+	var initialData []map[string]interface{}
+	if err := json.Unmarshal([]byte(toollist), &initialData); err != nil {
+		return toollist, errs.NewError(err)
+	}
+
+	var appendData map[string]interface{}
+	if err := json.Unmarshal([]byte(appendTool), &appendData); err != nil {
+		return toollist, errs.NewError(err)
+	}
+
+	initialData = append(initialData, appendData)
+
+	updatedJSON, err := json.Marshal(initialData)
+	if err != nil {
+		return toollist, errs.NewError(err)
+	}
+	return string(updatedJSON), nil
 }

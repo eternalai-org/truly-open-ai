@@ -491,7 +491,7 @@ func (s *Server) boolValueFromContextQuery(c *gin.Context, query string) (bool, 
 	return ret, nil
 }
 
-func (s *Server) proxyMiddleware(prefixPath string, host string) gin.HandlerFunc {
+func (s *Server) proxyMiddleware(prefixPath string, host string, headers map[string]string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		r := c.Request
 		w := c.Writer
@@ -509,6 +509,9 @@ func (s *Server) proxyMiddleware(prefixPath string, host string) gin.HandlerFunc
 			req.URL.RawQuery = query.Encode()
 			for k := range r.Header {
 				v := c.GetHeader(k)
+				req.Header.Set(k, v)
+			}
+			for k, v := range headers {
 				req.Header.Set(k, v)
 			}
 			if os.Getenv("DEV") == "true" {

@@ -39,12 +39,19 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err != nil {
 		return nil, err
 	}
+
+	updatedFields := make(map[string]interface{})
 	hash, err := lighthouse.UploadDataWithRetry(uc.lighthouseKey, fmt.Sprintf("%d_%s", time.Now().Unix(), filename), bytes)
 	if err != nil {
+		logger.Error("WebhookFile", "UploadDataWithRetry", zap.Error(err))
+		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		_ = uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
 		return nil, err
 	}
 
-	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, map[string]interface{}{"filecoin_hash": hash}); err != nil {
+	updatedFields["status"] = models.KnowledgeBaseStatusDone
+	updatedFields["filecoin_hash"] = hash
+	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields); err != nil {
 		return nil, err
 	}
 	return kn, nil
@@ -68,6 +75,11 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 
 	updatedFields := make(map[string]interface{})
 	updatedFields["filecoin_hash"] = req.Result.FilecoinHash
+	if req.Result.FilecoinHash == "" {
+		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+	} else {
+		updatedFields["status"] = models.KnowledgeBaseStatusDone
+	}
 	// updatedFields["message"] = req.Message
 
 	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
@@ -224,17 +236,17 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 		zap.Any("_knPrice", _knPrice),
 	)
 
-	balance, err := utils.GetBalanceOnSolanaChain(ctx, kn.SolanaDepositAddress)
-	if err != nil {
-		logger.Logger().Error("GetBalanceOnSolanaChain", zap.Error(err))
-	}
+	// balance, err := utils.GetBalanceOnSolanaChain(ctx, kn.SolanaDepositAddress)
+	// if err != nil {
+	// 	logger.Logger().Error("GetBalanceOnSolanaChain", zap.Error(err))
+	// }
 
-	if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() >= 0 {
-		kn.Status = models.KnowledgeBaseStatusPaymentReceipt
-		if err := uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
-			return err
-		}
-	}
+	// if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() >= 0 {
+	// 	kn.Status = models.KnowledgeBaseStatusPaymentReceipt
+	// 	if err := uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	for networkId, net := range uc.networks {
 		nId, err := strconv.ParseUint(networkId, 10, 64)
@@ -263,8 +275,12 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 		}
 
 		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() >= 0 {
+			updatedFields := make(map[string]interface{})
+			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
+			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
+			updatedFields["deposit_chain_id"] = nId
 			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
-			if err := uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
+			if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
 				return err
 			}
 		}
