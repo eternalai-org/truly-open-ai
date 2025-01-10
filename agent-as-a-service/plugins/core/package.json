@@ -1,0 +1,33 @@
+{
+  "name": "@eternal-dagent/core",
+  "version": "1.0.3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TrustlessComputer/eternal-dagent"
+  },
+  "homepage": "https://eternalai.org/",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": false,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "watch": "tsup --watch",
+    "publish:skip-tag": "yarn publish --no-git-tag-version"
+  },
+  "dependencies": {
+    "axios": "^1.6.5",
+    "ethers": "5.7.2",
+    "ai": "3.4.33",
+    "zod": "3.23.8",
+    "openai": "4.73.0",
+    "@ai-sdk/openai": "1.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  }
+}
