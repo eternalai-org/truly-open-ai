@@ -44,7 +44,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 						or (network_id = ? and eai_balance >= 299.9)
 						or (network_id = ? and eai_balance >= 174.9)
 						or (network_id = ? and eai_balance >= 569.9)
-						or (network_id = ? and eai_balance >= 1999.9)
+						or (network_id = ? and eai_balance >= 750.0)
 						or (network_id not in (?) and eai_balance >= 9.99)
 						or (ref_tweet_id > 0 and eai_balance >= 0)
 					)
