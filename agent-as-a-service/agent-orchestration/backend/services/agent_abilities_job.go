@@ -1752,7 +1752,9 @@ func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) err
 			{
 				ms, err := s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
 					map[string][]interface{}{
-						"status = ?": {models.AgentSnapshotPostStatusInferFailed},
+						"status = ?":                    {models.AgentSnapshotPostStatusInferFailed},
+						"agent_info_id > 0":             {},
+						"agent_snapshot_mission_id > 0": {},
 					},
 					map[string][]interface{}{},
 					[]string{}, 0, 999,
@@ -1788,8 +1790,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						tx,
 						snapshotPostID,
 						map[string][]interface{}{
-							"AgentInfo":            {},
-							"AgentSnapshotMission": {},
+							"AgentInfo": {},
 						},
 						false,
 					)
@@ -1799,10 +1800,13 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 					if inferPost != nil &&
 						inferPost.Status == models.AgentSnapshotPostStatusInferFailed &&
 						inferPost.AgentInfo != nil &&
-						inferPost.AgentSnapshotMission != nil {
+						inferPost.AgentSnapshotMissionID > 0 {
 						//
 						agentInfo := inferPost.AgentInfo
-						agentSnapshotMission := inferPost.AgentSnapshotMission
+						toolSet, err := s.dao.GetMissionToolset(tx, inferPost.AgentSnapshotMissionID)
+						if err != nil {
+							return errs.NewError(err)
+						}
 						//
 						err = tx.Model(inferPost).
 							UpdateColumn("status", models.AgentSnapshotPostStatusInferRefund).
@@ -1827,7 +1831,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 								Status:         models.AgentEaiTopupStatusDone,
 								DepositAddress: agentInfo.ETHAddress,
 								ToAddress:      agentInfo.ETHAddress,
-								Toolset:        string(agentSnapshotMission.ToolSet),
+								Toolset:        toolSet,
 							},
 						)
 					}

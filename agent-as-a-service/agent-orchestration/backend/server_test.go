@@ -41,5 +41,5 @@ func init() {
 }
 
 func Test_SRV(t *testing.T) {
-	// ts.MemeBurnPositionUniswap(context.Background(), 8)
+	// ts.AgentSnapshotPostStatusInferRefund(context.Background(), 96753)
 }
