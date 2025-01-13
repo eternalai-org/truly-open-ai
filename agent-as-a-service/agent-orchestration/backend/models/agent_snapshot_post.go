@@ -60,6 +60,8 @@ type AgentSnapshotPost struct {
 	AgentSnapshotPostAction []*AgentSnapshotPostAction
 	OrgTweetID              string
 	Token                   string
+	MissionStoreID          uint
+	IsRated                 bool
 }
 
 type (
