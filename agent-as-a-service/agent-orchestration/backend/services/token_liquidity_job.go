@@ -1463,3 +1463,47 @@ func (s *Service) JobRetryAddPool2(ctx context.Context) error {
 	}
 	return nil
 }
+
+func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) error {
+	err := s.JobRunCheck(
+		ctx,
+		fmt.Sprintf("MemeBurnPositionUniswap_%d", memeID),
+		func() error {
+			meme, err := s.dao.FirstMemeByID(daos.GetDBMainCtx(ctx), memeID, map[string][]interface{}{}, false)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if meme.Status == models.MemeStatusAddPoolLevel2 && meme.UniswapPositionID > 0 && meme.BurnPool2TxHash == "" {
+				memePoolAddress := strings.ToLower(s.conf.GetConfigKeyString(meme.NetworkID, "meme_pool_address"))
+				{
+					burnPoolTxHash, err := s.GetEVMClient(ctx, meme.NetworkID).Erc721Transfer(
+						s.conf.GetConfigKeyString(meme.NetworkID, "uniswap_position_mamanger_address"),
+						s.GetAddressPrk(
+							memePoolAddress,
+						),
+						meme.UniswapPool,
+						big.NewInt(meme.UniswapPositionID),
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = daos.GetDBMainCtx(ctx).
+						Model(meme).
+						Updates(
+							map[string]interface{}{
+								"burn_pool2_tx_hash": burnPoolTxHash,
+							},
+						).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}

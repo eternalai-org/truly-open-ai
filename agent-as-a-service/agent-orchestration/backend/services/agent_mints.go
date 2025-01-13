@@ -567,7 +567,7 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 			Updates(
 				map[string]interface{}{
 					"agent_name":        info.Name,
-					"creator":           s.GetEVMClient(ctx, networkID).ConvertAddressForOut(strings.ToLower(event.Minter.Hex())),
+					"creator":           strings.ToLower(event.Minter.Hex()),
 					"agent_contract_id": event.TokenId.String(),
 					"status":            models.AssistantStatusReady,
 					"system_prompt":     string(systemPrompt),
