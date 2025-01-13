@@ -1149,7 +1149,8 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						}
 						toolList := missionStore.ToolList
 						if missionStore.OutputType == models.OutputTypeTwitter {
-							toolList, err = s.addToolPostTwitter(toolList, s.conf.ToolLists.PostTwitter)
+							twitterTool := fmt.Sprintf(s.conf.ToolLists.PostTwitter, s.conf.InternalApiKey, agentInfo.ID)
+							toolList, err = s.addToolPostTwitter(toolList, twitterTool)
 							if err != nil {
 								return errs.NewError(err)
 							}
@@ -1160,6 +1161,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 							toolList = strings.ReplaceAll(toolList, placeholder, value)
 						}
 						mission.MissionStoreID = item.MissionStoreID
+						mission.ToolList = toolList
 					} else if item.ToolList != "" {
 						mission.ToolList = item.ToolList
 					}
