@@ -98,6 +98,8 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.MissionStore)(nil),
 		(*models.MissionStoreRating)(nil),
 		(*models.MissionStoreHistory)(nil),
+
+		(*models.AbilityLuckyMoney)(nil),
 	}
 
 	if err := db.AutoMigrate(allTables...).Error; err != nil {

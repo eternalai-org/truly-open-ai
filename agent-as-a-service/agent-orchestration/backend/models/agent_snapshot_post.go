@@ -95,6 +95,7 @@ const (
 	AgentSnapshotPostActionStatusInvalid        AgentSnapshotPostActionStatus = "invalid"
 	AgentSnapshotPostActionStatusTesting        AgentSnapshotPostActionStatus = "testing"
 	AgentSnapshotPostActionStatusInscribing     AgentSnapshotPostActionStatus = "inscribing"
+	AgentSnapshotPostActionStatusPaid           AgentSnapshotPostActionStatus = "paid"
 )
 
 type AgentSnapshotPostAction struct {
@@ -140,7 +141,18 @@ type AgentSnapshotPostAction struct {
 	RewardUser             int
 }
 
-type AgentSnapshotPostActionLuckyMoney struct {
+type (
+	LuckyMoneyStatus string
+)
+
+const (
+	LuckyMoneyStatusNew        LuckyMoneyStatus = "new"
+	LuckyMoneyStatusProcessing LuckyMoneyStatus = "processing"
+	LuckyMoneyStatusInvalid    LuckyMoneyStatus = "invalid"
+	LuckyMoneyStatusDone       LuckyMoneyStatus = "done"
+)
+
+type AbilityLuckyMoney struct {
 	gorm.Model
 	NetworkID              uint64
 	AgentInfoID            uint `gorm:"index"`
@@ -149,8 +161,18 @@ type AgentSnapshotPostActionLuckyMoney struct {
 	AgentSnapshotMission   *AgentSnapshotMission
 	AgentSnapshotPostID    uint `gorm:"index"`
 	AgentSnapshotPost      *AgentSnapshotPost
-	AgentTwitterId         string
-	Price                  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RewardAmount           numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Status                 LuckyMoneyStatus
+	Error                  string
+	TweetID                string     `gorm:"unique_index"`
+	TweetAt                *time.Time `gorm:"index"`
+	TwitterID              string
+	TwitterUsername        string
+	TwitterName            string
+	Content                string `gorm:"type:longtext"`
+	UserAddress            string
+	RefTweetID             string
+	TxHash                 string
 }
 
 type ToolsetType string

@@ -216,7 +216,8 @@ func (s *Server) GetListUserMentions(c *gin.Context) {
 	ctx := s.requestContext(c)
 	twitterID := s.stringFromContextParam(c, "id")
 	paginationToken := s.stringFromContextQuery(c, "pagination_token")
-	user, err := s.nls.GetListUserMentions(ctx, twitterID, paginationToken)
+	maxResults := s.maxResultFromContextQuery(c)
+	user, err := s.nls.GetListUserMentions(ctx, twitterID, paginationToken, maxResults)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -228,7 +229,8 @@ func (s *Server) GetListUserMentionsByQuery(c *gin.Context) {
 	ctx := s.requestContext(c)
 	twitterID := s.stringFromContextQuery(c, "id")
 	paginationToken := s.stringFromContextQuery(c, "pagination_token")
-	user, err := s.nls.GetListUserMentions(ctx, twitterID, paginationToken)
+	maxResults := s.maxResultFromContextQuery(c)
+	user, err := s.nls.GetListUserMentions(ctx, twitterID, paginationToken, maxResults)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -240,7 +242,8 @@ func (s *Server) GetListUserMentionsByUsername(c *gin.Context) {
 	ctx := s.requestContext(c)
 	username := s.stringFromContextParam(c, "username")
 	paginationToken := s.stringFromContextQuery(c, "pagination_token")
-	user, err := s.nls.GetListUserMentionsByUsername(ctx, username, paginationToken)
+	maxResults := s.maxResultFromContextQuery(c)
+	user, err := s.nls.GetListUserMentionsByUsername(ctx, username, paginationToken, maxResults)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -252,7 +255,8 @@ func (s *Server) GetAllUserMentionsByUsername(c *gin.Context) {
 	ctx := s.requestContext(c)
 	username := s.stringFromContextParam(c, "username")
 	paginationToken := s.stringFromContextQuery(c, "pagination_token")
-	user, err := s.nls.GetAllUserMentionsByUsername(ctx, username, paginationToken)
+	maxResults := s.maxResultFromContextQuery(c)
+	user, err := s.nls.GetAllUserMentionsByUsername(ctx, username, paginationToken, maxResults)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -264,7 +268,8 @@ func (s *Server) GetListUserMentionsByUsernameByQuery(c *gin.Context) {
 	ctx := s.requestContext(c)
 	username := s.stringFromContextQuery(c, "username")
 	paginationToken := s.stringFromContextQuery(c, "pagination_token")
-	user, err := s.nls.GetListUserMentionsByUsername(ctx, username, paginationToken)
+	maxResults := s.maxResultFromContextQuery(c)
+	user, err := s.nls.GetListUserMentionsByUsername(ctx, username, paginationToken, maxResults)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

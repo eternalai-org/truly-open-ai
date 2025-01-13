@@ -74,7 +74,7 @@ func (s *Service) ScanAgentTwitterPostForTA(ctx context.Context, agentID uint) e
 	}
 	if twitterInfo != nil {
 		err = func() error {
-			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(agent.TwitterID, "", twitterInfo.AccessToken)
+			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(agent.TwitterID, "", twitterInfo.AccessToken, 25)
 			if err != nil {
 				return errs.NewError(err)
 			}

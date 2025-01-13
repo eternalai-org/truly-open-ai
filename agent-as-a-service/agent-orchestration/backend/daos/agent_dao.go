@@ -222,3 +222,33 @@ func (d *DAO) GetAgentSummaryReport(tx *gorm.DB, hiddenNetworkId string) ([]*mod
 	}
 	return rs, nil
 }
+
+func (d *DAO) FirstAbilityLuckyMoney(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string) (*models.AbilityLuckyMoney, error) {
+	var m models.AbilityLuckyMoney
+	if err := d.first(tx, &m, filters, preloads, orders, false); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &m, nil
+}
+
+func (d *DAO) FindAbilityLuckyMoney(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, offset int, limit int) ([]*models.AbilityLuckyMoney, error) {
+	var ms []*models.AbilityLuckyMoney
+	if err := d.find(tx, &ms, filters, preloads, orders, offset, limit, false); err != nil {
+		return nil, err
+	}
+	return ms, nil
+}
+
+func (d *DAO) FirstAbilityLuckyMoneyByID(tx *gorm.DB, id uint, preloads map[string][]interface{}, forUpdate bool) (*models.AbilityLuckyMoney, error) {
+	var m models.AbilityLuckyMoney
+	if err := d.first(tx, &m, map[string][]interface{}{"id = ?": []interface{}{id}}, preloads, nil, forUpdate); err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &m, nil
+}

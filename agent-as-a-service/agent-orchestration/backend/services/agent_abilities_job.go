@@ -409,18 +409,20 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						return errs.NewError(errs.ErrBadRequest)
 					}
 
-					inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, mission, inferPost)
-					if err != nil {
-						inferPost.Error = err.Error()
-						inferPost.Status = models.AgentSnapshotPostStatusInferError
-						err = s.dao.Create(
-							tx,
-							inferPost,
-						)
+					if mission.ToolSet != models.ToolsetTypeLuckyMoneys {
+						inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, mission, inferPost)
 						if err != nil {
-							return errs.NewError(err)
+							inferPost.Error = err.Error()
+							inferPost.Status = models.AgentSnapshotPostStatusInferError
+							err = s.dao.Create(
+								tx,
+								inferPost,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							return nil
 						}
-						return nil
 					}
 
 					err = s.dao.Create(

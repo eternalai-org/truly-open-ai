@@ -273,8 +273,8 @@ func (c *Client) LookupUserTweets(accessToken string, tweetIDs []string) (*Tweet
 	fieldOpts := TweetFieldOptions{
 		Expansions: []Expansion{
 			ExpansionAuthorID,
-			ExpansionReferencedTweetsID,
-			ExpansionReferencedTweetsIDAuthorID,
+			// ExpansionReferencedTweetsID,
+			// ExpansionReferencedTweetsIDAuthorID,
 			ExpansionAttachmentsMediaKeys,
 			ExpansionInReplyToUserID,
 		},
@@ -315,7 +315,7 @@ func (c *Client) LookupUserTweets(accessToken string, tweetIDs []string) (*Tweet
 	return &lookups, nil
 }
 
-func (c *Client) GetListUserMentions(userTwitterID, paginationToken, accessToken string) (*UserTimeline, error) {
+func (c *Client) GetListUserMentions(userTwitterID, paginationToken, accessToken string, maxResults int) (*UserTimeline, error) {
 	c.user = &User{
 		Authorizer: authorize{
 			Token: accessToken,
@@ -346,8 +346,8 @@ func (c *Client) GetListUserMentions(userTwitterID, paginationToken, accessToken
 		},
 		Expansions: []Expansion{
 			ExpansionAuthorID,
-			ExpansionReferencedTweetsID,
-			ExpansionReferencedTweetsIDAuthorID,
+			// ExpansionReferencedTweetsID,
+			// ExpansionReferencedTweetsIDAuthorID,
 			ExpansionAttachmentsMediaKeys,
 			ExpansionInReplyToUserID,
 		},
@@ -356,7 +356,7 @@ func (c *Client) GetListUserMentions(userTwitterID, paginationToken, accessToken
 			MediaFieldURL,
 			MediaFieldType,
 		},
-		MaxResults: 25,
+		MaxResults: maxResults,
 	}
 	if paginationToken != "" {
 		tweetOpts.PaginationToken = paginationToken

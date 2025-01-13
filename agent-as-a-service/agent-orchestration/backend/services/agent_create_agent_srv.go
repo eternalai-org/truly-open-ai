@@ -75,7 +75,7 @@ func (s *Service) ScanAgentTwitterPostFroCreateAgent(ctx context.Context, agentI
 	}
 	if twitterInfo != nil {
 		err = func() error {
-			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(agent.TwitterID, "", twitterInfo.AccessToken)
+			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(agent.TwitterID, "", twitterInfo.AccessToken, 50)
 			if err != nil {
 				return errs.NewError(err)
 			}

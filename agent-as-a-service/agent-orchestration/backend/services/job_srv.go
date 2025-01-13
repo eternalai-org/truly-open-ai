@@ -164,9 +164,14 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateAgent, context.Background())
 	gocron.Every(1).Minute().Do(s.JobAgentTwitterPostCreateAgent, context.Background())
 
-	// NBS trading analyze
+	// trading analyze
 	// gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForTA, context.Background())
 	// gocron.Every(1).Minute().Do(s.JobAgentTwitterPostTA, context.Background())
+
+	//lucky moneys
+	gocron.Every(5).Minute().Do(s.JobLuckyMoneyActionExecuted, context.Background())
+	gocron.Every(5).Minute().Do(s.JobLuckyMoneyCollectPost, context.Background())
+	gocron.Every(5).Minute().Do(s.JobLuckyMoneyProcessUserReward, context.Background())
 
 	gocron.Every(5).Minute().Do(s.JobUpdateOffchainAutoOutput, context.Background())
 	gocron.Every(30).Minute().Do(s.JobUpdateOffchainAutoOutput3Hour, context.Background())
