@@ -42,9 +42,10 @@ func init() {
 }
 
 func Test_JOB(t *testing.T) {
-	ts.JobLuckyMoneyActionExecuted(context.Background())
+	// ts.JobLuckyMoneyActionExecuted(context.Background())
+	ts.JobLuckyMoneyCollectPost(context.Background())
 }
 
 func Test_SRV(t *testing.T) {
-	// ts.AgentSnapshotPostStatusInferRefund(context.Background(), 96753)
+	ts.TestUtil()
 }

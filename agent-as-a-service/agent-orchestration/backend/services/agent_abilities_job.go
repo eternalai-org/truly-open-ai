@@ -1367,7 +1367,7 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 
 						listThough := []string{}
 						for i, item := range rs.Data.AIOutput.Scratchpad {
-							if i == 0 {
+							if i == 0 || i == 1 {
 								continue
 							}
 							if item.Thought != "" {
@@ -1652,6 +1652,9 @@ func (s *Service) getTaskToolSet(assistant *models.AgentInfo, taskReq string) (s
 	case "tweet_news":
 		task = "tweet_news"
 		toolset = ""
+	case "lucky_moneys":
+		task = "lucky_moneys"
+		toolset = "lucky_moneys"
 	}
 	if assistant.NetworkID == models.HERMES_CHAIN_ID && assistant.AgentContractID == "2" {
 		// @thetickerisbot

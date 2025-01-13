@@ -30,17 +30,17 @@ func (s *Service) JobLuckyMoneyCollectPost(ctx context.Context) error {
 				map[string][]interface{}{
 					"agent_snapshot_post_actions.status = ?":   {models.AgentSnapshotPostActionStatusDone},
 					"agent_snapshot_post_actions.tool_set = ?": {models.ToolsetTypeLuckyMoneys},
-					`(
-						agent_infos.agent_type = 1
-						and agent_infos.reply_enabled = true
-					)`: {},
-					`(
-						agent_snapshot_missions.enabled = 1
-						and agent_snapshot_missions.reply_enabled = 1
-						and agent_snapshot_missions.interval_sec > 0
-						and agent_snapshot_missions.is_testing = 0
-						and agent_snapshot_missions.deleted_at is null
-					)`: {},
+					// `(
+					// 	agent_infos.agent_type = 1
+					// 	and agent_infos.reply_enabled = true
+					// )`: {},
+					// `(
+					// 	agent_snapshot_missions.enabled = 1
+					// 	and agent_snapshot_missions.reply_enabled = 1
+					// 	and agent_snapshot_missions.interval_sec > 0
+					// 	and agent_snapshot_missions.is_testing = 0
+					// 	and agent_snapshot_missions.deleted_at is null
+					// )`: {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -54,7 +54,7 @@ func (s *Service) JobLuckyMoneyCollectPost(ctx context.Context) error {
 			}
 
 			for _, action := range actions {
-				err = s.AgentSnapshotPostActionExecuted(ctx, action.ID)
+				err = s.LuckyMoneyCollectPost(ctx, action.ID)
 				if err != nil {
 					return errs.NewError(err)
 				}
@@ -202,8 +202,8 @@ func (s *Service) LuckyMoneyValidateRewardUser(ctx context.Context, missionID ui
 					userPosts, err := s.dao.FindAbilityLuckyMoney(
 						tx,
 						map[string][]interface{}{
-							"agent_snapshot_mission_id": {missionID},
-							"status in (?)":             {[]models.LuckyMoneyStatus{models.LuckyMoneyStatusNew, models.LuckyMoneyStatusDone, models.LuckyMoneyStatusProcessing}},
+							"agent_snapshot_mission_id = ? ": {missionID},
+							"status in (?)":                  {[]models.LuckyMoneyStatus{models.LuckyMoneyStatusNew, models.LuckyMoneyStatusDone, models.LuckyMoneyStatusProcessing}},
 						},
 						map[string][]interface{}{},
 						[]string{"tweet_at asc"}, 0, snapshotPostAction.RewardUser,
@@ -383,8 +383,8 @@ func (s *Service) JobLuckyMoneyActionExecuted(ctx context.Context) error {
 			{
 				ms, err := s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
 					map[string][]interface{}{
-						"tool_set = ?": {models.ToolsetTypeLuckyMoneys},
-						"status = ?":   {models.AgentSnapshotPostStatusInferSubmitted},
+						"toolset = ?": {models.ToolsetTypeLuckyMoneys},
+						"status = ?":  {models.AgentSnapshotPostStatusInferSubmitted},
 					},
 					map[string][]interface{}{},
 					[]string{
@@ -428,9 +428,8 @@ func (s *Service) LuckyMoneyActionExecuted(ctx context.Context, snapshotPostID u
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if snapshotPost != nil && snapshotPost.AgentInfo != nil &&
-							snapshotPost.AgentSnapshotMission != nil &&
-							snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeLuckyMoneys {
+						if snapshotPost != nil &&
+							models.ToolsetType(snapshotPost.Toolset) == models.ToolsetTypeLuckyMoneys {
 							randomTime := helpers.TimeNow().Add(time.Minute * time.Duration(helpers.RandomInt(5, 40)))
 							content, err := s.LuckyMoneyGetPostContent(tx, snapshotPost.AgentInfoID)
 
@@ -453,7 +452,7 @@ func (s *Service) LuckyMoneyActionExecuted(ctx context.Context, snapshotPostID u
 
 							action := &models.AgentSnapshotPostAction{
 								NetworkID:              snapshotPost.NetworkID,
-								AgentInfoID:            snapshotPost.ID,
+								AgentInfoID:            snapshotPost.AgentInfoID,
 								AgentSnapshotPostID:    snapshotPostID,
 								AgentSnapshotMissionID: snapshotPost.AgentSnapshotMissionID,
 								AgentTwitterId:         agentInfo.TwitterID,
@@ -463,6 +462,8 @@ func (s *Service) LuckyMoneyActionExecuted(ctx context.Context, snapshotPostID u
 								Content:                content,
 								Status:                 status,
 								Type:                   models.AgentSnapshotPostActionTypeTweet,
+								RewardUser:             mission.RewardUser,
+								RewardAmount:           mission.RewardAmount,
 							}
 
 							err = s.dao.Create(tx, action)
@@ -528,4 +529,9 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID uint) (strin
 		}
 	}
 	return postContent, nil
+}
+
+func (s *Service) TestUtil() {
+	etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
+	fmt.Println(etherAddress)
 }
