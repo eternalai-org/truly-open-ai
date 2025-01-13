@@ -8,6 +8,7 @@ import (
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
@@ -205,6 +206,14 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 	}
 	if m.MissionStoreID > 0 {
 		resp.ToolList = ""
+	}
+	return resp
+}
+
+func NewKnowledgeBaseResp(m *models.KnowledgeBase) *KnowledgeBase {
+	resp := &KnowledgeBase{}
+	if err := utils.Copy(resp, m); err != nil {
+		return nil
 	}
 	return resp
 }

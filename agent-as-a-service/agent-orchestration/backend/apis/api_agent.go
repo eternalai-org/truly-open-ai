@@ -91,7 +91,7 @@ func (s *Server) GetAgentDetailByAgentIDForDojo(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	result := serializers.NewAssistantResp(ms)
+	result := serializers.NewAssistantResp(ms, nil)
 	result.AgentInfo.EstimateTwinDoneTimestamp = estimateTime
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: result})
 }
