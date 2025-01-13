@@ -13,7 +13,6 @@
     "node": ">=18"
   },
   "scripts": {
-    "start": "NODE_ENV=development BABEL_ENV=development yarn storybook",
     "build": "rimraf dist && NODE_ENV=production BABEL_ENV=production rollup -c",
     "lint": "yarn check-types && yarn eslint && yarn stylelint",
     "lint:fix": "yarn eslint:fix && yarn stylelint:fix",
