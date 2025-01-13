@@ -45,11 +45,11 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err != nil {
 		return nil, err
 	}
-
+	logger.Info("WebhookFile", "start WebhookFile", zap.Any("knowledgeBaseId", id), zap.Any("filename", filename))
 	updatedFields := make(map[string]interface{})
 	hash, err := lighthouse.UploadDataWithRetry(uc.lighthouseKey, fmt.Sprintf("%d_%s", time.Now().Unix(), filename), bytes)
 	if err != nil {
-		logger.Error("WebhookFile", "UploadDataWithRetry", zap.Error(err))
+		logger.Error("WebhookFileError", "UploadDataWithRetry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		_ = uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
 		return nil, err
