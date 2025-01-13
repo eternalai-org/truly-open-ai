@@ -5,6 +5,31 @@ import (
 	"os"
 )
 
+const (
+	EAI_OldWH_ChainID      = "43338" // workerHub version 0 , other chain workerHub v1
+	BaseChainID            = "8453"
+	BaseChainIDInt         = 8453
+	BitAiChainID           = "222671"
+	DAGIChainID            = "222672"
+	HermesChain            = "45762"
+	ArbitrumChainID        = "42161"
+	DuckChainID            = "5545"
+	PolygonChainID         = "137"
+	ZkSyncChainID          = "324"
+	ZkSyncChainIDInt       = 324
+	EthereumChainID        = "1"
+	BscChainID             = "56"
+	AbstractTestnetChainID = "11124"
+	SubtensorEVMChainID    = "964"
+	SubtensorEVMChainIDInt = 964
+	SolanaChainID          = "1111"
+	SolanaModelID          = "990001"
+	IPFSPrefix             = "ipfs://"
+
+	GasLimitDefault         = uint64(10000000)
+	BaseFeeWiggleMultiplier = 2
+)
+
 var config *Config
 
 func GetConfig() *Config {
