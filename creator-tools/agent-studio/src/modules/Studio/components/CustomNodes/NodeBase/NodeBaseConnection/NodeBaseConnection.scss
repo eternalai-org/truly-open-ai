@@ -1,0 +1,19 @@
+.node-base__handles__handle {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  z-index: 4;
+
+  :global {
+    .react-flow__handle {
+      position: relative !important;
+    }
+  }
+}
