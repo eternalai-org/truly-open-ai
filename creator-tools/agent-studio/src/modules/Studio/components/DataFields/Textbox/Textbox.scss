@@ -1,0 +1,16 @@
+.studio-field-input {
+  border-radius: 20px;
+  padding: 0 12px;
+  height: 100%;
+  min-width: 180px;
+  width: 100%;
+  border: 1px solid transparent;
+  min-height: 28px;
+
+  &:focus {
+    border: 1px solid #4a90e2;
+  }
+  &.studio-field-input__error {
+    border-color: rgb(252, 66, 66);
+  }
+}
