@@ -70,6 +70,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.ExternalWallet)(nil),
 		(*models.ExternalWalletOrder)(nil),
 		(*models.ExternalWalletToken)(nil),
+		(*models.AgentChainFee)(nil),
 		// meme
 		(*models.Meme)(nil),
 

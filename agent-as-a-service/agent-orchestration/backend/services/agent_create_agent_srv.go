@@ -373,7 +373,6 @@ func (s *Service) AgentTwitterPostCreateAgent(ctx context.Context, twitterPostID
 								agentInfo.AgentBaseModel = s.GetModelDefaultByChainID(agentInfo.NetworkID)
 							}
 
-							agentInfo.AgentFee = models.GetAgentFee(agentInfo.NetworkID)
 							ethAddress, err := s.CreateETHAddress(ctx)
 							if err != nil {
 								return errs.NewError(err)
