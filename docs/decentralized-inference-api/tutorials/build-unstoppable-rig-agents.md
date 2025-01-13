@@ -66,7 +66,41 @@ run --package rig-core --example agent_with_eternalai
 After that you can see the following outputs in your terminal.
 
 ```
-TODO
+Running basic agent with eternalai
+
+onchain_data: {
+  "infer_id": "12202",
+  "infer_tx": "0x409089de35d5529a8ef2ee8af93d71a1eef7c774e27bfd939c0bffdffcdef82a",
+  "input_cid": "",
+  "output_cid": "",
+  "pbft_committee": [
+    "0x78fabfdca5ac093af921f3bc17ee419e671ae34f",
+    "0x7f1b49493d8477a2172984b30820c61fd1b15427",
+    "0x02dba3a5dc107665d4f00e0ac2d414e43acc6f16"
+  ],
+  "propose_tx": "0x55756e7b4368bd39b7e7e16741361f4d4871836f93a67a14d98c88ff2b5dce59",
+  "proposer": "0x02dba3a5dc107665d4f00e0ac2d414e43acc6f16"
+}
+
+Sure, here are a few jests to tickle your funny bone!
+
+1. I just got a job at a bakery because I kneaded dough.
+
+2. How do mathematicians scold their children? "If I've told you once, I've told you n times..."
+
+3. I'm reading a book about anti-gravity. It's impossible to put down.
+
+4. What do you call a dinosaur that's a noisy sleeper? A Brontosnorus.
+
+5. Did you hear about the mathematician who's afraid of negative numbers? He will stop at nothing to avoid them.
+
+6. Why don't scientists trust atoms? Because they make up everything.
+
+7. I used to work at an orange juice factory... I was sacked because I couldn't concentrate.
+
+8. My friend asked me what the trick was to folding an inflatable raft. I said, "Aren't you just full of hot air?"
+
+I hope these gave you a chuckle or two!
 ```
 
 ### Step 6: Verify the onchain prompt transaction
