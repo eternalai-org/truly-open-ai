@@ -73,21 +73,22 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	}
 	//@TODO
 	uri := ""
-	data := []byte("")
-	promptKey := ""
-
-	feeFloat := new(big.Float).SetFloat64(info.Fee * 1e18)
+	data := []byte(info.ResultUrl)
+	promptKey := "KnowledgeBase"
 	fee := big.NewInt(0)
-	fee, _ = feeFloat.Int(fee)
+	modelIdUint32, err := strconv.ParseUint(modelId, 10, 32)
+	/*feeFloat := new(big.Float).SetFloat64(info.Fee * 1e18)
+	fee, _ = feeFloat.Int(fee)*/
 	dataBytes, err := instanceABI.Pack(
 		"mint", common.HexToAddress(info.UserAddress),
 		uri,
 		data,
 		fee,
 		promptKey,
-		kbWorkerHubAddress,
-		modelId,
+		common.HexToAddress(kbWorkerHubAddress),
+		uint32(modelIdUint32),
 	)
+	//to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
 	if err != nil {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to pack ABI data: %v", err)
 	}
