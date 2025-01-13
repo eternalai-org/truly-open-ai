@@ -16,4 +16,5 @@ type BaseClient interface {
 	IsContract(address string) (bool, error)
 	ConvertAddressForIn(addr string) string
 	ConvertAddressForOut(addr string) string
+	Erc721Transfer(contractAddr string, prkHex string, toAddr string, tokenId *big.Int) (string, error)
 }
