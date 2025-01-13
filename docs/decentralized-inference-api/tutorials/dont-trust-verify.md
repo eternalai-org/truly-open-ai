@@ -59,7 +59,7 @@ The download may take a while and you can check its progress by viewing log of t
 
 It should be complete once you see the following log.
 
-<figure><img src="../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## Step 5
 

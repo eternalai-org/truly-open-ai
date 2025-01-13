@@ -39,15 +39,15 @@ You can get the api key [here](https://eternalai.org/api).
 
 ### Step 3: Update model and chain ID (if needed)
 
-We've implemented a simple LLM-powered agent using Rig in \`rig-core/examples/agent\_with\_eternalai.rs\`.
+We've implemented a simple LLM-powered agent using Rig in `rig-core/examples/agent_with_eternalai.rs`.
 
 By default, it uses **Symbiosys** chain and **Hermes 3 70B**  model.&#x20;
 
 You can find the list of supported chains and models [here](https://docs.eternalai.org/eternal-ai/decentralized-inference-api/onchain-models).&#x20;
 
-For this tutorial, we'll use **Base** and **Hermes 3 70B,** so we need to update the chain ID in the agent\_with\_eternalai.rs from 45762 to 8453.&#x20;
+For this tutorial, we'll use **Base** and **Hermes 3 70B,** so we need to update the chain ID in the `agent_with_eternalai.rs` from 45762 to 8453.&#x20;
 
-<figure><img src="../../.gitbook/assets/image (65).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 4: Build your Rig agent
 
@@ -73,9 +73,9 @@ TODO
 
 With Eternal AI's Decentralized Inference, everything is onchain verifiable.
 
-Let's look at an onchain prompt transaction on BaseScan. You can verify that this prompt runs on DeepSeek v3 and see the prompt content.
+Let's look at an onchain prompt transaction on BaseScan. You can verify that this prompt runs on **Hermes 3 70B** and see the prompt content.
 
-{% embed url="https://basescan.org/tx/0xaef93b58ddf27d69697733378295b6aa572d10fc563656f75b33015ca70a8697" %}
+{% embed url="https://basescan.org/tx/0x409089de35d5529a8ef2ee8af93d71a1eef7c774e27bfd939c0bffdffcdef82a" %}
 
 <figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
@@ -83,7 +83,7 @@ Let's look at an onchain prompt transaction on BaseScan. You can verify that thi
 
 Now, let's look at the onchain response tx on BaseScan. You can see the actual response content. Everything is onchain and verifiable.
 
-{% embed url="https://basescan.org/tx/0xf2f2b9db0f96dea3010533e663209fedeb6cdc56dfad401d9b2484601ba19c25" %}
+{% embed url="https://basescan.org/tx/0x55756e7b4368bd39b7e7e16741361f4d4871836f93a67a14d98c88ff2b5dce59" %}
 
 <figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
 
@@ -105,7 +105,7 @@ As with anything in crypto — "Don't trust the AI, verify it."
 
 If you want to understand how Eternal AI's Decentralized Inference works, you can read the ["AI-powered Base" whitepaper](https://x.com/punk3700/status/1869428187450749093).
 
-<figure><img src="../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Congrats!
 
