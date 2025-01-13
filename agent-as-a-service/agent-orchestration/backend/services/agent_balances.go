@@ -166,9 +166,10 @@ func (s *Service) GetAgentInfoDetailByAgentID(ctx context.Context, agentID strin
 	agent, err := s.dao.FirstAgentInfo(daos.GetDBMainCtx(ctx),
 		filters,
 		map[string][]interface{}{
-			"TwitterInfo":          {},
-			"TokenInfo":            {},
-			"AgentSnapshotMission": {"enabled = 1 and is_testing=0"},
+			"TwitterInfo":                       {},
+			"TokenInfo":                         {},
+			"AgentSnapshotMission":              {"enabled = 1 and is_testing=0"},
+			"AgentSnapshotMission.MissionStore": {},
 		},
 		[]string{},
 	)
