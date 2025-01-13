@@ -1,46 +1,15 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src",
-    "allowJs": true,
-    "target": "ES2023",
+    "target": "ES2020",
+    "lib": ["DOM", "ES2020"],
     "module": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["@testing-library/jest-dom", "node"],
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "outDir": "dist",
+    "moduleResolution": "Node",
     "declaration": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "downlevelIteration": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "allowSyntheticDefaultImports": true,
-    "moduleDetection": "force",
-    "noEmit": false,
-    "jsx": "react-jsx",
-
-    /* Linting */
+    "sourceMap": true,
     "strict": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
+    "baseUrl": ".",
     "paths": {
-      "@/components/*": ["components/*"],
-      "@/modules/*": ["modules/*"],
-      "@/enums/*": ["enums/*"],
-      "@/hooks/*": ["hooks/*"],
-      "@/utils/*": ["utils/*"],
-      "@/styles/*": ["styles/*"]
+      "@agent-studio/*": ["packages/*/src"]
     }
-  },
-  "include": ["src", "*.tsx", "*.ts", "eslint.config.js"],
-  "exclude": ["coverage", "config", "dist", "node_modules/**"]
+  }
 }
