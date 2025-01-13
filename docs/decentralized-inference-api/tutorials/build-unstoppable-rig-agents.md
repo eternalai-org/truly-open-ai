@@ -143,7 +143,7 @@ If you want to understand how Eternal AI's Decentralized Inference works, you ca
 
 ### Congrats!
 
-Congrats! You've finished building your Eliza agent with two superpowers:&#x20;
+Congrats! You've finished building your Rig agent with two superpowers:&#x20;
 
 * Onchain verifiable on Base
 * Powered by Hermes 3 70B
