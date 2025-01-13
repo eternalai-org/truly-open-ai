@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"context"
 	"crypto/tls"
 	"net/http"
 	"testing"
@@ -41,5 +42,5 @@ func init() {
 }
 
 func Test_SRV(t *testing.T) {
-	// ts.AgentSnapshotPostStatusInferRefund(context.Background(), 96753)
+	ts.JobMemeBurnPositionUniswap(context.Background())
 }

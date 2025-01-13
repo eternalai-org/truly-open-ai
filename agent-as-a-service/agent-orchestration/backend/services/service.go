@@ -204,6 +204,7 @@ func (s *Service) JobRunCheck(ctx context.Context, jobId string, jobFunc func() 
 			err = errs.NewError(err)
 			stacktrace := err.(*errs.Error).Stacktrace()
 			fmt.Println(time.Now(), jobId, "error", err.Error(), stacktrace)
+			return err
 		} else {
 			fmt.Println(time.Now(), jobId, "end")
 		}
