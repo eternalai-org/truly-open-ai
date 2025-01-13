@@ -39,11 +39,13 @@ You can get the api key [here](https://eternalai.org/api).
 
 ### Step 3: Update model and chain ID (if needed)
 
-We've implemented a simple LLM-powered application using Rig in \`rig-core/examples/agent\_with\_eternalai.rs\`.
+We've implemented a simple LLM-powered agent using Rig in \`rig-core/examples/agent\_with\_eternalai.rs\`.
 
 By default, it uses **Symbiosys** chain and **Hermes 3 70B**  model.&#x20;
 
-You can find the list of supported chains and models [here](https://docs.eternalai.org/eternal-ai/decentralized-inference-api/onchain-models) and update to the agent\_with\_eternalai.rs if needed.
+You can find the list of supported chains and models [here](https://docs.eternalai.org/eternal-ai/decentralized-inference-api/onchain-models).&#x20;
+
+For this tutorial, we'll use **Base** and **Hermes 3 70B,** so we need to update the chain ID in the agent\_with\_eternalai.rs from 45762 to 8453.&#x20;
 
 <figure><img src="../../.gitbook/assets/image (65).png" alt=""><figcaption></figcaption></figure>
 
