@@ -62,6 +62,7 @@ type AgentSnapshotPost struct {
 	Token                   string
 	MissionStoreID          uint
 	IsRated                 bool
+	MissionStoreFee         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 type (
