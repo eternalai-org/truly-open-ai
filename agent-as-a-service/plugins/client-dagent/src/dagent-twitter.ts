@@ -32,7 +32,7 @@ class DagentTwitter extends BaseDagent {
       twitter_oauth_url: params.twitter_oauth_url,
       wallet_address: this.getSignerAddress(),
     });
-    dagentLogger.warn(`Twitter OAuth URL: ${url}`);
+    dagentLogger.warn(`Please Link Twitter OAuth via URL: ${url}\n`);
     return url;
   };
 
