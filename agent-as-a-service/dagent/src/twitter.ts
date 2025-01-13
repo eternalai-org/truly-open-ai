@@ -52,11 +52,9 @@ class AgentTwitter {
     await this.dagent.setupMissions(agentId);
   };
 
-  runDagent = async () => {
+  createAndRunDagent = async () => {
     await this.dagent.init();
-
     // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
-
     const agent = await this.createDagent();
 
     if (agent?.id) {
@@ -65,8 +63,32 @@ class AgentTwitter {
 
     await this.getCreatedAgents();
   };
+
+  runDagent = async (agentId: string) => {
+    await this.dagent.init();
+    const agent = await this.dagent.getAgent(agentId);
+    await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
+    console.table(([agent] || []).map(agent => {
+      return {
+        agent_name: `${agent.agent_name}`,
+        id: agent.id,
+        topup_evm_address: agent.agent_info.eth_address,
+        topup_sol_address: agent.agent_info.sol_address,
+      };
+    }));
+  };
+
 }
 
 dotenv.config();
 const agentTwitter = new AgentTwitter();
-agentTwitter.runDagent();
+// agentTwitter.createAndRunDagent()
+//     .then(() => {
+//         dagentLogger.info("Code run completed...");
+//     });
+
+agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+    .then(() => {
+      dagentLogger.info("Code run completed...");
+    });
+

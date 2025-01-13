@@ -112,6 +112,16 @@ class BaseDagent {
             throw error;
         }
     };
+
+    getAgent = async (agentId: string) => {
+        try {
+            const agent = await this.coreAPI.detail(agentId);
+            return agent;
+        } catch (error) {
+            dagentLogger.error("Agent get error:", error);
+            throw error;
+        }
+    }
 }
 
 export default BaseDagent;
