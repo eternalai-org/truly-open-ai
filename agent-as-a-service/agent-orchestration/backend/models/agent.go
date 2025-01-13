@@ -78,7 +78,7 @@ func GetAgentFee(networkID uint64) numeric.BigFloat {
 		}
 	case TRON_CHAIN_ID:
 		{
-			return numeric.NewBigFloatFromString("180")
+			return numeric.NewBigFloatFromString("50")
 		}
 	default:
 		{
@@ -171,7 +171,6 @@ type AgentInfo struct {
 	TipSolAddress        string
 	IsFaucet             bool `gorm:"default:0"`
 	AgentSnapshotMission []*AgentSnapshotMission
-	AgentFee             numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	MintFee              numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	ActionDelayed        int              `gorm:"default:900"`
 	TmpTwitterID         string           `gorm:"index"`
@@ -613,4 +612,11 @@ type AgentExternalInfo struct {
 	ExternalID       string
 	ExternalUsername string
 	ExternalName     string
+}
+
+type AgentChainFee struct {
+	gorm.Model
+	NetworkID uint64           `gorm:"unique_index"`
+	InferFee  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	MintFee   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }

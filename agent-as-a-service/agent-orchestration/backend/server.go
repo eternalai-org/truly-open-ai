@@ -31,7 +31,7 @@ func init() {
 
 func main() {
 	conf := configs.GetConfig()
-	logger.NewLogger("image-ai-api", conf.Env, "", true)
+	logger.NewLogger("agents-ai-api", conf.Env, "", true)
 	defer logger.Sync()
 
 	defer func() {

@@ -848,11 +848,11 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Fee:            big.NewInt(poolFee),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
-										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
+										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 										Recipient:      helpers.HexToAddress(memePoolAddress),
 									},
 								)
@@ -871,10 +871,10 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Token1:         helpers.HexToAddress(token1),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
 										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 									},
 								)
@@ -894,10 +894,10 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Fee:            big.NewInt(poolFee),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
 										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 									},
 								)
@@ -916,10 +916,10 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Token1:         helpers.HexToAddress(token1),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
 										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 									},
 								)
@@ -939,11 +939,11 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Fee:            big.NewInt(poolFee),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
-										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
+										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 										Recipient:      helpers.HexToAddress(memePoolAddress),
 									},
 								)
@@ -963,11 +963,11 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Fee:            big.NewInt(poolFee),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
-										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
+										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 										Recipient:      helpers.HexToAddress(memePoolAddress),
 									},
 								)
@@ -987,11 +987,11 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 										Fee:            big.NewInt(poolFee),
 										TickLower:      tickLower,
 										TickUpper:      tickUpper,
-										Amount0Desired: amount0,
-										Amount1Desired: amount1,
-										Amount0Min:     big.NewInt(0),
-										Amount1Min:     big.NewInt(0),
-										Deadline:       big.NewInt(time.Now().Add(60 * time.Second).Unix()),
+										Amount0Desired: models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(9999)), big.NewInt(10000)),
+										Amount1Desired: models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(9999)), big.NewInt(10000)),
+										Amount0Min:     models.QuoBigInts(models.MulBigInts(amount0, big.NewInt(99)), big.NewInt(100)),
+										Amount1Min:     models.QuoBigInts(models.MulBigInts(amount1, big.NewInt(99)), big.NewInt(100)),
+										Deadline:       big.NewInt(time.Now().Add(120 * time.Second).Unix()),
 										Recipient:      helpers.HexToAddress(memePoolAddress),
 									},
 								)
@@ -1456,6 +1456,50 @@ func (s *Service) JobRetryAddPool2(ctx context.Context) error {
 				}
 			}
 			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) error {
+	err := s.JobRunCheck(
+		ctx,
+		fmt.Sprintf("MemeBurnPositionUniswap_%d", memeID),
+		func() error {
+			meme, err := s.dao.FirstMemeByID(daos.GetDBMainCtx(ctx), memeID, map[string][]interface{}{}, false)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if meme.Status == models.MemeStatusAddPoolLevel2 && meme.UniswapPositionID > 0 && meme.BurnPool2TxHash == "" {
+				memePoolAddress := strings.ToLower(s.conf.GetConfigKeyString(meme.NetworkID, "meme_pool_address"))
+				{
+					burnPoolTxHash, err := s.GetEVMClient(ctx, meme.NetworkID).Erc721Transfer(
+						s.conf.GetConfigKeyString(meme.NetworkID, "uniswap_position_mamanger_address"),
+						s.GetAddressPrk(
+							memePoolAddress,
+						),
+						meme.UniswapPool,
+						big.NewInt(meme.UniswapPositionID),
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = daos.GetDBMainCtx(ctx).
+						Model(meme).
+						Updates(
+							map[string]interface{}{
+								"burn_pool2_tx_hash": burnPoolTxHash,
+							},
+						).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
+			return nil
 		},
 	)
 	if err != nil {

@@ -31,6 +31,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 					`
 					join agent_infos on agent_infos.id = agent_snapshot_missions.agent_info_id
 					join agent_snapshot_mission_configs on agent_snapshot_mission_configs.network_id = agent_snapshot_missions.network_id and agent_snapshot_mission_configs.tool_set = agent_snapshot_missions.tool_set
+					join agent_chain_fees on agent_chain_fees.network_id = agent_infos.network_id
 					left join twitter_infos on twitter_infos.id = agent_infos.twitter_info_id
 					`: {},
 				},
@@ -45,8 +46,8 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 						and agent_infos.scan_enabled = 1
 						and agent_infos.reply_enabled = 1
 						and agent_infos.eai_balance > 0
-						and agent_infos.agent_fee > 0
-						and agent_infos.eai_balance >= agent_infos.agent_fee
+						and agent_chain_fees.infer_fee > 0
+						and agent_infos.eai_balance >= agent_chain_fees.infer_fee
 						and (
 							(
 								agent_infos.twitter_info_id > 0 and twitter_infos.expired_at > adddate(now(), interval -15 minute) 
@@ -363,6 +364,17 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentChainFee, err := s.dao.FirstAgentChainFee(
+						tx,
+						map[string][]interface{}{
+							"network_id = ?": {agentInfo.NetworkID},
+						},
+						map[string][]interface{}{},
+						[]string{},
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,
 						AgentInfoID:            agentInfo.ID,
@@ -370,7 +382,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferData:              string(inferData),
 						InferAt:                helpers.TimeNow(),
 						Status:                 models.AgentSnapshotPostStatusInferSubmitted,
-						Fee:                    agentInfo.AgentFee,
+						Fee:                    agentChainFee.InferFee,
 						UserPrompt:             inferItems[0].Content,
 						HeadSystemPrompt:       headSystemPrompt,
 						AgentMetaData:          helpers.ConvertJsonString(metaDataReq),
