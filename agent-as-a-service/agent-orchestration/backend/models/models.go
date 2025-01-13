@@ -46,6 +46,7 @@ const (
 	BITTENSOR_CHAIN_ID        = uint64(964)
 	DUCK_CHAIN_ID             = uint64(5545)
 	TRON_CHAIN_ID             = uint64(728126428)
+	MODE_CHAIN_ID             = uint64(34443)
 )
 
 var CHAIN_NAME_MAP = map[uint64]string{
@@ -66,6 +67,7 @@ var CHAIN_NAME_MAP = map[uint64]string{
 	BITTENSOR_CHAIN_ID:        "BITTENSOR",
 	DUCK_CHAIN_ID:             "DUCK CHAIN",
 	TRON_CHAIN_ID:             "TRON",
+	MODE_CHAIN_ID:             "MODE",
 }
 
 var MAP_CHAIN_ID_TO_LLM_MODEL = map[uint64]map[string]string{
