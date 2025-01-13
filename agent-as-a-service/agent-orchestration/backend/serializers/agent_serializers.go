@@ -53,6 +53,7 @@ type AgentSnapshotMissionInfo struct {
 	Tokens             string                    `json:"tokens"`
 	AgentBaseModel     string                    `json:"agent_base_model"`
 	MissionStoreID     uint                      `json:"mission_store_id"`
+	MissionStore       *MissionStoreResp         `json:"mission_store"`
 	MissionStoreParams map[string]string         `json:"mission_store_params"`
 	Topics             string                    `json:"topics"`
 	IsTwitterSearch    bool                      `json:"is_twitter_search"`
@@ -199,6 +200,8 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		IsBingSearch:    m.IsBingSearch,
 		RewardAmount:    m.RewardAmount,
 		RewardUser:      m.RewardUser,
+		MissionStoreID:  m.MissionStoreID,
+		MissionStore:    NewMissionStoreResp(m.MissionStore),
 	}
 	return resp
 }
