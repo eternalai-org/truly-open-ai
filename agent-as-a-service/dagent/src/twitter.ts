@@ -91,12 +91,22 @@ class AgentTwitter {
 }
 
 dotenv.config();
+
+// Case not set PRIVATE_KEY
+// const agentTwitter = new AgentTwitter({
+//   address: "0xadee4cba41ebb02ad43b76776dd939ce7f2a0c7d",
+//   message: "Eternal Dagent",
+//   signature: "0x13cd10b3bd1e6c9deaf0dec085a386c3019fdd21511284dcc084684ddf908edf390b71f7d544b3122971f1e52ce9609de5cf502f73d4e359e57b23ead6ed117c1b"
+// });
+
+// Case set PRIVATE_KEY
 const agentTwitter = new AgentTwitter();
 agentTwitter.createAndRunDagent()
     .then(() => {
       dagentLogger.info("Code run completed...");
     });
 
+// Case agent created and run
 // agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
 //     .then(() => {
 //       dagentLogger.info("Code run completed...");
