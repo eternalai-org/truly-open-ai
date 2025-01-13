@@ -142,6 +142,7 @@ func NewService(conf *configs.Config) *Service {
 	gormDB := mysql.NewDefaultMysqlGormConn(nil, s.conf.DbURL)
 	knowledgeBaseRepo := repository.NewKnowledgeBaseRepository(gormDB)
 	knowledgeBaseFileRepo := repository.NewKnowledgeBaseFileRepository(gormDB)
+	agentInfoKnowledgeBaseRepo := repository.NewAgentInfoKnowledgeBaseRepository(gormDB)
 	secretKey := conf.SecretKey
 	var googleSecretKey string
 	if utils.IsEnvProduction(conf.Env) {
@@ -156,6 +157,7 @@ func NewService(conf *configs.Config) *Service {
 
 	s.KnowledgeUsecase = knowledge.NewKnowledgeUsecase(
 		knowledgeBaseRepo, knowledgeBaseFileRepo,
+		agentInfoKnowledgeBaseRepo,
 		googleSecretKey,
 		s.ethApiMap, conf.Networks, s.trxApi,
 		conf.RagApi,

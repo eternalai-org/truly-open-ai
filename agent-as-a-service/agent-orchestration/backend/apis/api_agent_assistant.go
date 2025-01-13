@@ -32,7 +32,10 @@ func (s *Server) AgentCreateAgentAssistant(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+
+	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeBaseId)
+
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, kb)})
 }
 
 func (s *Server) AgentUpdateAgentAssistant(c *gin.Context) {
@@ -55,7 +58,8 @@ func (s *Server) AgentUpdateAgentAssistant(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeBaseId)
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, kb)})
 }
 
 func (s *Server) AgentUpdateAgentAssistantInContract(c *gin.Context) {
@@ -78,7 +82,7 @@ func (s *Server) AgentUpdateAgentAssistantInContract(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, nil)})
 }
 
 func (s *Server) UpdateTwinStatus(c *gin.Context) {
@@ -96,7 +100,7 @@ func (s *Server) UpdateTwinStatus(c *gin.Context) {
 		return
 	}
 
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, nil)})
 }
 
 func (s *Server) UploadDataToLightHouse(c *gin.Context) {
