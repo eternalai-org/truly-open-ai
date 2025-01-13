@@ -1160,6 +1160,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 							placeholder := fmt.Sprintf("<%s>", key)
 							toolList = strings.ReplaceAll(toolList, placeholder, value)
 						}
+						mission.UserPrompt = missionStore.UserPrompt
 						mission.MissionStoreID = item.MissionStoreID
 						mission.ToolList = toolList
 					} else if item.ToolList != "" {
