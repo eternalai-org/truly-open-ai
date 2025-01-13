@@ -1,0 +1,14 @@
+.node-base-wrapper {
+  border-radius: 10px;
+  border: 1px solid #878682;
+  padding: 4px;
+  position: relative;
+
+  &.node-base-wrapper--linked {
+    border: 1px solid #ccc;
+  }
+
+  .node-base-wrapper__title {
+    padding: 8px;
+  }
+}

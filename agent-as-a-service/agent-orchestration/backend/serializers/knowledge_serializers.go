@@ -47,3 +47,9 @@ type KnowledgeBaseFile struct {
 	FileName        string `json:"name"`
 	FileSize        uint   `json:"size"`
 }
+
+type AgentUseKnowledgeBaseRequest struct {
+	AgentID         string `json:"agent_id" form:"agent_id"`
+	KnowledgeBaseID uint   `json:"knowledge_base_id" form:"knowledge_base_id"`
+	UserAddress     string `json:"-"`
+}

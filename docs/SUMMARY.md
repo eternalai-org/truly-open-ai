@@ -76,6 +76,7 @@
 * [Onchain Models](decentralized-inference-api/onchain-models.md)
 * [Tutorials](decentralized-inference-api/tutorials/README.md)
   * [Build unstoppable Eliza agents](decentralized-inference-api/tutorials/build-unstoppable-eliza-agents.md)
+  * [Build unstoppable Rig agents](decentralized-inference-api/tutorials/build-unstoppable-rig-agents.md)
   * [Use ZerePy framework with EternalAI API](decentralized-inference-api/tutorials/use-zerepy-framework-with-eternalai-api.md)
   * [Decentralized ChatGPT](decentralized-inference-api/tutorials/decentralized-chatgpt.md)
   * [Don't Trust, Verify](decentralized-inference-api/tutorials/dont-trust-verify.md)

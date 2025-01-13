@@ -15,6 +15,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/aidojo"
 	blockchainutils "github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -310,7 +311,8 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						tx,
 						missionID,
 						map[string][]interface{}{
-							"AgentInfo": {},
+							"AgentInfo":    {},
+							"MissionStore": {},
 						},
 						false,
 					)
@@ -375,6 +377,12 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if err != nil {
 						return errs.NewError(err)
 					}
+					inferFee := agentChainFee.InferFee
+					missionStoreFee := numeric.BigFloat{*big.NewFloat(0)}
+					if mission.MissionStore != nil {
+						missionStoreFee = numeric.BigFloat{*big.NewFloat(float64(mission.MissionStore.Price))}
+						inferFee = numeric.BigFloat{*models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float)}
+					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,
 						AgentInfoID:            agentInfo.ID,
@@ -382,7 +390,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferData:              string(inferData),
 						InferAt:                helpers.TimeNow(),
 						Status:                 models.AgentSnapshotPostStatusInferSubmitted,
-						Fee:                    agentChainFee.InferFee,
+						Fee:                    inferFee,
 						UserPrompt:             inferItems[0].Content,
 						HeadSystemPrompt:       headSystemPrompt,
 						AgentMetaData:          helpers.ConvertJsonString(metaDataReq),
@@ -395,6 +403,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferTxHash:            inferTxHash,
 						OrgTweetID:             orgTweetID,
 						Token:                  tokenSymbol,
+						MissionStoreID:         mission.MissionStoreID,
+						IsRated:                false,
+						MissionStoreFee:        missionStoreFee,
 					}
 					if inferPost.AgentBaseModel == "" {
 						inferPost.AgentBaseModel = agentInfo.AgentBaseModel
@@ -1200,7 +1211,7 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 						if agentSnapshotPost != nil {
 							if agentSnapshotPost.ResponseId != "" {
 								if agentSnapshotPost.Status == models.AgentSnapshotPostStatusInferSubmitted {
-									offchainAutoAgentOutput, err := s.dojoAPI.OffchainAutoAgentOutput(s.conf.AgentOffchainUrl, agentSnapshotPost.ResponseId)
+									offchainAutoAgentOutput, err := s.dojoAPI.OffchainAutoAgentOutput(s.conf.AgentOffchain.Url, agentSnapshotPost.ResponseId, s.conf.AgentOffchain.ApiKey)
 									if err != nil {
 										return errs.NewError(err)
 									}
@@ -1690,7 +1701,14 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		},
 	}
 	request.MetaData.TwitterUsername = assistant.TwitterUsername
-	body, err := helpers.CurlURLString(s.conf.AgentOffchainUrl+"/async/enqueue", "POST", nil, &request)
+	body, err := helpers.CurlURLString(
+		s.conf.AgentOffchain.Url+"/async/enqueue",
+		"POST",
+		map[string]string{
+			"x-token": s.conf.AgentOffchain.ApiKey,
+		},
+		&request,
+	)
 	if err != nil {
 		return "", errs.NewError(err)
 	}
@@ -1734,7 +1752,9 @@ func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) err
 			{
 				ms, err := s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
 					map[string][]interface{}{
-						"status = ?": {models.AgentSnapshotPostStatusInferFailed},
+						"status = ?":                    {models.AgentSnapshotPostStatusInferFailed},
+						"agent_info_id > 0":             {},
+						"agent_snapshot_mission_id > 0": {},
 					},
 					map[string][]interface{}{},
 					[]string{}, 0, 999,
@@ -1770,8 +1790,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						tx,
 						snapshotPostID,
 						map[string][]interface{}{
-							"AgentInfo":            {},
-							"AgentSnapshotMission": {},
+							"AgentInfo": {},
 						},
 						false,
 					)
@@ -1781,10 +1800,13 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 					if inferPost != nil &&
 						inferPost.Status == models.AgentSnapshotPostStatusInferFailed &&
 						inferPost.AgentInfo != nil &&
-						inferPost.AgentSnapshotMission != nil {
+						inferPost.AgentSnapshotMissionID > 0 {
 						//
 						agentInfo := inferPost.AgentInfo
-						agentSnapshotMission := inferPost.AgentSnapshotMission
+						toolSet, err := s.dao.GetMissionToolset(tx, inferPost.AgentSnapshotMissionID)
+						if err != nil {
+							return errs.NewError(err)
+						}
 						//
 						err = tx.Model(inferPost).
 							UpdateColumn("status", models.AgentSnapshotPostStatusInferRefund).
@@ -1809,7 +1831,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 								Status:         models.AgentEaiTopupStatusDone,
 								DepositAddress: agentInfo.ETHAddress,
 								ToAddress:      agentInfo.ETHAddress,
-								Toolset:        string(agentSnapshotMission.ToolSet),
+								Toolset:        toolSet,
 							},
 						)
 					}

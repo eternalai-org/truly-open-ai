@@ -714,6 +714,7 @@ func (s *Service) JobMemeAddPositionUniswap(ctx context.Context) error {
 			}
 			var retErr error
 			for _, meme := range memes {
+				err = s.MemeAddPositionUniswap(ctx, meme.ID)
 				if err != nil {
 					_ = daos.GetDBMainCtx(ctx).
 						Model(&meme).
@@ -825,7 +826,8 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 							Model(meme).
 							Updates(
 								map[string]interface{}{
-									"tick": tickCurr,
+									"tick":         tickCurr,
+									"add_pool2_at": time.Now(),
 								},
 							).Error
 						if err != nil {
@@ -1015,6 +1017,7 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 									"price_usd":         numeric.NewBigFloatFromFloat(models.MulBigFloats(big.NewFloat(priceF), baseTokenPrice)),
 									"tick_lower":        tickLower,
 									"tick_upper":        tickUpper,
+									"add_pool2_at":      time.Now(),
 								},
 							).Error
 						if err != nil {
@@ -1464,6 +1467,72 @@ func (s *Service) JobRetryAddPool2(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) JobMemeBurnPositionUniswap(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobMemeBurnPositionUniswap",
+		func() error {
+			memes, err := s.dao.FindMeme(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"add_pool2_at <= ?":       {time.Now().Add(-24 * time.Hour)},
+					"status = ?":              {models.MemeStatusAddPoolLevel2},
+					"uniswap_position_id > 0": {},
+					"burn_pool2_at is null":   {},
+					"network_id in (?)": {
+						[]uint64{
+							models.BASE_CHAIN_ID,
+							models.ARBITRUM_CHAIN_ID,
+							models.BSC_CHAIN_ID,
+							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
+						},
+					},
+					"num_retries < 3": {},
+				},
+				map[string][]interface{}{},
+				[]string{
+					"add_pool2_at asc",
+				},
+				0,
+				2,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var retErr error
+			for _, meme := range memes {
+				err = s.MemeBurnPositionUniswap(ctx, meme.ID)
+				if err != nil {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": gorm.Expr("num_retries + ?", 1),
+								"updated_at":  time.Now(),
+							},
+						).Error
+					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, meme.ID))
+				} else {
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&meme).
+						Updates(
+							map[string]interface{}{
+								"num_retries": 0,
+								"updated_at":  time.Now(),
+							},
+						).Error
+				}
+				time.Sleep(10 * time.Second)
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) error {
 	err := s.JobRunCheck(
 		ctx,
@@ -1473,7 +1542,9 @@ func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if meme.Status == models.MemeStatusAddPoolLevel2 && meme.UniswapPositionID > 0 && meme.BurnPool2TxHash == "" {
+			if meme.Status == models.MemeStatusAddPoolLevel2 &&
+				meme.UniswapPositionID > 0 &&
+				meme.AddPool2At.Before(time.Now().Add(24*time.Hour)) {
 				memePoolAddress := strings.ToLower(s.conf.GetConfigKeyString(meme.NetworkID, "meme_pool_address"))
 				{
 					burnPoolTxHash, err := s.GetEVMClient(ctx, meme.NetworkID).Erc721Transfer(
@@ -1481,7 +1552,7 @@ func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) erro
 						s.GetAddressPrk(
 							memePoolAddress,
 						),
-						meme.UniswapPool,
+						models.BURN_ADDRESS,
 						big.NewInt(meme.UniswapPositionID),
 					)
 					if err != nil {
@@ -1491,6 +1562,7 @@ func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) erro
 						Model(meme).
 						Updates(
 							map[string]interface{}{
+								"burn_pool2_at":      time.Now(),
 								"burn_pool2_tx_hash": burnPoolTxHash,
 							},
 						).Error
