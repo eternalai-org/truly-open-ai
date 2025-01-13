@@ -93,6 +93,7 @@ type Meme struct {
 	AddPool1TxHash    string
 	RemovePool1TxHash string
 	AddPool2TxHash    string
+	BurnPool2TxHash   string
 	PoolFee           uint
 	Weight            int `gorm:"index;default:0"`
 	Shared            int
