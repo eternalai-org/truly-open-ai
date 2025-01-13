@@ -7,7 +7,7 @@
 ### 🗂️ Folder Structure
 ```plaintext
 eternal-dagent
-├── packages/                # Shared libraries
+├── plugins/                # Shared libraries
 │   ├── core                 # Shared core logic
 │   │   ├── index.js         # Entry point for shared logic
 │   │   └── package.json     # Library's package.json
@@ -32,7 +32,7 @@ eternal-dagent
 └── scripts/                 # Custom management scripts
     ├── task.js              # Script to run tasks
     ├── runDagent.js         # Script to run dagent
-    └── packages-build.js    # Script to build all packages
+    └── plugins-build.js    # Script to build all plugins
 ```
 
 ## 🚀 Quick Start
@@ -40,9 +40,9 @@ eternal-dagent
 ### Use the Starter (Recommended)
 
 ```bash
-git clone https://github.com/TrustlessComputer/eternal-dagent
+git clone https://github.com/eternalai-org/eternal-ai
 
 cp .env.example .env
 
-yarn && yarn build && yarn task
+yarn && yarn build && cd dagent && yarn run:twitter
 ```
