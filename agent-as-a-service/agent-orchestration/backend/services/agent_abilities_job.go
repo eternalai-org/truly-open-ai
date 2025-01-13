@@ -31,7 +31,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 					`
 					join agent_infos on agent_infos.id = agent_snapshot_missions.agent_info_id
 					join agent_snapshot_mission_configs on agent_snapshot_mission_configs.network_id = agent_snapshot_missions.network_id and agent_snapshot_mission_configs.tool_set = agent_snapshot_missions.tool_set
-					join agent_chain_fees on agent_chain_fees.network_id = agent_snapshot_missions.network_id
+					join agent_chain_fees on agent_chain_fees.network_id = agent_infos.network_id
 					left join twitter_infos on twitter_infos.id = agent_infos.twitter_info_id
 					`: {},
 				},

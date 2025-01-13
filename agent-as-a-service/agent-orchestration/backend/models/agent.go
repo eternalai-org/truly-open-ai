@@ -618,4 +618,5 @@ type AgentChainFee struct {
 	gorm.Model
 	NetworkID uint64           `gorm:"unique_index"`
 	InferFee  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	MintFee   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
