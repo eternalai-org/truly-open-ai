@@ -95,6 +95,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.JobConfig)(nil),
 		(*models.KnowledgeBase)(nil),
 		(*models.KnowledgeBaseFile)(nil),
+		(*models.AgentInfoKnowledgeBase)(nil),
 		//missionstore
 		(*models.MissionStore)(nil),
 		(*models.MissionStoreRating)(nil),
