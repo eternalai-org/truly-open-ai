@@ -1,4 +1,4 @@
-import { dagentLogger, IENV } from "@eternal-dagent/core";
+import {dagentLogger, IENV, IGetAccessTokenParams} from "@eternal-dagent/core";
 import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
@@ -7,8 +7,9 @@ import { DagentTwitter } from "@eternal-dagent/client-dagent";
 class AgentTwitter {
   protected environment: IENV;
   protected dagent: DagentTwitter;
+  protected paramsToken?: IGetAccessTokenParams;
 
-  constructor() {
+  constructor(params?: IGetAccessTokenParams) {
     dagentLogger.info("Code run started...");
     this.environment = getEnvironment();
     console.log(this.environment);
@@ -16,6 +17,7 @@ class AgentTwitter {
       dagentCharacter: dagentCharacter,
       environment: this.environment,
     });
+    this.paramsToken = params || undefined;
   }
 
   createDagent = async () => {
@@ -53,7 +55,11 @@ class AgentTwitter {
   };
 
   createAndRunDagent = async () => {
-    await this.dagent.init();
+    const privateKey = this.environment.PRIVATE_KEY;
+    if (!privateKey && !this.paramsToken) {
+      dagentLogger.error("Please provide private key or params token.");
+    }
+    await this.dagent.init(this.paramsToken);
     // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
     const agent = await this.createDagent();
 
@@ -65,7 +71,11 @@ class AgentTwitter {
   };
 
   runDagent = async (agentId: string) => {
-    await this.dagent.init();
+    const privateKey = this.environment.PRIVATE_KEY;
+    if (!privateKey && !this.paramsToken) {
+      dagentLogger.error("Please provide private key or params token.");
+    }
+    await this.dagent.init(this.paramsToken);
     const agent = await this.dagent.getAgent(agentId);
     await this.dagent.setupMissions(agent.id);
     console.table(([agent] || []).map(agent => {

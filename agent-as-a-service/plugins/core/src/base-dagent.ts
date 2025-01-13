@@ -1,5 +1,12 @@
 import { Wallet } from "ethers";
-import { IAgentCharacter, IENV, IGetAgentsParams, InitAgent, TokenSetupMode } from "./types";
+import {
+    IAgentCharacter,
+    IENV,
+    IGetAccessTokenParams,
+    IGetAgentsParams,
+    InitAgent,
+    TokenSetupMode
+} from "./types";
 import { AgentClient } from "./client";
 import { dagentLogger } from "./index";
 
@@ -8,37 +15,63 @@ class BaseDagent {
     protected dagentCharacter: IAgentCharacter;
     protected coreAPI: AgentClient;
 
-    protected signer: Wallet;
-
+    protected signer?: Wallet;
+    protected signerAddress: string;
     protected accessToken: string;
 
     constructor({ dagentCharacter, environment }: InitAgent) {
         dagentLogger.log("Environment variables loading...");
         this.env = environment;
         this.dagentCharacter = dagentCharacter;
-        this.signer = new Wallet(this.env.PRIVATE_KEY);
+        if (this.env.PRIVATE_KEY) {
+            this.signer = new Wallet(this.env.PRIVATE_KEY);
+            this.signerAddress = this.signer ? this.signer.address : "";
+        } else {
+            this.signerAddress = "";
+        }
 
         this.coreAPI = new AgentClient({
             endpoint: this.env.ETERNAL_AI_URL,
         });
 
+
         this.accessToken = "";
         dagentLogger.log("Environment variables loaded.");
     }
 
-    configAccessToken = async () => {
+    configAccessToken = async (params?: IGetAccessTokenParams) => {
         try {
             dagentLogger.log("Access token loading...");
-            const signerAddress = this.signer.address;
+            let _params: IGetAccessTokenParams | undefined = params || undefined;
 
-            const message = `Sign this message to get access token: ${signerAddress}`;
-            const signature = await this.signer.signMessage(message);
+            if (!!params && !params?.address || !params?.signature || !params?.message) {
+                throw new Error("Please provide address, signature and message.");
+            }
+
+            if (!params && !this.signer) {
+                throw new Error("Please set signer or provide address, signature and message.");
+            }
+
+            if (!params && this.signer) {
+                const signerAddress = this.signer.address;
+
+                const message = `Sign this message to get access token: ${signerAddress}`;
+                const signature = await this.signer.signMessage(message);
+
+                _params = {
+                    address: signerAddress,
+                    signature: signature,
+                    message: message,
+                };
+            }
 
             const accessToken = await this.coreAPI.getAccessToken({
-                address: signerAddress,
-                signature: signature,
-                message: message,
+                address: _params?.address || "",
+                signature: _params?.signature || "",
+                message: _params?.message || "",
             });
+
+            this.signerAddress = _params?.address || "";
 
             this.coreAPI.setAuthToken(accessToken);
             this.accessToken = accessToken;
@@ -100,11 +133,15 @@ class BaseDagent {
         }
     };
 
+    getSignerAddress = () => {
+        return this.signerAddress || this.signer?.address || "";
+    }
+
     yourAgents = async (params: IGetAgentsParams) => {
         try {
             const agents = await this.coreAPI.list({
                 ...params,
-                creator: this.signer.address,
+                creator: this.getSignerAddress(),
             });
             return agents;
         } catch (error) {

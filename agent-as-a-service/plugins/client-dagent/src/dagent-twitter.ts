@@ -1,7 +1,7 @@
 import {
   dagentLogger,
   BaseDagent,
-  InitAgent,
+  InitAgent, IGetAccessTokenParams,
 } from "@eternal-dagent/core";
 import { TwitterAgentClient } from "@eternal-dagent/plugin-twitter";
 import { ILinkTwitterParams } from "./types";
@@ -16,8 +16,8 @@ class DagentTwitter extends BaseDagent {
     });
   }
 
-  init = async () => {
-    const accessToken = await this.configAccessToken();
+  init = async (params?: IGetAccessTokenParams) => {
+    const accessToken = await this.configAccessToken(params);
     if (!this.accessToken) {
       throw new Error("Access token is not loaded.");
     }
@@ -30,7 +30,7 @@ class DagentTwitter extends BaseDagent {
       callback_url: params.callback_url,
       twitter_client_id: params.twitter_client_id,
       twitter_oauth_url: params.twitter_oauth_url,
-      wallet_address: this.signer.address,
+      wallet_address: this.getSignerAddress(),
     });
     dagentLogger.warn(`Twitter OAuth URL: ${url}`);
     return url;
