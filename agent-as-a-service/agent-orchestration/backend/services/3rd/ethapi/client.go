@@ -98,6 +98,17 @@ func (c *Client) getClient() (*ethclient.Client, error) {
 	return c.client, nil
 }
 
+func (c *Client) GetClient() (*ethclient.Client, error) {
+	if c.client == nil {
+		client, err := ethclient.Dial(c.BaseURL)
+		if err != nil {
+			return nil, err
+		}
+		c.client = client
+	}
+	return c.client, nil
+}
+
 func (c *Client) ChainID() uint64 {
 	_, err := c.GetChainID()
 	if err != nil {
