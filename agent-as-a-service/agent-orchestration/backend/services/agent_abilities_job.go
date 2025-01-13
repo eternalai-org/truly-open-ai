@@ -1200,7 +1200,7 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 						if agentSnapshotPost != nil {
 							if agentSnapshotPost.ResponseId != "" {
 								if agentSnapshotPost.Status == models.AgentSnapshotPostStatusInferSubmitted {
-									offchainAutoAgentOutput, err := s.dojoAPI.OffchainAutoAgentOutput(s.conf.AgentOffchainUrl, agentSnapshotPost.ResponseId)
+									offchainAutoAgentOutput, err := s.dojoAPI.OffchainAutoAgentOutput(s.conf.AgentOffchain.Url, agentSnapshotPost.ResponseId, s.conf.AgentOffchain.ApiKey)
 									if err != nil {
 										return errs.NewError(err)
 									}
@@ -1690,7 +1690,14 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		},
 	}
 	request.MetaData.TwitterUsername = assistant.TwitterUsername
-	body, err := helpers.CurlURLString(s.conf.AgentOffchainUrl+"/async/enqueue", "POST", nil, &request)
+	body, err := helpers.CurlURLString(
+		s.conf.AgentOffchain.Url+"/async/enqueue",
+		"POST",
+		map[string]string{
+			"x-token": s.conf.AgentOffchain.ApiKey,
+		},
+		&request,
+	)
 	if err != nil {
 		return "", errs.NewError(err)
 	}

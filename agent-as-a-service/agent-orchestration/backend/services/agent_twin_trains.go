@@ -89,9 +89,15 @@ func (s *Service) AgentTwinTrain(ctx context.Context, agentInfoID uint) error {
 				requestBytes, _ := json.Marshal(twinTrainRequest)
 				updateAgentFields["twin_call_process_request"] = string(requestBytes)
 
-				body, err := helpers.CurlURLString(s.conf.AgentOffchainUrl+"/v1/twin/submit", "POST", map[string]string{
-					"Content-Type": "application/json",
-				}, &twinTrainRequest)
+				body, err := helpers.CurlURLString(
+					s.conf.AgentOffchain.Url+"/v1/twin/submit",
+					"POST",
+					map[string]string{
+						"Content-Type": "application/json",
+						"x-token":      s.conf.AgentOffchain.ApiKey,
+					},
+					&twinTrainRequest,
+				)
 				if err != nil {
 					return err
 				}
