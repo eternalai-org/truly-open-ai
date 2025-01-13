@@ -67,6 +67,7 @@ class AgentTwitter {
   runDagent = async (agentId: string) => {
     await this.dagent.init();
     const agent = await this.dagent.getAgent(agentId);
+    await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
     console.table(([agent] || []).map(agent => {
       return {
         agent_name: `${agent.agent_name}`,
