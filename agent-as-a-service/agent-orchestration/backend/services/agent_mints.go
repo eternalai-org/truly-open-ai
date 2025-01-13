@@ -27,42 +27,25 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 	err := s.JobRunCheck(
 		ctx, "JobAgentMintNft",
 		func() error {
-			agents, err := s.dao.FindAgentInfo(
+			agents, err := s.dao.FindAgentInfoJoin(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"agent_id != ''":        {},
-					"agent_contract_id = ?": {""},
-					"agent_nft_minted = ?":  {false},
-					`twin_twitter_usernames is null 
-						or twin_twitter_usernames = '' 
-						or (twin_twitter_usernames != '' and twin_status = ?)
+					"join agent_chain_fees on agent_chain_fees.network_id = agent_infos.network_id": {},
+				},
+				map[string][]interface{}{
+					"agent_infos.agent_id != ''":        {},
+					"agent_infos.agent_contract_id = ?": {""},
+					"agent_infos.agent_nft_minted = ?":  {false},
+					`agent_infos.twin_twitter_usernames is null 
+						or agent_infos.twin_twitter_usernames = '' 
+						or (agent_infos.twin_twitter_usernames != '' and agent_infos.twin_status = ?)
 					`: {models.TwinStatusDoneSuccess},
-					"scan_enabled = ?":    {true},
-					"system_prompt != ''": {},
-					`(1 != 1
-						or (network_id = ? and eai_balance >= 5999.9)
-						or (network_id = ? and eai_balance >= 299.9)
-						or (network_id = ? and eai_balance >= 174.9)
-						or (network_id = ? and eai_balance >= 569.9)
-						or (network_id = ? and eai_balance >= 549.9)
-						or (network_id not in (?) and eai_balance >= 9.99)
-						or (ref_tweet_id > 0 and eai_balance >= 0)
-					)
-					`: {
-						models.SHARDAI_CHAIN_ID,
-						models.ETHEREUM_CHAIN_ID,
-						models.SOLANA_CHAIN_ID,
-						models.BITTENSOR_CHAIN_ID,
-						models.TRON_CHAIN_ID,
-						[]uint64{
-							models.SHARDAI_CHAIN_ID,
-							models.ETHEREUM_CHAIN_ID,
-							models.SOLANA_CHAIN_ID,
-							models.BITTENSOR_CHAIN_ID,
-							models.TRON_CHAIN_ID,
-						},
-					},
-					"network_id in (?)": {
+					"agent_infos.scan_enabled = ?":    {true},
+					"agent_infos.system_prompt != ''": {},
+					`agent_infos.ref_tweet_id > 0 
+						or (agent_infos.eai_balance >= (agent_chain_fees.mint_fee + 9.9 * agent_chain_fees.infer_fee))
+						`: {},
+					"agent_infos.network_id in (?)": {
 						[]uint64{
 							models.SHARDAI_CHAIN_ID,
 							models.BITTENSOR_CHAIN_ID,
@@ -130,40 +113,23 @@ func (s *Service) AgentMintNft(ctx context.Context, agentInfoID uint) error {
 				!agent.AgentNftMinted {
 				var isOk bool
 				var mintFee, checkFee *big.Float
-				switch agent.NetworkID {
-				case models.SHARDAI_CHAIN_ID:
-					{
-						checkFee = numeric.NewFloatFromString("5999.9")
-						mintFee = numeric.NewFloatFromString("200")
-					}
-				case models.ETHEREUM_CHAIN_ID:
-					{
-						checkFee = numeric.NewFloatFromString("299.9")
-						mintFee = numeric.NewFloatFromString("270.0")
-					}
-				case models.SOLANA_CHAIN_ID:
-					{
-						checkFee = numeric.NewFloatFromString("174.9")
-						mintFee = numeric.NewFloatFromString("125.0")
-					}
-				case models.BITTENSOR_CHAIN_ID:
-					{
-						checkFee = numeric.NewFloatFromString("569.9")
-						mintFee = numeric.NewFloatFromString("20.0")
-					}
-				case models.TRON_CHAIN_ID:
-					{
-						checkFee = numeric.NewFloatFromString("549.9")
-						mintFee = numeric.NewFloatFromString("50")
-					}
-				default:
-					{
-						checkFee = numeric.NewFloatFromString("0.99")
-						mintFee = numeric.NewFloatFromString("0.0")
-					}
-				}
 				if agent.RefTweetID > 0 {
 					mintFee = numeric.NewFloatFromString("0.0")
+					checkFee = numeric.NewFloatFromString("0.0")
+				} else {
+					agentChainFee, err := s.dao.FirstAgentChainFee(
+						daos.GetDBMainCtx(ctx),
+						map[string][]interface{}{
+							"network_id = ?": {agent.NetworkID},
+						},
+						map[string][]interface{}{},
+						[]string{},
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					mintFee = &agentChainFee.MintFee.Float
+					checkFee = models.AddBigFloats(&agentChainFee.MintFee.Float, models.MulBigFloats(&agentChainFee.InferFee.Float, big.NewFloat(9.9)))
 				}
 				if agent.EaiBalance.Float.Cmp(checkFee) >= 0 {
 					isOk = true

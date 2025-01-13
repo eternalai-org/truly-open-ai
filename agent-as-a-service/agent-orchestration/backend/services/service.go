@@ -158,6 +158,7 @@ func NewService(conf *configs.Config) *Service {
 		s.ethApiMap, conf.Networks, s.trxApi,
 		conf.RagApi,
 		conf.Lighthouse.Apikey,
+		conf.WebhookUrl,
 	)
 
 	return s

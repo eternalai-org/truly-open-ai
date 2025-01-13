@@ -41,3 +41,5 @@ node_modules
 .env
 dist
 build
+Makefile
+api.http

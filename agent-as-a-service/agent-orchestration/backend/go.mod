@@ -12,6 +12,8 @@ require (
 	github.com/btcsuite/btcd v0.24.2
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4
 	github.com/btcsuite/btcd/btcutil v1.1.6
+	github.com/chromedp/cdproto v0.0.0-20250101192427-60a0ca35cb84
+	github.com/chromedp/chromedp v0.11.2
 	github.com/cosmos/cosmos-sdk v0.50.11
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/dghubble/oauth1 v0.7.3
@@ -88,8 +90,6 @@ require (
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/chromedp/cdproto v0.0.0-20250101192427-60a0ca35cb84 // indirect
-	github.com/chromedp/chromedp v0.11.2 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
