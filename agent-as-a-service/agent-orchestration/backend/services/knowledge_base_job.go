@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
@@ -43,6 +42,7 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.KnowledgeBase) error {
 	var err error
 	var tx, contractAddress string
+	_ = contractAddress
 	priKey := s.conf.WalletDeployAIKB20
 	if !s.conf.GetConfigKeyBool(info.NetworkID, "zk_sync") {
 		client := s.GetEthereumClient(ctx, info.NetworkID)
@@ -64,13 +64,13 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		}
 	}
 
-	info.KB20TxDeploy = strings.ToLower(tx)
-	info.KB20Address = strings.ToLower(contractAddress)
+	//info.KB20TxDeploy = strings.ToLower(tx)
+	//info.KB20Address = strings.ToLower(contractAddress)
 	info.Status = models.KnowledgeBaseStatusMinted
 	err = s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, info.ID, map[string]interface{}{
-		"status":          info.Status,
-		"kb_20_tx_deploy": info.KB20TxDeploy,
-		"kb_20_address":   info.KB20Address,
+		"status": info.Status,
+		//"kb_20_tx_deploy": info.KB20TxDeploy,
+		//"kb_20_address":   info.KB20Address,
 	})
 	if err != nil {
 		return err
