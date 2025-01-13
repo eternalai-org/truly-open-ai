@@ -67,7 +67,7 @@ class AgentTwitter {
   runDagent = async (agentId: string) => {
     await this.dagent.init();
     const agent = await this.dagent.getAgent(agentId);
-    await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
+    await this.dagent.setupMissions(agent.id);
     console.table(([agent] || []).map(agent => {
       return {
         agent_name: `${agent.agent_name}`,
@@ -82,13 +82,12 @@ class AgentTwitter {
 
 dotenv.config();
 const agentTwitter = new AgentTwitter();
-// agentTwitter.createAndRunDagent()
-//     .then(() => {
-//         dagentLogger.info("Code run completed...");
-//     });
-
-agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+agentTwitter.createAndRunDagent()
     .then(() => {
       dagentLogger.info("Code run completed...");
     });
 
+// agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+//     .then(() => {
+//       dagentLogger.info("Code run completed...");
+//     });

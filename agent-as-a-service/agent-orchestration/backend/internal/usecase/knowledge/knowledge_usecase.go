@@ -32,6 +32,7 @@ type knowledgeUsecase struct {
 	trxApi        *trxapi.Client
 	ragApi        string
 	lighthouseKey string
+	webhookUrl    string
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
@@ -98,6 +99,7 @@ func NewKnowledgeUsecase(
 	trxApi *trxapi.Client,
 	ragApi string,
 	lighthousekey string,
+	webhookUrl string,
 ) ports.IKnowledgeUsecase {
 	return &knowledgeUsecase{
 		knowledgeBaseRepo:     knowledgeBaseRepo,
@@ -108,6 +110,7 @@ func NewKnowledgeUsecase(
 		trxApi:                trxApi,
 		ragApi:                ragApi,
 		lighthouseKey:         lighthousekey,
+		webhookUrl:            webhookUrl,
 	}
 }
 
@@ -195,7 +198,7 @@ func (uc *knowledgeUsecase) UpdateKnowledgeBaseById(ctx context.Context, id uint
 func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 	offset := 0
 	limit := 30
-	for true {
+	for {
 		resp, err := uc.knowledgeBaseRepo.GetKnowledgeBaseByStatus(
 			ctx, models.KnowledgeBaseStatusWaitingPayment, offset, limit,
 		)
@@ -266,7 +269,7 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 				BTCL1:             strings.ToUpper(net["is_btc_l1"]) == "TRUE",
 				BlockTimeDisabled: true,
 			}
-			ethClient, _ = uc.ethApiMap[nId]
+			ethClient = uc.ethApiMap[nId]
 		}
 
 		balance, err := uc.balanceOfAddress(ctx, kn.DepositAddress, ethClient, net)
@@ -274,7 +277,7 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			continue
 		}
 
-		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() >= 0 {
+		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() > 0 {
 			updatedFields := make(map[string]interface{})
 			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
@@ -327,7 +330,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	}{
 		FileUrls: kn.FileUrls(),
 		Ref:      fmt.Sprintf("%d", kn.ID),
-		Hook:     fmt.Sprintf("%s/%d", "https://agent.api.eternalai.org/api/knowledge/webhook-file", kn.ID),
+		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
 	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).

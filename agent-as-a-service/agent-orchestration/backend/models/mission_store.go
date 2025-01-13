@@ -46,11 +46,11 @@ type MissionStoreHistory struct {
 
 type MissionStoreRating struct {
 	gorm.Model
-	UserAddress           string
-	MissionStoreID        uint `gorm:"unique_index:mission_store_rating_main_uidx"`
-	MissionStore          *MissionStore
-	MissionStoreHistoryID uint `gorm:"unique_index:mission_store_rating_main_uidx"`
-	MissionStoreHistory   MissionStoreHistory
-	Rating                float64 `gorm:"type:decimal(5,2);default:0"`
-	Comment               string  `gorm:"type:longtext"`
+	UserAddress         string
+	MissionStoreID      uint `gorm:"unique_index:mission_store_rating_main_uidx"`
+	MissionStore        *MissionStore
+	AgentSnapshotPostID uint `gorm:"unique_index:mission_store_rating_main_uidx"`
+	AgentSnapshotPost   AgentSnapshotPost
+	Rating              float64 `gorm:"type:decimal(5,2);default:0"`
+	Comment             string  `gorm:"type:longtext"`
 }

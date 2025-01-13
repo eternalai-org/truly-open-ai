@@ -15,6 +15,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/aidojo"
 	blockchainutils "github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -310,7 +311,8 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						tx,
 						missionID,
 						map[string][]interface{}{
-							"AgentInfo": {},
+							"AgentInfo":    {},
+							"MissionStore": {},
 						},
 						false,
 					)
@@ -375,6 +377,12 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if err != nil {
 						return errs.NewError(err)
 					}
+					inferFee := agentChainFee.InferFee
+					missionStoreFee := numeric.BigFloat{*big.NewFloat(0)}
+					if mission.MissionStore != nil {
+						missionStoreFee = numeric.BigFloat{*big.NewFloat(float64(mission.MissionStore.Price))}
+						inferFee = numeric.BigFloat{*models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float)}
+					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,
 						AgentInfoID:            agentInfo.ID,
@@ -382,7 +390,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferData:              string(inferData),
 						InferAt:                helpers.TimeNow(),
 						Status:                 models.AgentSnapshotPostStatusInferSubmitted,
-						Fee:                    agentChainFee.InferFee,
+						Fee:                    inferFee,
 						UserPrompt:             inferItems[0].Content,
 						HeadSystemPrompt:       headSystemPrompt,
 						AgentMetaData:          helpers.ConvertJsonString(metaDataReq),
@@ -395,6 +403,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferTxHash:            inferTxHash,
 						OrgTweetID:             orgTweetID,
 						Token:                  tokenSymbol,
+						MissionStoreID:         mission.MissionStoreID,
+						IsRated:                false,
+						MissionStoreFee:        missionStoreFee,
 					}
 					if inferPost.AgentBaseModel == "" {
 						inferPost.AgentBaseModel = agentInfo.AgentBaseModel
