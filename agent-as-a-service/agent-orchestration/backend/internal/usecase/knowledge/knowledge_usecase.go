@@ -23,9 +23,10 @@ import (
 )
 
 type knowledgeUsecase struct {
-	knowledgeBaseRepo     repository.KnowledgeBaseRepo
-	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo
-	secretKey             string
+	knowledgeBaseRepo          repository.KnowledgeBaseRepo
+	knowledgeBaseFileRepo      repository.KnowledgeBaseFileRepo
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo
+	secretKey                  string
 
 	networks      map[string]map[string]string
 	ethApiMap     map[uint64]*ethapi.Client
@@ -35,16 +36,20 @@ type knowledgeUsecase struct {
 	webhookUrl    string
 }
 
+func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {
+	return uc.agentInfoKnowledgeBaseRepo.Create(ctx, model)
+}
+
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
 	kn, err := uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-
+	logger.Info("WebhookFile", "start WebhookFile", zap.Any("knowledgeBaseId", id), zap.Any("filename", filename))
 	updatedFields := make(map[string]interface{})
 	hash, err := lighthouse.UploadDataWithRetry(uc.lighthouseKey, fmt.Sprintf("%d_%s", time.Now().Unix(), filename), bytes)
 	if err != nil {
-		logger.Error("WebhookFile", "UploadDataWithRetry", zap.Error(err))
+		logger.Error("WebhookFileError", "UploadDataWithRetry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		_ = uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
 		return nil, err
@@ -93,6 +98,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 func NewKnowledgeUsecase(
 	knowledgeBaseRepo repository.KnowledgeBaseRepo,
 	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
 	secretKey string,
 	ethApiMap map[uint64]*ethapi.Client,
 	networks map[string]map[string]string,
@@ -102,15 +108,16 @@ func NewKnowledgeUsecase(
 	webhookUrl string,
 ) ports.IKnowledgeUsecase {
 	return &knowledgeUsecase{
-		knowledgeBaseRepo:     knowledgeBaseRepo,
-		knowledgeBaseFileRepo: knowledgeBaseFileRepo,
-		secretKey:             secretKey,
-		ethApiMap:             ethApiMap,
-		networks:              networks,
-		trxApi:                trxApi,
-		ragApi:                ragApi,
-		lighthouseKey:         lighthousekey,
-		webhookUrl:            webhookUrl,
+		knowledgeBaseRepo:          knowledgeBaseRepo,
+		knowledgeBaseFileRepo:      knowledgeBaseFileRepo,
+		agentInfoKnowledgeBaseRepo: agentInfoKnowledgeBaseRepo,
+		secretKey:                  secretKey,
+		ethApiMap:                  ethApiMap,
+		networks:                   networks,
+		trxApi:                     trxApi,
+		ragApi:                     ragApi,
+		lighthouseKey:              lighthousekey,
+		webhookUrl:                 webhookUrl,
 	}
 }
 

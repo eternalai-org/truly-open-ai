@@ -1,5 +1,5 @@
 import { FarcasterAgentClient } from "@eternal-dagent/plugin-farcaster";
-import { BaseDagent, InitAgent } from "@eternal-dagent/core";
+import {BaseDagent, IGetAccessTokenParams, InitAgent} from "@eternal-dagent/core";
 
 interface IDagentFarcaster {
   init: () => Promise<string>;
@@ -16,13 +16,13 @@ class DagentFarcaster extends BaseDagent implements IDagentFarcaster {
     });
   }
 
-  init = async () => {
-    const accessToken = await this.configAccessToken();
+  init = async (params?: IGetAccessTokenParams) => {
+    const _accessToken = await this.configAccessToken(params);
     if (!this.accessToken) {
       throw new Error("Access token is not loaded.");
     }
-    this.api.setAuthToken(accessToken || "");
-    return accessToken || "";
+    this.api.setAuthToken(_accessToken || "");
+    return _accessToken || "";
   };
 
   setupMissions = async (agentId: string) => {

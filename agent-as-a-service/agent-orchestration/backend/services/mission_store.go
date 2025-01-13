@@ -125,9 +125,11 @@ func (s *Service) RatingMisstionStore(ctx context.Context, req *serializers.Miss
 	return nil
 }
 
-func (s *Service) GetListMisstionStore(ctx context.Context, page, limit int) ([]*models.MissionStore, uint, error) {
+func (s *Service) GetListMisstionStore(ctx context.Context, search string, page, limit int) ([]*models.MissionStore, uint, error) {
 	res, count, err := s.dao.FindMissionStore4Page(daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"name like ?": {"%" + search + "%"},
+		},
 		map[string][]interface{}{}, []string{"rating desc"}, page, limit)
 	if err != nil {
 		return nil, 0, errs.NewError(err)

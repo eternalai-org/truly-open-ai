@@ -42,7 +42,8 @@ func (s *Server) RateMissionStore(c *gin.Context) {
 func (s *Server) GetListMissionStore(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	res, count, err := s.nls.GetListMisstionStore(ctx, page, limit)
+	search := s.stringFromContextQuery(c, "search")
+	res, count, err := s.nls.GetListMisstionStore(ctx, search, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

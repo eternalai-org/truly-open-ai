@@ -36,15 +36,6 @@ type KnowledgeBase struct {
 	DepositChainId         uint64               `json:"deposit_chain_id"`
 }
 
-type AgentInfoKnowledgeBase struct {
-	gorm.Model
-	AgentInfoId     uint `json:"agent_info_id" gorm:"index"`
-	KnowledgeBaseId uint `json:"knowledge_base_id" gorm:"index"`
-
-	AgentInfo     *AgentInfo
-	KnowledgeBase *KnowledgeBase
-}
-
 type KnowledgeBaseFile struct {
 	gorm.Model
 	KnowledgeBaseId uint   `json:"knowledge_base_id"`
