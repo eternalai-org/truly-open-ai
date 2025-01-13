@@ -825,7 +825,8 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 							Model(meme).
 							Updates(
 								map[string]interface{}{
-									"tick": tickCurr,
+									"tick":         tickCurr,
+									"add_pool2_at": time.Now(),
 								},
 							).Error
 						if err != nil {
@@ -1015,6 +1016,7 @@ func (s *Service) MemeAddPositionUniswap(ctx context.Context, memeID uint) error
 									"price_usd":         numeric.NewBigFloatFromFloat(models.MulBigFloats(big.NewFloat(priceF), baseTokenPrice)),
 									"tick_lower":        tickLower,
 									"tick_upper":        tickUpper,
+									"add_pool2_at":      time.Now(),
 								},
 							).Error
 						if err != nil {
@@ -1473,7 +1475,10 @@ func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) erro
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if meme.Status == models.MemeStatusAddPoolLevel2 && meme.UniswapPositionID > 0 && meme.BurnPool2TxHash == "" {
+			if meme.Status == models.MemeStatusAddPoolLevel2 &&
+				meme.UniswapPositionID > 0 &&
+				meme.BurnPool2TxHash == "" &&
+				meme.AddPool2At.Before(time.Now().Add(24*time.Hour)) {
 				memePoolAddress := strings.ToLower(s.conf.GetConfigKeyString(meme.NetworkID, "meme_pool_address"))
 				{
 					burnPoolTxHash, err := s.GetEVMClient(ctx, meme.NetworkID).Erc721Transfer(
@@ -1481,7 +1486,7 @@ func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) erro
 						s.GetAddressPrk(
 							memePoolAddress,
 						),
-						meme.UniswapPool,
+						"0x000000000000000000000000000000000000dEaD",
 						big.NewInt(meme.UniswapPositionID),
 					)
 					if err != nil {
@@ -1491,6 +1496,7 @@ func (s *Service) MemeBurnPositionUniswap(ctx context.Context, memeID uint) erro
 						Model(meme).
 						Updates(
 							map[string]interface{}{
+								"burn_pool2_at":      time.Now(),
 								"burn_pool2_tx_hash": burnPoolTxHash,
 							},
 						).Error
