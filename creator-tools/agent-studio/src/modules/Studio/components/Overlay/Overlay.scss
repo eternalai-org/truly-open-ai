@@ -1,0 +1,39 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1000;
+  opacity: 0;
+  will-change: opacity;
+  transition: opacity 0.5s var(--ease-out-quart);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+
+  * {
+    color: #fff;
+  }
+}
+
+.overlay__background {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  // background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.overlay__content {
+  position: relative;
+  z-index: 1;
+}
+
+.overlay--active {
+  opacity: 1;
+  pointer-events: auto;
+}
