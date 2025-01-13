@@ -307,10 +307,12 @@ func (c *AiDojoBackend) OffchainAgentOutput(inferId string) (string, error) {
 	return string(data), nil
 }
 
-func (c *AiDojoBackend) OffchainAutoAgentOutput(endpoint string, funId string) (string, error) {
+func (c *AiDojoBackend) OffchainAutoAgentOutput(endpoint string, funId string, xToken string) (string, error) {
 	data, err := c.getBytes(
 		fmt.Sprintf(endpoint+"/async/get?id=%s", funId),
-		map[string]string{},
+		map[string]string{
+			"x-token": xToken,
+		},
 	)
 	if err != nil {
 		return "", err

@@ -1073,12 +1073,12 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 
 				listTestToolSet := strings.Split(s.conf.ListTestToolSet, ",")
 				if len(listID) > 0 {
-					err = tx.Where("agent_info_id = ? and id not in (?) and tool_set not in (?)", agentInfo.ID, listID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and id not in (?) and mission_store_id = 0 and tool_set not in (?)", agentInfo.ID, listID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
 				} else {
-					err = tx.Where("agent_info_id = ? and tool_set not in (?)", agentInfo.ID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and mission_store_id = 0 and tool_set not in (?)", agentInfo.ID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -1149,7 +1149,8 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						}
 						toolList := missionStore.ToolList
 						if missionStore.OutputType == models.OutputTypeTwitter {
-							toolList, err = s.addToolPostTwitter(toolList, s.conf.ToolLists.PostTwitter)
+							twitterTool := fmt.Sprintf(s.conf.ToolLists.PostTwitter, s.conf.InternalApiKey, agentInfo.ID)
+							toolList, err = s.addToolPostTwitter(toolList, twitterTool)
 							if err != nil {
 								return errs.NewError(err)
 							}
@@ -1159,7 +1160,9 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 							placeholder := fmt.Sprintf("<%s>", key)
 							toolList = strings.ReplaceAll(toolList, placeholder, value)
 						}
+						mission.UserPrompt = missionStore.UserPrompt
 						mission.MissionStoreID = item.MissionStoreID
+						mission.ToolList = toolList
 					} else if item.ToolList != "" {
 						mission.ToolList = item.ToolList
 					}

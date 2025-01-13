@@ -66,15 +66,13 @@ type MissionStoreHistoryResp struct {
 }
 
 type MissionStoreRatingResp struct {
-	ID                    uint                     `json:"id"`
-	CreatedAt             time.Time                `json:"created_at"`
-	UserAddress           string                   `json:"user_address"`
-	MissionStoreID        uint                     `json:"mission_store_id"`
-	MissionStore          *MissionStoreResp        `json:"mission_store"`
-	MissionStoreHistoryID uint                     `json:"mission_store_history_id"`
-	MissionStoreHistory   *MissionStoreHistoryResp `json:"mission_store_history"`
-	Rating                float64                  `json:"rating"`
-	Comment               string                   `json:"comment"`
+	ID             uint              `json:"id"`
+	CreatedAt      time.Time         `json:"created_at"`
+	UserAddress    string            `json:"user_address"`
+	MissionStoreID uint              `json:"mission_store_id"`
+	MissionStore   *MissionStoreResp `json:"mission_store"`
+	Rating         float64           `json:"rating"`
+	Comment        string            `json:"comment"`
 }
 
 func NewMissionStoreResp(m *models.MissionStore) *MissionStoreResp {
@@ -126,15 +124,13 @@ func NewMissionStoreRatingResp(r *models.MissionStoreRating) *MissionStoreRating
 		return nil
 	}
 	return &MissionStoreRatingResp{
-		ID:                    r.ID,
-		CreatedAt:             r.CreatedAt,
-		UserAddress:           r.UserAddress,
-		MissionStoreID:        r.MissionStoreID,
-		MissionStore:          NewMissionStoreResp(r.MissionStore),
-		MissionStoreHistoryID: r.MissionStoreHistoryID,
-		MissionStoreHistory:   NewMissionStoreHistoryResp(&r.MissionStoreHistory),
-		Rating:                r.Rating,
-		Comment:               r.Comment,
+		ID:             r.ID,
+		CreatedAt:      r.CreatedAt,
+		UserAddress:    r.UserAddress,
+		MissionStoreID: r.MissionStoreID,
+		MissionStore:   NewMissionStoreResp(r.MissionStore),
+		Rating:         r.Rating,
+		Comment:        r.Comment,
 	}
 }
 

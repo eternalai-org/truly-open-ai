@@ -1,0 +1,13 @@
+vendor/
+
+*.log
+*.swp
+.DS_Store
+Thumbs.db
+
+.git/
+.gitignore
+
+.dockerignore
+docker-compose.override.yml
+

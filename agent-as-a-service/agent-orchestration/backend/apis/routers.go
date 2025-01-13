@@ -140,6 +140,10 @@ func (s *Server) Routers() {
 			agentAPI.POST("/update_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant_in_contract", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistantInContract)
 			agentAPI.POST("/update_twin_status", s.UpdateTwinStatus)
+
+			// knowledge base
+			agentAPI.POST("/use-knowledge-base", s.authCheckTK1TokenMiddleware(), s.AgentUseKnowledgeBase)
+
 			// infer
 			agentAPI.POST("/async-batch-prompt", s.AsyncBatchPrompt)
 			agentAPI.GET("/get-async-prompt-output/:id", s.GetBatchItem)

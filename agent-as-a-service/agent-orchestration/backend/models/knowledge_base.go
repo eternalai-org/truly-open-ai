@@ -15,24 +15,34 @@ const (
 
 type KnowledgeBase struct {
 	gorm.Model
-	Status               KnowledgeBaseStatus  `json:"status"`
-	UserAddress          string               `json:"user_address"`
-	DepositAddress       string               `json:"deposit_address"`
-	DepositPrivKey       string               `json:"-"`
-	DepositTxHash        string               `json:"deposit_tx_hash"`
-	Name                 string               `json:"name"`
-	Description          string               `json:"description"`
-	AgentId              string               `json:"agent_id"`
-	ResultUrl            string               `json:"result_url"`
-	NetworkID            uint64               `json:"network_id"`
-	KB20Address          string               `json:"kb_20_address"`
-	KB20TxDeploy         string               `json:"kb_20_tx_deploy"`
-	KnowledgeBaseFiles   []*KnowledgeBaseFile `json:"knowledge_base_files"`
-	Fee                  float64              `json:"fee"`
-	SolanaDepositAddress string               `json:"solana_deposit_address"`
-	SolanaDepositPrivKey string               `json:"-"`
-	FilecoinHash         string               `json:"filecoin_hash"`
-	DepositChainId       uint64               `json:"deposit_chain_id"`
+	Status                 KnowledgeBaseStatus  `json:"status"`
+	UserAddress            string               `json:"user_address"`
+	DepositAddress         string               `json:"deposit_address"`
+	DepositPrivKey         string               `json:"-"`
+	DepositTxHash          string               `json:"deposit_tx_hash"`
+	Name                   string               `json:"name"`
+	Description            string               `json:"description"`
+	AgentId                string               `json:"agent_id"`
+	ResultUrl              string               `json:"result_url"`
+	NetworkID              uint64               `json:"network_id"`
+	KBTokenContractAddress string               `json:"kb_token_contract_address"`
+	KBTokenID              string               `json:"kb_token_id" gorm:"index"`
+	KBTokenMintTx          string               `json:"kb_token_mint_tx" gorm:"index"`
+	KnowledgeBaseFiles     []*KnowledgeBaseFile `json:"knowledge_base_files"`
+	Fee                    float64              `json:"fee"`
+	SolanaDepositAddress   string               `json:"solana_deposit_address"`
+	SolanaDepositPrivKey   string               `json:"-"`
+	FilecoinHash           string               `json:"filecoin_hash"`
+	DepositChainId         uint64               `json:"deposit_chain_id"`
+}
+
+type AgentInfoKnowledgeBase struct {
+	gorm.Model
+	AgentInfoId     uint `json:"agent_info_id" gorm:"index"`
+	KnowledgeBaseId uint `json:"knowledge_base_id" gorm:"index"`
+
+	AgentInfo     *AgentInfo
+	KnowledgeBase *KnowledgeBase
 }
 
 type KnowledgeBaseFile struct {

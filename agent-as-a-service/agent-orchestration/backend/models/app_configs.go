@@ -5,6 +5,11 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+var KeyConfigNameWalletDeploy = "wallet_deploy"
+var KeyConfigNameModelId = "model_id"
+var KeyConfigNameKnowledgeBaseWorkerHubAddress = "know_ledge_base_worker_hub_address"
+var KeyConfigNameTokenContractAddress = "token_contract_address"
+
 type AppConfig struct {
 	gorm.Model
 	NetworkID uint64 `gorm:"unique_index:app_configs_main_uidx"`

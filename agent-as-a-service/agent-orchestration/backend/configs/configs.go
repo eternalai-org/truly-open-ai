@@ -147,9 +147,12 @@ type Config struct {
 	GenerateImageUrl     string `json:"generate_image_url"`
 	GenerateGifImageUrl  string `json:"generate_gif_image_url"`
 	AgentOffchainChatUrl string `json:"agent_offchain_chat_url"`
-	AgentOffchainUrl     string `json:"agent_offchain_url"`
-	EternalaiBridgesUrl  string `json:"eternalai_bridges_url"`
-	Telebot              struct {
+	AgentOffchain        struct {
+		Url    string `json:"url"`
+		ApiKey string `json:"api_key"`
+	} `json:"agent_offchain"`
+	EternalaiBridgesUrl string `json:"eternalai_bridges_url"`
+	Telebot             struct {
 		Tracker struct {
 			Botkey          string `json:"botkey"`
 			ChatID          int64  `json:"chat_id"`
@@ -183,6 +186,7 @@ type Config struct {
 	RagApi                      string                       `json:"rag_api"`
 	ListTestToolSet             string                       `json:"list_test_tool_set"`
 	LuckyMoneyAdminAddress      string                       `json:"lucky_money_admin_address"`
+	WebhookUrl                  string                       `json:"webhook_url"`
 }
 
 func (cf *Config) ExistsedConfigKey(networkID uint64, name string) bool {

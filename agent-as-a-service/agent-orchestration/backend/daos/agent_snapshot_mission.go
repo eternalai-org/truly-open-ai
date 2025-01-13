@@ -82,3 +82,20 @@ func (d *DAO) FirstAgentTeleMsg(tx *gorm.DB, filters map[string][]interface{}, p
 	}
 	return &m, nil
 }
+
+func (d *DAO) GetMissionToolset(tx *gorm.DB, id uint) (string, error) {
+	var rs models.AgentSnapshotMission
+	query := tx.Raw(`
+		select tool_set
+		from agent_snapshot_missions
+		where id = ?
+	`, id)
+
+	if err := query.Scan(&rs).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return "", nil
+		}
+		return "", errs.NewError(err)
+	}
+	return string(rs.ToolSet), nil
+}

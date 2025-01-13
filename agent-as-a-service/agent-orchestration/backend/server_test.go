@@ -18,7 +18,7 @@ var ts *services.Service
 func init() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	conf := configs.GetConfig()
-	logger.NewLogger("image-ai-api", conf.Env, "", true)
+	logger.NewLogger("agents-ai-api", conf.Env, "", true)
 	defer logger.Sync()
 	dbMain, err := databases.Init(
 		conf.DbURL,
@@ -43,4 +43,8 @@ func init() {
 
 func Test_JOB(t *testing.T) {
 	ts.JobLuckyMoneyActionExecuted(context.Background())
+}
+
+func Test_SRV(t *testing.T) {
+	// ts.AgentSnapshotPostStatusInferRefund(context.Background(), 96753)
 }

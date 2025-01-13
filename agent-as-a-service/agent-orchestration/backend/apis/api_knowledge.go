@@ -209,3 +209,27 @@ func (s *Server) updateKnowledge(c *gin.Context) {
 
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: r})
 }
+
+func (s *Server) AgentUseKnowledgeBase(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	req := &serializers.AgentUseKnowledgeBaseRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	req.UserAddress = userAddress
+
+	resp, err := s.nls.AgentUseKnowledgeBase(ctx, req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
+}

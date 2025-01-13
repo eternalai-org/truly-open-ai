@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/appconfig"
 	"math/big"
 	"sync"
 	"time"
@@ -72,6 +73,7 @@ type Service struct {
 	dao *daos.DAO
 
 	KnowledgeUsecase ports.IKnowledgeUsecase
+	AppConfigUseCase ports.IAppConfigUseCase
 }
 
 func NewService(conf *configs.Config) *Service {
@@ -158,8 +160,10 @@ func NewService(conf *configs.Config) *Service {
 		s.ethApiMap, conf.Networks, s.trxApi,
 		conf.RagApi,
 		conf.Lighthouse.Apikey,
+		conf.WebhookUrl,
 	)
-
+	appConfigBaseRepo := repository.NewAppConfigRepository(gormDB)
+	s.AppConfigUseCase = appconfig.NewAppConfigUseCase(appConfigBaseRepo)
 	return s
 }
 

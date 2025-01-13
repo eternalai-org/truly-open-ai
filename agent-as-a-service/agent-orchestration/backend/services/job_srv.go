@@ -228,6 +228,7 @@ func (s *Service) RunJobs(ctx context.Context) error {
 					s.JobRetryAddPool1(context.Background())
 					s.JobRetryAddPool2(context.Background())
 					s.JobRetryAgentDeployToken(context.Background())
+					s.JobMemeBurnPositionUniswap(context.Background())
 					return nil
 				},
 			)

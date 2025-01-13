@@ -90,11 +90,11 @@ func (s *Service) RatingMisstionStore(ctx context.Context, req *serializers.Miss
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			rating := &models.MissionStoreRating{
-				UserAddress:           history.UserAddress,
-				MissionStoreID:        missionStore.ID,
-				MissionStoreHistoryID: history.ID,
-				Rating:                req.Rating,
-				Comment:               req.Comment,
+				UserAddress:         history.UserAddress,
+				MissionStoreID:      missionStore.ID,
+				AgentSnapshotPostID: history.ID,
+				Rating:              req.Rating,
+				Comment:             req.Comment,
 			}
 
 			err = s.dao.Create(tx, rating)

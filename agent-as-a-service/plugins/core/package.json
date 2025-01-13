@@ -3,7 +3,7 @@
   "version": "1.0.3",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TrustlessComputer/eternal-dagent"
+    "url": "https://github.com/eternalai-org/eternal-ai"
   },
   "homepage": "https://eternalai.org/",
   "main": "dist/index.cjs",
