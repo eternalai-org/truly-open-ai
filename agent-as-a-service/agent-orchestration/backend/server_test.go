@@ -8,6 +8,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/databases"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services"
 )
 
@@ -16,6 +17,8 @@ var ts *services.Service
 func init() {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	conf := configs.GetConfig()
+	logger.NewLogger("agents-ai-api", conf.Env, "", true)
+	defer logger.Sync()
 	dbMain, err := databases.Init(
 		conf.DbURL,
 		nil,
