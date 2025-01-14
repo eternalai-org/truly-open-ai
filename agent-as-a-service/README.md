@@ -44,5 +44,5 @@ git clone https://github.com/eternalai-org/eternal-ai
 
 cp .env.example .env
 
-yarn && yarn build && cd dagent && yarn run:twitter
+yarn && yarn build && yarn start:dagent
 ```

@@ -6,16 +6,26 @@ import "./IBase.sol";
 
 /**
  * @title IKB721 Interface
- * @author EAI
- * @notice This interface defines the standard for the ERC721 token, including events and functions for minting, updating, and managing tokens.
+ * @author ETERNAL AI
+ * @notice This interface defines the standard for KB721, a protocol for decentralized storage
+ *         that builds upon ERC721 to manage knowledge-base (KB) agent instances as a collection of NFTs.
+ * @dev Designed to enable on-chain retrieval of knowledge-base services where each KB agent is represented,
+ *      identified, and managed via NFT-like tokens, ensuring ownership, transferability,
+ *      and provenance. This protocol extends ERC721 conventions to support KB agents with
+ *      specialized functionalities.
  */
 interface IKB721 {
+    /// @dev fee: The usage fee required to invoke this agent's infer.
+    /// @dev isUsed: Signals whether this token is actively engaged or in use.
+    /// @dev modelId: Identifies the specific model from the associated model collection utilized by this agent.
+    /// @dev promptScheduler: The address of promptScheduler contract.
+    /// @dev sysPrompts: The system prompt data of this agent, mapped from string keys to arrays of prompt data, managed by the agent's owner.
     struct TokenMetaData {
-        uint128 fee; // The fee associated with the token.
-        bool isUsed; // Indicates if the token is currently in use.
-        uint32 modelId; // The model ID associated with the token.
-        address promptScheduler; // The address of the prompt scheduler.
-        mapping(string => bytes[]) sysPrompts; // Mapping of system prompts by key.
+        uint128 fee;
+        bool isUsed;
+        uint32 modelId;
+        address promptScheduler;
+        mapping(string => bytes[]) sysPrompts;
     }
 
     /**
@@ -43,15 +53,15 @@ interface IKB721 {
     event GPUManagerUpdate(address gpuManager);
 
     /**
-     * @dev Emitted when a new token is minted.
-     * @param tokenId The ID of the newly minted token.
-     * @param uri The URI of the token.
-     * @param sysPrompt The system prompt associated with the token.
-     * @param fee The fee paid for the token.
+     * @dev Emitted when a new agent is minted.
+     * @param agentId The ID of the newly minted agent.
+     * @param uri The URI of the agent.
+     * @param sysPrompt The system prompt associated with the agent.
+     * @param fee The fee paid for the agent.
      * @param minter The address of the minter.
      */
     event NewToken(
-        uint256 indexed tokenId,
+        uint256 indexed agentId,
         string uri,
         bytes sysPrompt,
         uint fee,
@@ -94,8 +104,32 @@ interface IKB721 {
     event AgentFeeUpdate(uint256 indexed agentId, uint fee);
 
     /**
+     * @dev Emitted when the model ID of an agent is updated.
+     * @param agentId The ID of the agent whose model ID is being updated.
+     * @param oldModelId The previous model ID of the agent.
+     * @param newModelId The new model ID of the agent.
+     */
+    event AgentModelIdUpdate(
+        uint256 indexed agentId,
+        uint256 oldModelId,
+        uint256 newModelId
+    );
+
+    /**
+     * @dev Emitted when the prompt scheduler of an agent is updated.
+     * @param agentId The ID of the agent whose prompt scheduler is being updated.
+     * @param oldPromptScheduler The previous address of the prompt scheduler.
+     * @param newOldPromptScheduler The new address of the prompt scheduler.
+     */
+    event AgentPromptSchedulerdUpdate(
+        uint256 indexed agentId,
+        address oldPromptScheduler,
+        address newOldPromptScheduler
+    );
+
+    /**
      * @dev Emitted when an inference is performed.
-     * @param tokenId The ID of the token associated with the inference.
+     * @param agentId The ID of the agent associated with the inference.
      * @param caller The address of the caller.
      * @param data The data related to the inference.
      * @param fee The fee paid for the inference.
@@ -103,7 +137,7 @@ interface IKB721 {
      * @param inferenceId The ID of the inference.
      */
     event InferencePerformed(
-        uint256 indexed tokenId,
+        uint256 indexed agentId,
         address indexed caller,
         bytes data,
         uint fee,
@@ -165,8 +199,8 @@ interface IKB721 {
     error InvalidData();
 
     /**
-     * @dev Returns the next token ID.
-     * @return nextTokenId The next token ID.
+     * @dev Returns the next agent ID.
+     * @return nextTokenId The next agent ID.
      */
     function nextTokenId() external view returns (uint256 nextTokenId);
 
@@ -184,15 +218,16 @@ interface IKB721 {
 
     /**
      * @dev Returns an array of agent IDs owned by a given owner.
-     * @param _owner The address of the owner.
+     * @param owner The address of the owner.
      * @return An array of agent IDs.
      */
     function getAgentIdByOwner(
-        address _owner
+        address owner
     ) external view returns (uint256[] memory);
 
     /**
      * @dev Updates the URI of an agent.
+     * @notice Only the owner of the agent can call this function.
      * @param agentId The ID of the agent.
      * @param uri The new URI of the agent.
      */
@@ -200,6 +235,7 @@ interface IKB721 {
 
     /**
      * @dev Updates the data of an agent.
+     * @notice Only the owner of the agent can call this function.
      * @param agentId The ID of the agent.
      * @param sysPrompt The new system prompt data.
      * @param promptKey The key of the prompt.
@@ -213,13 +249,21 @@ interface IKB721 {
     ) external;
 
     /**
-     * @dev Updates the data of an agent with a signature.
+     * @dev This function modifies the model ID associated with an existing agent.
+     * @notice Only the owner of the agent can call this function.
+     * @param agentId The unique identifier of the agent to update.
+     * @param newModelId The new model ID to assign to the agent.
+     */
+    function updateAgentModelId(uint256 agentId, uint32 newModelId) external;
+
+    /**
+     * @dev This function allows an agent owner to update agent data without submitting the transaction themselves.
      * @param agentId The ID of the agent.
      * @param sysPrompt The new system prompt data.
      * @param promptKey The key of the prompt.
      * @param promptIdx The index of the prompt.
-     * @param randomNonce A random nonce.
-     * @param signature The signature.
+     * @param randomNonce A random nonce to ensure uniqueness.
+     * @param signature The digital signature authorizing the update.
      */
     function updateAgentDataWithSignature(
         uint256 agentId,
@@ -231,11 +275,12 @@ interface IKB721 {
     ) external;
 
     /**
-     * @dev Updates the URI of an agent with a signature.
+     * @dev This function allows an agent owner to update the URI of an agent
+     * without submitting the transaction themselves.
      * @param agentId The ID of the agent.
      * @param uri The new URI of the agent.
-     * @param randomNonce A random nonce.
-     * @param signature The signature.
+     * @param randomNonce A random nonce used to ensure unique transaction execution.
+     * @param signature A valid signature authorizing the update.
      */
     function updateAgentUriWithSignature(
         uint256 agentId,
@@ -246,6 +291,7 @@ interface IKB721 {
 
     /**
      * @dev Adds new data to an agent.
+     * @notice Only the agent owner can add new data.
      * @param agentId The ID of the agent.
      * @param promptKey The key of the prompt.
      * @param sysPrompt The new system prompt data.
@@ -258,49 +304,57 @@ interface IKB721 {
 
     /**
      * @dev Updates the fee of an agent.
+     * @notice Only the agent owner can update the agent fee. The agent fee is typically greater than or equal to the model usage fee.
      * @param agentId The ID of the agent.
-     * @param fee The new fee of the agent.
+     * @param fee The fee to use this agent.
      */
     function updateAgentFee(uint256 agentId, uint fee) external;
 
     /**
      * @dev Tops up the pool balance of an agent.
+     * @notice Anyone can top up the pool balance of an agent.
      * @param agentId The ID of the agent.
      * @param amount The amount of tokens to top up the pool balance with.
      */
     function topUpPoolBalance(uint256 agentId, uint256 amount) external;
 
     /**
-     * @dev Executes an retrieve request.
-     * @param _agentId The ID of the agent.
-     * @param _calldata The calldata for the retrieve.
-     * @param _externalData The external data for the retrieve.
-     * @param _promptKey The key of the prompt for the retrieve.
-     * @param _feeAmount The amount of fee to be paid for the retrieve.
+     * @dev Executes an inference request for a specified agent. This function facilitates the interaction with
+     *      an KB agent by providing the necessary data and parameters to perform an inference operation.
+     * @notice The `feeAmount` must be greater than or equal to the fee required to use the agent.
+     * @param agentId The ID of the agent.
+     * @param inferenceData The calldata for the inference.
+     * @param externalData The external data for the inference.
+     * @param promptKey The key of the prompt for the inference.
+     * @param feeAmount The amount of fee to be paid for the inference.
      */
-    function retrieve(
-        uint256 _agentId,
-        bytes calldata _calldata,
-        string calldata _externalData,
-        string calldata _promptKey,
-        uint256 _feeAmount
+    function infer(
+        uint256 agentId,
+        bytes calldata inferenceData,
+        string calldata externalData,
+        string calldata promptKey,
+        uint256 feeAmount
     ) external;
 
     /**
-     * @dev Executes an retrieve request with additional flags.
-     * @param _agentId The ID of the agent.
-     * @param _calldata The calldata for the retrieve.
-     * @param _externalData The external data for the retrieve.
-     * @param _promptKey The key of the prompt for the retrieve.
-     * @param _flag Additional flag for the retrieve.
-     * @param _feeAmount The amount of fee to be paid for the retrieve.
+     * @dev Executes an inference request for a specified agent. This function facilitates the interaction with
+     *      an KB agent by providing the necessary data and parameters to perform an inference operation.
+     * @notice The `feeAmount` must be greater than or equal to the fee required to use the agent.
+     * @param agentId The ID of the agent.
+     * @param inferenceData The calldata for the inference.
+     * @param externalData The external data for the inference.
+     * @param promptKey The key of the prompt for the inference.
+     * @param feeAmount The amount of fee to be paid for the inference.
+     * @param rawFlag The flag to indicate the format of the calldata and the result of the inference.
+     *                  If rawFlag is true, the calldata and inference result are in raw format.
+     *                  If rawFlag is false, the calldata and inference result are in IPFS link format.
      */
-    function retrieve(
-        uint256 _agentId,
-        bytes calldata _calldata,
-        string calldata _externalData,
-        string calldata _promptKey,
-        bool _flag,
-        uint256 _feeAmount
+    function infer(
+        uint256 agentId,
+        bytes calldata inferenceData,
+        string calldata externalData,
+        string calldata promptKey,
+        bool rawFlag,
+        uint256 feeAmount
     ) external;
 }

@@ -45,6 +45,7 @@ type KnowledgeBase struct {
 	LastErrorMessage       string               `json:"last_error_message"`
 	CurrentGroupFileId     int64                `json:"current_group_file_id"`
 	KbId                   string               `json:"kb_id"`
+	ThumbnailUrl           string               `json:"thumbnail_url"`
 }
 
 type KnowledgeBaseFile struct {

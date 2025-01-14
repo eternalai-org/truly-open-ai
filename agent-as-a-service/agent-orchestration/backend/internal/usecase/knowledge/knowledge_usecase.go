@@ -127,20 +127,19 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 		return nil, err
 	}
 
-	encryptedTempKey, tempAddr, err := utils.GenerateAddress(uc.secretKey)
-	if err != nil {
-		return nil, err
-	}
-	model.DepositAddress = strings.ToLower(tempAddr)
-	model.DepositPrivKey = encryptedTempKey
+	// encryptedTempKey, tempAddr, err := utils.GenerateAddress(uc.secretKey)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// model.DepositPrivKey = encryptedTempKey
+	model.DepositAddress = strings.ToLower(req.DepositAddress)
 
-	encryptedTempKey, tempAddr, err = utils.GenerateSolanaAddress(uc.secretKey)
-	if err != nil {
-		return nil, err
-	}
-
-	model.SolanaDepositAddress = strings.ToLower(tempAddr)
-	model.SolanaDepositPrivKey = encryptedTempKey
+	// encryptedTempKey, tempAddr, err = utils.GenerateSolanaAddress(uc.secretKey)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// model.SolanaDepositPrivKey = encryptedTempKey
+	model.SolanaDepositAddress = strings.ToLower(req.SolanaDepositAddress)
 
 	model.Status = models.KnowledgeBaseStatusWaitingPayment
 	model.Fee = 1
@@ -149,6 +148,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	if err != nil {
 		return nil, err
 	}
+
 	grFileId := time.Now().Unix()
 	for _, f := range req.Files {
 		file := &models.KnowledgeBaseFile{

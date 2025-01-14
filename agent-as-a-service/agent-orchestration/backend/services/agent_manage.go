@@ -87,6 +87,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		TokenImageUrl:    req.TokenImageUrl,
 		MissionTopics:    req.MissionTopics,
 	}
+
 	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, req.AgentName, req.SystemContent)
 	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
 		agent.TokenSymbol = tokenInfo.TokenSymbol
@@ -113,6 +114,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 	if agent.AgentBaseModel == "" {
 		agent.AgentBaseModel = s.GetModelDefaultByChainID(req.ChainID)
 	}
+
 	if req.VerifiedNFTOwner {
 		if req.NFTAddress == "" || req.NFTTokenID == "" || req.NFTOwnerAddress == "" {
 			req.VerifiedNFTOwner = false
@@ -185,6 +187,10 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		agent.TipSolAddress = addressSol
 	}
 
+	if req.CreateKnowledgeRequest != nil {
+		agent.AgentType = models.AgentInfoAgentTypeKnowledgeBase
+	}
+
 	err := s.dao.Create(daos.GetDBMainCtx(ctx), agent)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -209,14 +215,24 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		go s.AgentCreateMissionDefault(context.Background(), agent.ID)
 	}
 
-	if req.KnowledgeBaseId != 0 {
+	if req.CreateKnowledgeRequest != nil {
+		kbReq := req.CreateKnowledgeRequest
+		kbReq.UserAddress = strings.ToLower(address)
+		kbReq.DepositAddress = agent.ETHAddress
+		kbReq.SolanaDepositAddress = agent.SOLAddress
+		kb, err := s.KnowledgeUsecase.CreateKnowledgeBase(ctx, req.CreateKnowledgeRequest)
+		if err != nil {
+			return nil, err
+		}
+
 		_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
 			AgentInfoId:     agent.ID,
-			KnowledgeBaseId: req.KnowledgeBaseId,
+			KnowledgeBaseId: kb.ID,
 		})
 		if err != nil {
 			return nil, err
 		}
+		agent.AgentKBId = kb.ID
 	}
 
 	return agent, nil
