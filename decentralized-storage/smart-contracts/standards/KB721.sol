@@ -9,9 +9,15 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+/**
+ * @title KB721
+ * @dev Implementation of decentralized storage standard KB721.
+ */
 contract KB721 is ERC721Enumerable, ERC721URIStorage, IKB721 {
+    /// @dev Constants
     uint256 private constant PORTION_DENOMINATOR = 10000;
 
+    /// @dev Storage
     mapping(uint256 nftId => TokenMetaData) private _datas;
     uint256 private _nextTokenId;
     uint256 private _mintPrice;
@@ -24,11 +30,13 @@ contract KB721 is ERC721Enumerable, ERC721URIStorage, IKB721 {
     mapping(address nftId => mapping(bytes32 signature => bool))
         public _signaturesUsed;
 
+    /// @dev Modifiers
     modifier onlyAgentOwner(uint256 nftId) {
         _checkAgentOwner(msg.sender, nftId);
         _;
     }
 
+    /// @dev constructor
     constructor(
         string memory name_,
         string memory symbol_,
@@ -154,6 +162,28 @@ contract KB721 is ERC721Enumerable, ERC721URIStorage, IKB721 {
         );
 
         _datas[agentId].sysPrompts[promptKey][promptIdx] = sysPrompt;
+    }
+
+    function updateAgentModelId(
+        uint256 agentId,
+        uint32 newModelId
+    ) public virtual override onlyAgentOwner(agentId) {
+        emit AgentModelIdUpdate(agentId, _datas[agentId].modelId, newModelId);
+
+        _datas[agentId].modelId = newModelId;
+    }
+
+    function updateSchedulePrompt(
+        uint256 agentId,
+        address newPromptScheduler
+    ) public virtual onlyAgentOwner(agentId) {
+        emit AgentPromptSchedulerdUpdate(
+            agentId,
+            _datas[agentId].promptScheduler,
+            newPromptScheduler
+        );
+
+        _datas[agentId].promptScheduler = newPromptScheduler;
     }
 
     function _checkUpdatePromptPermission(
@@ -309,7 +339,7 @@ contract KB721 is ERC721Enumerable, ERC721URIStorage, IKB721 {
         return _datas[agentId].sysPrompts[promptKey];
     }
 
-    function retrieve(
+    function infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
         string calldata externalData,
@@ -341,7 +371,7 @@ contract KB721 is ERC721Enumerable, ERC721URIStorage, IKB721 {
         );
     }
 
-    function retrieve(
+    function infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
         string calldata externalData,
@@ -516,7 +546,6 @@ contract KB721 is ERC721Enumerable, ERC721URIStorage, IKB721 {
         super._burn(agentId);
     }
 
-    //todo: add suport interface
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721Enumerable, ERC721URIStorage) returns (bool) {
