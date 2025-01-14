@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  myapp:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - TEST_URL=https://jsonplaceholder.typicode.com/posts
+      - TEE_NODE=LOCAL
+      - TEE_URL=http://tee-phala:8090
+    restart: unless-stopped
+  tee-phala:
+    image: phalanetwork/tappd-simulator:latest
+    ports:
+      - "8090:8090"
