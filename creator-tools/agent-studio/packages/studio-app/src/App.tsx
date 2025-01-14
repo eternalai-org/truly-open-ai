@@ -1,18 +1,15 @@
-import "./App.css";
-import { Studio } from "@agent-studio/studio-dnd";
-import getAgentModelCategories from "./constants/categories";
-
-const args = {
-  categories: getAgentModelCategories("create"),
-  dataSource: {},
-  showConnectLine: true,
-};
+import s from "./App.module.scss";
+import Create from "./pages/Create";
+import { Routes, Route } from "react-router";
+import Update from "./pages/Update";
 
 function App() {
   return (
-    <div className="studio-app">
-      {/* @ts-ignore */}
-      <Studio {...args} data={[]} onChange={(data) => {}} />
+    <div className={s.studioApp}>
+      <Routes>
+        <Route path="/" element={<Create />} />
+        <Route path=":id" element={<Update />} />
+      </Routes>
     </div>
   );
 }
