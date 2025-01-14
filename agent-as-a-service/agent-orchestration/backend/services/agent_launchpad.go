@@ -278,19 +278,32 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 						if err != nil {
 							return errs.NewError(err)
 						}
-						lp := &models.Launchpad{
-							TwitterPostID:   twitterPost.ID,
-							TweetId:         twitterPost.TwitterPostID,
-							TwitterId:       twitterPost.TwitterID,
-							TwitterUsername: twitterPost.TwitterUsername,
-							TwitterName:     twitterPost.TwitterName,
-							Address:         solAddress,
-							Description:     twitterPost.Content,
-							Name:            twitterPost.TokenDesc,
-						}
-						err = s.dao.Create(tx, lp)
+						lp, err := s.dao.FirstLaunchpad(
+							tx,
+							map[string][]interface{}{
+								"twitter_post_id = ?": {twitterPost.ID},
+							},
+							map[string][]interface{}{},
+							[]string{},
+						)
 						if err != nil {
 							return errs.NewError(err)
+						}
+						if lp == nil {
+							lp = &models.Launchpad{
+								TwitterPostID:   twitterPost.ID,
+								TweetId:         twitterPost.TwitterPostID,
+								TwitterId:       twitterPost.TwitterID,
+								TwitterUsername: twitterPost.TwitterUsername,
+								TwitterName:     twitterPost.TwitterName,
+								Address:         solAddress,
+								Description:     twitterPost.Content,
+								Name:            twitterPost.TokenDesc,
+							}
+							err = s.dao.Create(tx, lp)
+							if err != nil {
+								return errs.NewError(err)
+							}
 						}
 						twitterPost.Status = models.AgentTwitterPostStatusReplied
 						err = s.dao.Save(tx, twitterPost)
