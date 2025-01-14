@@ -339,6 +339,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		Ref:      fmt.Sprintf("%d", kn.ID),
 		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
+	logger.Info("knowledgebase", "insert_file_to_rag", zap.Any("body", body))
 	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
