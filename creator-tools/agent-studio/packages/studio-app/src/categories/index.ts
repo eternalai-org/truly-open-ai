@@ -1,24 +1,39 @@
 import {
   StudioCategory,
   StudioCategoryOption,
+  StudioCategoryOptionRenderPayload,
   StudioCategoryType,
 } from "@agent-studio/studio-dnd";
 import { LegoComponentIcon } from "../components/icons/studio";
 import { CATEGORY_KEYS } from "../constants/category-keys";
 
-import { ChainId } from "./network";
 import {
   OPTION_ETERNAL_AI_ID,
   OPTION_MODEL_HERMES_3_70B_KEY,
   OPTION_MODEL_INTELLECT_1_INSTECT_KEY,
   OPTION_MODEL_LLAMA_3_1_405B_INSTECT_KEY,
   OPTION_MODEL_LLAMA_3_3_70B_INSTECT_KEY,
-} from "./option-values";
-import { CATEGORY_OPTION_KEYS } from "./category-option-keys";
+} from "../constants/option-values";
+import { CATEGORY_OPTION_KEYS } from "../constants/category-option-keys";
+import { AgentChainId, AgentTokenChainId } from "@eternal-dagent/core";
+import NEW_AGENT_VALIDATES from "./new-agent/validates";
+import { PERSONALITIES_VALIDATES } from "./personalities/validates";
+import { AI_FRAME_WORK_VALIDATES } from "./ai-framework/validates";
+import { BLOCKCHAIN_VALIDATES } from "./blockchains/validates";
+import { DECENTRALIZE_INFERENCE_VALIDATES } from "./decentralize-inference/validates";
+import { TOKEN_VALIDATES } from "./tokens/validates";
+import NewPersonality from "./personalities/renders/onflow/new-personality/NewPersonality";
+import { JSX, ReactNode } from "react";
+import X_VALIDATES from "./x/validates";
+import CustomBaseXForm from "./x/renders/onflow/custom-base/CustomBaseXForm";
+import CustomBaseFarcasterForm from "./farcaster/renders/onflow/custom-base/CustomBaseFarcasterForm";
 
 type State = "create" | "update";
 const getAgentCategory = (state: State) => {
-  const validators = state === "create" ? {} : {};
+  const validators =
+    state === "create"
+      ? NEW_AGENT_VALIDATES.create
+      : NEW_AGENT_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.agent,
     title: "Agent",
@@ -46,8 +61,15 @@ const getAgentCategory = (state: State) => {
   } satisfies StudioCategory;
 };
 
+type CustomizeComponentType = <T>(
+  data: StudioCategoryOptionRenderPayload<T>
+) => ReactNode | JSX.Element;
+
 const getPersonalitiesCategory = (state: State) => {
-  const validators = state === "create" ? {} : {};
+  const validators =
+    state === "create"
+      ? PERSONALITIES_VALIDATES.create
+      : PERSONALITIES_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.personalities,
     title: "Personality",
@@ -63,25 +85,7 @@ const getPersonalitiesCategory = (state: State) => {
         title: "New personality",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_personality_custom.svg",
-        // customizeRenderOnBoard: NewPersonality as any,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.personalities.personality_nft,
-        title: "Import from NFT",
-        icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_personality_nft.svg",
-        // customizeRenderOnBoard: ImportFromNft as any,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.personalities.personality_ordinals,
-        title: "Import from Ordinals",
-        icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_personality_ordinals.svg",
-        // customizeRenderOnBoard: CustomImportFromOrdinalsRenderer as any,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.personalities.personality_token,
-        title: "Import from Token",
-        icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_personality_token.svg",
-        // customizeRenderOnBoard: CustomImportFromTokenRenderer as any,
+        customizeRenderOnBoard: NewPersonality as CustomizeComponentType,
       },
     ],
 
@@ -90,7 +94,10 @@ const getPersonalitiesCategory = (state: State) => {
 };
 
 const getAiFrameworkCategory = (state: State) => {
-  const validators = state === "create" ? {} : {};
+  const validators =
+    state === "create"
+      ? AI_FRAME_WORK_VALIDATES.create
+      : AI_FRAME_WORK_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.aiFrameworks,
     title: "AI Framework",
@@ -131,7 +138,10 @@ const getAiFrameworkCategory = (state: State) => {
 };
 
 const getBlockchainCategory = (state: State) => {
-  const validators = state === "create" ? {} : {};
+  const validators =
+    state === "create"
+      ? BLOCKCHAIN_VALIDATES.create
+      : BLOCKCHAIN_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.blockchains,
     title: "Blockchains",
@@ -151,7 +161,7 @@ const getBlockchainCategory = (state: State) => {
             type: "hidden",
             label: "Chain Id",
             placeholder: "Chain Id",
-            defaultValue: "base",
+            defaultValue: AgentChainId.Base,
           },
         },
         // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard as any,
@@ -165,7 +175,7 @@ const getBlockchainCategory = (state: State) => {
             type: "hidden",
             label: "Chain Id",
             placeholder: "Chain Id",
-            defaultValue: "arbitrum",
+            defaultValue: AgentChainId.Arbitrum,
           },
         },
         // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard as any,
@@ -179,7 +189,7 @@ const getBlockchainCategory = (state: State) => {
             type: "hidden",
             label: "Chain Id",
             placeholder: "Chain Id",
-            defaultValue: "bsc",
+            defaultValue: AgentChainId.BSC,
           },
         },
         // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard as any,
@@ -193,39 +203,39 @@ const getBlockchainCategory = (state: State) => {
             type: "hidden",
             label: "Chain Id",
             placeholder: "Chain Id",
-            defaultValue: "bitcoin",
+            defaultValue: AgentChainId.Bitcoin,
           },
         },
         // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard as any,
       },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_bittensor,
-        title: "Bittensor",
-        icon: "/icons/blockchains/ic-tao.svg",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "tao",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard as any,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_ape_chain,
-        title: "Ape Chain",
-        icon: "/icons/blockchains/ic-ape.png",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "ape",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
-      },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_bittensor,
+      //   title: "Bittensor",
+      //   icon: "/icons/blockchains/ic-tao.svg",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "tao",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard as any,
+      // },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_ape_chain,
+      //   title: "Ape Chain",
+      //   icon: "/icons/blockchains/ic-ape.png",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "ape",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
+      // },
       {
         idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_solana,
         title: "Solana",
@@ -235,81 +245,81 @@ const getBlockchainCategory = (state: State) => {
             type: "hidden",
             label: "Chain Id",
             placeholder: "Chain Id",
-            defaultValue: "solana",
+            defaultValue: AgentChainId.Solana,
           },
         },
         // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
       },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_polygon,
-        title: "Polygon",
-        icon: "/icons/blockchains/ic_polygon.svg",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "polygon",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_zksync_era,
-        title: "ZKsync Era",
-        icon: "/icons/blockchains/ic_zksync.svg",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "zksync",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_avalanche,
-        title: "Avalanche C-Chain",
-        icon: "/icons/blockchains/ic_avax.svg",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "avax",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_abstract_testnet,
-        title: "Abstract Testnet",
-        icon: "/icons/blockchains/ic-abs.png",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "abs",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_duck_chain,
-        title: "DuckChain",
-        icon: "/icons/blockchains/ic-duck.svg",
-        data: {
-          chainId: {
-            type: "hidden",
-            label: "Chain Id",
-            placeholder: "Chain Id",
-            defaultValue: "duck",
-          },
-        },
-        // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
-      },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_polygon,
+      //   title: "Polygon",
+      //   icon: "/icons/blockchains/ic_polygon.svg",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "polygon",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
+      // },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_zksync_era,
+      //   title: "ZKsync Era",
+      //   icon: "/icons/blockchains/ic_zksync.svg",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "zksync",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
+      // },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_avalanche,
+      //   title: "Avalanche C-Chain",
+      //   icon: "/icons/blockchains/ic_avax.svg",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "avax",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
+      // },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_abstract_testnet,
+      //   title: "Abstract Testnet",
+      //   icon: "/icons/blockchains/ic-abs.png",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "abs",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
+      // },
+      // {
+      //   idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_duck_chain,
+      //   title: "DuckChain",
+      //   icon: "/icons/blockchains/ic-duck.svg",
+      //   data: {
+      //     chainId: {
+      //       type: "hidden",
+      //       label: "Chain Id",
+      //       placeholder: "Chain Id",
+      //       defaultValue: "duck",
+      //     },
+      //   },
+      //   // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
+      // },
       {
         idx: CATEGORY_OPTION_KEYS.blockchains.blockchain_symbiosis,
         title: "Symbiosis",
@@ -319,7 +329,7 @@ const getBlockchainCategory = (state: State) => {
             type: "hidden",
             label: "Chain Id",
             placeholder: "Chain Id",
-            defaultValue: "symbiosis",
+            defaultValue: AgentChainId.Symbiosis,
           },
         },
         // customizeRenderOnBoard: BaseBlockchainCustomizeOnBoard,
@@ -330,7 +340,10 @@ const getBlockchainCategory = (state: State) => {
 };
 
 const getDecentralizedInferenceCategory = (state: State) => {
-  const validators = state === "create" ? {} : {};
+  const validators =
+    state === "create"
+      ? DECENTRALIZE_INFERENCE_VALIDATES.create
+      : DECENTRALIZE_INFERENCE_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.decentralized,
     title: "Decentralize Inference",
@@ -404,7 +417,8 @@ const getDecentralizedInferenceCategory = (state: State) => {
 };
 
 const getTokenCategory = (state: State) => {
-  const validators = state === "create" ? {} : {};
+  const validators =
+    state === "create" ? TOKEN_VALIDATES.create : TOKEN_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.tokens,
     title: "Tokens",
@@ -425,10 +439,9 @@ const getTokenCategory = (state: State) => {
             type: "hidden",
             label: "Token Name",
             placeholder: "Token Name",
-            defaultValue: ChainId.Base,
+            defaultValue: AgentTokenChainId.Base,
           },
         },
-        // customizeRenderOnBoard: BaseTokenCustomizeOnBoard as any,
       },
       {
         idx: CATEGORY_OPTION_KEYS.tokens.token_solana,
@@ -440,10 +453,9 @@ const getTokenCategory = (state: State) => {
             type: "hidden",
             label: "Token Name",
             placeholder: "Token Name",
-            defaultValue: ChainId.Solana,
+            defaultValue: AgentTokenChainId.Solana,
           },
         },
-        // customizeRenderOnBoard: BaseTokenCustomizeOnBoard as any,
       },
       {
         idx: CATEGORY_OPTION_KEYS.tokens.token_arbitrum,
@@ -455,10 +467,9 @@ const getTokenCategory = (state: State) => {
             type: "hidden",
             label: "Token Name",
             placeholder: "Token Name",
-            defaultValue: ChainId.Arbitrum,
+            defaultValue: AgentTokenChainId.Arbitrum,
           },
         },
-        // customizeRenderOnBoard: BaseTokenCustomizeOnBoard as any,
       },
       {
         idx: CATEGORY_OPTION_KEYS.tokens.token_bnb,
@@ -470,40 +481,9 @@ const getTokenCategory = (state: State) => {
             type: "hidden",
             label: "Token Name",
             placeholder: "Token Name",
-            defaultValue: ChainId.BSC,
+            defaultValue: AgentTokenChainId.BSC,
           },
         },
-        // customizeRenderOnBoard: BaseTokenCustomizeOnBoard as any,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.tokens.token_ape,
-        title: "Token on ApeChain",
-        tooltip: "",
-        icon: "/icons/blockchains/ic-ape.png",
-        data: {
-          tokenId: {
-            type: "hidden",
-            label: "Token Name",
-            placeholder: "Token Name",
-            defaultValue: ChainId.Ape,
-          },
-        },
-        // customizeRenderOnBoard: BaseTokenCustomizeOnBoard as any,
-      },
-      {
-        idx: CATEGORY_OPTION_KEYS.tokens.token_avax,
-        title: "Token on Avalance C-Chain",
-        tooltip: "",
-        icon: "/icons/blockchains/ic_avax.svg",
-        data: {
-          tokenId: {
-            type: "hidden",
-            label: "Token Name",
-            placeholder: "Token Name",
-            defaultValue: ChainId.Avax,
-          },
-        },
-        // customizeRenderOnBoard: BaseTokenCustomizeOnBoard as any,
       },
     ],
     ...validators,
@@ -511,6 +491,8 @@ const getTokenCategory = (state: State) => {
 };
 
 const getMissionOnXCategory = (state: State) => {
+  const validators =
+    state === "create" ? X_VALIDATES.create : X_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.missionOnX,
     title: "X",
@@ -525,42 +507,41 @@ const getMissionOnXCategory = (state: State) => {
         title: "Post on X",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_abilities_post.svg",
-        // customizeRenderOnBoard: CustomPostOnXRenderer as any,
+        customizeRenderOnBoard: CustomBaseXForm as CustomizeComponentType,
         type: StudioCategoryType.LINK,
-        // ...POST_ON_X_HANDLER.create,
       },
       {
         idx: CATEGORY_OPTION_KEYS.missionOnX.mission_on_x_reply,
         title: "Reply on X",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_abilities_reply.svg",
-        // customizeRenderOnBoard: CustomReplyOnXRenderer as any,
+        customizeRenderOnBoard: CustomBaseXForm as CustomizeComponentType,
         type: StudioCategoryType.LINK,
-        // ...REPLY_ON_X_HANDLER.create,
       },
       {
         idx: CATEGORY_OPTION_KEYS.missionOnX.mission_on_x_engage,
         title: "Engage on X",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_abilities_engage.svg",
-        // customizeRenderOnBoard: CustomEngageOnXRenderer as any,
+        customizeRenderOnBoard: CustomBaseXForm as CustomizeComponentType,
         type: StudioCategoryType.LINK,
-        // ...ENGAGE_ON_X_HANDLER.create,
       },
       {
         idx: CATEGORY_OPTION_KEYS.missionOnX.mission_on_x_follow,
         title: "Follow on X",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_abilities_follow.svg",
-        // customizeRenderOnBoard: CustomFollowOnXRenderer as any,
+        customizeRenderOnBoard: CustomBaseXForm as CustomizeComponentType,
         type: StudioCategoryType.LINK,
-        // ...FOLLOW_ON_X_HANDLER.create,
       },
     ],
+    ...validators,
   } satisfies StudioCategory;
 };
 
 const getMissionOnFarcasterCategory = (state: State) => {
+  const validators =
+    state === "create" ? X_VALIDATES.create : X_VALIDATES.update;
   return {
     idx: CATEGORY_KEYS.missionOnFarcaster,
     title: "Farcaster",
@@ -575,20 +556,21 @@ const getMissionOnFarcasterCategory = (state: State) => {
         title: "Post on Farcaster",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_abilities_post.svg",
-        // customizeRenderOnBoard: CustomPostOnFarcasterRenderer as any,
+        customizeRenderOnBoard:
+          CustomBaseFarcasterForm as CustomizeComponentType,
         type: StudioCategoryType.LINK,
-        // ...POST_ON_FARCASTER_HANDLER.create,
       },
       {
         idx: CATEGORY_OPTION_KEYS.missionOnFarcaster.mission_on_farcaster_reply,
         title: "Reply on Farcaster",
         tooltip: "",
         icon: "https://storage.googleapis.com/eternal-ai/agent-studio-v2/ic_abilities_reply.svg",
-        // customizeRenderOnBoard: CustomReplyOnFarcasterRenderer as any,
+        customizeRenderOnBoard:
+          CustomBaseFarcasterForm as CustomizeComponentType,
         type: StudioCategoryType.LINK,
-        // ...REPLY_ON_FARCASTER_HANDLER.create,
       },
     ],
+    ...validators,
   } satisfies StudioCategory;
 };
 
@@ -598,9 +580,9 @@ export default function getAgentModelCategories(
   const AGENT_MODEL_CATEGORIES: StudioCategory[] = [
     getAgentCategory(state),
     getPersonalitiesCategory(state),
-    getAiFrameworkCategory(state),
+    // getAiFrameworkCategory(state),
     getBlockchainCategory(state),
-    getDecentralizedInferenceCategory(state),
+    // getDecentralizedInferenceCategory(state),
     getTokenCategory(state),
     getMissionOnXCategory(state),
     getMissionOnFarcasterCategory(state),
