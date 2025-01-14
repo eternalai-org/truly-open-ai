@@ -14,47 +14,57 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *Service) ScanAgentTwitterPostFroCreateLaunchpad(ctx context.Context) error {
-	agent, err := s.dao.FirstAgentInfoByID(
-		daos.GetDBMainCtx(ctx),
-		s.conf.LaunchpadAgentInfoId,
-		map[string][]interface{}{},
-		false,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{
-			"twitter_id = ?": {agent.TwitterID},
-		},
-		map[string][]interface{}{},
-		false,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	if twitterInfo != nil {
-		err = func() error {
-			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterInfo.TwitterID, "", twitterInfo.AccessToken)
+func (s *Service) JobScanAgentTwitterPostForCreateLaunchpad(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx,
+		"JobScanAgentTwitterPostForCreateLaunchpad",
+		func() error {
+			agent, err := s.dao.FirstAgentInfoByID(
+				daos.GetDBMainCtx(ctx),
+				s.conf.LaunchpadAgentInfoId,
+				map[string][]interface{}{},
+				false,
+			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			err = s.CreateAgentTwitterPostForCreateLaunchpad(daos.GetDBMainCtx(ctx), agent.ID, agent.TwitterUsername, tweetMentions)
+			twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"twitter_id = ?": {agent.TwitterID},
+				},
+				map[string][]interface{}{},
+				false,
+			)
 			if err != nil {
 				return errs.NewError(err)
+			}
+			if twitterInfo != nil {
+				err = func() error {
+					tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterInfo.TwitterID, "", twitterInfo.AccessToken)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.CreateAgentTwitterPostForCreateLaunchpad(daos.GetDBMainCtx(ctx), agent.ID, agent.TwitterUsername, tweetMentions)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				}()
+				if err != nil {
+					s.UpdateAgentScanEventError(ctx, agent.ID, err)
+					return err
+				} else {
+					err = s.UpdateAgentScanEventSuccess(ctx, agent.ID, nil, "")
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
 			}
 			return nil
-		}()
-		if err != nil {
-			s.UpdateAgentScanEventError(ctx, agent.ID, err)
-			return err
-		} else {
-			err = s.UpdateAgentScanEventSuccess(ctx, agent.ID, nil, "")
-			if err != nil {
-				return errs.NewError(err)
-			}
-		}
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
 	}
 	return nil
 }
