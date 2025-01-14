@@ -939,9 +939,6 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string
 	baseModel := "NousResearch/Hermes-3-Llama-3.1-70B-FP8"
 	if agentId != nil {
 		agentInfo, _ = s.dao.FirstAgentInfoByID(daos.GetDBMainCtx(ctx), *agentId, map[string][]interface{}{}, false)
-		if agentInfo != nil && agentInfo.AgentBaseModel != "" {
-			baseModel = agentInfo.AgentBaseModel
-		}
 	}
 	llmMessage := []openai2.ChatCompletionMessage{}
 	err := json.Unmarshal([]byte(messages), &llmMessage)
@@ -953,6 +950,9 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string
 	url := s.conf.AgentOffchainChatUrl
 	if s.conf.KnowledgeBaseConfig.DirectServiceUrl != "" {
 		url = s.conf.KnowledgeBaseConfig.DirectServiceUrl
+		if agentInfo != nil && agentInfo.AgentBaseModel != "" {
+			baseModel = agentInfo.AgentBaseModel
+		}
 	}
 
 	if s.conf.KnowledgeBaseConfig.EnableSimulation && agentInfo != nil {
