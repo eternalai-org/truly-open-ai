@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   myapp:
-    image: thaibao56/test-tee-myapp:v0.0.1
+    image: xxx/test-tee-myapp:v0.0.1
     container_name: test-tee
     volumes:
       - /var/run/tappd.sock:/var/run/tappd.sock
