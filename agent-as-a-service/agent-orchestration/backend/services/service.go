@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/appconfig"
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/appconfig"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -208,6 +209,7 @@ func (s *Service) JobRunCheck(ctx context.Context, jobId string, jobFunc func() 
 		} else {
 			fmt.Println(time.Now(), jobId, "end")
 		}
+		return err
 	}
 	return nil
 }
