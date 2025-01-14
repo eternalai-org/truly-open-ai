@@ -1,0 +1,63 @@
+.input {
+  background-color: #ffffff;
+  color: #000000;
+  padding: 0 12px;
+  border-radius: 99999px;
+  outline: none;
+  height: 28px;
+  line-height: calc(28 / 18);
+
+  &::placeholder {
+    color: #000000;
+    opacity: 0.5;
+  }
+
+  &__disabled {
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  &::-webkit-datetime-edit-ampm-field {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-hour-field {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-minute-field {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-second-field {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-text {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-month-field {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-day-field {
+    color: #000000;
+  }
+
+  &::-webkit-datetime-edit-year-field {
+    color: #000000;
+  }
+
+  &::-webkit-inner-spin-button {
+    display: none;
+  }
+
+  &::-webkit-clear-button {
+    display: none;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}

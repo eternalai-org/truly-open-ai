@@ -10,10 +10,10 @@ function TextRender({ data }: Props) {
   }
 
   if (typeof data === "function") {
-    return data({});
+    return <>{data({}) as any}</>;
   }
 
-  return data;
+  return <>{data}</>;
 }
 
 export default TextRender;
