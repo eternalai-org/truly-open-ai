@@ -81,14 +81,13 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	}
 
 	updatedFields := make(map[string]interface{})
-	updatedFields["filecoin_hash"] = req.Result.FilecoinHash
 	if req.Status != "ok" {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = req.Result.Message
-	} else {
+	} else if req.Result.FilecoinHash != "" {
+		updatedFields["filecoin_hash"] = req.Result.FilecoinHash
 		updatedFields["status"] = models.KnowledgeBaseStatusDone
 	}
-	// updatedFields["message"] = req.Message
 
 	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
