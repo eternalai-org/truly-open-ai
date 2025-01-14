@@ -14,47 +14,57 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *Service) ScanAgentTwitterPostFroCreateLaunchpad(ctx context.Context) error {
-	agent, err := s.dao.FirstAgentInfoByID(
-		daos.GetDBMainCtx(ctx),
-		s.conf.LaunchpadAgentInfoId,
-		map[string][]interface{}{},
-		false,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{
-			"twitter_id = ?": {agent.TwitterID},
-		},
-		map[string][]interface{}{},
-		false,
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	if twitterInfo != nil {
-		err = func() error {
-			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterInfo.TwitterID, "", twitterInfo.AccessToken)
+func (s *Service) JobScanAgentTwitterPostForCreateLaunchpad(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx,
+		"JobScanAgentTwitterPostForCreateLaunchpad",
+		func() error {
+			agent, err := s.dao.FirstAgentInfoByID(
+				daos.GetDBMainCtx(ctx),
+				s.conf.LaunchpadAgentInfoId,
+				map[string][]interface{}{},
+				false,
+			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			err = s.CreateAgentTwitterPostForCreateLaunchpad(daos.GetDBMainCtx(ctx), agent.ID, agent.TwitterUsername, tweetMentions)
+			twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"twitter_id = ?": {agent.TwitterID},
+				},
+				map[string][]interface{}{},
+				false,
+			)
 			if err != nil {
 				return errs.NewError(err)
+			}
+			if twitterInfo != nil {
+				err = func() error {
+					tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterInfo.TwitterID, "", twitterInfo.AccessToken)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = s.CreateAgentTwitterPostForCreateLaunchpad(daos.GetDBMainCtx(ctx), agent.ID, agent.TwitterUsername, tweetMentions)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				}()
+				if err != nil {
+					s.UpdateAgentScanEventError(ctx, agent.ID, err)
+					return err
+				} else {
+					err = s.UpdateAgentScanEventSuccess(ctx, agent.ID, nil, "")
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
 			}
 			return nil
-		}()
-		if err != nil {
-			s.UpdateAgentScanEventError(ctx, agent.ID, err)
-			return err
-		} else {
-			err = s.UpdateAgentScanEventSuccess(ctx, agent.ID, nil, "")
-			if err != nil {
-				return errs.NewError(err)
-			}
-		}
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
 	}
 	return nil
 }
@@ -268,19 +278,32 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 						if err != nil {
 							return errs.NewError(err)
 						}
-						lp := &models.Launchpad{
-							TwitterPostID:   twitterPost.ID,
-							TweetId:         twitterPost.TwitterPostID,
-							TwitterId:       twitterPost.TwitterID,
-							TwitterUsername: twitterPost.TwitterUsername,
-							TwitterName:     twitterPost.TwitterName,
-							Address:         solAddress,
-							Description:     twitterPost.Content,
-							Name:            twitterPost.TokenDesc,
-						}
-						err = s.dao.Create(tx, lp)
+						lp, err := s.dao.FirstLaunchpad(
+							tx,
+							map[string][]interface{}{
+								"twitter_post_id = ?": {twitterPost.ID},
+							},
+							map[string][]interface{}{},
+							[]string{},
+						)
 						if err != nil {
 							return errs.NewError(err)
+						}
+						if lp == nil {
+							lp = &models.Launchpad{
+								TwitterPostID:   twitterPost.ID,
+								TweetId:         twitterPost.TwitterPostID,
+								TwitterId:       twitterPost.TwitterID,
+								TwitterUsername: twitterPost.TwitterUsername,
+								TwitterName:     twitterPost.TwitterName,
+								Address:         solAddress,
+								Description:     twitterPost.Content,
+								Name:            twitterPost.TokenDesc,
+							}
+							err = s.dao.Create(tx, lp)
+							if err != nil {
+								return errs.NewError(err)
+							}
 						}
 						twitterPost.Status = models.AgentTwitterPostStatusReplied
 						err = s.dao.Save(tx, twitterPost)
@@ -373,11 +396,12 @@ func (s *Service) ReplyAferAutoCreateLaunchpad(tx *gorm.DB, twitterPostID, launc
 		}
 		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && twitterPost.ReplyPostId == "" {
 			replyContent := fmt.Sprintf(`
-We're excited to announce new raise fund project %s, empowering decentralized AI innovation with community-owned compute power.
+We're thrilled to announce our new fundraising initiative, Project %s! This groundbreaking effort empowers decentralized AI innovation by leveraging community-owned compute power.
 
-Receiving fund address here: %s
+📥 Funding Address: %s
+🚀 Whitelist Applications: Now Open!
 
-Whitelist applications are now open!
+Join us in shaping the future of decentralized AI!
 			`, launchpad.Name, launchpad.Address)
 			replyContent = strings.TrimSpace(replyContent)
 			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID, "")

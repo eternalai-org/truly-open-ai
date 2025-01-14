@@ -163,6 +163,9 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	// create agent
 	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateAgent, context.Background())
 	gocron.Every(1).Minute().Do(s.JobAgentTwitterPostCreateAgent, context.Background())
+	// create launchpad
+	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
+	gocron.Every(1).Minute().Do(s.JobAgentTwitterPostCreateLaunchpad, context.Background())
 
 	// NBS trading analyze
 	// gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForTA, context.Background())
