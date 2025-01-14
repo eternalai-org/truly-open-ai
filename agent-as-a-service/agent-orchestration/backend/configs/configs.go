@@ -186,6 +186,7 @@ type Config struct {
 	HiddenNetworkId             string                       `json:"hidden_network_id"`
 	RagApi                      string                       `json:"rag_api"`
 	ListTestToolSet             string                       `json:"list_test_tool_set"`
+	LuckyMoneyAdminAddress      string                       `json:"lucky_money_admin_address"`
 	WebhookUrl                  string                       `json:"webhook_url"`
 }
 

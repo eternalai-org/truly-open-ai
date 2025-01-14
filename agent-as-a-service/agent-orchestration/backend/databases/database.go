@@ -103,6 +103,8 @@ func MigrateDBMain(db *gorm.DB) error {
 		// launchpad
 		(*models.Launchpad)(nil),
 		(*models.LaunchpadMember)(nil),
+
+		(*models.AbilityLuckyMoney)(nil),
 	}
 
 	if err := db.AutoMigrate(allTables...).Error; err != nil {

@@ -74,7 +74,7 @@ func (s *Service) ScanAgentTwitterPostForTA(ctx context.Context, agentID uint) e
 	}
 	if twitterInfo != nil {
 		err = func() error {
-			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(agent.TwitterID, "", twitterInfo.AccessToken)
+			tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(agent.TwitterID, "", twitterInfo.AccessToken, 25)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -95,6 +95,23 @@ func (s *Service) ScanAgentTwitterPostForTA(ctx context.Context, agentID uint) e
 		}
 	}
 	return nil
+}
+
+func (s *Service) TweetIsMentionNBS(tweets twitter.TweetObj, username string) bool {
+	if len(tweets.Entities.Mentions) > 0 {
+		lastMentions := tweets.Entities.Mentions[len(tweets.Entities.Mentions)-1]
+		if strings.EqualFold(lastMentions.UserName, username) {
+			return true
+		}
+
+		if len(tweets.Entities.Mentions) > 1 {
+			lastMentions = tweets.Entities.Mentions[len(tweets.Entities.Mentions)-2]
+			if strings.EqualFold(lastMentions.UserName, username) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (s *Service) CheckTwitterPostForTA(tx *gorm.DB, agentInfoID uint, twitterUsername string, tweetMentions *twitter.UserTimeline) error {
@@ -140,7 +157,7 @@ func (s *Service) CheckTwitterPostForTA(tx *gorm.DB, agentInfoID uint, twitterUs
 						}
 						if twitterDetail != nil {
 							for k, v := range *twitterDetail {
-								if !strings.EqualFold(v.User.ID, agentInfo.TwitterID) {
+								if !strings.EqualFold(v.User.ID, agentInfo.TwitterID) && s.TweetIsMentionNBS(v.Tweet, "NOBULLSHIT_EXE") {
 									if strings.EqualFold(k, item.ID) {
 										fullText := v.Tweet.NoteTweet.Text
 										if fullText == "" {
@@ -274,14 +291,7 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 						return errs.NewError(err)
 					}
 
-					// whiteListToken := []string{
-					// 	"BTC", "ETH", "XRP", "LTC", "XMR",
-					// }
-
 					isValid := true
-					// if !slices.Contains(whiteListToken, twitterPost.TokenSymbol) {
-					// 	isValid = false
-					// } else {
 					existPosts, err := s.dao.FindAgentTwitterPost(
 						tx,
 						map[string][]interface{}{

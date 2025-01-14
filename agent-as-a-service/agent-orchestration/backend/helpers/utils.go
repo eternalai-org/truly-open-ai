@@ -722,3 +722,14 @@ func RandomInt(from, to int) int {
 func RandomFloat(from, to float64) float64 {
 	return from + rand.Float64()*(to-from)
 }
+
+func ExtractEtherAddress(content string) string {
+	arrStr := strings.Split(content, " ")
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	for _, item := range arrStr {
+		if re.MatchString(strings.TrimSpace(item)) {
+			return strings.TrimSpace(item)
+		}
+	}
+	return ""
+}

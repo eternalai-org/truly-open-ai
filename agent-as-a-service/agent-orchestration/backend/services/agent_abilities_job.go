@@ -432,18 +432,20 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						return errs.NewError(errs.ErrBadRequest)
 					}
 
-					inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, mission, inferPost)
-					if err != nil {
-						inferPost.Error = err.Error()
-						inferPost.Status = models.AgentSnapshotPostStatusInferError
-						err = s.dao.Create(
-							tx,
-							inferPost,
-						)
+					if mission.ToolSet != models.ToolsetTypeLuckyMoneys {
+						inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, mission, inferPost)
 						if err != nil {
-							return errs.NewError(err)
+							inferPost.Error = err.Error()
+							inferPost.Status = models.AgentSnapshotPostStatusInferError
+							err = s.dao.Create(
+								tx,
+								inferPost,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							return nil
 						}
-						return nil
 					}
 
 					err = s.dao.Create(
@@ -1365,7 +1367,7 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 
 						listThough := []string{}
 						for i, item := range rs.Data.AIOutput.Scratchpad {
-							if i == 0 {
+							if i == 0 || i == 1 {
 								continue
 							}
 							if item.Thought != "" {
@@ -1650,6 +1652,9 @@ func (s *Service) getTaskToolSet(assistant *models.AgentInfo, taskReq string) (s
 	case "tweet_news":
 		task = "tweet_news"
 		toolset = ""
+	case "lucky_moneys":
+		task = "lucky_moneys"
+		toolset = "lucky_moneys"
 	}
 	if assistant.NetworkID == models.HERMES_CHAIN_ID && assistant.AgentContractID == "2" {
 		// @thetickerisbot

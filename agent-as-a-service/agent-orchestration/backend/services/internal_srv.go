@@ -433,7 +433,7 @@ func (s *Service) LookupUserTweetsV1(ctx context.Context, tweetIDs string) (*twi
 	return nil, errs.NewError(errs.ErrBadRequest)
 }
 
-func (s *Service) GetListUserMentions(ctx context.Context, twitterID, paginationToken string) (*twitter.UserTimeline, error) {
+func (s *Service) GetListUserMentions(ctx context.Context, twitterID, paginationToken string, maxResults int) (*twitter.UserTimeline, error) {
 	twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
 			"twitter_id = ?": {s.conf.TokenTwiterIdForInternal},
@@ -451,7 +451,7 @@ func (s *Service) GetListUserMentions(ctx context.Context, twitterID, pagination
 			return nil, errs.NewError(err)
 		}
 
-		tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterID, paginationToken, twitterInfo.AccessToken)
+		tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterID, paginationToken, twitterInfo.AccessToken, maxResults)
 		if err != nil {
 			return nil, errs.NewTwitterError(err)
 		}
@@ -522,7 +522,7 @@ func (s *Service) SyncGetTwitterUserByUsername(ctx context.Context, username str
 	return tweetUser, nil
 }
 
-func (s *Service) GetListUserMentionsByUsername(ctx context.Context, username, paginationToken string) (*twitter.UserTimeline, error) {
+func (s *Service) GetListUserMentionsByUsername(ctx context.Context, username, paginationToken string, maxResults int) (*twitter.UserTimeline, error) {
 	var tweetMentions *twitter.UserTimeline
 	err := s.RedisCached(
 		fmt.Sprintf("GetListUserMentionsByUsername_%s", username),
@@ -560,7 +560,7 @@ func (s *Service) GetListUserMentionsByUsername(ctx context.Context, username, p
 				loop := 1
 				paginationToken := ""
 				for {
-					tweetMentions, err = s.twitterWrapAPI.GetListUserMentions(user.TwitterID, paginationToken, twitterInfo.AccessToken)
+					tweetMentions, err = s.twitterWrapAPI.GetListUserMentions(user.TwitterID, paginationToken, twitterInfo.AccessToken, maxResults)
 					if err != nil {
 						return nil, errs.NewTwitterError(err)
 					}
@@ -600,7 +600,7 @@ func (s *Service) GetListUserMentionsByUsername(ctx context.Context, username, p
 
 }
 
-func (s *Service) GetAllUserMentionsByUsername(ctx context.Context, username, paginationToken string) (*twitter.UserTimeline, error) {
+func (s *Service) GetAllUserMentionsByUsername(ctx context.Context, username, paginationToken string, maxResults int) (*twitter.UserTimeline, error) {
 	var tweetMentions *twitter.UserTimeline
 	err := s.RedisCached(
 		fmt.Sprintf("GetAllUserMentionsByUsername_%s_%s", username, paginationToken),
@@ -633,7 +633,7 @@ func (s *Service) GetAllUserMentionsByUsername(ctx context.Context, username, pa
 					return nil, errs.NewError(errs.ErrTwitterIdNotFound)
 				}
 
-				tweetMentions, err = s.twitterWrapAPI.GetListUserMentions(user.TwitterID, paginationToken, twitterInfo.AccessToken)
+				tweetMentions, err = s.twitterWrapAPI.GetListUserMentions(user.TwitterID, paginationToken, twitterInfo.AccessToken, maxResults)
 				if err != nil {
 					return nil, errs.NewTwitterError(err)
 				}
