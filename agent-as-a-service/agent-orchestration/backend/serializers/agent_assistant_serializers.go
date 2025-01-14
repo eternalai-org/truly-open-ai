@@ -57,7 +57,6 @@ type AssistantsReq struct {
 	AgentBaseModel         string                  `json:"agent_base_model"`
 	TwinTwitterUsernames   string                  `json:"twin_twitter_usernames"`
 	MissionTopics          string                  `json:"mission_topics"`
-	KnowledgeBaseId        uint                    `json:"knowledge_base_id"`
 	CreateKnowledgeRequest *CreateKnowledgeRequest `json:"create_knowledge_request"`
 }
 
@@ -222,10 +221,11 @@ func NewAssistantResp(m *models.AgentInfo, kb *models.KnowledgeBase) *AssistantR
 	return resp
 }
 
-func NewAssistantRespArry(arr []*models.AgentInfo) []*AssistantResp {
+func NewAssistantRespArry(arr []*models.AgentInfo, agentInfoKBs map[uint]*models.KnowledgeBase) []*AssistantResp {
 	resps := []*AssistantResp{}
 	for _, m := range arr {
-		resps = append(resps, NewAssistantResp(m, nil))
+		kb := agentInfoKBs[m.ID]
+		resps = append(resps, NewAssistantResp(m, kb))
 	}
 	return resps
 }

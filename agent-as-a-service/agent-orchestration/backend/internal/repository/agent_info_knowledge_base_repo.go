@@ -13,6 +13,33 @@ type agentInfoKnowledgeBaseRepo struct {
 
 type IAgentInfoKnowledgeBaseRepo interface {
 	Create(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error)
+	ListAgentInfoKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error)
+	GetAgentInfoKnowledgeBaseByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error)
+}
+
+func (r *agentInfoKnowledgeBaseRepo) GetAgentInfoKnowledgeBaseByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error) {
+	knowledge := &models.AgentInfoKnowledgeBase{}
+	err := r.db.WithContext(ctx).
+		Preload("KnowledgeBase").
+		Preload("AgentInfo").
+		Where("agent_info_id = ?", id).
+		First(knowledge).Error
+	if err != nil {
+		return nil, err
+	}
+	return knowledge, nil
+}
+
+func (r *agentInfoKnowledgeBaseRepo) ListAgentInfoKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error) {
+	resp := []*models.AgentInfoKnowledgeBase{}
+	err := r.db.WithContext(ctx).
+		Preload("KnowledgeBase").
+		Where("agent_info_id IN (?)", ids).
+		Find(&resp).Error
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (r *agentInfoKnowledgeBaseRepo) Create(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {

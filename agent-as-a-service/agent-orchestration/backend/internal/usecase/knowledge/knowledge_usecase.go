@@ -188,8 +188,26 @@ func (uc *knowledgeUsecase) ListKnowledgeBase(ctx context.Context, req *models.L
 	return result, nil
 }
 
+func (uc *knowledgeUsecase) MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error) {
+	resp, err := uc.agentInfoKnowledgeBaseRepo.ListAgentInfoKnowledgeBaseByAgentIds(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make(map[uint]*models.KnowledgeBase)
+	for _, r := range resp {
+		data[r.AgentInfoId] = r.KnowledgeBase
+	}
+
+	return data, nil
+}
+
 func (uc *knowledgeUsecase) GetKnowledgeBaseById(ctx context.Context, id uint) (*models.KnowledgeBase, error) {
 	return uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, id)
+}
+
+func (uc *knowledgeUsecase) GetAgentInfoKnowledgeBaseByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error) {
+	return uc.agentInfoKnowledgeBaseRepo.GetAgentInfoKnowledgeBaseByAgentId(ctx, id)
 }
 
 func (uc *knowledgeUsecase) DeleteKnowledgeBaseById(ctx context.Context, id uint) error {

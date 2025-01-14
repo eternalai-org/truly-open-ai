@@ -15,7 +15,8 @@ func (s *Server) GetListAgent(c *gin.Context) {
 	page, limit := s.pagingFromContext(c)
 	chain := s.chainFromContextQuery(c)
 	creator := s.stringFromContextQuery(c, "creator")
-	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, page, limit)
+	agentType := s.uintFromContextQuery(c, "agent_type")
+	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -40,12 +41,24 @@ func (s *Server) GetListAgentForDojo(c *gin.Context) {
 	page, limit := s.pagingFromContext(c)
 	chain := s.chainFromContextQuery(c)
 	creator := s.stringFromContextQuery(c, "creator")
-	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, page, limit)
+	agentType := s.uintFromContextQuery(c, "agent_type")
+	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantRespArry(ms), Count: &count})
+
+	agentIds := []uint{}
+	for _, a := range ms {
+		agentIds = append(agentIds, a.ID)
+	}
+
+	info, err := s.nls.KnowledgeUsecase.MapKnowledgeBaseByAgentIds(ctx, agentIds)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantRespArry(ms, info), Count: &count})
 }
 
 func (s *Server) GetAgentDetail(c *gin.Context) {
@@ -91,7 +104,14 @@ func (s *Server) GetAgentDetailByAgentIDForDojo(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	result := serializers.NewAssistantResp(ms, nil)
+
+	info, err := s.nls.KnowledgeUsecase.MapKnowledgeBaseByAgentIds(ctx, []uint{ms.ID})
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	result := serializers.NewAssistantResp(ms, info[ms.ID])
 	result.AgentInfo.EstimateTwinDoneTimestamp = estimateTime
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: result})
 }
