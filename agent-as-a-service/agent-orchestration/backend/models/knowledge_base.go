@@ -34,6 +34,7 @@ type KnowledgeBase struct {
 	SolanaDepositPrivKey   string               `json:"-"`
 	FilecoinHash           string               `json:"filecoin_hash"`
 	DepositChainId         uint64               `json:"deposit_chain_id"`
+	LastErrorMessage       string               `json:"last_error_message"`
 }
 
 type KnowledgeBaseFile struct {

@@ -51,6 +51,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err != nil {
 		logger.Error("webhook_file_error", "upload_data_with_retry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		updatedFields["last_error_message"] = err.Error()
 		_ = uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
 		return nil, err
 	}
@@ -81,8 +82,9 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 
 	updatedFields := make(map[string]interface{})
 	updatedFields["filecoin_hash"] = req.Result.FilecoinHash
-	if req.Result.FilecoinHash == "" {
+	if req.Status != "ok" {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		updatedFields["last_error_message"] = req.Result.Message
 	} else {
 		updatedFields["status"] = models.KnowledgeBaseStatusDone
 	}
