@@ -396,11 +396,12 @@ func (s *Service) ReplyAferAutoCreateLaunchpad(tx *gorm.DB, twitterPostID, launc
 		}
 		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && twitterPost.ReplyPostId == "" {
 			replyContent := fmt.Sprintf(`
-We're excited to announce new raise fund project %s, empowering decentralized AI innovation with community-owned compute power.
+We're thrilled to announce our new fundraising initiative, Project %s! This groundbreaking effort empowers decentralized AI innovation by leveraging community-owned compute power.
 
-Receiving fund address here: %s
+📥 Funding Address: %s
+🚀 Whitelist Applications: Now Open!
 
-Whitelist applications are now open!
+Join us in shaping the future of decentralized AI!
 			`, launchpad.Name, launchpad.Address)
 			replyContent = strings.TrimSpace(replyContent)
 			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID, "")
