@@ -752,10 +752,10 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 
 											mediaID := ""
 											if snapshotPostAction.TokenImageUrl != "" {
-												mediaID, err = s.twitterAPI.UploadImage(models.GetImageUrl(snapshotPostAction.TokenImageUrl), []string{snapshotPostAction.AgentTwitterId})
-												if err != nil {
-													return errs.NewError(err)
-												}
+												mediaID, _ = s.twitterAPI.UploadImage(models.GetImageUrl(snapshotPostAction.TokenImageUrl), []string{snapshotPostAction.AgentTwitterId})
+												// if err != nil {
+												// 	return errs.NewError(err)
+												// }
 											}
 
 											refId, err = helpers.ReplyTweetByToken(agent.TwitterInfo.AccessToken, strings.TrimPrefix(contentLines[0], "."), snapshotPostAction.Tweetid, mediaID)
