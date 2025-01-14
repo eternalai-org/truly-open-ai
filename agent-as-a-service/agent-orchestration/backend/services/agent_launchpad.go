@@ -40,7 +40,7 @@ func (s *Service) JobScanAgentTwitterPostForCreateLaunchpad(ctx context.Context)
 			}
 			if twitterInfo != nil {
 				err = func() error {
-					tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterInfo.TwitterID, "", twitterInfo.AccessToken)
+					tweetMentions, err := s.twitterWrapAPI.GetListUserMentions(twitterInfo.TwitterID, "", twitterInfo.AccessToken, 25)
 					if err != nil {
 						return errs.NewError(err)
 					}
