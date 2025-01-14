@@ -14,9 +14,9 @@ import (
 
 func (s *Server) AgentCreateAgentAssistant(c *gin.Context) {
 	ctx := s.requestContext(c)
-	var req serializers.AssistantsReq
+	req := &serializers.AssistantsReq{}
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(req); err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
@@ -27,13 +27,13 @@ func (s *Server) AgentCreateAgentAssistant(c *gin.Context) {
 		return
 	}
 
-	resp, err := s.nls.AgentCreateAgentAssistant(ctx, userAddress, &req)
+	resp, err := s.nls.AgentCreateAgentAssistant(ctx, userAddress, req)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
 
-	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeBaseId)
+	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, resp.AgentKBId)
 
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, kb)})
 }
@@ -58,7 +58,8 @@ func (s *Server) AgentUpdateAgentAssistant(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeBaseId)
+	// todo
+	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, resp.AgentKBId)
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, kb)})
 }
 

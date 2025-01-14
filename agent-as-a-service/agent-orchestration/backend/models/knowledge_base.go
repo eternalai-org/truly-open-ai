@@ -45,6 +45,7 @@ type KnowledgeBase struct {
 	LastErrorMessage       string               `json:"last_error_message"`
 	CurrentGroupFileId     int64                `json:"current_group_file_id"`
 	KbId                   string               `json:"kb_id"`
+	ThumbnailUrl           string               `json:"thumbnail_url"`
 }
 
 type KnowledgeBaseFile struct {
@@ -59,6 +60,7 @@ type KnowledgeBaseFile struct {
 
 type ListKnowledgeBaseRequest struct {
 	UserAddress string `json:"user_address" form:"-"`
+	AgentIds    []uint `json:"agent_ids"`
 }
 
 func (m *KnowledgeBase) FileUrls() []string {

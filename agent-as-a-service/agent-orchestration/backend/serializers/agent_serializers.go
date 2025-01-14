@@ -212,6 +212,10 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 
 func NewKnowledgeBaseResp(m *models.KnowledgeBase) *KnowledgeBase {
 	resp := &KnowledgeBase{}
+	if m == nil {
+		return nil
+	}
+
 	if err := utils.Copy(resp, m); err != nil {
 		return nil
 	}

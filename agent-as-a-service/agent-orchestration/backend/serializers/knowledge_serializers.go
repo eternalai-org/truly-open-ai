@@ -3,11 +3,14 @@ package serializers
 import "time"
 
 type CreateKnowledgeRequest struct {
-	Name        string  `json:"name" form:"name"`
-	Description string  `json:"description" form:"description"`
-	NetworkID   uint64  `json:"network_id" form:"network_id"`
-	Files       []*File `json:"files" form:"files"`
-	UserAddress string  `json:"user_address" form:"-"`
+	Name                 string  `json:"name" form:"name"`
+	Description          string  `json:"description" form:"description"`
+	NetworkID            uint64  `json:"network_id" form:"network_id"`
+	Files                []*File `json:"files" form:"files"`
+	UserAddress          string  `json:"user_address" form:"-"`
+	DepositAddress       string  `json:"-" form:"-"`
+	ThumbnailUrl         string  `json:"thumbnail_url" form:"thumbnail_url"`
+	SolanaDepositAddress string  `json:"-" form:"-"`
 }
 
 type UpdateKnowledgeRequest struct {
@@ -54,4 +57,20 @@ type AgentUseKnowledgeBaseRequest struct {
 	AgentID         string `json:"agent_id" form:"agent_id"`
 	KnowledgeBaseID uint   `json:"knowledge_base_id" form:"knowledge_base_id"`
 	UserAddress     string `json:"-"`
+}
+
+type RetrieveKnowledgeBaseRequest struct {
+	Query string   `json:"query"`
+	TopK  int      `json:"top_k"`
+	Kb    []string `json:"kb"`
+}
+
+type RetrieveKnowledgeBaseResponse struct {
+	Result []struct {
+		Content   string  `json:"content"`
+		Score     float64 `json:"score"`
+		Reference string  `json:"reference"`
+	} `json:"result"`
+	Error  interface{} `json:"error"`
+	Status string      `json:"status"`
 }

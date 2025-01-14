@@ -102,13 +102,13 @@ dotenv.config();
 
 // Case set PRIVATE_KEY
 const agentTwitter = new AgentTwitter();
-// agentTwitter.createAndRunDagent()
-//     .then(() => {
-//       dagentLogger.info("Code run completed...");
-//     });
-
-// Case agent created and run
-agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+agentTwitter.createAndRunDagent()
     .then(() => {
       dagentLogger.info("Code run completed...");
     });
+
+// // Case agent created and run
+// agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+//     .then(() => {
+//       dagentLogger.info("Code run completed...");
+//     });
