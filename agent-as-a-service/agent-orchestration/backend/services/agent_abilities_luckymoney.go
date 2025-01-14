@@ -558,6 +558,23 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 }
 
 func (s *Service) TestUtil() {
-	etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
-	fmt.Println(etherAddress)
+	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
+	// fmt.Println(etherAddress)
+	twIDs := []string{"1878850921289130415"}
+	twitterInfo, _ := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(context.Background()),
+		map[string][]interface{}{
+			"twitter_id = ?": {s.conf.TokenTwiterID},
+		},
+		map[string][]interface{}{},
+		false,
+	)
+	twitterDetail, _ := s.twitterWrapAPI.LookupUserTweets(twitterInfo.AccessToken, twIDs)
+	if twitterDetail != nil {
+		for _, v := range *twitterDetail {
+			fmt.Println(v.Tweet.Text)
+			fulltext, ismention := s.TweetIsMentionNBS(v.Tweet, "NOBULLSHIT_EXE")
+			fmt.Println(fulltext)
+			fmt.Println(ismention)
+		}
+	}
 }

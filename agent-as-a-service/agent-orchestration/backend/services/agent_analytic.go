@@ -97,21 +97,30 @@ func (s *Service) ScanAgentTwitterPostForTA(ctx context.Context, agentID uint) e
 	return nil
 }
 
-func (s *Service) TweetIsMentionNBS(tweets twitter.TweetObj, username string) bool {
+func (s *Service) TweetIsMentionNBS(tweets twitter.TweetObj, username string) (string, bool) {
+	fullText := tweets.NoteTweet.Text
+	if fullText == "" {
+		fullText = tweets.Text
+	}
+
+	for _, item := range tweets.Entities.Mentions {
+		fullText = strings.ReplaceAll(fullText, fmt.Sprintf("@%s", item.UserName), "")
+	}
+
 	if len(tweets.Entities.Mentions) > 0 {
 		lastMentions := tweets.Entities.Mentions[len(tweets.Entities.Mentions)-1]
 		if strings.EqualFold(lastMentions.UserName, username) {
-			return true
+			return fullText, true
 		}
 
 		if len(tweets.Entities.Mentions) > 1 {
 			lastMentions = tweets.Entities.Mentions[len(tweets.Entities.Mentions)-2]
 			if strings.EqualFold(lastMentions.UserName, username) {
-				return true
+				return fullText, true
 			}
 		}
 	}
-	return false
+	return fullText, false
 }
 
 func (s *Service) CheckTwitterPostForTA(tx *gorm.DB, agentInfoID uint, twitterUsername string, tweetMentions *twitter.UserTimeline) error {
@@ -157,13 +166,9 @@ func (s *Service) CheckTwitterPostForTA(tx *gorm.DB, agentInfoID uint, twitterUs
 						}
 						if twitterDetail != nil {
 							for k, v := range *twitterDetail {
-								if !strings.EqualFold(v.User.ID, agentInfo.TwitterID) && s.TweetIsMentionNBS(v.Tweet, "NOBULLSHIT_EXE") {
+								fullText, isMentions := s.TweetIsMentionNBS(v.Tweet, "NOBULLSHIT_EXE")
+								if !strings.EqualFold(v.User.ID, agentInfo.TwitterID) && isMentions {
 									if strings.EqualFold(k, item.ID) {
-										fullText := v.Tweet.NoteTweet.Text
-										if fullText == "" {
-											fullText = v.Tweet.Text
-										}
-
 										tokenInfo, _ := s.GetTradingAnalyticInfo(context.Background(), author.TwitterUsername, fullText)
 										if tokenInfo != nil && (tokenInfo.IsCreateToken) && tokenInfo.TokenSymbol != "" {
 											existPosts, err := s.dao.FirstAgentTwitterPost(

@@ -43,11 +43,15 @@ func init() {
 
 func Test_JOB(t *testing.T) {
 	// ts.JobScanAgentTwitterPostForTA(context.Background())
-	ts.UpdateDataMissionTradeAnalytics(context.Background(), 111021)
+	ts.AgentSnapshotPostActionExecuted(context.Background(), 108993)
 	// ts.JobUpdateOffchainAutoOutputForMission(context.Background())
 	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
 	// ts.JobLuckyMoneyCollectPost(context.Background())
+}
+
+func Test_UTIL(t *testing.T) {
+	ts.TestUtil()
 }
 
 func Test_SRV(t *testing.T) {
