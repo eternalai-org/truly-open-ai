@@ -1520,9 +1520,7 @@ func (s *Service) JobUpdateOffchainAutoOutputForMission(ctx context.Context) err
 			"agent_snapshot_posts.status = ?":                                       {models.AgentSnapshotPostStatusInferSubmitted},
 		},
 		map[string][]interface{}{},
-		[]string{
-			"agent_snapshot_posts.updated_at asc",
-		}, 0, 999,
+		[]string{}, 1, 50,
 	)
 	if err != nil {
 		return errs.NewError(err)
