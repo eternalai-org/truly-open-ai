@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -20,6 +21,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
+	openai2 "github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 )
 
@@ -901,8 +903,85 @@ func (s *Service) PreviewAgentSystemPromp(ctx context.Context, personality, ques
 	return aiStr, nil
 }
 
-func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string) (string, error) {
-	aiStr, err := s.openais["Agent"].TestAgentPersinalityV1(messages, s.conf.AgentOffchainChatUrl)
+func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.ChatCompletionMessage, knowledgeBases []*models.KnowledgeBase) (*serializers.RetrieveKnowledgeBaseResponse, error) {
+	if len(knowledgeBases) == 0 {
+		return nil, errs.NewError(errors.New("knowledge bases is empty"))
+	}
+	userPrompt := openai.LastUserPrompt(messages)
+	request := serializers.RetrieveKnowledgeBaseRequest{
+		Query: userPrompt,
+		TopK:  50,
+		Kb: []string{
+			"base_knowledge", // TODO update later
+		},
+	}
+
+	body, err := helpers.CurlURLString(
+		s.conf.KnowledgeBaseConfig.QueryServiceUrl,
+		"POST",
+		map[string]string{},
+		&request,
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	response := &serializers.RetrieveKnowledgeBaseResponse{}
+	err = json.Unmarshal([]byte(body), response)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+
+	return response, nil
+}
+
+func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string, agentId *uint) (string, error) {
+	var agentInfo *models.AgentInfo
+	baseModel := "NousResearch/Hermes-3-Llama-3.1-70B-FP8"
+	if agentId != nil {
+		agentInfo, _ = s.dao.FirstAgentInfoByID(daos.GetDBMainCtx(ctx), *agentId, map[string][]interface{}{}, false)
+		if agentInfo != nil && agentInfo.AgentBaseModel != "" {
+			baseModel = agentInfo.AgentBaseModel
+		}
+	}
+	llmMessage := []openai2.ChatCompletionMessage{}
+	err := json.Unmarshal([]byte(messages), &llmMessage)
+	if err != nil {
+		return "", errs.NewError(errors.New("invalid message request"))
+	}
+
+	systemContent := openai.GetSystemPromptFromLLMMessage(llmMessage)
+	url := s.conf.AgentOffchainChatUrl
+	if s.conf.KnowledgeBaseConfig.DirectServiceUrl != "" {
+		url = s.conf.KnowledgeBaseConfig.DirectServiceUrl
+	}
+
+	if s.conf.KnowledgeBaseConfig.EnableSimulation && agentInfo != nil {
+		// get last knowledge base of agent
+		agentInfoKnowledegeBase, _ := s.dao.FirstAgentInfoKnowledgeBaseByAgentInfoID(
+			daos.GetDBMainCtx(ctx),
+			agentInfo.ID,
+			map[string][]interface{}{
+				"KnowledgeBase": {},
+			},
+			[]string{"id desc"},
+		)
+		if agentInfoKnowledegeBase != nil && agentInfoKnowledegeBase.KnowledgeBase != nil {
+			retrieveKnowledgeBaseResponse, err := s.RetrieveKnowledge(ctx, llmMessage, []*models.KnowledgeBase{agentInfoKnowledegeBase.KnowledgeBase})
+			if err == nil && retrieveKnowledgeBaseResponse != nil {
+				agentKnowledege := ""
+				for _, knowledge := range retrieveKnowledgeBaseResponse.Result {
+					if knowledge.Score >= 0.3 {
+						agentKnowledege += knowledge.Content + "\n"
+					}
+				}
+				systemContent += "\n. Your knowledge: \n" + agentKnowledege
+			}
+		}
+	}
+
+	llmMessage = openai.UpdateSystemPromptInLLMRequest(llmMessage, systemContent)
+	messageCallLLM, _ := json.Marshal(&llmMessage)
+	aiStr, err := s.openais["Agent"].CallDirectlyEternalLLM(string(messageCallLLM), baseModel, url)
 	if err != nil {
 		return "", errs.NewError(err)
 	}
