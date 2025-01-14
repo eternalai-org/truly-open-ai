@@ -10,7 +10,7 @@ class DagentLogger {
     this.verbose = this.isNode ? process.env.VERBOSE === "true" : false;
 
     // Add initialization logging
-    console.log(`[ElizaLogger] Initializing with:
+    console.log(`[EternalAiLogger] Initializing with:
             isNode: ${this.isNode}
             verbose: ${this.verbose}
             VERBOSE env: ${process.env.VERBOSE}

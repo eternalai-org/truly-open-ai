@@ -8,6 +8,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
 	"github.com/jinzhu/gorm"
 )
 
@@ -120,11 +121,24 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ScanTwitterTweetByParentID(ctx context.Context) error {
-	lst, err := s.twitterWrapAPI.SearchRecentTweetV1("in_reply_to_tweet_id:1879074175073337488", "1879077313020920053", "SmcyaGJaUmlOSDZSOTA5V3pFMEZLX3BKcTVlS1NNTW4xQzB0cFY5VkQwOGZwOjE3MzY4MzQ1NDIxMjM6MTowOmF0OjE", 50)
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID, sinceID string) (*twitter.TweetRecentSearch, error) {
+	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", parentTweetID), sinceID, 50)
 	if err != nil {
-		return errs.NewError(err)
+		return nil, errs.NewError(err)
 	}
-	fmt.Println(lst)
-	return nil
+	if lst != nil {
+		for _, v := range lst.LookUps {
+			tmp := helpers.ParseStringToDateTimeTwitter(v.Tweet.CreatedAt)
+			err = s.dao.Create(daos.GetDBMainCtx(ctx), &models.TwitterTweet{
+				TwitterID: v.Tweet.AuthorID,
+				TweetID:   v.Tweet.ID,
+				FullText:  v.Tweet.Text,
+				PostedAt:  *tmp,
+			})
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+		}
+	}
+	return lst, nil
 }

@@ -221,6 +221,51 @@ func (c OpenAI) TestAgentPersinality(systemPrompt, userPrompt, baseUrl string) (
 	return chatResp, nil
 }
 
+func (c OpenAI) CallDirectlyEternalLLM(messages, model, baseUrl string) (string, error) {
+	seed := models.RandSeed()
+	bodyReq := map[string]interface{}{
+		"model":  model,
+		"stream": false,
+		"seed":   seed,
+	}
+	contents := []map[string]string{}
+	err := json.Unmarshal([]byte(messages), &contents)
+	bodyReq["messages"] = contents
+
+	chatResp := ""
+	bodyBytes, _ := json.Marshal(bodyReq)
+	req, err := http.NewRequest("POST", baseUrl, bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return chatResp, err
+	}
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.ApiKey))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return chatResp, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return chatResp, err
+	}
+
+	m := ChatResponse{}
+	err = json.Unmarshal(body, &m)
+	if err != nil {
+		return chatResp, err
+	}
+	if m.Choices != nil && len(m.Choices) > 0 {
+		data := m.Choices[0]
+		if data.Message != nil && data.Message.Content != "" {
+			chatResp = data.Message.Content
+		}
+	}
+
+	return chatResp, nil
+}
+
 func (c OpenAI) TestAgentPersinalityV1(messages, baseUrl string) (string, error) {
 	seed := models.RandSeed()
 	bodyReq := map[string]interface{}{

@@ -5,13 +5,12 @@
   "engines": {
     "node": ">=23.3.0"
   },
+  "type": "module",
   "scripts": {
     "build": "lerna run build --stream",
     "clean": "lerna clean && rimraf node_modules plugins/**/node_modules plugins/**/dist",
     "start:client": "node scripts/client-start.js",
-    "build:pkgs": "node scripts/build.js",
-    "build:pkg": "node scripts/build.js <package-name>",
-    "task": "node scripts/task.js",
+    "start:dagent": "node --loader ts-node/esm scripts/start-dagent.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -22,9 +21,9 @@
   "private": true,
   "workspaces": [
     "plugins/*",
-    "client/*",
     "dagent",
-    "characters"
+    "characters",
+    "scripts"
   ],
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -38,6 +37,10 @@
     "inquirer": "^12.2.0",
     "lerna": "^8.1.9",
     "rimraf": "^5.0.10",
-    "typescript-eslint": "^8.18.1"
+    "typescript-eslint": "^8.18.1",
+    "ts-node": "10.9.2"
+  },
+  "ts-node": {
+    "esm": true
   }
 }

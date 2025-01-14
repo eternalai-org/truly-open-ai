@@ -283,5 +283,10 @@
     "trade_news": "",
     "trade_analytic": ""
   },
-  "secret_key": ""
+  "secret_key": "",
+  "knowledge_base_config" : {
+    "enable_simulation": false,
+    "query_service_url": "",
+    "direct_service_url": ""
+  }
 }
