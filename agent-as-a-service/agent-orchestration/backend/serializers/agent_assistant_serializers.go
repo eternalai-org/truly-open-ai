@@ -57,6 +57,7 @@ type AssistantsReq struct {
 	AgentBaseModel       string `json:"agent_base_model"`
 	TwinTwitterUsernames string `json:"twin_twitter_usernames"`
 	MissionTopics        string `json:"mission_topics"`
+	KnowledgeBaseId      uint   `json:"knowledge_base_id"`
 }
 
 func (m *AssistantsReq) GetAssistantCharacter(character interface{}) string {
@@ -148,11 +149,12 @@ type Assistants struct {
 }
 
 type AssistantResp struct {
-	Assistants `json:",inline"`
-	AgentInfo  *AgentInfoResp `json:"agent_info"`
+	Assistants    `json:",inline"`
+	AgentInfo     *AgentInfoResp `json:"agent_info"`
+	KnowledgeBase *KnowledgeBase `json:"knowledge_base"`
 }
 
-func NewAssistantResp(m *models.AgentInfo) *AssistantResp {
+func NewAssistantResp(m *models.AgentInfo, kb *models.KnowledgeBase) *AssistantResp {
 	if m == nil {
 		return nil
 	}
@@ -215,13 +217,14 @@ func NewAssistantResp(m *models.AgentInfo) *AssistantResp {
 	}
 
 	resp.AgentInfo = NewAgentInfoResp(m)
+	resp.KnowledgeBase = NewKnowledgeBaseResp(kb)
 	return resp
 }
 
 func NewAssistantRespArry(arr []*models.AgentInfo) []*AssistantResp {
 	resps := []*AssistantResp{}
 	for _, m := range arr {
-		resps = append(resps, NewAssistantResp(m))
+		resps = append(resps, NewAssistantResp(m, nil))
 	}
 	return resps
 }

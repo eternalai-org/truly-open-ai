@@ -49,5 +49,5 @@ func Test_JOB(t *testing.T) {
 }
 
 func Test_SRV(t *testing.T) {
-	ts.TestUtil()
+	ts.JobMemeBurnPositionUniswap(context.Background())
 }

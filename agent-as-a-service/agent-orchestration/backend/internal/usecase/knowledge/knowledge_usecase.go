@@ -23,9 +23,10 @@ import (
 )
 
 type knowledgeUsecase struct {
-	knowledgeBaseRepo     repository.KnowledgeBaseRepo
-	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo
-	secretKey             string
+	knowledgeBaseRepo          repository.KnowledgeBaseRepo
+	knowledgeBaseFileRepo      repository.KnowledgeBaseFileRepo
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo
+	secretKey                  string
 
 	networks      map[string]map[string]string
 	ethApiMap     map[uint64]*ethapi.Client
@@ -35,17 +36,22 @@ type knowledgeUsecase struct {
 	webhookUrl    string
 }
 
+func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {
+	return uc.agentInfoKnowledgeBaseRepo.Create(ctx, model)
+}
+
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
 	kn, err := uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-
+	logger.Info("webhook_file", "start_webhook_file", zap.Any("knowledge_base_id", id), zap.Any("filename", filename))
 	updatedFields := make(map[string]interface{})
 	hash, err := lighthouse.UploadDataWithRetry(uc.lighthouseKey, fmt.Sprintf("%d_%s", time.Now().Unix(), filename), bytes)
 	if err != nil {
-		logger.Error("WebhookFile", "UploadDataWithRetry", zap.Error(err))
+		logger.Error("webhook_file_error", "upload_data_with_retry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		updatedFields["last_error_message"] = err.Error()
 		_ = uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
 		return nil, err
 	}
@@ -75,13 +81,13 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	}
 
 	updatedFields := make(map[string]interface{})
-	updatedFields["filecoin_hash"] = req.Result.FilecoinHash
-	if req.Result.FilecoinHash == "" {
+	if req.Status != "ok" {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
-	} else {
+		updatedFields["last_error_message"] = req.Result.Message
+	} else if req.Result.FilecoinHash != "" {
+		updatedFields["filecoin_hash"] = req.Result.FilecoinHash
 		updatedFields["status"] = models.KnowledgeBaseStatusDone
 	}
-	// updatedFields["message"] = req.Message
 
 	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
@@ -93,6 +99,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 func NewKnowledgeUsecase(
 	knowledgeBaseRepo repository.KnowledgeBaseRepo,
 	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
 	secretKey string,
 	ethApiMap map[uint64]*ethapi.Client,
 	networks map[string]map[string]string,
@@ -102,15 +109,16 @@ func NewKnowledgeUsecase(
 	webhookUrl string,
 ) ports.IKnowledgeUsecase {
 	return &knowledgeUsecase{
-		knowledgeBaseRepo:     knowledgeBaseRepo,
-		knowledgeBaseFileRepo: knowledgeBaseFileRepo,
-		secretKey:             secretKey,
-		ethApiMap:             ethApiMap,
-		networks:              networks,
-		trxApi:                trxApi,
-		ragApi:                ragApi,
-		lighthouseKey:         lighthousekey,
-		webhookUrl:            webhookUrl,
+		knowledgeBaseRepo:          knowledgeBaseRepo,
+		knowledgeBaseFileRepo:      knowledgeBaseFileRepo,
+		agentInfoKnowledgeBaseRepo: agentInfoKnowledgeBaseRepo,
+		secretKey:                  secretKey,
+		ethApiMap:                  ethApiMap,
+		networks:                   networks,
+		trxApi:                     trxApi,
+		ragApi:                     ragApi,
+		lighthouseKey:              lighthousekey,
+		webhookUrl:                 webhookUrl,
 	}
 }
 
@@ -323,6 +331,9 @@ func (uc *knowledgeUsecase) balanceOfAddress(_ context.Context, address string, 
 
 func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.KnowledgeBase) (*models.InsertRagResponse, error) {
 	resp := &models.InsertRagResponse{}
+	if uc.webhookUrl == "" {
+		uc.webhookUrl = "https://agent.api.eternalai.org/api/knowledge/webhook-file"
+	}
 	body := struct {
 		FileUrls []string `json:"file_urls"`
 		Ref      string   `json:"ref"`
@@ -332,6 +343,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		Ref:      fmt.Sprintf("%d", kn.ID),
 		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
+	logger.Info("knowledgebase", "insert_file_to_rag", zap.Any("body", body))
 	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).

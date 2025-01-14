@@ -1,4 +1,4 @@
-import { dagentLogger, IENV } from "@eternal-dagent/core";
+import {dagentLogger, IENV, IGetAccessTokenParams} from "@eternal-dagent/core";
 import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
@@ -7,14 +7,16 @@ import { DagentFarcaster } from "@eternal-dagent/client-dagent";
 class AgentFarcaster {
   protected environment: IENV;
   protected dagent: DagentFarcaster;
+  protected paramsToken?: IGetAccessTokenParams;
 
-  constructor() {
+  constructor(params?: IGetAccessTokenParams) {
     dagentLogger.info("Code run started...");
     this.environment = getEnvironment();
     this.dagent = new DagentFarcaster({
       dagentCharacter: dagentCharacter,
       environment: this.environment,
     });
+    this.paramsToken = params || undefined;
   }
 
   createDagent = async () => {
@@ -42,7 +44,11 @@ class AgentFarcaster {
   };
 
   runDagent = async () => {
-    await this.dagent.init();
+    const privateKey = this.environment.PRIVATE_KEY;
+    if (!privateKey && !this.paramsToken) {
+      dagentLogger.error("Please provide private key or params token.");
+    }
+    await this.dagent.init(this.paramsToken);
     await this.createDagent();
     await this.getCreatedAgents();
     // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");

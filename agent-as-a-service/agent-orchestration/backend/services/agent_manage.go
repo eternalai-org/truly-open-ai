@@ -38,7 +38,7 @@ func (s *Service) GetModelDefaultByChainID(chainID uint64) string {
 			listConfig, _ := s.dojoAPI.GetChainConfigs()
 			for _, chain := range listConfig {
 				if strings.EqualFold(chain.ChainId, fmt.Sprintf("%d", chainID)) {
-					for modelName, _ := range chain.SupportModelNames {
+					for modelName := range chain.SupportModelNames {
 						baseModel = modelName
 					}
 					break
@@ -151,7 +151,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		agent.EstimateTwinDoneTimestamp = &estimateDoneTime
 	}
 
-	//generate address
+	// generate address
 	{
 		ethAddress, err := s.CreateETHAddress(ctx)
 		if err != nil {
@@ -209,6 +209,16 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		go s.AgentCreateMissionDefault(context.Background(), agent.ID)
 	}
 
+	if req.KnowledgeBaseId != 0 {
+		_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
+			AgentInfoId:     agent.ID,
+			KnowledgeBaseId: req.KnowledgeBaseId,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return agent, nil
 }
 
@@ -255,10 +265,10 @@ func (s *Service) CheckOwnerNFT721(delegate, vault, contract, tokenId, signature
 	}
 
 	if strings.ToLower(delegate) == strings.ToLower(vault) {
-		//return true
+		// return true
 	}
 
-	chainID := 1 //default ETH
+	chainID := 1 // default ETH
 	hardcodeCollection := s.openseaService.FindHardCodeCollectionByAddress(contract)
 	if hardcodeCollection != nil {
 		chainID = hardcodeCollection.ChainID
@@ -424,7 +434,6 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 			return nil
 		},
 	)
-
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
@@ -496,7 +505,6 @@ func (s *Service) UpdateAgentInfoInContract(ctx context.Context, address string,
 			return nil
 		},
 	)
-
 	if err != nil {
 		return nil, errs.NewError(err)
 	}

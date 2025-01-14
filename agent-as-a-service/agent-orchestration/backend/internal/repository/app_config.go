@@ -19,7 +19,7 @@ func (r *appConfigRepo) GetAllNameValueInAppConfig(ctx context.Context, networkI
 	var data []*models.AppConfig
 	err := r.db.WithContext(ctx).
 		Where("network_id = ?", networkId).
-		First(data).Error
+		Find(&data).Error
 	if err != nil {
 		return nil, err
 	}

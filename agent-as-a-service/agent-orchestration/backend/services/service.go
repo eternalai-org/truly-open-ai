@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/appconfig"
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/appconfig"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -142,6 +143,7 @@ func NewService(conf *configs.Config) *Service {
 	gormDB := mysql.NewDefaultMysqlGormConn(nil, s.conf.DbURL)
 	knowledgeBaseRepo := repository.NewKnowledgeBaseRepository(gormDB)
 	knowledgeBaseFileRepo := repository.NewKnowledgeBaseFileRepository(gormDB)
+	agentInfoKnowledgeBaseRepo := repository.NewAgentInfoKnowledgeBaseRepository(gormDB)
 	secretKey := conf.SecretKey
 	var googleSecretKey string
 	if utils.IsEnvProduction(conf.Env) {
@@ -156,6 +158,7 @@ func NewService(conf *configs.Config) *Service {
 
 	s.KnowledgeUsecase = knowledge.NewKnowledgeUsecase(
 		knowledgeBaseRepo, knowledgeBaseFileRepo,
+		agentInfoKnowledgeBaseRepo,
 		googleSecretKey,
 		s.ethApiMap, conf.Networks, s.trxApi,
 		conf.RagApi,
@@ -202,9 +205,11 @@ func (s *Service) JobRunCheck(ctx context.Context, jobId string, jobFunc func() 
 			err = errs.NewError(err)
 			stacktrace := err.(*errs.Error).Stacktrace()
 			fmt.Println(time.Now(), jobId, "error", err.Error(), stacktrace)
+			return err
 		} else {
 			fmt.Println(time.Now(), jobId, "end")
 		}
+		return err
 	}
 	return nil
 }

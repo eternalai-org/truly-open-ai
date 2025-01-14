@@ -34,15 +34,7 @@ type KnowledgeBase struct {
 	SolanaDepositPrivKey   string               `json:"-"`
 	FilecoinHash           string               `json:"filecoin_hash"`
 	DepositChainId         uint64               `json:"deposit_chain_id"`
-}
-
-type AgentInfoKnowledgeBase struct {
-	gorm.Model
-	AgentInfoId     uint `json:"agent_info_id" gorm:"index"`
-	KnowledgeBaseId uint `json:"knowledge_base_id" gorm:"index"`
-
-	AgentInfo     *AgentInfo
-	KnowledgeBase *KnowledgeBase
+	LastErrorMessage       string               `json:"last_error_message"`
 }
 
 type KnowledgeBaseFile struct {
