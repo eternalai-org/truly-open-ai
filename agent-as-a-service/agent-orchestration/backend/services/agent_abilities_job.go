@@ -1444,6 +1444,12 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 		func() error {
 			var retErr error
 			{
+				err := s.JobUpdateOffchainAutoOutputForMission(ctx)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
+				}
+			}
+			{
 				ms, err := s.dao.FindAgentSnapshotPostAction(daos.GetDBMainCtx(ctx),
 					map[string][]interface{}{
 						"created_at <= adddate(now(), interval -5 minute)":  {},
@@ -1462,39 +1468,6 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 					err := s.UpdateOffchainAutoOutputV2(ctx, m.AgentSnapshotPostID)
 					if err != nil {
 						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.AgentSnapshotPostID))
-					}
-				}
-			}
-			{
-				joinFilters := map[string][]interface{}{
-					`
-						join agent_snapshot_missions on agent_snapshot_missions.id = agent_snapshot_posts.agent_snapshot_mission_id
-					`: {},
-				}
-
-				selected := []string{
-					"agent_snapshot_posts.*",
-				}
-				ms, err := s.dao.FindAgentSnapshotPostJoinSelect(daos.GetDBMainCtx(ctx),
-					selected, joinFilters,
-					map[string][]interface{}{
-						"agent_snapshot_posts.created_at <= adddate(now(), interval -5 minute)": {},
-						"agent_snapshot_posts.created_at >= adddate(now(), interval -12 hour)":  {},
-						"agent_snapshot_missions.tool_set in (?)":                               {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions, models.ToolsetTypeLuckyMoneys}},
-						"agent_snapshot_posts.status = ?":                                       {models.AgentSnapshotPostStatusInferSubmitted},
-					},
-					map[string][]interface{}{},
-					[]string{
-						"agent_snapshot_posts.updated_at asc",
-					}, 0, 999,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				for _, m := range ms {
-					err := s.UpdateOffchainAutoOutputV2(ctx, m.ID)
-					if err != nil {
-						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
 					}
 				}
 			}
@@ -1527,11 +1500,54 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 	return nil
 }
 
+func (s *Service) JobUpdateOffchainAutoOutputForMission(ctx context.Context) error {
+	var retErr error
+	joinFilters := map[string][]interface{}{
+		`
+				join agent_snapshot_missions on agent_snapshot_missions.id = agent_snapshot_posts.agent_snapshot_mission_id
+			`: {},
+	}
+
+	selected := []string{
+		"agent_snapshot_posts.*",
+	}
+	ms, err := s.dao.FindAgentSnapshotPostJoinSelect(daos.GetDBMainCtx(ctx),
+		selected, joinFilters,
+		map[string][]interface{}{
+			"agent_snapshot_posts.created_at <= adddate(now(), interval -5 minute)": {},
+			"agent_snapshot_posts.created_at >= adddate(now(), interval -12 hour)":  {},
+			"agent_snapshot_missions.tool_set in (?)":                               {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions, models.ToolsetTypeLuckyMoneys}},
+			"agent_snapshot_posts.status = ?":                                       {models.AgentSnapshotPostStatusInferSubmitted},
+		},
+		map[string][]interface{}{},
+		[]string{
+			"agent_snapshot_posts.updated_at asc",
+		}, 0, 999,
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+
+	for _, m := range ms {
+		err := s.UpdateOffchainAutoOutputV2(ctx, m.ID)
+		if err != nil {
+			retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+		}
+	}
+	return retErr
+}
+
 func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 	err := s.JobRunCheck(
 		ctx, "JobUpdateOffchainAutoOutput",
 		func() error {
 			var retErr error
+			{
+				err := s.JobUpdateOffchainAutoOutputForMission(ctx)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
+				}
+			}
 			{
 				ms, err := s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
 					map[string][]interface{}{
