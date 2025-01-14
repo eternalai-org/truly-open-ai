@@ -11,6 +11,7 @@ import { ICharacter } from "../types";
 import { IAgentToken, IGetAgentTokensParams } from "../types/token";
 import BaseAPI from "./base";
 import {generationTextOpenAi} from "../utils/generation";
+import dagentLogger from "../logger";
 
 export interface IAgentClient {
   /** Create new agent */
@@ -169,7 +170,7 @@ export class AgentClient extends BaseAPI implements IAgentClient {
   setupMissions = async (params: {
     agentId: string, missions: Array<any>
   }) => {
-    console.log(params.missions);
+    dagentLogger.info(`Setting up missions for agent ${params.agentId}`, params.missions);
     await this.api.post(`/agent/mission/update/${params.agentId}`, params.missions);
   };
 
