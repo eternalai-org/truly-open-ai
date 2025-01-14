@@ -138,22 +138,34 @@ func (s *Service) LuckyMoneyCollectPost(ctx context.Context, missionID uint) err
 
 									rewardAmount := models.QuoBigFloats(&snapshotPostAction.AgentSnapshotMission.RewardAmount.Float, big.NewFloat(float64(snapshotPostAction.AgentSnapshotMission.RewardUser)))
 									etherAddress := helpers.ExtractEtherAddress(fullText)
-									m := &models.AbilityLuckyMoney{
-										NetworkID:              snapshotPostAction.AgentInfo.NetworkID,
-										AgentInfoID:            snapshotPostAction.AgentInfo.ID,
-										AgentSnapshotMissionID: snapshotPostAction.AgentSnapshotMissionID,
-										AgentSnapshotPostID:    snapshotPostAction.AgentSnapshotPostID,
-										TwitterID:              v.User.ID,
-										TwitterUsername:        v.User.UserName,
-										TwitterName:            v.User.Name,
-										TweetID:                v.Tweet.ID,
-										Content:                fullText,
-										Status:                 models.LuckyMoneyStatusNew,
-										TweetAt:                postedAt,
-										UserAddress:            etherAddress,
-										RewardAmount:           numeric.NewBigFloatFromFloat(rewardAmount),
+									tokenBalance := big.NewFloat(0)
+									if snapshotPostAction.AgentInfo.TokenAddress != "" && etherAddress != "" {
+										balance, err := s.GetEthereumClient(ctx, snapshotPostAction.AgentInfo.TokenNetworkID).Erc20Balance(snapshotPostAction.AgentInfo.TokenAddress, etherAddress)
+										if err != nil {
+											fmt.Println(err.Error())
+										}
+										tokenBalance = models.ConvertWeiToBigFloat(balance, 18)
 									}
-									if etherAddress == "" {
+
+									m := &models.AbilityLuckyMoney{
+										NetworkID:                 snapshotPostAction.AgentInfo.NetworkID,
+										AgentInfoID:               snapshotPostAction.AgentInfo.ID,
+										AgentSnapshotMissionID:    snapshotPostAction.AgentSnapshotMissionID,
+										AgentSnapshotPostID:       snapshotPostAction.AgentSnapshotPostID,
+										AgentSnapshotPostActionID: snapshotPostAction.ID,
+										TwitterID:                 v.User.ID,
+										TwitterUsername:           v.User.UserName,
+										TwitterName:               v.User.Name,
+										TweetID:                   v.Tweet.ID,
+										Content:                   fullText,
+										Status:                    models.LuckyMoneyStatusNew,
+										TweetAt:                   postedAt,
+										UserAddress:               etherAddress,
+										RewardAmount:              numeric.NewBigFloatFromFloat(rewardAmount),
+										TokenBalance:              numeric.BigFloat{*tokenBalance},
+									}
+
+									if etherAddress == "" || tokenBalance.Cmp(&snapshotPostAction.AgentSnapshotMission.MinTokenHolding.Float) < 0 {
 										m.Status = models.LuckyMoneyStatusInvalid
 									}
 
@@ -180,17 +192,17 @@ func (s *Service) LuckyMoneyCollectPost(ctx context.Context, missionID uint) err
 	return nil
 }
 
-func (s *Service) LuckyMoneyValidateRewardUser(ctx context.Context, missionID uint) error {
+func (s *Service) LuckyMoneyValidateRewardUser(ctx context.Context, actionID uint) error {
 	err := s.JobRunCheck(
 		ctx,
-		fmt.Sprintf("LuckyMoneyPayToUser_%d", missionID),
+		fmt.Sprintf("LuckyMoneyPayToUser_%d", actionID),
 		func() error {
 			err := daos.WithTransaction(
 				daos.GetDBMainCtx(ctx),
 				func(tx *gorm.DB) error {
 					snapshotPostAction, err := s.dao.FirstAgentSnapshotPostActionByID(
 						tx,
-						missionID,
+						actionID,
 						map[string][]interface{}{},
 						false,
 					)
@@ -202,8 +214,8 @@ func (s *Service) LuckyMoneyValidateRewardUser(ctx context.Context, missionID ui
 					userPosts, err := s.dao.FindAbilityLuckyMoney(
 						tx,
 						map[string][]interface{}{
-							"agent_snapshot_mission_id = ? ": {missionID},
-							"status in (?)":                  {[]models.LuckyMoneyStatus{models.LuckyMoneyStatusNew, models.LuckyMoneyStatusDone, models.LuckyMoneyStatusProcessing}},
+							"agent_snapshot_post_action_id = ? ": {actionID},
+							"status in (?)":                      {[]models.LuckyMoneyStatus{models.LuckyMoneyStatusNew, models.LuckyMoneyStatusDone, models.LuckyMoneyStatusProcessing}},
 						},
 						map[string][]interface{}{},
 						[]string{"tweet_at asc"}, 0, snapshotPostAction.RewardUser,
@@ -431,7 +443,13 @@ func (s *Service) LuckyMoneyActionExecuted(ctx context.Context, snapshotPostID u
 						if snapshotPost != nil &&
 							models.ToolsetType(snapshotPost.Toolset) == models.ToolsetTypeLuckyMoneys {
 							randomTime := helpers.TimeNow().Add(time.Minute * time.Duration(helpers.RandomInt(5, 40)))
-							content, err := s.LuckyMoneyGetPostContent(tx, snapshotPost.AgentInfoID)
+							content, err := s.LuckyMoneyGetPostContent(tx, snapshotPost.AgentInfoID, snapshotPost.AgentSnapshotMissionID)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							if content == "" {
+								return errs.NewError(errs.ErrBadContent)
+							}
 
 							agentInfo, err := s.dao.FirstAgentInfoByID(tx, snapshotPost.AgentInfoID, map[string][]interface{}{}, false)
 							if err != nil {
@@ -495,23 +513,31 @@ func (s *Service) LuckyMoneyActionExecuted(ctx context.Context, snapshotPostID u
 	return nil
 }
 
-func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID uint) (string, error) {
+func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID uint) (string, error) {
 	postContent := ""
 	agentInfo, err := s.dao.FirstAgentInfoByID(tx, agentInfoID, map[string][]interface{}{}, false)
 	if err != nil {
 		return postContent, errs.NewError(err)
 	}
 
-	if agentInfo != nil {
+	missionInfo, err := s.dao.FirstAgentSnapshotMissionByID(tx, missionID, map[string][]interface{}{}, false)
+	if err != nil {
+		return postContent, errs.NewError(err)
+	}
+
+	if agentInfo != nil && missionInfo != nil {
+		rewardAmount, _ := missionInfo.RewardAmount.Float64()
+		minTokenHolding, _ := missionInfo.MinTokenHolding.Float64()
 		userPrompt := fmt.Sprintf(`
-		Please generate a twitter post for airdrop for users who reply this post, limit 250 charaters, no #, no hashtag.
+		Rewrite this for a Twitter post: 
+		"Lucky Money Giveaway! 💸 Total %d tokens $EAI up for grabs! First %d comments with an Ethereum address (holding min %d tokens $%s) win! 🚀 Fastest fingers only!"
 
 		Return a JSON response with the following format:
 
 		{"content": ""}
 		
 		Respond with only the JSON string, without any additional explanation.
-		`)
+		`, rewardAmount, missionInfo.RewardUser, minTokenHolding, agentInfo.TokenSymbol)
 		fmt.Println(userPrompt)
 
 		aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())

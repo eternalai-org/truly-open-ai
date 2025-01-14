@@ -42,8 +42,10 @@ func init() {
 }
 
 func Test_JOB(t *testing.T) {
+	ts.JobScanAgentTwitterPostForTA(context.Background())
+	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
-	ts.JobLuckyMoneyCollectPost(context.Background())
+	// ts.JobLuckyMoneyCollectPost(context.Background())
 }
 
 func Test_SRV(t *testing.T) {

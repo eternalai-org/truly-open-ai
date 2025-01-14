@@ -724,10 +724,12 @@ func RandomFloat(from, to float64) float64 {
 }
 
 func ExtractEtherAddress(content string) string {
-	r := regexp.MustCompile(`^(0x)?[0-9a-fA-F]{40}$`)
-	matches := r.FindAllString(content, -1)
-	if len(matches) > 0 {
-		return matches[0]
+	arrStr := strings.Split(content, " ")
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	for _, item := range arrStr {
+		if re.MatchString(strings.TrimSpace(item)) {
+			return strings.TrimSpace(item)
+		}
 	}
 	return ""
 }
