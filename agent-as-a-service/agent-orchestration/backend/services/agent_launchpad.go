@@ -396,10 +396,10 @@ func (s *Service) ReplyAferAutoCreateLaunchpad(tx *gorm.DB, twitterPostID, launc
 		}
 		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && twitterPost.ReplyPostId == "" {
 			replyContent := fmt.Sprintf(`
-We're thrilled to announce our new fundraising initiative, Project %s! This groundbreaking effort empowers decentralized AI innovation by leveraging community-owned compute power.
+We're thrilled to announce our new Dao Fund initiative, Dao %s! This visionary project empowers decentralized AI innovation through the power of community-owned compute resources.
 
 📥 Funding Address: %s
-🚀 Whitelist Applications: Now Open!
+🚀 Whitelist Applications: Now Open! Reply to this message with your Solana address to apply.
 
 Join us in shaping the future of decentralized AI!
 			`, launchpad.Name, launchpad.Address)
