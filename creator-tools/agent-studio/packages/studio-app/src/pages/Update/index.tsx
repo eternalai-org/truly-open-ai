@@ -33,26 +33,26 @@ function Update() {
       const data = await agentDatabase.getItem(id);
 
       if (data) {
-        // const parsedData = JSON.parse(data?.data || `[]`);
-
-        // // re-map remote data to local graph data
-        // const graphData = reMapGraphData(agentDetail, parsedData);
-        // useStudioAgentStore.getState().setData(graphData);
-        // if (ref.current) {
-        //   ref.current.redraw(graphData);
-        // }
         const parsedData = JSON.parse(data?.data || `[]`);
 
-        useStudioAgentStore.getState().setData(parsedData);
+        // re-map remote data to local graph data
+        const graphData = reMapGraphData(agentDetail, parsedData);
+        useStudioAgentStore.getState().setData(graphData);
         if (ref.current) {
-          ref.current.redraw(parsedData);
+          ref.current.redraw(graphData);
         }
-      } else {
-        // const graphData = createGraphDataForNonLocal(agentDetail);
-        // useStudioAgentStore.getState().setData(graphData);
+        // const parsedData = JSON.parse(data?.data || `[]`);
+
+        // useStudioAgentStore.getState().setData(parsedData);
         // if (ref.current) {
-        //   ref.current.redraw(graphData);
+        //   ref.current.redraw(parsedData);
         // }
+      } else {
+        const graphData = createGraphDataForNonLocal(agentDetail);
+        useStudioAgentStore.getState().setData(graphData);
+        if (ref.current) {
+          ref.current.redraw(graphData);
+        }
       }
     } catch (e) {
       const graphData = createGraphDataForNonLocal(agentDetail);
