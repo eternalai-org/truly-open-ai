@@ -3,11 +3,14 @@ package serializers
 import "time"
 
 type CreateKnowledgeRequest struct {
-	Name        string  `json:"name" form:"name"`
-	Description string  `json:"description" form:"description"`
-	NetworkID   uint64  `json:"network_id"`
-	Files       []*File `json:"files" form:"files"`
-	UserAddress string  `json:"user_address" form:"-"`
+	Name                 string  `json:"name" form:"name"`
+	Description          string  `json:"description" form:"description"`
+	NetworkID            uint64  `json:"network_id" form:"network_id"`
+	Files                []*File `json:"files" form:"files"`
+	UserAddress          string  `json:"user_address" form:"-"`
+	DepositAddress       string  `json:"-" form:"-"`
+	ThumbnailUrl         string  `json:"thumbnail_url" form:"thumbnail_url"`
+	SolanaDepositAddress string  `json:"-" form:"-"`
 }
 
 type UpdateKnowledgeRequest struct {

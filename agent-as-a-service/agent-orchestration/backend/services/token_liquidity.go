@@ -76,12 +76,19 @@ func (s *Service) CreateMeme(ctx context.Context, address string, networkID uint
 		models.AVALANCHE_C_CHAIN_ID,
 		models.APE_CHAIN_ID:
 		{
-			meme.Fee = numeric.NewBigFloatFromString("50")
+			agentChainFee, err := s.dao.FirstAgentChainFee(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"network_id = ?": {meme.NetworkID},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			meme.Fee = agentChainFee.TokenFee
 		}
-	// case models.BITTENSOR_CHAIN_ID:
-	// 	{
-	// 		meme.Fee = numeric.NewBigFloatFromString("0")
-	// 	}
 	default:
 		{
 			return nil, errs.NewError(errs.ErrBadRequest)

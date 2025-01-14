@@ -570,3 +570,31 @@ func (s *Server) GetTradeAnalytic(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: rs})
 }
+
+func (s *Server) GetTwitterDataForLaunchpad(c *gin.Context) {
+	ctx := s.requestContext(c)
+	twitterID := s.stringFromContextQuery(c, "id")
+	user, err := s.nls.GetTwitterUserByID(ctx, twitterID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	tweets, err := s.nls.GetListUserTweetsByUsersForTradeMission(ctx, twitterID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	if user == nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
+		return
+	}
+	resp := map[string]interface{}{
+		"followers_count": user.PublicMetrics.Followers,
+		"following_count": user.PublicMetrics.Following,
+		"tweet_count":     user.PublicMetrics.Tweets,
+		"listed_count":    user.PublicMetrics.Listed,
+		"blue-checked":    user.Verified,
+		"recent-tweets":   tweets,
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
+}

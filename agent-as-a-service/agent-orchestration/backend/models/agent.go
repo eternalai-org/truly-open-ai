@@ -54,8 +54,9 @@ type TwitterInfo struct {
 type AgentInfoAgentType uint
 
 const (
-	AgentInfoAgentTypeNormal    AgentInfoAgentType = 0
-	AgentInfoAgentTypeReasoning AgentInfoAgentType = 1
+	AgentInfoAgentTypeNormal        AgentInfoAgentType = 0
+	AgentInfoAgentTypeReasoning     AgentInfoAgentType = 1
+	AgentInfoAgentTypeKnowledgeBase AgentInfoAgentType = 2
 )
 
 func GetAgentFee(networkID uint64) numeric.BigFloat {
@@ -87,8 +88,10 @@ func GetAgentFee(networkID uint64) numeric.BigFloat {
 	}
 }
 
-type AssistantStatus string
-type CreateTokenModeType string
+type (
+	AssistantStatus     string
+	CreateTokenModeType string
+)
 
 const (
 	AssistantStatusPending  AssistantStatus = "pending"
@@ -228,6 +231,7 @@ type AgentInfo struct {
 	MemePercent               float64          `gorm:"-"`
 	MemeMarketCap             numeric.BigFloat `gorm:"-"`
 	Counts                    int64            `gorm:"-"`
+	AgentKBId                 uint             `json:"agent_kb_id" gorm:"-"`
 }
 
 func (m *AgentInfo) GetCharacterArrayString(charactor string) []string {
@@ -425,6 +429,7 @@ type TweetParseInfo struct {
 	IsCreateToken bool
 	IsIntellect   bool
 	IsCreateAgent bool
+	Description   string
 }
 
 type UserTwitterPost struct {
@@ -619,4 +624,5 @@ type AgentChainFee struct {
 	NetworkID uint64           `gorm:"unique_index"`
 	InferFee  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	MintFee   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	TokenFee  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }

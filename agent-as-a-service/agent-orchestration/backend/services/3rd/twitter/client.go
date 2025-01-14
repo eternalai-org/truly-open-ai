@@ -368,6 +368,7 @@ func (c *Client) PostTweet(tweetContent, imageURL string, additionalOwners []str
 		return errs.ErrBadRequest
 	}
 }
+
 func (c *Client) ReplyToTweet(tweetID, replyContent, imageURL string, additionalOwners []string) error {
 	config := oauth1.NewConfig(c.ConsumerKey, c.ConsumerSecret)
 	token := oauth1.NewToken(c.AccessToken, c.AccessSecret)

@@ -2,7 +2,10 @@ package models
 
 import "gorm.io/gorm"
 
-type KnowledgeBaseStatus int64
+type (
+	KnowledgeBaseStatus     int64
+	KnowledgeBaseFileStatus int64
+)
 
 const (
 	KnowledgeBaseStatusWaitingPayment KnowledgeBaseStatus = iota + 1
@@ -11,6 +14,11 @@ const (
 	KnowledgeBaseStatusDone
 	KnowledgeBaseStatusMinted
 	KnowledgeBaseStatusProcessingFailed
+)
+
+const (
+	KnowledgeBaseFileStatusPending KnowledgeBaseFileStatus = iota + 1
+	KnowledgeBaseFileStatusDone
 )
 
 type KnowledgeBase struct {
@@ -35,14 +43,19 @@ type KnowledgeBase struct {
 	FilecoinHash           string               `json:"filecoin_hash"`
 	DepositChainId         uint64               `json:"deposit_chain_id"`
 	LastErrorMessage       string               `json:"last_error_message"`
+	CurrentGroupFileId     int64                `json:"current_group_file_id"`
+	KbId                   string               `json:"kb_id"`
+	ThumbnailUrl           string               `json:"thumbnail_url"`
 }
 
 type KnowledgeBaseFile struct {
 	gorm.Model
-	KnowledgeBaseId uint   `json:"knowledge_base_id"`
-	FileUrl         string `json:"file_url"`
-	FileName        string `json:"name"`
-	FileSize        uint   `json:"size"`
+	KnowledgeBaseId uint                    `json:"knowledge_base_id"`
+	FileUrl         string                  `json:"file_url"`
+	FileName        string                  `json:"name"`
+	FileSize        uint                    `json:"size"`
+	GroupFileId     int64                   `json:"group_file_id"`
+	Status          KnowledgeBaseFileStatus `json:"status"`
 }
 
 type ListKnowledgeBaseRequest struct {

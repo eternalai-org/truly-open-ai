@@ -332,7 +332,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		} else if m.TokenAddress != "" && m.TokenNetworkID == models.SOLANA_CHAIN_ID {
 			resp.Meme = &MemeResp{
 				TradeUrl: fmt.Sprintf("https://pump.fun/coin/%s", m.TokenAddress),
-				Status:   string(models.MemeStatusAddPoolLevel2),
+				Status:   string(models.MemeStatusAddPoolExternal),
 			}
 		}
 	}

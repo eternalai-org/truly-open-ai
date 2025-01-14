@@ -11,15 +11,20 @@ import {ERC721URIStorageUpgradeable} from "@openzeppelin/contracts-upgradeable/t
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {EIP712Upgradeable, ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
 
+/**
+ * @title KB721Upgradeable
+ * @dev Upgradeable implementation of decentralized storage standard KB721Upgradeable.
+ */
 contract KB721Upgradeable is
     ERC721EnumerableUpgradeable,
     ERC721URIStorageUpgradeable,
     IKB721Upgradeable
 {
+    /// @dev Constants
     uint256 private constant PORTION_DENOMINATOR = 10000;
 
+    /// @dev Storage
     mapping(uint256 nftId => TokenMetaData) private _datas;
     uint256 private _nextTokenId;
     uint256 private _mintPrice;
@@ -32,11 +37,13 @@ contract KB721Upgradeable is
     mapping(address nftId => mapping(bytes32 signature => bool))
         public _signaturesUsed;
 
+    /// @dev Modifiers
     modifier onlyAgentOwner(uint256 nftId) {
         _checkAgentOwner(msg.sender, nftId);
         _;
     }
 
+    /// @dev Initializer
     function _KB721_init(
         uint256 mintPrice_,
         address royaltyReceiver_,
@@ -336,7 +343,7 @@ contract KB721Upgradeable is
         return _datas[agentId].sysPrompts[promptKey];
     }
 
-    function retrieve(
+    function infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
         string calldata externalData,
@@ -368,7 +375,7 @@ contract KB721Upgradeable is
         );
     }
 
-    function retrieve(
+    function infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
         string calldata externalData,
@@ -558,7 +565,6 @@ contract KB721Upgradeable is
         super._burn(agentId);
     }
 
-    //todo: add suport interface
     function supportsInterface(
         bytes4 interfaceId
     )
