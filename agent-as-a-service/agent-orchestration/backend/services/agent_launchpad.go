@@ -334,7 +334,7 @@ func (s *Service) GetAgentCreateLaunchpad(ctx context.Context, userName, fullTex
 	info := &models.TweetParseInfo{}
 	fullText = strings.ReplaceAll(fullText, "@"+userName, "")
 	userPrompt := fmt.Sprintf(`
-Detect Fundraising Requests
+Detect DAO Fund Creation Requests
 This is the user conversation: %s
 
 From this conversation determine if the user is requesting assistance with fundraising, look for a direct and unambiguous statement that explicitly asks to assistance with fundraising. This statement must be clear, concise, and isolated from any surrounding context that may alter its meaning.
