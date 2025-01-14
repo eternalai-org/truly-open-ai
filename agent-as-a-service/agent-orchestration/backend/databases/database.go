@@ -96,11 +96,13 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.KnowledgeBase)(nil),
 		(*models.KnowledgeBaseFile)(nil),
 		(*models.AgentInfoKnowledgeBase)(nil),
-
 		// missionstore
 		(*models.MissionStore)(nil),
 		(*models.MissionStoreRating)(nil),
 		(*models.MissionStoreHistory)(nil),
+		// launchpad
+		(*models.Launchpad)(nil),
+		(*models.LaunchpadMember)(nil),
 	}
 
 	if err := db.AutoMigrate(allTables...).Error; err != nil {

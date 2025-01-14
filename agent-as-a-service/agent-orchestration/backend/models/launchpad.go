@@ -6,13 +6,14 @@ import (
 
 type Launchpad struct {
 	gorm.Model
-	TweetId      string `gorm:"unique_index"`
-	ReplyTweetId string
-	Name         string
-	Description  string `gorm:"type:text"`
-	TwitterId    string
-	Address      string
-	ReplyContent string `gorm:"type:text"`
+	TwitterPostID   uint   `gorm:"unique_index"`
+	TweetId         string `gorm:"unique_index"`
+	Name            string
+	Description     string `gorm:"type:text"`
+	TwitterId       string
+	TwitterUsername string
+	TwitterName     string
+	Address         string
 }
 
 type LaunchpadMember struct {
