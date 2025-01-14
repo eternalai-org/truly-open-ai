@@ -62,7 +62,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if len(modelId) == 0 {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no modelId for network %v", info.NetworkID)
 	}
-	tokenContractAddress := appConfig[models.KeyConfigNameTokenContractAddress]
+	tokenContractAddress := appConfig[models.KeyConfigNameKnowledgeBaseTokenContractAddress]
 	if len(tokenContractAddress) == 0 {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no tokenContractAddress for network %v", info.NetworkID)
 	}
