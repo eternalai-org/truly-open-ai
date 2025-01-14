@@ -18,7 +18,8 @@
   "description": "",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "../../agent-as-a-service/plugins/*"
   ],
   "devDependencies": {
     "@eslint/js": "^9.17.0",
