@@ -303,7 +303,7 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 							"not EXISTS (select 1 from agent_twitter_posts atp2 where twitter_conversation_id=? and owner_twitter_id =? and post_type='analytic' and twitter_post_id != agent_twitter_posts.twitter_post_id )": {twitterPost.TwitterConversationId, twitterPost.OwnerTwitterID},
 							"owner_twitter_id = ?": {twitterPost.OwnerTwitterID},
 							"post_type = ?":        {models.AgentSnapshotPostActionTypeTradeAnalytic},
-							"status = ?":           {models.AgentTwitterPostStatusReplied},
+							"status = ?":           {models.AgentTwitterPostStatusInferSubmitted},
 							"created_at >= adddate(now(), interval -24 hour)": {},
 						},
 						map[string][]interface{}{},

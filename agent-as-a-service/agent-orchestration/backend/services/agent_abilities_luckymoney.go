@@ -30,17 +30,18 @@ func (s *Service) JobLuckyMoneyCollectPost(ctx context.Context) error {
 				map[string][]interface{}{
 					"agent_snapshot_post_actions.status = ?":   {models.AgentSnapshotPostActionStatusDone},
 					"agent_snapshot_post_actions.tool_set = ?": {models.ToolsetTypeLuckyMoneys},
-					// `(
-					// 	agent_infos.agent_type = 1
-					// 	and agent_infos.reply_enabled = true
-					// )`: {},
-					// `(
-					// 	agent_snapshot_missions.enabled = 1
-					// 	and agent_snapshot_missions.reply_enabled = 1
-					// 	and agent_snapshot_missions.interval_sec > 0
-					// 	and agent_snapshot_missions.is_testing = 0
-					// 	and agent_snapshot_missions.deleted_at is null
-					// )`: {},
+					`(
+						agent_infos.agent_type = 1
+						and agent_infos.reply_enabled = true
+					)`: {},
+					`(
+						agent_snapshot_missions.enabled = 1
+						and agent_snapshot_missions.reply_enabled = 1
+						and agent_snapshot_missions.interval_sec > 0
+						and agent_snapshot_missions.is_testing = 0
+						and agent_snapshot_missions.deleted_at is null
+					)`: {},
+					"agent_snapshot_post_actions.created_at >= adddate(now(), interval -2 day)": {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -165,8 +166,30 @@ func (s *Service) LuckyMoneyCollectPost(ctx context.Context, missionID uint) err
 										TokenBalance:              numeric.BigFloat{*tokenBalance},
 									}
 
+									//require min token holding
 									if etherAddress == "" || tokenBalance.Cmp(&snapshotPostAction.AgentSnapshotMission.MinTokenHolding.Float) < 0 {
 										m.Status = models.LuckyMoneyStatusInvalid
+									}
+
+									//exits user twitter_id or user address
+									if m.Status == models.LuckyMoneyStatusNew {
+										existReward, err := s.dao.FirstAbilityLuckyMoney(
+											tx,
+											map[string][]interface{}{
+												"twitter_id = ? or user_address = ?": {v.User.ID, etherAddress},
+												"agent_snapshot_post_action_id = ?":  {snapshotPostAction.ID},
+												"status in (?)":                      {[]models.LuckyMoneyStatus{models.LuckyMoneyStatusNew, models.LuckyMoneyStatusDone, models.LuckyMoneyStatusProcessing}},
+											},
+											map[string][]interface{}{},
+											[]string{},
+										)
+										if err != nil {
+											return errs.NewError(err)
+										}
+
+										if existReward != nil {
+											m.Status = models.LuckyMoneyStatusInvalid
+										}
 									}
 
 									err = s.dao.Create(tx, m)
@@ -528,16 +551,22 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 	if agentInfo != nil && missionInfo != nil {
 		rewardAmount, _ := missionInfo.RewardAmount.Float64()
 		minTokenHolding, _ := missionInfo.MinTokenHolding.Float64()
+		strMinHolding := fmt.Sprintf(`(holding min %0.f tokens $%s)`, minTokenHolding, agentInfo.TokenSymbol)
+		if minTokenHolding == 0 {
+			strMinHolding = ""
+		}
+
 		userPrompt := fmt.Sprintf(`
 		Rewrite this for a Twitter post: 
-		"Lucky Money Giveaway! 💸 Total %d tokens $EAI up for grabs! First %d comments with an Ethereum address (holding min %d tokens $%s) win! 🚀 Fastest fingers only!"
+
+		"Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an Ethereum address %s win! 🚀 Fastest fingers only!"
 
 		Return a JSON response with the following format:
 
 		{"content": ""}
 		
 		Respond with only the JSON string, without any additional explanation.
-		`, rewardAmount, missionInfo.RewardUser, minTokenHolding, agentInfo.TokenSymbol)
+		`, rewardAmount, missionInfo.RewardUser, strMinHolding)
 		fmt.Println(userPrompt)
 
 		aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())
@@ -554,27 +583,12 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 			}
 		}
 	}
+	fmt.Println(postContent)
 	return postContent, nil
 }
 
 func (s *Service) TestUtil() {
 	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
 	// fmt.Println(etherAddress)
-	twIDs := []string{"1878850921289130415"}
-	twitterInfo, _ := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(context.Background()),
-		map[string][]interface{}{
-			"twitter_id = ?": {s.conf.TokenTwiterID},
-		},
-		map[string][]interface{}{},
-		false,
-	)
-	twitterDetail, _ := s.twitterWrapAPI.LookupUserTweets(twitterInfo.AccessToken, twIDs)
-	if twitterDetail != nil {
-		for _, v := range *twitterDetail {
-			fmt.Println(v.Tweet.Text)
-			fulltext, ismention := s.TweetIsMentionNBS(v.Tweet, "NOBULLSHIT_EXE")
-			fmt.Println(fulltext)
-			fmt.Println(ismention)
-		}
-	}
+
 }
