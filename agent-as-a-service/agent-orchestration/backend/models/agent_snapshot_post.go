@@ -83,6 +83,8 @@ const (
 	AgentSnapshotPostActionTypeInscribeTweet       AgentSnapshotPostActionType = "inscribe_tweet"
 	AgentSnapshotPostActionTypeTweetV2             AgentSnapshotPostActionType = "tweet_v2"
 	AgentSnapshotPostActionTypeTweetMulti          AgentSnapshotPostActionType = "tweet_multi"
+	AgentSnapshotPostActionTypeCreateLaunchpad     AgentSnapshotPostActionType = "create_launchpad"
+	AgentSnapshotPostActionTypeUnknown             AgentSnapshotPostActionType = "unknown"
 
 	AgentSnapshotPostActionTypeTradeHold     AgentSnapshotPostActionType = "hold"
 	AgentSnapshotPostActionTypeTradeBuy      AgentSnapshotPostActionType = "buy"

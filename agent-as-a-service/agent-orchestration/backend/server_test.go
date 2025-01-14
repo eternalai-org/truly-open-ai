@@ -42,5 +42,6 @@ func init() {
 }
 
 func Test_SRV(t *testing.T) {
-	ts.JobMemeBurnPositionUniswap(context.Background())
+	// ts.ScanAgentTwitterPostFroCreateLaunchpad(context.Background())
+	ts.JobAgentTwitterPostCreateLaunchpad(context.Background())
 }

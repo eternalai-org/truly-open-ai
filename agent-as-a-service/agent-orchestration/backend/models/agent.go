@@ -425,6 +425,7 @@ type TweetParseInfo struct {
 	IsCreateToken bool
 	IsIntellect   bool
 	IsCreateAgent bool
+	Description   string
 }
 
 type UserTwitterPost struct {

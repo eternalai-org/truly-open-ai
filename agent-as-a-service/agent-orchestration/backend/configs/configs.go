@@ -135,6 +135,7 @@ type Config struct {
 	} `json:"ai_dojo_backend"`
 	EternalAiAgentInfoId  uint   `json:"eternal_ai_agent_info_id"`
 	NobullshitAgentInfoId uint   `json:"nobullshit_agent_info_id"`
+	LaunchpadAgentInfoId  uint   `json:"launchpad_agent_info_id"`
 	HiroUrl               string `json:"hiro_url"`
 	OpenseaAPIKey         string `json:"opensea_api_key"`
 	TaApiKey              string `json:"ta_api_key"`
