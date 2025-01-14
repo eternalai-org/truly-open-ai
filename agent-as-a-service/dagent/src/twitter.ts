@@ -7,7 +7,7 @@ import { DagentTwitter } from "@eternal-dagent/client-dagent";
 class AgentTwitter {
   protected environment: IENV;
   protected dagent: DagentTwitter;
-  protected paramsToken?: IGetAccessTokenParams;
+  protected authenParams?: IGetAccessTokenParams;
 
   constructor(params?: IGetAccessTokenParams) {
     dagentLogger.info("Code run started...");
@@ -17,7 +17,7 @@ class AgentTwitter {
       dagentCharacter: dagentCharacter,
       environment: this.environment,
     });
-    this.paramsToken = params || undefined;
+    this.authenParams = params || undefined;
   }
 
   createDagent = async () => {
@@ -56,10 +56,10 @@ class AgentTwitter {
 
   createAndRunDagent = async () => {
     const privateKey = this.environment.PRIVATE_KEY;
-    if (!privateKey && !this.paramsToken) {
+    if (!privateKey && !this.authenParams) {
       dagentLogger.error("Please provide private key or params token.");
     }
-    await this.dagent.init(this.paramsToken);
+    await this.dagent.init(this.authenParams);
     // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
     const agent = await this.createDagent();
 
@@ -72,10 +72,10 @@ class AgentTwitter {
 
   runDagent = async (agentId: string) => {
     const privateKey = this.environment.PRIVATE_KEY;
-    if (!privateKey && !this.paramsToken) {
+    if (!privateKey && !this.authenParams) {
       dagentLogger.error("Please provide private key or params token.");
     }
-    await this.dagent.init(this.paramsToken);
+    await this.dagent.init(this.authenParams);
     const agent = await this.dagent.getAgent(agentId);
     await this.dagent.setupMissions(agent.id);
     console.table(([agent] || []).map(agent => {
@@ -84,6 +84,7 @@ class AgentTwitter {
         id: agent.id,
         topup_evm_address: agent.agent_info.eth_address,
         topup_sol_address: agent.agent_info.sol_address,
+        status: agent.status,
       };
     }));
   };
@@ -101,13 +102,13 @@ dotenv.config();
 
 // Case set PRIVATE_KEY
 const agentTwitter = new AgentTwitter();
-agentTwitter.createAndRunDagent()
-    .then(() => {
-      dagentLogger.info("Code run completed...");
-    });
-
-// Case agent created and run
-// agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+// agentTwitter.createAndRunDagent()
 //     .then(() => {
 //       dagentLogger.info("Code run completed...");
 //     });
+
+// Case agent created and run
+agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+    .then(() => {
+      dagentLogger.info("Code run completed...");
+    });

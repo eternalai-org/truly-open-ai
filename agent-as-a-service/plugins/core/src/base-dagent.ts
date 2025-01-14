@@ -41,10 +41,10 @@ class BaseDagent {
 
     configAccessToken = async (params?: IGetAccessTokenParams) => {
         try {
-            dagentLogger.log("Access token loading...");
+            dagentLogger.log("Access token loading...", params);
             let _params: IGetAccessTokenParams | undefined = params || undefined;
 
-            if (!!params && !params?.address || !params?.signature || !params?.message) {
+            if (!!params && (!params?.address || !params?.signature || !params?.message)) {
                 throw new Error("Please provide address, signature and message.");
             }
 
