@@ -445,6 +445,29 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 					return errs.NewError(err)
 				}
 
+				if req.CreateKnowledgeRequest != nil && agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase {
+					kbReq := req.CreateKnowledgeRequest
+					updateMap := make(map[string]interface{})
+					if kbReq.Name != "" {
+						updateMap["name"] = kbReq.Name
+					}
+
+					if kbReq.Description != "" {
+						updateMap["description"] = kbReq.Description
+					}
+
+					if kbReq.NetworkID != 0 {
+						updateMap["network_id"] = kbReq.NetworkID
+					}
+
+					i, err := s.KnowledgeUsecase.GetAgentInfoKnowledgeBaseByAgentId(ctx, agent.ID)
+					if err != nil {
+						return err
+					}
+					agent.AgentKBId = i.KnowledgeBaseId
+					return s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, i.KnowledgeBaseId, updateMap)
+				}
+
 				go s.AgentCreateMissionDefault(context.Background(), agent.ID)
 			}
 			return nil

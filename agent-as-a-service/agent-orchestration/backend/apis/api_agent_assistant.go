@@ -59,7 +59,7 @@ func (s *Server) AgentUpdateAgentAssistant(c *gin.Context) {
 		return
 	}
 	// todo
-	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeBaseId)
+	kb, _ := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, resp.AgentKBId)
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp, kb)})
 }
 

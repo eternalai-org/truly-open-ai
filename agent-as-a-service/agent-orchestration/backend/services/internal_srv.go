@@ -711,6 +711,46 @@ func (s *Service) SearchRecentTweet(ctx context.Context, query, paginationToken 
 	return &tweetRecentSearch, nil
 }
 
+func (s *Service) SearchRecentTweetV1(ctx context.Context, query, sinceID string, maxResults int) (*twitter.TweetRecentSearch, error) {
+	var tweetRecentSearch twitter.TweetRecentSearch
+	var lookUps map[string]twitter.TweetLookup
+	var meta twitter.TweetRecentSearchMeta
+	cacheKey := fmt.Sprintf(`CacheAgentTerminalLatestLookUps_%s_%d`, query, maxResults)
+	cacheKey1 := fmt.Sprintf(`CacheAgentTerminalLatestMeta_%s_%d`, query, maxResults)
+	err := s.GetRedisCachedWithKey(cacheKey, &lookUps)
+	if err != nil {
+		twitterInfo, err := s.dao.FirstTwitterInfo(daos.GetDBMainCtx(ctx),
+			map[string][]interface{}{
+				"twitter_id = ?": {s.conf.TokenTwiterIdForInternal},
+			},
+			map[string][]interface{}{},
+			false,
+		)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+
+		if twitterInfo != nil {
+			// query = url.QueryEscape(query)
+			tweetRecentSearch, err := s.twitterWrapAPI.SearchRecentTweetV1(query, sinceID, twitterInfo.AccessToken, maxResults)
+			if err != nil {
+				return nil, errs.NewTwitterError(err)
+			}
+			lookUps = tweetRecentSearch.LookUps
+			meta = tweetRecentSearch.Meta
+			_ = s.SetRedisCachedWithKey(cacheKey, tweetRecentSearch.LookUps, 5*time.Minute)
+			_ = s.SetRedisCachedWithKey(cacheKey1, tweetRecentSearch.Meta, 5*time.Minute)
+			return tweetRecentSearch, nil
+		}
+	}
+
+	_ = s.GetRedisCachedWithKey(cacheKey1, &meta)
+
+	tweetRecentSearch.LookUps = lookUps
+	tweetRecentSearch.Meta = meta
+	return &tweetRecentSearch, nil
+}
+
 func (s *Service) SearchTokenTweet(ctx context.Context, query, paginationToken string, maxResults int) (*twitter.TweetRecentSearch, error) {
 	var tweetRecentSearch twitter.TweetRecentSearch
 	var lookUps map[string]twitter.TweetLookup

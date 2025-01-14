@@ -39,7 +39,7 @@ func (s *Service) FindAgentSnapshotPostAction(ctx context.Context, agentId uint)
 	return s.dao.FindAgentSnapshotPostAction(daos.GetDBMainCtx(ctx), filters, preloads, []string{"id DESC"}, 0, 50)
 }
 
-func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, page, limit int) ([]*models.AgentInfo, uint, error) {
+func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentType uint, page, limit int) ([]*models.AgentInfo, uint, error) {
 	selected := []string{
 		"agent_infos.*",
 	}
@@ -51,6 +51,10 @@ func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creat
 	}
 	if creator != "" {
 		filters["creator = ?"] = []interface{}{strings.ToLower(creator)}
+	}
+
+	if agentType > 0 {
+		filters["agent_type= ?"] = []interface{}{agentType}
 	}
 	keys, err := s.dao.FindAgentInfoJoinSelect(
 		daos.GetDBMainCtx(ctx),
@@ -824,7 +828,6 @@ func (s *Service) UpdateTokenPriceInfo(ctx context.Context, agentID uint) error 
 				map[string][]interface{}{},
 				false,
 			)
-
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -879,7 +882,6 @@ func (s *Service) UpdateTokenPriceInfo(ctx context.Context, agentID uint) error 
 		return errs.NewError(err)
 	}
 	return nil
-
 }
 
 func (s *Service) JobUpdateAgentImage(ctx context.Context) error {

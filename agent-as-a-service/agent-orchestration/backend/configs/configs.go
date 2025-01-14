@@ -188,6 +188,7 @@ type Config struct {
 	ListTestToolSet             string                       `json:"list_test_tool_set"`
 	LuckyMoneyAdminAddress      string                       `json:"lucky_money_admin_address"`
 	WebhookUrl                  string                       `json:"webhook_url"`
+	KnowledgeBaseConfig         KnowledgeBaseConfig          `json:"knowledge_base_config"`
 }
 
 func (cf *Config) ExistsedConfigKey(networkID uint64, name string) bool {
@@ -240,4 +241,10 @@ func (cf *Config) GetConfigKeyBool(networkID uint64, name string) bool {
 		panic(err)
 	}
 	return rs
+}
+
+type KnowledgeBaseConfig struct {
+	EnableSimulation bool   `json:"enable_simulation"`
+	QueryServiceUrl  string `json:"query_service_url"`
+	DirectServiceUrl string `json:"direct_service_url"`
 }

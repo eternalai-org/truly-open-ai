@@ -334,7 +334,7 @@ func (s *Service) GetAgentCreateLaunchpad(ctx context.Context, userName, fullTex
 	info := &models.TweetParseInfo{}
 	fullText = strings.ReplaceAll(fullText, "@"+userName, "")
 	userPrompt := fmt.Sprintf(`
-Detect Fundraising Requests
+Detect DAO Fund Creation Requests
 This is the user conversation: %s
 
 From this conversation determine if the user is requesting assistance with fundraising, look for a direct and unambiguous statement that explicitly asks to assistance with fundraising. This statement must be clear, concise, and isolated from any surrounding context that may alter its meaning.
@@ -396,10 +396,10 @@ func (s *Service) ReplyAferAutoCreateLaunchpad(tx *gorm.DB, twitterPostID, launc
 		}
 		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && twitterPost.ReplyPostId == "" {
 			replyContent := fmt.Sprintf(`
-We're thrilled to announce our new fundraising initiative, Project %s! This groundbreaking effort empowers decentralized AI innovation by leveraging community-owned compute power.
+We're thrilled to announce our new Dao Fund initiative, Dao %s! This visionary project empowers decentralized AI innovation through the power of community-owned compute resources.
 
 📥 Funding Address: %s
-🚀 Whitelist Applications: Now Open!
+🚀 Whitelist Applications: Now Open! Reply to this message with your Solana address to apply.
 
 Join us in shaping the future of decentralized AI!
 			`, launchpad.Name, launchpad.Address)

@@ -9,6 +9,7 @@ import (
 
 type IKnowledgeUsecase interface {
 	CreateAgentInfoKnowledgeBase(context.Context, *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error)
+	GetAgentInfoKnowledgeBaseByAgentId(context.Context, uint) (*models.AgentInfoKnowledgeBase, error)
 	GetKnowledgeBaseById(context.Context, uint) (*models.KnowledgeBase, error)
 	DeleteKnowledgeBaseById(context.Context, uint) error
 	CreateKnowledgeBase(context.Context, *serializers.CreateKnowledgeRequest) (*serializers.KnowledgeBase, error)
@@ -18,4 +19,5 @@ type IKnowledgeUsecase interface {
 	UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
 	Webhook(context.Context, *models.RagResponse) (*models.KnowledgeBase, error)
 	WebhookFile(context.Context, string, []byte, uint) (*models.KnowledgeBase, error)
+	MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error)
 }

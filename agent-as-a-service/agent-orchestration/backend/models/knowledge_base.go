@@ -60,6 +60,7 @@ type KnowledgeBaseFile struct {
 
 type ListKnowledgeBaseRequest struct {
 	UserAddress string `json:"user_address" form:"-"`
+	AgentIds    []uint `json:"agent_ids"`
 }
 
 func (m *KnowledgeBase) FileUrls() []string {
