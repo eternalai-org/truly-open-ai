@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  myapp:
+    image: thaibao56/test-tee-myapp:v0.0.1
+    container_name: test-tee
+    volumes:
+      - /var/run/tappd.sock:/var/run/tappd.sock
+    ports:
+      - "8888:8080"
+    environment:
+      - TEST_URL=https://jsonplaceholder.typicode.com/posts
+      - TEE_NODE=PRODUCTION
+    restart: unless-stopped
