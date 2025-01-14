@@ -54,10 +54,11 @@ type AssistantsReq struct {
 	NFTDelegateAddress string `json:"nft_delegate_address"`
 	NFTPublicKey       string `json:"nft_public_key"`
 
-	AgentBaseModel       string `json:"agent_base_model"`
-	TwinTwitterUsernames string `json:"twin_twitter_usernames"`
-	MissionTopics        string `json:"mission_topics"`
-	KnowledgeBaseId      uint   `json:"knowledge_base_id"`
+	AgentBaseModel         string                  `json:"agent_base_model"`
+	TwinTwitterUsernames   string                  `json:"twin_twitter_usernames"`
+	MissionTopics          string                  `json:"mission_topics"`
+	KnowledgeBaseId        uint                    `json:"knowledge_base_id"`
+	CreateKnowledgeRequest *CreateKnowledgeRequest `json:"create_knowledge_request"`
 }
 
 func (m *AssistantsReq) GetAssistantCharacter(character interface{}) string {

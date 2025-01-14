@@ -84,9 +84,8 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	if req.Status != "ok" {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = req.Result.Message
-	} else if req.Result.FilecoinHash != "" {
-		updatedFields["filecoin_hash"] = req.Result.FilecoinHash
-		updatedFields["status"] = models.KnowledgeBaseStatusDone
+	} else {
+		updatedFields["kb_id"] = req.Result.Kb
 	}
 
 	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
@@ -150,13 +149,15 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	if err != nil {
 		return nil, err
 	}
-
+	grFileId := time.Now().Unix()
 	for _, f := range req.Files {
 		file := &models.KnowledgeBaseFile{
 			FileUrl:         f.Url,
 			FileName:        f.Name,
 			FileSize:        f.Size,
 			KnowledgeBaseId: resp.ID,
+			GroupFileId:     grFileId,
+			Status:          models.KnowledgeBaseFileStatusPending,
 		}
 		_, err := uc.knowledgeBaseFileRepo.Create(ctx, file)
 		if err != nil {
