@@ -58,3 +58,19 @@ type AgentUseKnowledgeBaseRequest struct {
 	KnowledgeBaseID uint   `json:"knowledge_base_id" form:"knowledge_base_id"`
 	UserAddress     string `json:"-"`
 }
+
+type RetrieveKnowledgeBaseRequest struct {
+	Query string   `json:"query"`
+	TopK  int      `json:"top_k"`
+	Kb    []string `json:"kb"`
+}
+
+type RetrieveKnowledgeBaseResponse struct {
+	Result []struct {
+		Content   string  `json:"content"`
+		Score     float64 `json:"score"`
+		Reference string  `json:"reference"`
+	} `json:"result"`
+	Error  interface{} `json:"error"`
+	Status string      `json:"status"`
+}

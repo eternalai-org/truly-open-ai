@@ -5,9 +5,10 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (dao *DAO) FirstAgentInfoKnowledgeBaseByAgentInfoID(tx *gorm.DB, agentInfoID uint) (*models.AgentInfoKnowledgeBase, error) {
+func (dao *DAO) FirstAgentInfoKnowledgeBaseByAgentInfoID(tx *gorm.DB, agentInfoID uint, preload map[string][]interface{}, orders []string) (*models.AgentInfoKnowledgeBase, error) {
 	var agentInfoKnowledgeBase models.AgentInfoKnowledgeBase
-	if err := dao.first(tx, &agentInfoKnowledgeBase, map[string][]interface{}{"agent_info_id = ?": []interface{}{agentInfoID}}, nil, nil, false); err != nil {
+	if err := dao.first(tx, &agentInfoKnowledgeBase, map[string][]interface{}{"agent_info_id = ?": []interface{}{agentInfoID}},
+		preload, orders, false); err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
 		}
