@@ -429,6 +429,64 @@ func (c *Client) SearchRecentTweet(query, paginationToken, accessToken string, m
 	return recentSearch, nil
 }
 
+func (c *Client) SearchRecentTweetV1(query, sinceID string, accessToken string, maxResult int) (*TweetRecentSearch, error) {
+	tweet := &Tweet{
+		Authorizer: authorize{
+			Token: accessToken,
+		},
+		Client: http.DefaultClient,
+		Host:   "https://api.x.com",
+	}
+	fieldOpts := TweetFieldOptions{
+		TweetFields: []TweetField{
+			TweetFieldAuthorID,
+			TweetFieldConversationID,
+			TweetFieldCreatedAt,
+			TweetFieldID,
+			TweetFieldInReplyToUserID,
+			TweetFieldPublicMetrics,
+			TweetFieldReferencedTweets,
+			TweetFieldSource,
+			TweetFieldText,
+			TweetFieldNoteText,
+		},
+		UserFields: []UserField{
+			UserFieldCreatedAt,
+			UserFieldDescription,
+			UserFieldEntities,
+			UserFieldLocation,
+			UserFieldName,
+			UserFieldProfileImageURL,
+			UserFieldURL,
+			UserFieldUserName,
+			UserFieldVerified,
+		},
+		Expansions: []Expansion{
+			ExpansionAuthorID,
+			ExpansionAttachmentsMediaKeys,
+			ExpansionInReplyToUserID,
+			ExpansionGeoPlaceID,
+		},
+		MediaFields: []MediaField{
+			MediaFieldMediaKey,
+			MediaFieldURL,
+			MediaFieldType,
+		},
+	}
+	searchOpts := TweetRecentSearchOptions{
+		MaxResult: maxResult,
+		SinceID:   sinceID,
+	}
+
+	recentSearch, err := tweet.RecentSearch(context.Background(), query, searchOpts, fieldOpts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return recentSearch, nil
+}
+
 type UserSearchResp struct {
 	UserObj []*UserObj `json:"data"`
 }

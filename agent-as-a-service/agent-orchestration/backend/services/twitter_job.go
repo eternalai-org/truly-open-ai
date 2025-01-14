@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -116,5 +117,14 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	if err != nil {
 		return errs.NewError(err)
 	}
+	return nil
+}
+
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context) error {
+	lst, err := s.twitterWrapAPI.SearchRecentTweetV1("in_reply_to_tweet_id:1879074175073337488", "1879077313020920053", "SmcyaGJaUmlOSDZSOTA5V3pFMEZLX3BKcTVlS1NNTW4xQzB0cFY5VkQwOGZwOjE3MzY4MzQ1NDIxMjM6MTowOmF0OjE", 50)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	fmt.Println(lst)
 	return nil
 }

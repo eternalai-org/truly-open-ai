@@ -166,6 +166,7 @@ func (s *Server) Routers() {
 		{
 			twitterAPI := internalAPI.Group("/twitter")
 			{
+				twitterAPI.GET("/user/recent-info", s.GetTwitterDataForLaunchpad)
 				twitterAPI.GET("/user/:id", s.GetTwitterUserByID)
 				twitterAPI.GET("/user", s.GetTwitterUserByIDByQuery)
 
