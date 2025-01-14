@@ -330,6 +330,9 @@ func (uc *knowledgeUsecase) balanceOfAddress(_ context.Context, address string, 
 
 func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.KnowledgeBase) (*models.InsertRagResponse, error) {
 	resp := &models.InsertRagResponse{}
+	if uc.webhookUrl == "" {
+		uc.webhookUrl = "https://agent.api.eternalai.org/api/knowledge/webhook-file"
+	}
 	body := struct {
 		FileUrls []string `json:"file_urls"`
 		Ref      string   `json:"ref"`
