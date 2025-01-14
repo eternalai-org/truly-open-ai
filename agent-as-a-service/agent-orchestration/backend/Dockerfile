@@ -1,4 +1,4 @@
-FROM golang:1.23-buster as deps
+FROM golang:1.23-bookworm as deps
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ FROM deps as builder
 COPY . .
 RUN go build -o imagine-backend .
 
-FROM debian:buster as runner
+FROM debian:bookworm as runner
 
 ENV GIN_MODE=release
 
