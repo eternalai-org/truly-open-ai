@@ -11,15 +11,20 @@ import {ERC721URIStorageUpgradeable} from "@openzeppelin/contracts-upgradeable/t
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {EIP712Upgradeable, ECDSAUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
 
+/**
+ * @title AI721Upgradeable
+ * @dev Upgradeable implementation of decentralized inference standard AI721Upgradeable.
+ */
 contract AI721Upgradeable is
     ERC721EnumerableUpgradeable,
     ERC721URIStorageUpgradeable,
     IAI721Upgradeable
 {
+    /// @dev Constants
     uint256 private constant PORTION_DENOMINATOR = 10000;
 
+    /// @dev Storage
     mapping(uint256 nftId => TokenMetaData) private _datas;
     uint256 private _nextTokenId;
     uint256 private _mintPrice;
@@ -32,11 +37,13 @@ contract AI721Upgradeable is
     mapping(address nftId => mapping(bytes32 signature => bool))
         public _signaturesUsed;
 
+    /// @dev Modifiers
     modifier onlyAgentOwner(uint256 nftId) {
         _checkAgentOwner(msg.sender, nftId);
         _;
     }
 
+    /// @dev Initializer
     function _AI721_init(
         uint256 mintPrice_,
         address royaltyReceiver_,
@@ -74,7 +81,10 @@ contract AI721Upgradeable is
     }
 
     function _setGPUManager(address gpuManager) internal virtual {
+        if (gpuManager == address(0)) revert InvalidData();
+
         _gpuManager = gpuManager;
+        emit GPUManagerUpdate(gpuManager);
     }
 
     function _mint(
@@ -204,6 +214,7 @@ contract AI721Upgradeable is
             ),
             signature
         );
+
         if (_signaturesUsed[agentOwner][signHash]) revert SignatureUsed();
         _signaturesUsed[agentOwner][signHash] = true;
 
@@ -267,6 +278,7 @@ contract AI721Upgradeable is
             ),
             signature
         );
+
         if (_signaturesUsed[agentOwner][signHash]) revert SignatureUsed();
         _signaturesUsed[agentOwner][signHash] = true;
         _checkAgentOwner(signer, agentId);
@@ -558,7 +570,6 @@ contract AI721Upgradeable is
         super._burn(agentId);
     }
 
-    //todo: add suport interface
     function supportsInterface(
         bytes4 interfaceId
     )
