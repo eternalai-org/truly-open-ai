@@ -3,11 +3,12 @@ package ethapi
 import (
 	"math/big"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/daotoken"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/transparentupgradeableproxy"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 )
 
-func (c *Client) DeployDAOTToken(prkHex string, name string, symbol string) (string, string, error) {
+func (c *Client) DeployTransparentUpgradeableProxy(prkHex string, logic common.Address, admin common.Address, data []byte) (string, string, error) {
 	_, prk, err := c.parsePrkAuth(prkHex)
 	if err != nil {
 		return "", "", err
@@ -29,7 +30,7 @@ func (c *Client) DeployDAOTToken(prkHex string, name string, symbol string) (str
 		return "", "", err
 	}
 	auth.GasPrice = gasPrice
-	address, tx, _, err := daotoken.DeployDAOToken(auth, client, name, symbol)
+	address, tx, _, err := transparentupgradeableproxy.DeployTransparentUpgradeableProxy(auth, client, logic, admin, data)
 	if err != nil {
 		return "", "", err
 	}
