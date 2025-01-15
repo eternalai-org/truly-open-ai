@@ -90,6 +90,7 @@ const (
 	AgentSnapshotPostActionTypeTradeBuy      AgentSnapshotPostActionType = "buy"
 	AgentSnapshotPostActionTypeTradeSell     AgentSnapshotPostActionType = "sell"
 	AgentSnapshotPostActionTypeTradeAnalytic AgentSnapshotPostActionType = "analytic"
+	AgentSnapshotPostActionTypeLaunchpadJoin AgentSnapshotPostActionType = "launchpad_join"
 
 	AgentSnapshotPostActionStatusNew            AgentSnapshotPostActionStatus = "new"
 	AgentSnapshotPostActionStatusDone           AgentSnapshotPostActionStatus = "done"
@@ -201,6 +202,7 @@ const (
 	ToolsetTypeTradeAnalyticsOnTwitter ToolsetType = "trade_analytics_twitter"
 	ToolsetTypeTradeAnalyticsMentions  ToolsetType = "trade_analytics_mentions"
 	ToolsetTypeLuckyMoneys             ToolsetType = "lucky_moneys"
+	ToolsetTypeLaunchpadJoin           ToolsetType = "launchpad_join"
 
 	ToolsetTypeReplyMentionsFarcaster    ToolsetType = "reply_mentions_farcaster"
 	ToolsetTypeReplyNonMentionsFarcaster ToolsetType = "reply_non_mentions_farcaster"
@@ -211,33 +213,34 @@ const (
 
 type AgentSnapshotMission struct {
 	gorm.Model
-	NetworkID       uint64
-	AgentInfoID     uint `gorm:"index"`
-	AgentInfo       *AgentInfo
-	UserPrompt      string `gorm:"type:longtext"`
-	IntervalSec     int    `gorm:"default:0"`
-	Enabled         bool   `gorm:"default:0"`
-	ReplyEnabled    bool   `gorm:"default:0"`
-	IsTesting       bool   `gorm:"default:0"`
-	ToolSet         ToolsetType
-	AgentType       AgentInfoAgentType `gorm:"default:0"`
-	InferAt         *time.Time
-	SkipThough      bool   `gorm:"default:0"`
-	ToolList        string `gorm:"type:longtext"`
-	UserTwitterIds  string `gorm:"type:longtext"`
-	TeleChatID      string
-	Tokens          string `gorm:"type:longtext"`
-	ReactMaxSteps   int    `gorm:"default:0"`
-	NotDelay        bool   `gorm:"default:0"`
-	AgentBaseModel  string
-	MissionStoreID  uint
-	MissionStore    *MissionStore
-	Topics          string           `gorm:"type:longtext"`
-	IsTwitterSearch bool             `gorm:"default:0"`
-	IsBingSearch    bool             `gorm:"default:0"`
-	RewardAmount    numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	RewardUser      int
-	MinTokenHolding numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	NetworkID         uint64
+	AgentInfoID       uint `gorm:"index"`
+	AgentInfo         *AgentInfo
+	UserPrompt        string `gorm:"type:longtext"`
+	IntervalSec       int    `gorm:"default:0"`
+	Enabled           bool   `gorm:"default:0"`
+	ReplyEnabled      bool   `gorm:"default:0"`
+	IsTesting         bool   `gorm:"default:0"`
+	ToolSet           ToolsetType
+	AgentType         AgentInfoAgentType `gorm:"default:0"`
+	InferAt           *time.Time
+	SkipThough        bool   `gorm:"default:0"`
+	ToolList          string `gorm:"type:longtext"`
+	UserTwitterIds    string `gorm:"type:longtext"`
+	TeleChatID        string
+	Tokens            string `gorm:"type:longtext"`
+	ReactMaxSteps     int    `gorm:"default:0"`
+	NotDelay          bool   `gorm:"default:0"`
+	AgentBaseModel    string
+	MissionStoreID    uint
+	MissionStore      *MissionStore
+	Topics            string           `gorm:"type:longtext"`
+	IsTwitterSearch   bool             `gorm:"default:0"`
+	IsBingSearch      bool             `gorm:"default:0"`
+	RewardAmount      numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RewardUser        int
+	MinTokenHolding   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	LaunchpadMemberID uint
 }
 
 type TeleMsgStatus string
@@ -330,6 +333,11 @@ type WakeupRequestMetadata struct {
 	KnowledgeBaseId string             `json:"knowledge_base_id"`
 }
 
+type AgentWakeupKnowledgeBase struct {
+	KbId    string `json:"kb_id"`
+	ChainId string `json:"chain_id"`
+}
+
 type AgentMetadataRequest struct {
 	TokenInfo struct {
 		Name    string `json:"name"`
@@ -337,6 +345,7 @@ type AgentMetadataRequest struct {
 		Address string `json:"address"`
 		Chain   string `json:"chain"`
 	} `json:"token_info"`
+	KbAgents []AgentWakeupKnowledgeBase `json:"kb_agents"`
 }
 
 type CallWakeupRequest struct {

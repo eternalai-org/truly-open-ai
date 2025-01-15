@@ -78,6 +78,7 @@
   * [Build unstoppable Eliza agents](decentralized-inference-api/tutorials/build-unstoppable-eliza-agents.md)
   * [Build unstoppable Rig agents](decentralized-inference-api/tutorials/build-unstoppable-rig-agents.md)
   * [Build unstoppable ZerePy agents](decentralized-inference-api/tutorials/build-unstoppable-zerepy-agents.md)
+  * [Build unstoppable ZerePy agents](decentralized-inference-api/tutorials/build-unstoppable-zerepy-agents-1.md)
   * [Decentralized ChatGPT](decentralized-inference-api/tutorials/decentralized-chatgpt.md)
   * [Don't Trust, Verify](decentralized-inference-api/tutorials/dont-trust-verify.md)
   * [Adjust your dagent personality](decentralized-inference-api/tutorials/adjust-your-dagent-personality.md)

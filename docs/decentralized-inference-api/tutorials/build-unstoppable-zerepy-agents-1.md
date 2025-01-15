@@ -1,7 +1,3 @@
----
-hidden: true
----
-
 # Build unstoppable ZerePy agents
 
 In the tutorial, we describe how to use ZerePy framework with EternalAI API (instead of OpenAI API).
@@ -11,15 +7,21 @@ In the tutorial, we describe how to use ZerePy framework with EternalAI API (ins
 * Python 3.10 or higher
 * Poetry 1.5 or higher
 
-## Step 1
+## Step 1: Create an onchain ZerePy Agent
 
-Clone the repository.
+EternalAI allows creating onchain Agent on +10 blockchains. In this guide, we will create a new onchain ZerePy agent on Base.
+
+
+
+\[todo]
+
+## Step 2: Clone the repository
 
 ```
 https://github.com/blorm-network/ZerePy
 ```
 
-## Step 2
+## Step 3: Install dependencies
 
 Go to the `zerepy` directory and install dependencies.
 
@@ -29,17 +31,36 @@ cd zerepy && poetry install --no-root
 
 This will create a virtual environment and install all required dependencies.
 
-## Step 3
-
-Activate the virtual environment.
+## Step 4: Activate the virtual environment
 
 ```
 poetry shell
 ```
 
-## Step 4
+## Step 5: Update agent configuration
 
-Run the application.
+Edit `agents/eternalai-example.json` file to tell ZerePy framework to use the onchain agent's system prompt which we've created in step 1 (instead of the default system prompt defined in the file)
+
+For this tutorial, we'll use Base chain and Hermes 3 70B mode&#x6C;**,** so we need to update configurations as follows:
+
+```
+{
+      "config": [
+            {
+                  "name": "eternalai",
+                  "model": "NousResearch/Hermes-3-Llama-3.1-70B-FP8",
+                  "chain_id": "8453",
+                  "agent_id": 1,
+                  "contract_address": "0xAed016e060e2fFE3092916b1650Fc558D62e1CCC",
+                  "rpc_url": "https://mainnet.base.org/"
+            },
+            ...
+      ],
+      ...
+}
+```
+
+## Step 6: Run application
 
 ```
 poetry run python main.py
@@ -64,7 +85,7 @@ AVAILABLE CONNECTIONS:
 ZerePy-CLI (ExampleAgent) >
 ```
 
-## Step 5
+## Step 6: Load the agent
 
 In the previous step, the `ExampleAgent`is loaded by default, we will need to load `eternalai-example` agent for using with EternalAI API.
 
@@ -90,9 +111,7 @@ ZerePy-CLI (ExampleAgent) > load-agent eternalai-example
 ✅ Successfully loaded agent: EternalAI
 ```
 
-## Step 6
-
-Configure EternalAI connection.
+## Step 7: Configure EternalAI connection
 
 ```
 ZerePy-CLI (EternalAI) > configure-connection eternalai
@@ -124,9 +143,7 @@ Your API key has been stored in the .env file.
 ✅ SUCCESSFULLY CONFIGURED CONNECTION: eternalai
 ```
 
-## Step 7
-
-Configure Twitter connection.
+## Step 8: Configure Twitter connection
 
 ```
 ZerePy-CLI (EternalAI) > configure-connection twitter
@@ -161,7 +178,7 @@ Your API keys, secrets, and user ID have been stored in the .env file.
 ✅ SUCCESSFULLY CONFIGURED CONNECTION: twitter
 ```
 
-## Step 8
+## Step 9: Update Twitter Username
 
 Add `TWITTER_USERNAME` environment variable to the .env file. (You need to exit the current process prior to adding)
 
@@ -169,9 +186,7 @@ Add `TWITTER_USERNAME` environment variable to the .env file. (You need to exit 
 TWITTER_USERNAME="your-twitter-username"
 ```
 
-## Step 9
-
-Rerun the application.
+## Step 10: Run run application
 
 ```
 poetry shell

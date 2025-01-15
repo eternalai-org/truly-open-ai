@@ -340,7 +340,8 @@ Task: Analyze the data provided for the specified Twitter user (note: this data 
 	•	Tier 3: Contribution percentage 50%% or below
 
 The final output should clearly indicate the tier to which the user belongs.`, lp.Description)
-							mission.ToolSet = "launchpad_join"
+							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
+							mission.NotDelay = true
 							mission.Enabled = false
 							mission.IsTesting = true
 							mission.ReplyEnabled = true
@@ -551,7 +552,7 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 						func(tx *gorm.DB) error {
 							l, _ := s.dao.FirstLaunchpadByID(tx, launchpad.ID, map[string][]interface{}{}, true)
 							if l != nil {
-								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.TweetId, launchpad.LastScanID, launchpad.AgentSnapshotMission)
+								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.ID, launchpad.TweetId, launchpad.LastScanID, launchpad.AgentSnapshotMission)
 								if err != nil {
 									return err
 								}
