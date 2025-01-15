@@ -227,12 +227,17 @@ func (s *Server) Routers() {
 			// Token management
 			tokenAPI := internalAPI.Group("/trade")
 			{
-				tokenAPI.GET("tokens", s.GetAgentTradeTokens)
+				tokenAPI.GET("/tokens", s.GetAgentTradeTokens)
 				tokenAPI.GET("/search", s.DexSearchPair)
 				tokenAPI.GET("/trade-history/latest", s.DexPairsTradeLatest)
 				tokenAPI.GET("/solana/chart-24h/:mint", s.GetSolanaDataChart24Hour)
 				tokenAPI.GET("/dexscreen-info", s.DexScreenInfo)
 				tokenAPI.GET("/analytic", s.GetTradeAnalytic)
+			}
+			// launchpad management
+			launchpadAPI := internalAPI.Group("/launchpad")
+			{
+				launchpadAPI.POST("/:id/tier/:member_id", s.SetTier)
 			}
 		}
 		// deprecated

@@ -85,7 +85,9 @@ func (s *Service) CreateAgentInternalAction(ctx context.Context, req *serializer
 				models.AgentSnapshotPostActionTypeQuoteTweet,
 				models.AgentSnapshotPostActionTypeInscribeTweet,
 				models.AgentSnapshotPostActionTypeTweetV2,
-				models.AgentSnapshotPostActionTypeTweetMulti:
+				models.AgentSnapshotPostActionTypeTweetMulti,
+				models.AgentSnapshotPostActionTypeReplyMulti,
+				models.AgentSnapshotPostActionTypeReplyMultiUnlimited:
 				{
 					content := req.ActionInput.Content
 					if content == "" {

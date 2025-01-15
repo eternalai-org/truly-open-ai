@@ -376,7 +376,7 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 							}
 						}
 					} else {
-						twitterPost.Status = models.AgentTwitterPostStatusValid
+						twitterPost.Status = models.AgentTwitterPostStatusInvalid
 						err = s.dao.Save(tx, twitterPost)
 						if err != nil {
 							return errs.NewError(err)

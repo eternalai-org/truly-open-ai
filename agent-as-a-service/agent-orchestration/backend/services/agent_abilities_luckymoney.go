@@ -169,7 +169,7 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 		}
 
 		userPrompt := fmt.Sprintf(`
-		Rewrite this for a Twitter post: 
+		Rewrite this for a Twitter post, don't change symbol token $EAI or $%s:
 
 		"Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!"
 
@@ -178,7 +178,7 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 		{"content": ""}
 		
 		Respond with only the JSON string, without any additional explanation.
-		`, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
+		`, agentInfo.TokenSymbol, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
 		fmt.Println(userPrompt)
 
 		aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())
@@ -336,7 +336,7 @@ func (s *Service) LuckyMoneyCollectPost(ctx context.Context, missionID uint) err
 											}
 											tokenBalance = models.ConvertWeiToBigFloat(balance, 18)
 										} else {
-											userBalance, _ := s.blockchainUtils.SolanaBalanceByToken(snapshotPostAction.AgentInfo.TokenAddress, userAddress)
+											userBalance, _ := s.blockchainUtils.SolanaBalanceByToken(userAddress, snapshotPostAction.AgentInfo.TokenAddress)
 											if userBalance != nil {
 												tokenBalance = big.NewFloat(userBalance.UIAmount)
 											}
@@ -646,7 +646,7 @@ func (s *Service) TestUtil() {
 	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
 	// fmt.Println(etherAddress)
 
-	resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "SEDUX"))
+	resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "UOS"))
 	fmt.Println(resp.LastPrice)
 	fmt.Println(err)
 }
