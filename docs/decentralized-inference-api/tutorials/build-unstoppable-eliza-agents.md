@@ -129,7 +129,7 @@ Let's look at an onchain prompt transaction on BaseScan. You can verify that thi
 
 {% embed url="https://basescan.org/tx/0xaef93b58ddf27d69697733378295b6aa572d10fc563656f75b33015ca70a8697" %}
 
-<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 6: Verify the onchain response transaction
 
@@ -137,7 +137,7 @@ Now, let's look at the onchain response tx on BaseScan. You can see the actual r
 
 {% embed url="https://basescan.org/tx/0xf2f2b9db0f96dea3010533e663209fedeb6cdc56dfad401d9b2484601ba19c25" %}
 
-<figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 7 (Advanced): Reproduce the response
 
@@ -157,7 +157,7 @@ As with anything in crypto — "Don't trust the AI, verify it."
 
 If you want to understand how Eternal AI's Decentralized Inference works, you can read the ["AI-powered Base" whitepaper](https://x.com/punk3700/status/1869428187450749093).
 
-<figure><img src="../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Congrats!
 

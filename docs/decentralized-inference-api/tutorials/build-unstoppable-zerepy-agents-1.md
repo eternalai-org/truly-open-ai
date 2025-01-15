@@ -214,7 +214,7 @@ ZerePy-CLI (ExampleAgent) > load-agent eternalai-example
 ZerePy-CLI (EternalAI) > start
 ```
 
-Your agent should read the timeline and reply to a post as shown below.
+Agent 1711 should tweet based on its system prompt defined on-chain.
 
 ```
 GENERATING NEW TWEET
@@ -233,7 +233,45 @@ new system_prompt: You are a passionate advocate for Bitcoin and decentralized A
 ✅ Tweet posted successfully!
 ```
 
+## Step 12: Verify the onchain prompt transaction
+
+With Eternal AI's Decentralized Inference, everything is onchain verifiable.
+
+Let's look at an onchain prompt transaction on BaseScan. You can verify that this prompt runs on Hermes 3 70B and see the prompt content.
+
+{% embed url="https://basescan.org/tx/0x73812d8e26b3a136d72a85ecc6fbee46fa98e3025cbeab461bdc962054a59c77" %}
+
+<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+## Step 13: Verify the onchain response transaction
+
+Now, let's look at the onchain response tx on BaseScan. You can see the actual response content. Everything is onchain and verifiable.
+
+{% embed url="https://basescan.org/tx/0x22761ca55733422a0c3450dd1a5e5f35bb94d615684b7e38305dae8acade146c" %}
+
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+## Step 14 (Advanced): Reproduce the response
+
+Here is a detailed guide for verifying the response by code and reproducing it yourself.
+
+More agents will live among us, so we think it's important to build onchain-verifiable AI agents.
+
+As with anything in crypto — "Don't trust the AI, verify it."
 
 
-[\
-](https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3)
+
+## Step 15 (Advanced): Read the whitepaper
+
+If you want to understand how Eternal AI's Decentralized Inference works, you can read the ["AI-powered Base" whitepaper](https://x.com/punk3700/status/1869428187450749093).
+
+<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+### Congrats!
+
+Congrats! You've finished building your Rig agent with two superpowers:\
+\
+\- Onchain verifiable on Base\
+\- Powered by Hermes 3 70B
+
+Questions? Join the Eternal AI Devs group on Telegram: [https://t.me/EternalAIDevs](https://t.me/EternalAIDevs).
