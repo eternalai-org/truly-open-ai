@@ -35,18 +35,6 @@ interface IAI721 {
     event MintPriceUpdate(uint256 newValue);
 
     /**
-     * @dev Emitted when the royalty portion is updated.
-     * @param newValue The new royalty portion.
-     */
-    event RoyaltyPortionUpdate(uint16 newValue);
-
-    /**
-     * @dev Emitted when the royalty receiver is updated.
-     * @param newAddress The new address of the royalty receiver.
-     */
-    event RoyaltyReceiverUpdate(address newAddress);
-
-    /**
      * @dev Emitted when the GPU manager is updated.
      * @param gpuManager The address of the new GPU manager.
      */
@@ -121,7 +109,7 @@ interface IAI721 {
      * @param oldPromptScheduler The previous address of the prompt scheduler.
      * @param newOldPromptScheduler The new address of the prompt scheduler.
      */
-    event AgentPromptSchedulerdUpdate(
+    event AgentPromptSchedulerUpdate(
         uint256 indexed agentId,
         address oldPromptScheduler,
         address newOldPromptScheduler
@@ -205,18 +193,6 @@ interface IAI721 {
     function nextTokenId() external view returns (uint256 nextTokenId);
 
     /**
-     * @dev Returns the address of the royalty receiver.
-     * @return royaltyReceiver The address of the royalty receiver.
-     */
-    function royaltyReceiver() external view returns (address royaltyReceiver);
-
-    /**
-     * @dev Returns the royalty portion.
-     * @return royaltyPortion The royalty portion.
-     */
-    function royaltyPortion() external view returns (uint16 royaltyPortion);
-
-    /**
      * @dev Returns an array of agent IDs owned by a given owner.
      * @param owner The address of the owner.
      * @return An array of agent IDs.
@@ -226,89 +202,44 @@ interface IAI721 {
     ) external view returns (uint256[] memory);
 
     /**
-     * @dev Updates the URI of an agent.
-     * @notice Only the owner of the agent can call this function.
-     * @param agentId The ID of the agent.
-     * @param uri The new URI of the agent.
+     * @dev Returns the using fee of a specific agent.
+     * @param agentId The unique identifier of the agent.
+     * @return The fee amount.
      */
-    function updateAgentURI(uint256 agentId, string calldata uri) external;
+    function getAgentFee(uint256 agentId) external view returns (uint256);
 
     /**
-     * @dev Updates the data of an agent.
-     * @notice Only the owner of the agent can call this function.
-     * @param agentId The ID of the agent.
-     * @param sysPrompt The new system prompt data.
-     * @param promptKey The key of the prompt.
-     * @param promptIdx The index of the prompt.
+     * @notice Retrieves the system prompt associated with a specific agent.
+     * @param agentId The unique identifier of the agent.
+     * @param promptKey The key corresponding to the desired prompt.
+     * @return An array of bytes representing the system prompt.
      */
-    function updateAgentData(
+    function getAgentSystemPrompt(
         uint256 agentId,
-        bytes calldata sysPrompt,
-        string calldata promptKey,
-        uint256 promptIdx
-    ) external;
+        string calldata promptKey
+    ) external view returns (bytes[] memory);
 
     /**
-     * @dev This function modifies the model ID associated with an existing agent.
-     * @notice Only the owner of the agent can call this function.
-     * @param agentId The unique identifier of the agent to update.
-     * @param newModelId The new model ID to assign to the agent.
+     * @notice Retrieves the metadata associated with a given agent ID.
+     * @param agentId The unique identifier of the agent.
+     * @return fee The using fee associated with the agent.
+     * @return isUsed A boolean indicating whether the agent is currently in use.
+     * @return modelId The model ID associated with the agent.
+     * @return promptScheduler The address of the prompt scheduler for the agent.
+     * @return poolBalance The balance of the pool associated with the agent.
      */
-    function updateAgentModelId(uint256 agentId, uint32 newModelId) external;
-
-    /**
-     * @dev This function allows an agent owner to update agent data without submitting the transaction themselves.
-     * @param agentId The ID of the agent.
-     * @param sysPrompt The new system prompt data.
-     * @param promptKey The key of the prompt.
-     * @param promptIdx The index of the prompt.
-     * @param randomNonce A random nonce to ensure uniqueness.
-     * @param signature The digital signature authorizing the update.
-     */
-    function updateAgentDataWithSignature(
-        uint256 agentId,
-        bytes calldata sysPrompt,
-        string calldata promptKey,
-        uint256 promptIdx,
-        uint256 randomNonce,
-        bytes calldata signature
-    ) external;
-
-    /**
-     * @dev This function allows an agent owner to update the URI of an agent
-     * without submitting the transaction themselves.
-     * @param agentId The ID of the agent.
-     * @param uri The new URI of the agent.
-     * @param randomNonce A random nonce used to ensure unique transaction execution.
-     * @param signature A valid signature authorizing the update.
-     */
-    function updateAgentUriWithSignature(
-        uint256 agentId,
-        string calldata uri,
-        uint256 randomNonce,
-        bytes calldata signature
-    ) external;
-
-    /**
-     * @dev Adds new data to an agent.
-     * @notice Only the agent owner can add new data.
-     * @param agentId The ID of the agent.
-     * @param promptKey The key of the prompt.
-     * @param sysPrompt The new system prompt data.
-     */
-    function addNewAgentData(
-        uint256 agentId,
-        string calldata promptKey,
-        bytes calldata sysPrompt
-    ) external;
-
-    /**
-     * @dev Updates the fee of an agent.
-     * @notice Only the agent owner can update the agent fee. The agent fee is typically greater than or equal to the model usage fee.
-     * @param agentId The ID of the agent.
-     * @param fee The fee to use this agent.
-     */
-    function updateAgentFee(uint256 agentId, uint fee) external;
+    function dataOf(
+        uint256 agentId
+    )
+        external
+        view
+        returns (
+            uint128 fee,
+            bool isUsed,
+            uint32 modelId,
+            address promptScheduler,
+            uint256 poolBalance
+        );
 
     /**
      * @dev Tops up the pool balance of an agent.

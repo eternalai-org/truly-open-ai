@@ -1,4 +1,5 @@
 import { assert, ethers } from "ethers";
+import { readFile } from "fs/promises";
 
 // ABI for the mint function
 const abi = [
@@ -13,8 +14,8 @@ async function mintAgent() {
   const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS
     ? process.env.CONTRACT_ADDRESS
     : "0xaed016e060e2ffe3092916b1650fc558d62e1ccc";
-  const AGENT_SYSTEM_PROMPT = process.env.AGENT_SYSTEM_PROMPT || "";
-  const AGENT_URI = process.env.AGENT_URI || "";
+  const AGENT_SYSTEM_PROMPT_PATH = process.env.AGENT_SYSTEM_PROMPT_PATH;
+  const AGENT_URI = process.env.AGENT_URI || "EternalAIAgent";
   const AGENT_FEE = process.env.AGENT_FEE || "0";
 
   assert(RPC_URL, "Missing RPC_URL environment variable", "INVALID_ARGUMENT");
@@ -29,8 +30,8 @@ async function mintAgent() {
     "INVALID_ARGUMENT"
   );
   assert(
-    AGENT_SYSTEM_PROMPT,
-    "Missing AGENT_SYSTEM_PROMPT environment variable",
+    AGENT_SYSTEM_PROMPT_PATH,
+    "Missing AGENT_SYSTEM_PROMPT_PATH environment variable",
     "INVALID_ARGUMENT"
   );
   assert(
@@ -44,6 +45,14 @@ async function mintAgent() {
     "INVALID_ARGUMENT"
   );
 
+  // Read system prompt from file
+  let systemPrompt;
+  try {
+    systemPrompt = await readFile(AGENT_SYSTEM_PROMPT_PATH, "utf8");
+  } catch (error) {
+    throw new Error(`Failed to read system prompt file: ${error}`);
+  }
+
   try {
     // Setup provider and signer
     const provider = new ethers.JsonRpcProvider(RPC_URL);
@@ -55,7 +64,7 @@ async function mintAgent() {
     // Mint parameters
     const to = wallet.address; // mint to self
     const uri = AGENT_URI.toString();
-    const data = ethers.toUtf8Bytes(AGENT_SYSTEM_PROMPT.toString()); // Convert string to bytes
+    const data = ethers.toUtf8Bytes(systemPrompt.toString()); // Convert string to bytes
     const fee = ethers.parseEther(AGENT_FEE); // Set agent usage fee
     const mintPrice = await contract.mintPrice(); // Get mint price
     console.log("Mint price: ", mintPrice);
