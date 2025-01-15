@@ -3,12 +3,13 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/aikb721"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"strconv"
 	"strings"
+
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/aikb721"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
@@ -71,14 +72,12 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if err != nil {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to read ABI JSON: %v", err)
 	}
-	//@TODO
-	uri := ""
-	data := []byte(info.ResultUrl)
-	promptKey := "KnowledgeBase"
+
+	uri := info.FilecoinHash
+	data := []byte(info.FilecoinHash)
+	promptKey := "KnowledgeBaseAgent"
 	fee := big.NewInt(0)
 	modelIdUint32, err := strconv.ParseUint(modelId, 10, 32)
-	/*feeFloat := new(big.Float).SetFloat64(info.Fee * 1e18)
-	fee, _ = feeFloat.Int(fee)*/
 	dataBytes, err := instanceABI.Pack(
 		"mint", common.HexToAddress(info.UserAddress),
 		uri,
