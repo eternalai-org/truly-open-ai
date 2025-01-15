@@ -1,0 +1,16 @@
+{
+  "name": "how-to-mint-agent",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "ethers": "^6.13.2",
+    "dotenv": "^16.0.3"
+  }
+}

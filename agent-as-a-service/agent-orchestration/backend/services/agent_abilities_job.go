@@ -93,7 +93,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 			var retErr error
 			if len(missions) > 0 {
 				for _, mission := range missions {
-					err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "", "")
+					err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "")
 					if err != nil {
 						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, mission.ID))
 					}
@@ -299,7 +299,7 @@ func (s *Service) JobAgentSnapshotPostActionCancelled(ctx context.Context) error
 	return nil
 }
 
-func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, orgTweetID, tokenSymbol string, toolList string) error {
+func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, orgTweetID, tokenSymbol string) error {
 	err := s.JobRunCheck(
 		ctx,
 		fmt.Sprintf("AgentSnapshotPostCreate_%d", missionID),
@@ -382,9 +382,6 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if mission.MissionStore != nil {
 						missionStoreFee = numeric.BigFloat{*big.NewFloat(float64(mission.MissionStore.Price))}
 						inferFee = numeric.BigFloat{*models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float)}
-					}
-					if toolList != "" {
-						mission.ToolList = toolList
 					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,
@@ -951,6 +948,23 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 													}
 													postIds = append(postIds, refId)
 												}
+											case models.ToolsetTypeLaunchpadJoin:
+												{
+													//TODO
+													// err = json.Unmarshal([]byte(snapshotPostAction.Content), &contentLines)
+													// if err != nil {
+													// 	return errs.NewError(err)
+													// }
+													// contentLines = helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(strings.Join(contentLines, ". "), 250)
+													// if len(contentLines) <= 0 {
+													// 	return errs.NewError(errs.ErrBadRequest)
+													// }
+													// refId, err = helpers.PostTweetByToken(agent.TwitterInfo.AccessToken, contentLines[0], "")
+													// if err != nil {
+													// 	errText = err.Error()
+													// }
+													// postIds = append(postIds, refId)
+												}
 											default:
 												{
 													errText = "not supported"
@@ -1422,6 +1436,10 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 							{
 								action.Type = models.AgentSnapshotPostActionTypeTweet
 							}
+						case models.ToolsetTypeLaunchpadJoin:
+							{
+								action.Type = models.AgentSnapshotPostActionTypeLaunchpadJoin
+							}
 						}
 
 						err = s.dao.Create(
@@ -1429,6 +1447,12 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 						)
 						if err != nil {
 							return errs.NewError(err)
+						}
+						if action.Type == models.AgentSnapshotPostActionTypeLaunchpadJoin {
+							err = s.AgentSnapshotPostActionExecuted(ctx, action.ID)
+							if err != nil {
+								return errs.NewError(err)
+							}
 						}
 
 					}
@@ -1724,6 +1748,23 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 			},
 			KnowledgeBaseId: assistant.KnowledgeBaseID,
 		},
+	}
+
+	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(daos.GetDBMainCtx(context.Background()), assistant.ID)
+	if len(knowledgeAgentsUsed) > 0 {
+		for _, item := range knowledgeAgentsUsed {
+			itemAdd := models.AgentWakeupKnowledgeBase{
+				KbId: item.KbId,
+			}
+			if item.AgentInfo != nil {
+				itemAdd.ChainId = fmt.Sprintf("%v", item.AgentInfo.NetworkID)
+			}
+			if request.AgentMetaData.KbAgents == nil {
+				request.AgentMetaData.KbAgents = []models.AgentWakeupKnowledgeBase{}
+			}
+
+			request.AgentMetaData.KbAgents = append(request.AgentMetaData.KbAgents, itemAdd)
+		}
 	}
 	request.MetaData.TwitterUsername = assistant.TwitterUsername
 	body, err := helpers.CurlURLString(

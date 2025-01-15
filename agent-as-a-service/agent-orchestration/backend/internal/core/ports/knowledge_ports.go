@@ -5,6 +5,7 @@ import (
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	"github.com/jinzhu/gorm"
 )
 
 type IKnowledgeUsecase interface {
@@ -21,4 +22,5 @@ type IKnowledgeUsecase interface {
 	WebhookFile(context.Context, string, []byte, uint) (*models.KnowledgeBase, error)
 	MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error)
 	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
+	GetKBAgentsUsedOfSocialAgent(tx *gorm.DB, socialAgentId uint) ([]*models.KnowledgeBase, error)
 }

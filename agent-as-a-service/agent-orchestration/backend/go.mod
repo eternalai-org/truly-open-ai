@@ -32,6 +32,7 @@ require (
 	github.com/ipfs/go-cid v0.4.1
 	github.com/ipfs/go-datastore v0.6.0
 	github.com/jasonlvhit/gocron v0.0.1
+	github.com/jinzhu/copier v0.4.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/leekchan/accounting v1.0.0
 	github.com/mr-tron/base58 v1.2.0
