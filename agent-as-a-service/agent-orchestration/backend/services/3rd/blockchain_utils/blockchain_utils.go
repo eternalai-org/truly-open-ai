@@ -344,3 +344,42 @@ func (c *Client) SolanaTransfer(address string, req *SolanaTransferReq) (string,
 	}
 	return resp.Result, nil
 }
+
+func (c *Client) SolanaValidateAddress(mint string) (bool, error) {
+	resp := struct {
+		Result bool `json:"result"`
+	}{}
+	err := c.methodJSON(
+		http.MethodGet,
+		c.buildUrl("solana/validate/"+mint),
+		nil,
+		&resp,
+	)
+	if err != nil {
+		return false, err
+	}
+	return resp.Result, nil
+}
+
+type SolanaBalanceByToken struct {
+	Amount         numeric.BigInt `json:"amount"`
+	Decimals       int            `json:"decimals"`
+	UIAmount       float64        `json:"ui_amount"`
+	UIAmountString string         `json:"ui_amount_string"`
+}
+
+func (c *Client) SolanaBalanceByToken(address, mint string) (*SolanaBalanceByToken, error) {
+	resp := struct {
+		Result *SolanaBalanceByToken `json:"result"`
+	}{}
+	err := c.methodJSON(
+		http.MethodGet,
+		c.buildUrl(fmt.Sprintf(`/solana/balance/%s/%s`, mint, address)),
+		nil,
+		&resp,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Result, nil
+}
