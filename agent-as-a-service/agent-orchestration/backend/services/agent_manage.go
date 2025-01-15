@@ -225,14 +225,20 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 			return nil, err
 		}
 
-		_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
-			AgentInfoId:     agent.ID,
-			KnowledgeBaseId: kb.ID,
-		})
-		if err != nil {
-			return nil, err
-		}
+		// _, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
+		// 	AgentInfoId:     agent.ID,
+		// 	KnowledgeBaseId: kb.ID,
+		// })
+		// if err != nil {
+		// 	return nil, err
+		// }
 		agent.AgentKBId = kb.ID
+		err = s.dao.Save(daos.GetDBMainCtx(ctx), agent)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		oKb, _ := s.KnowledgeUsecase.GetKnowledgeBaseById(ctx, kb.ID)
+		agent.KnowledgeBase = oKb
 	}
 
 	return agent, nil

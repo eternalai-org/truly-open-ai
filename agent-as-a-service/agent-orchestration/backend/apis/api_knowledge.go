@@ -10,6 +10,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/gin-gonic/gin"
+	openai2 "github.com/sashabaranov/go-openai"
 )
 
 func (s *Server) createKnowledge(c *gin.Context) {
@@ -226,6 +227,71 @@ func (s *Server) AgentUseKnowledgeBase(c *gin.Context) {
 	req.UserAddress = userAddress
 
 	resp, err := s.nls.AgentUseKnowledgeBase(ctx, req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
+}
+
+func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	req := &serializers.UpdateKnowledgeBaseWithSignatureRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseByKBId(ctx, req.KnowledgeBaseId)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	if info.UserAddress != userAddress {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
+		return
+	}
+
+	info, err = s.nls.UpdateKnowledgeBaseInContractWithSignature(ctx, info, req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: info})
+}
+
+func (s *Server) retrieveKnowledge(c *gin.Context) {
+	ctx := s.requestContext(c)
+	req := &serializers.RetrieveKnowledgeRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	if req.Prompt == "" || req.KbId == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("Prompt and KbId are required")})
+		return
+	}
+
+	chatTopK := 5
+	if s.conf.KnowledgeBaseConfig.KbChatTopK > 0 {
+		chatTopK = s.conf.KnowledgeBaseConfig.KbChatTopK
+	}
+
+	resp, err := s.nls.RetrieveKnowledge(ctx, []openai2.ChatCompletionMessage{{
+		Content: req.Prompt,
+		Role:    openai2.ChatMessageRoleUser,
+	}}, []*models.KnowledgeBase{{
+		KbId: req.KbId,
+	}}, &chatTopK)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

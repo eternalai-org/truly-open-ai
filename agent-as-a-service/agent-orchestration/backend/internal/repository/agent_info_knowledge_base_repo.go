@@ -22,6 +22,7 @@ func (r *agentInfoKnowledgeBaseRepo) GetAgentInfoKnowledgeBaseByAgentId(ctx cont
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBase").
 		Preload("AgentInfo").
+		Preload("KnowledgeBase.KnowledgeBaseFiles").
 		Where("agent_info_id = ?", id).
 		First(knowledge).Error
 	if err != nil {
@@ -34,6 +35,7 @@ func (r *agentInfoKnowledgeBaseRepo) ListAgentInfoKnowledgeBaseByAgentIds(ctx co
 	resp := []*models.AgentInfoKnowledgeBase{}
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBase").
+		Preload("KnowledgeBase.KnowledgeBaseFiles").
 		Where("agent_info_id IN (?)", ids).
 		Find(&resp).Error
 	if err != nil {

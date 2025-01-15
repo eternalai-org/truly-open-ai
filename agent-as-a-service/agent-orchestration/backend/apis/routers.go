@@ -325,6 +325,12 @@ func (s *Server) Routers() {
 			knowledgeApi.PATCH("/:id", s.updateKnowledge)
 			knowledgeApi.GET("/:id", s.detailKnowledge)
 			knowledgeApi.DELETE("/:id", s.deleteKnowledge)
+			knowledgeApi.POST("/update-with-signature", s.updateKnowledgeBaseInContractWithSignature)
+		}
+
+		knowledgeBasePublicApi := rootAPI.Group("/knowledge")
+		{
+			knowledgeBasePublicApi.POST("/retrieve", s.retrieveKnowledge)
 		}
 
 	}

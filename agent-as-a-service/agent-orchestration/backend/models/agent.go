@@ -231,7 +231,8 @@ type AgentInfo struct {
 	MemePercent               float64          `gorm:"-"`
 	MemeMarketCap             numeric.BigFloat `gorm:"-"`
 	Counts                    int64            `gorm:"-"`
-	AgentKBId                 uint             `json:"agent_kb_id" gorm:"-"`
+	AgentKBId                 uint             `json:"agent_kb_id"`
+	KnowledgeBase             *KnowledgeBase   `json:"knowledge_base" gorm:"foreignKey:AgentKBId;references:AgentInfoId"`
 }
 
 func (m *AgentInfo) GetCharacterArrayString(charactor string) []string {

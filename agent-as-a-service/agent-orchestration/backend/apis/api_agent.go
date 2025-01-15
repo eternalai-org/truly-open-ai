@@ -16,7 +16,12 @@ func (s *Server) GetListAgent(c *gin.Context) {
 	chain := s.chainFromContextQuery(c)
 	creator := s.stringFromContextQuery(c, "creator")
 	agentType := s.uintFromContextQuery(c, "agent_type")
-	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, page, limit)
+	kbStatus, err := s.uint64FromContextQuery(c, "kb_status")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, int64(kbStatus), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -42,23 +47,17 @@ func (s *Server) GetListAgentForDojo(c *gin.Context) {
 	chain := s.chainFromContextQuery(c)
 	creator := s.stringFromContextQuery(c, "creator")
 	agentType := s.uintFromContextQuery(c, "agent_type")
-	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, page, limit)
+	kbStatus, err := s.uint64FromContextQuery(c, "kb_status")
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-
-	agentIds := []uint{}
-	for _, a := range ms {
-		agentIds = append(agentIds, a.ID)
-	}
-
-	info, err := s.nls.KnowledgeUsecase.MapKnowledgeBaseByAgentIds(ctx, agentIds)
+	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, int64(kbStatus), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantRespArry(ms, info), Count: &count})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantRespArry(ms), Count: &count})
 }
 
 func (s *Server) GetAgentDetail(c *gin.Context) {
@@ -105,13 +104,7 @@ func (s *Server) GetAgentDetailByAgentIDForDojo(c *gin.Context) {
 		return
 	}
 
-	info, err := s.nls.KnowledgeUsecase.MapKnowledgeBaseByAgentIds(ctx, []uint{ms.ID})
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-
-	result := serializers.NewAssistantResp(ms, info[ms.ID])
+	result := serializers.NewAssistantResp(ms)
 	result.AgentInfo.EstimateTwinDoneTimestamp = estimateTime
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: result})
 }

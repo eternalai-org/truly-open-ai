@@ -154,7 +154,7 @@ type AssistantResp struct {
 	KnowledgeBase *KnowledgeBase `json:"knowledge_base"`
 }
 
-func NewAssistantResp(m *models.AgentInfo, kb *models.KnowledgeBase) *AssistantResp {
+func NewAssistantResp(m *models.AgentInfo) *AssistantResp {
 	if m == nil {
 		return nil
 	}
@@ -217,15 +217,14 @@ func NewAssistantResp(m *models.AgentInfo, kb *models.KnowledgeBase) *AssistantR
 	}
 
 	resp.AgentInfo = NewAgentInfoResp(m)
-	resp.KnowledgeBase = NewKnowledgeBaseResp(kb)
+	resp.KnowledgeBase = NewKnowledgeBaseResp(m.KnowledgeBase)
 	return resp
 }
 
-func NewAssistantRespArry(arr []*models.AgentInfo, agentInfoKBs map[uint]*models.KnowledgeBase) []*AssistantResp {
+func NewAssistantRespArry(arr []*models.AgentInfo) []*AssistantResp {
 	resps := []*AssistantResp{}
 	for _, m := range arr {
-		kb := agentInfoKBs[m.ID]
-		resps = append(resps, NewAssistantResp(m, kb))
+		resps = append(resps, NewAssistantResp(m))
 	}
 	return resps
 }

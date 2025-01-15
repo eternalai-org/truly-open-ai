@@ -426,3 +426,58 @@ Join us in shaping the future of decentralized AI!
 	}
 	return nil
 }
+
+func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx,
+		"JobScanRepliesByLaunchpadTweetID",
+		func() error {
+			var retErr error
+			{
+				launchpads, err := s.dao.FindLaunchpad(
+					daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"status = ?": {models.LaunchpadStatusNew},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					1000,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, launchpad := range launchpads {
+					err = daos.WithTransaction(
+						daos.GetDBMainCtx(ctx),
+						func(tx *gorm.DB) error {
+							l, _ := s.dao.FirstLaunchpadByID(tx, launchpad.ID, map[string][]interface{}{}, true)
+							if l != nil {
+								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.TweetId, launchpad.LastScanID)
+								if err != nil {
+									return err
+								}
+								if meta != nil && meta.Meta.NewestID != "" {
+									l.LastScanID = meta.Meta.NewestID
+									err = s.dao.Save(tx, l)
+									if err != nil {
+										return err
+									}
+								}
+							}
+							return nil
+						},
+					)
+					if err != nil {
+						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, launchpad.ID))
+					}
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
