@@ -261,6 +261,8 @@ As with anything in crypto — "Don't trust the AI, verify it."
 
 
 
+{% embed url="https://docs.eternalai.org/eternal-ai/decentralized-inference-api/tutorials/dont-trust-verify" %}
+
 ## Step 15 (Advanced): Read the whitepaper
 
 If you want to understand how Eternal AI's Decentralized Inference works, you can read the ["AI-powered Base" whitepaper](https://x.com/punk3700/status/1869428187450749093).
