@@ -23,4 +23,5 @@ type IKnowledgeUsecase interface {
 	MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error)
 	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
 	GetKBAgentsUsedOfSocialAgent(tx *gorm.DB, socialAgentId uint) ([]*models.KnowledgeBase, error)
+	GetManyKnowledgeBaseByQuery(context.Context, string, string, int, int) ([]*models.KnowledgeBase, error)
 }
