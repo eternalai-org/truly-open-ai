@@ -344,7 +344,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 			}
 		}
 
-		if m.TokenNetworkID == models.SOLANA_CHAIN_ID {
+		if m.TokenNetworkID == models.SOLANA_CHAIN_ID && resp.Meme != nil {
 			resp.Meme.Status = string(models.MemeStatusAddPoolExternal)
 		}
 	}
