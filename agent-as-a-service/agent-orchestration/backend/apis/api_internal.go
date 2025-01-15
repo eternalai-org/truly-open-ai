@@ -593,13 +593,23 @@ func (s *Server) GetTwitterDataForLaunchpad(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 		return
 	}
+	tweetsResp := []map[string]interface{}{}
+	for _, v := range tweets {
+		if v.InReplyToUserID == "" {
+			tweetsResp = append(tweetsResp, map[string]interface{}{
+				"text":           v.Text,
+				"created_at":     v.CreatedAt,
+				"public_metrics": v.PublicMetrics,
+			})
+		}
+	}
 	resp := map[string]interface{}{
 		"followers_count": user.PublicMetrics.Followers,
 		"following_count": user.PublicMetrics.Following,
 		"tweet_count":     user.PublicMetrics.Tweets,
 		"listed_count":    user.PublicMetrics.Listed,
 		"blue-checked":    user.Verified,
-		"recent-tweets":   tweets,
+		"recent-tweets":   tweetsResp,
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
