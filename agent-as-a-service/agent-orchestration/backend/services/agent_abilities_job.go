@@ -1399,6 +1399,9 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 							Tweetid:                snapshotPost.OrgTweetID,
 							TokenImageUrl:          imageUrl,
 						}
+						if snapshotPost.OrgTweetID != "" {
+							action.ConversationId = s.GetConversationIdByTweetID(daos.GetDBMainCtx(ctx), snapshotPost.OrgTweetID)
+						}
 
 						switch snapshotPost.AgentSnapshotMission.ToolSet {
 						case models.ToolsetTypeTradeAnalyticsOnTwitter:
