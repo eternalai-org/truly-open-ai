@@ -1726,6 +1726,7 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 	if err != nil {
 		return "", errs.NewError(err)
 	}
+	agentMetaDataRequest.KbAgents = []models.AgentWakeupKnowledgeBase{}
 	request := &models.CallWakeupRequest{
 		Toolkit:       []interface{}{},
 		Prompt:        logRequest.UserPrompt,
