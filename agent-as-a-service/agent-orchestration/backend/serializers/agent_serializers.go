@@ -60,6 +60,7 @@ type AgentSnapshotMissionInfo struct {
 	IsTwitterSearch    bool                      `json:"is_twitter_search"`
 	IsBingSearch       bool                      `json:"is_bing_search"`
 	RewardAmount       numeric.BigFloat          `json:"reward_amount"`
+	MinTokenHolding    numeric.BigFloat          `json:"min_token_holding"`
 	RewardUser         int                       `json:"reward_user"`
 }
 
