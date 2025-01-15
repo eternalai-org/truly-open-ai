@@ -30,7 +30,7 @@ type KnowledgeBase struct {
 	DepositTxHash          string               `json:"deposit_tx_hash"`
 	Name                   string               `json:"name"`
 	Description            string               `json:"description"`
-	AgentInfoId            string               `json:"agent_info_id"`
+	AgentInfoId            uint                 `json:"agent_info_id"`
 	NetworkID              uint64               `json:"network_id"`
 	KBTokenContractAddress string               `json:"kb_token_contract_address"`
 	KBTokenID              string               `json:"kb_token_id" gorm:"index"`

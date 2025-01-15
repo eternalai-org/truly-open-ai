@@ -137,6 +137,7 @@ func (s *Server) Routers() {
 			// dojo
 			agentAPI.GET("/dojo/list", s.GetListAgentForDojo)
 			agentAPI.GET("/dojo/:id", s.GetAgentDetailByAgentIDForDojo)
+			agentAPI.GET("/dojo/:id/knowledge-base", s.listKnowledgeByAgent)
 			agentAPI.POST("/create_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentCreateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant_in_contract", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistantInContract)
