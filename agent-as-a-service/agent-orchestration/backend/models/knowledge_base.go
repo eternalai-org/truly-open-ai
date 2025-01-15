@@ -55,6 +55,7 @@ type KnowledgeBaseFile struct {
 	FileSize        uint                    `json:"size"`
 	GroupFileId     int64                   `json:"group_file_id"`
 	Status          KnowledgeBaseFileStatus `json:"status"`
+	FilecoinHash    string                  `json:"filecoin_hash"`
 }
 
 type ListKnowledgeBaseRequest struct {

@@ -41,7 +41,7 @@ func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, mo
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
-	kn, err := uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, id)
+	kn, err := uc.knowledgeBaseRepo.GetById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 		logger.Error("webhook_file_error", "upload_data_with_retry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = err.Error()
-		_ = uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
+		_ = uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields)
 		return nil, err
 	}
 
@@ -60,7 +60,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 		updatedFields["status"] = models.KnowledgeBaseStatusDone
 	}
 	updatedFields["filecoin_hash"] = fmt.Sprintf("ipfs://%s", hash)
-	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields); err != nil {
+	if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
 		return nil, err
 	}
 	return kn, nil
@@ -77,7 +77,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 		return nil, err
 	}
 
-	kn, err := uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, uint(id))
+	kn, err := uc.knowledgeBaseRepo.GetById(ctx, uint(id))
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 		}
 	}
 
-	if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
+	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}
 
@@ -149,7 +149,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	model.Status = models.KnowledgeBaseStatusWaitingPayment
 	model.Fee = 1
 
-	resp, err := uc.knowledgeBaseRepo.CreateKnowledgeBase(ctx, model)
+	resp, err := uc.knowledgeBaseRepo.Create(ctx, model)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 		}
 	}
 
-	r, err := uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, model.ID)
+	r, err := uc.knowledgeBaseRepo.GetById(ctx, model.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +182,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 }
 
 func (uc *knowledgeUsecase) ListKnowledgeBase(ctx context.Context, req *models.ListKnowledgeBaseRequest) ([]*serializers.KnowledgeBase, error) {
-	resp, err := uc.knowledgeBaseRepo.ListKnowledgeBaseByAddress(ctx, req.UserAddress)
+	resp, err := uc.knowledgeBaseRepo.ListByAddress(ctx, req.UserAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +194,7 @@ func (uc *knowledgeUsecase) ListKnowledgeBase(ctx context.Context, req *models.L
 }
 
 func (uc *knowledgeUsecase) MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error) {
-	resp, err := uc.agentInfoKnowledgeBaseRepo.ListAgentInfoKnowledgeBaseByAgentIds(ctx, ids)
+	resp, err := uc.agentInfoKnowledgeBaseRepo.ListByAgentIds(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
@@ -208,30 +208,30 @@ func (uc *knowledgeUsecase) MapKnowledgeBaseByAgentIds(ctx context.Context, ids 
 }
 
 func (uc *knowledgeUsecase) GetKnowledgeBaseById(ctx context.Context, id uint) (*models.KnowledgeBase, error) {
-	return uc.knowledgeBaseRepo.GetKnowledgeBaseById(ctx, id)
+	return uc.knowledgeBaseRepo.GetById(ctx, id)
 }
 
 func (uc *knowledgeUsecase) GetAgentInfoKnowledgeBaseByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error) {
-	return uc.agentInfoKnowledgeBaseRepo.GetAgentInfoKnowledgeBaseByAgentId(ctx, id)
+	return uc.agentInfoKnowledgeBaseRepo.GetByAgentId(ctx, id)
 }
 
 func (uc *knowledgeUsecase) DeleteKnowledgeBaseById(ctx context.Context, id uint) error {
-	return uc.knowledgeBaseRepo.DeleteKnowledgeBaseById(ctx, id)
+	return uc.knowledgeBaseRepo.DeleteById(ctx, id)
 }
 
 func (uc *knowledgeUsecase) GetKnowledgeBaseByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error) {
-	return uc.knowledgeBaseRepo.GetKnowledgeBaseByStatus(ctx, status, offset, limit)
+	return uc.knowledgeBaseRepo.GetByStatus(ctx, status, offset, limit)
 }
 
 func (uc *knowledgeUsecase) UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error {
-	return uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, id, updatedFields)
+	return uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields)
 }
 
 func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 	offset := 0
 	limit := 30
 	for {
-		resp, err := uc.knowledgeBaseRepo.GetKnowledgeBaseByStatus(
+		resp, err := uc.knowledgeBaseRepo.GetByStatus(
 			ctx, models.KnowledgeBaseStatusWaitingPayment, offset, limit,
 		)
 		logger.Logger().Info("GetKnowledgeBaseByStatus", zap.Any("total", len(resp)))
@@ -315,7 +315,7 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
 			updatedFields["deposit_chain_id"] = nId
 			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
-			if err := uc.knowledgeBaseRepo.UpdateKnowledgeBaseById(ctx, kn.ID, updatedFields); err != nil {
+			if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 				return err
 			}
 		}
@@ -384,5 +384,5 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 }
 
 func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
-	return uc.knowledgeBaseRepo.GetKnowledgeBaseByKBId(ctx, kbId)
+	return uc.knowledgeBaseRepo.GetByKBId(ctx, kbId)
 }

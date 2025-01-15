@@ -12,21 +12,21 @@ type knowledgeBaseRepo struct {
 }
 
 type KnowledgeBaseRepo interface {
-	GetKnowledgeBaseById(ctx context.Context, id uint) (*models.KnowledgeBase, error)
-	DeleteKnowledgeBaseById(ctx context.Context, id uint) error
-	CreateKnowledgeBase(ctx context.Context, model *models.KnowledgeBase) (*models.KnowledgeBase, error)
-	GetKnowledgeBaseByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error)
-	ListKnowledgeBaseByAddress(ctx context.Context, address string) ([]*models.KnowledgeBase, error)
+	GetById(ctx context.Context, id uint) (*models.KnowledgeBase, error)
+	DeleteById(ctx context.Context, id uint) error
+	Create(ctx context.Context, model *models.KnowledgeBase) (*models.KnowledgeBase, error)
+	GetByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error)
+	ListByAddress(ctx context.Context, address string) ([]*models.KnowledgeBase, error)
 	UpdateStatus(ctx context.Context, model *models.KnowledgeBase) error
-	UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
-	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
+	UpdateById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
+	GetByKBId(context.Context, string) (*models.KnowledgeBase, error)
 }
 
 func (r *knowledgeBaseRepo) UpdateStatus(ctx context.Context, model *models.KnowledgeBase) error {
 	return r.db.Model(model).Update("status", model.Status).Error
 }
 
-func (r *knowledgeBaseRepo) ListKnowledgeBaseByAddress(ctx context.Context, address string) ([]*models.KnowledgeBase, error) {
+func (r *knowledgeBaseRepo) ListByAddress(ctx context.Context, address string) ([]*models.KnowledgeBase, error) {
 	knowledges := []*models.KnowledgeBase{}
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBaseFiles").
@@ -38,7 +38,7 @@ func (r *knowledgeBaseRepo) ListKnowledgeBaseByAddress(ctx context.Context, addr
 	return knowledges, nil
 }
 
-func (r *knowledgeBaseRepo) CreateKnowledgeBase(ctx context.Context, model *models.KnowledgeBase) (*models.KnowledgeBase, error) {
+func (r *knowledgeBaseRepo) Create(ctx context.Context, model *models.KnowledgeBase) (*models.KnowledgeBase, error) {
 	result := r.db.WithContext(ctx).Create(model)
 	if result.Error != nil {
 		return nil, result.Error
@@ -46,7 +46,7 @@ func (r *knowledgeBaseRepo) CreateKnowledgeBase(ctx context.Context, model *mode
 	return model, nil
 }
 
-func (r *knowledgeBaseRepo) GetKnowledgeBaseById(ctx context.Context, id uint) (*models.KnowledgeBase, error) {
+func (r *knowledgeBaseRepo) GetById(ctx context.Context, id uint) (*models.KnowledgeBase, error) {
 	knowledge := &models.KnowledgeBase{}
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBaseFiles").
@@ -58,7 +58,7 @@ func (r *knowledgeBaseRepo) GetKnowledgeBaseById(ctx context.Context, id uint) (
 	return knowledge, nil
 }
 
-func (r *knowledgeBaseRepo) DeleteKnowledgeBaseById(ctx context.Context, id uint) error {
+func (r *knowledgeBaseRepo) DeleteById(ctx context.Context, id uint) error {
 	tx := r.db.WithContext(ctx)
 	return tx.Transaction(func(tx *gorm.DB) error {
 		data := []*models.KnowledgeBaseFile{}
@@ -70,7 +70,7 @@ func (r *knowledgeBaseRepo) DeleteKnowledgeBaseById(ctx context.Context, id uint
 	})
 }
 
-func (r *knowledgeBaseRepo) GetKnowledgeBaseByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error) {
+func (r *knowledgeBaseRepo) GetByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error) {
 	var data []*models.KnowledgeBase
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBaseFiles").
@@ -84,14 +84,15 @@ func (r *knowledgeBaseRepo) GetKnowledgeBaseByStatus(ctx context.Context, status
 	return data, nil
 }
 
-func (r *knowledgeBaseRepo) UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error {
+func (r *knowledgeBaseRepo) UpdateById(ctx context.Context, id uint, updatedFields map[string]interface{}) error {
 	result := r.db.WithContext(ctx).Model(&models.KnowledgeBase{}).Where("id = ?", id).Updates(updatedFields)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
-func (r *knowledgeBaseRepo) GetKnowledgeBaseByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
+
+func (r *knowledgeBaseRepo) GetByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
 	knowledge := &models.KnowledgeBase{}
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBaseFiles").
