@@ -247,7 +247,7 @@ func (c *Client) UploadImage(imageURL string, additionalOwners []string) (string
 
 	writer.Close()
 
-	uploadURL := "https://upload.com/1.1/media/upload.json"
+	uploadURL := "https://upload.twitter.com/1.1/media/upload.json"
 	req, err := http.NewRequest("POST", uploadURL, &requestBody)
 	if err != nil {
 		return "", err
