@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
 import { DagentTwitter } from "@eternal-dagent/client-dagent";
+import {createApiRouter, Direct} from "@eternal-dagent/direct";
 
 class AgentTwitter {
   protected environment: IENV;
@@ -48,6 +49,9 @@ class AgentTwitter {
       twitter_client_id: this.environment.TWITTER.CLIENT_ID,
       twitter_oauth_url: "https://imagine-backend.bvm.network/api/webhook/twitter-oauth"
     });
+
+    // twitter_client_id: "TWlYeVpGTXFRdTQ1WW14aDJkNXk6MTpjaQ",
+    // twitter_oauth_url: "https://composed-rarely-feline.ngrok-free.app/api/webhook/twitter-oauth"
   };
 
   setupMissions = async (agentId: string) => {
@@ -55,17 +59,24 @@ class AgentTwitter {
   };
 
   createAndRunDagent = async () => {
-    const privateKey = this.environment.PRIVATE_KEY;
-    if (!privateKey && !this.authenParams) {
-      dagentLogger.error("Please provide private key or params token.");
-    }
-    await this.dagent.init(this.authenParams);
-    // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
-    const agent = await this.createDagent();
+    // const privateKey = this.environment.PRIVATE_KEY;
+    //
+    // if (!privateKey && !this.authenParams) {
+    //   dagentLogger.error("Please provide private key or params token.");
+    // }
+    // await this.dagent.init(this.authenParams);
+    // // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
+    // const agent = await this.createDagent();
+    //
+    // if (agent?.id) {
+    //   await this.linkDagentToTwitter(agent.id);
+    // }
 
-    if (agent?.id) {
-      await this.linkDagentToTwitter(agent.id);
-    }
+    const direct = new Direct({
+      routers: [createApiRouter()]
+    })
+
+    direct.start(80);
 
     await this.getCreatedAgents();
   };

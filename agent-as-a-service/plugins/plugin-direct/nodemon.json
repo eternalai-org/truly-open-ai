@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts,json",
+  "exec": "node --loader ts-node/esm src/index.ts",
+  "legacyWatch": true
+}

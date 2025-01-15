@@ -1,5 +1,8 @@
 {
-  "packages": ["plugins/*"],
+  "packages": [
+    "plugins/*",
+    "dagent"
+  ],
   "npmClient": "yarn",
   "version": "independent"
 }
