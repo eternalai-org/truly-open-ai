@@ -317,7 +317,8 @@ Task: Analyze the data provided for the specified Twitter user (note: this data 
 	•	Tier 3: Contribution percentage 50% or below
 
 The final output should clearly indicate the tier to which the user belongs.`, lp.Description)
-							mission.ToolSet = "launchpad_join"
+							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
+							mission.NotDelay = true
 							mission.Enabled = false
 							mission.IsTesting = true
 							mission.ReplyEnabled = true

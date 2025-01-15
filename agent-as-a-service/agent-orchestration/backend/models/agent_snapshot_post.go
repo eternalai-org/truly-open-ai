@@ -90,6 +90,7 @@ const (
 	AgentSnapshotPostActionTypeTradeBuy      AgentSnapshotPostActionType = "buy"
 	AgentSnapshotPostActionTypeTradeSell     AgentSnapshotPostActionType = "sell"
 	AgentSnapshotPostActionTypeTradeAnalytic AgentSnapshotPostActionType = "analytic"
+	AgentSnapshotPostActionTypeLaunchpadJoin AgentSnapshotPostActionType = "launchpad_join"
 
 	AgentSnapshotPostActionStatusNew            AgentSnapshotPostActionStatus = "new"
 	AgentSnapshotPostActionStatusDone           AgentSnapshotPostActionStatus = "done"
@@ -201,6 +202,7 @@ const (
 	ToolsetTypeTradeAnalyticsOnTwitter ToolsetType = "trade_analytics_twitter"
 	ToolsetTypeTradeAnalyticsMentions  ToolsetType = "trade_analytics_mentions"
 	ToolsetTypeLuckyMoneys             ToolsetType = "lucky_moneys"
+	ToolsetTypeLaunchpadJoin           ToolsetType = "launchpad_join"
 
 	ToolsetTypeReplyMentionsFarcaster    ToolsetType = "reply_mentions_farcaster"
 	ToolsetTypeReplyNonMentionsFarcaster ToolsetType = "reply_non_mentions_farcaster"

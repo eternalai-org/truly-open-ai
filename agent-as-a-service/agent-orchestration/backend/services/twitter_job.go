@@ -9,6 +9,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 )
 
@@ -144,7 +145,18 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID,
 					address := helpers.ExtractEtherAddress(v.Tweet.Text)
 					if address != "" {
 						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey)
-						err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "", toolList)
+						newMission := &models.AgentSnapshotMission{}
+						err = copier.Copy(newMission, mission)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						newMission.ID = 0
+						newMission.ToolList = toolList
+						err = s.dao.Create(daos.GetDBMainCtx(ctx), newMission)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						err = s.AgentSnapshotPostCreate(ctx, newMission.ID, "", "")
 						if err != nil {
 							return errs.NewError(err)
 						}

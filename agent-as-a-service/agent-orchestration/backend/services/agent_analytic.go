@@ -363,7 +363,7 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 								return errs.NewError(err)
 							}
 							for _, mission := range missions {
-								err = s.AgentSnapshotPostCreate(ctx, mission.ID, twitterPost.TwitterPostID, twitterPost.TokenSymbol, "")
+								err = s.AgentSnapshotPostCreate(ctx, mission.ID, twitterPost.TwitterPostID, twitterPost.TokenSymbol)
 								if err != nil {
 									return errs.NewError(err)
 								}
