@@ -612,16 +612,21 @@ func (s *Service) GenerateTokenInfoFromSystemPrompt(ctx context.Context, tokenNa
 			if v, ok := mapInfo["token-story"]; ok {
 				tokenDesc = fmt.Sprintf(`%v`, v)
 			}
-
-			imageUrl, err = s.GetGifImageUrlFromTokenInfo(tokenSymbol, tokenName, tokenDesc)
-			if err != nil {
-				return nil, errs.NewError(err)
+			if tokenName == "" {
+				if v, ok := mapInfo["token-name"]; ok {
+					tokenName = fmt.Sprintf(`%v`, v)
+				}
+				if tokenName == "" {
+					tokenName = tokenSymbol
+				}
 			}
+			imageUrl, _ = s.GetGifImageUrlFromTokenInfo(tokenSymbol, tokenName, tokenDesc)
 		}
 		info = &models.TweetParseInfo{
 			TokenSymbol:   tokenSymbol,
 			TokenDesc:     tokenDesc,
 			TokenImageUrl: imageUrl,
+			TokenName:     tokenName,
 		}
 	}
 

@@ -11,11 +11,12 @@ type LaunchpadStatus string
 type LaunchpadTier string
 
 const (
-	LaunchpadStatusNew       LaunchpadStatus = "new"
-	LaunchpadStatusRunning   LaunchpadStatus = "running"
-	LaunchpadStatusEnd       LaunchpadStatus = "end"
-	LaunchpadStatusDone      LaunchpadStatus = "done"
-	LaunchpadStatusCancelled LaunchpadStatus = "cancelled"
+	LaunchpadStatusNew        LaunchpadStatus = "new"
+	LaunchpadStatusRunning    LaunchpadStatus = "running"
+	LaunchpadStatusEnd        LaunchpadStatus = "end"
+	LaunchpadStatusDone       LaunchpadStatus = "done"
+	LaunchpadStatusCancelled  LaunchpadStatus = "cancelled"
+	LaunchpadStatusTokenError LaunchpadStatus = "token_error"
 
 	LaunchpadTier1 LaunchpadTier = "Tier 1"
 	LaunchpadTier2 LaunchpadTier = "Tier 2"
@@ -43,6 +44,12 @@ type Launchpad struct {
 	TotalBalance           numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	SettleFundTxHash       string
 	CancelFundTxHash       string
+	TokenAddress           string `gorm:"index"`
+	TokenName              string
+	TokenSymbol            string
+	TokenImageUrl          string
+	TotalSupply            numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	DeployTokenTxHash      string
 }
 
 type LaunchpadMember struct {
