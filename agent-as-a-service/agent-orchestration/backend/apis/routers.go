@@ -234,6 +234,11 @@ func (s *Server) Routers() {
 				tokenAPI.GET("/dexscreen-info", s.DexScreenInfo)
 				tokenAPI.GET("/analytic", s.GetTradeAnalytic)
 			}
+			// launchpad management
+			launchpadAPI := internalAPI.Group("/launchpad")
+			{
+				launchpadAPI.POST("/:id/tier/:member_id", s.SetTier)
+			}
 		}
 		// deprecated
 		externalWalletAPI := rootAPI.Group("/external-wallet")

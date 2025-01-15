@@ -47,4 +47,8 @@ type LaunchpadMember struct {
 	TweetID      string
 	TweetContent string `gorm:"type:longtext"`
 	Tier         string
+	ReplyContent string `gorm:"type:longtext"`
+	ReplyPostAt  *time.Time
+	ReplyPostID  string
+	Error        string `gorm:"type:longtext"`
 }
