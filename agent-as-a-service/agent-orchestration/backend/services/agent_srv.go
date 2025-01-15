@@ -912,7 +912,7 @@ func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.Chat
 		Query: userPrompt,
 		TopK:  50,
 		Kb: []string{
-			"base_knowledge", // TODO update later
+			knowledgeBases[0].KbId,
 		},
 	}
 
@@ -968,13 +968,13 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string
 		if agentInfoKnowledegeBase != nil && agentInfoKnowledegeBase.KnowledgeBase != nil {
 			retrieveKnowledgeBaseResponse, err := s.RetrieveKnowledge(ctx, llmMessage, []*models.KnowledgeBase{agentInfoKnowledegeBase.KnowledgeBase})
 			if err == nil && retrieveKnowledgeBaseResponse != nil {
-				agentKnowledege := ""
+				agentKnowledge := ""
 				for _, knowledge := range retrieveKnowledgeBaseResponse.Result {
-					if knowledge.Score >= 0.3 {
-						agentKnowledege += knowledge.Content + "\n"
+					if knowledge.Score >= 0.5 {
+						agentKnowledge += knowledge.Content + "\n"
 					}
 				}
-				systemContent += "\n. Your knowledge: \n" + agentKnowledege
+				systemContent += "\n. Your knowledge: \n" + agentKnowledge
 			}
 		}
 	}
