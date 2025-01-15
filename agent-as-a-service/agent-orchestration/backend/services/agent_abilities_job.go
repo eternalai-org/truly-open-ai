@@ -1750,7 +1750,7 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		},
 	}
 
-	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(daos.GetDBMainCtx(context.Background()), assistant.ID)
+	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(context.Background(), assistant.ID)
 	if len(knowledgeAgentsUsed) > 0 {
 		for _, item := range knowledgeAgentsUsed {
 			itemAdd := models.AgentWakeupKnowledgeBase{

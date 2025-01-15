@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
-	gorm1 "github.com/jinzhu/gorm"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +15,6 @@ type IAgentInfoKnowledgeBaseRepo interface {
 	Create(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error)
 	ListByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error)
 	GetByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error)
-	GetKBAgentsUsedOfSocialAgent(tx *gorm1.DB, socialAgentId uint) ([]*models.KnowledgeBase, error)
 }
 
 func (r *agentInfoKnowledgeBaseRepo) GetByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error) {
@@ -30,20 +28,6 @@ func (r *agentInfoKnowledgeBaseRepo) GetByAgentId(ctx context.Context, id uint) 
 	if err != nil {
 		return nil, err
 	}
-	return knowledge, nil
-}
-
-func (r *agentInfoKnowledgeBaseRepo) GetKBAgentsUsedOfSocialAgent(tx *gorm1.DB, socialAgentId uint) ([]*models.KnowledgeBase, error) {
-	knowledge := []*models.KnowledgeBase{}
-	err := tx.
-		Preload("AgentInfo").
-		Where("kb_id <> '' and id IN (SELECT knowledge_base_id FROM agent_info_knowledge_bases WHERE agent_info_id = ?)",
-			socialAgentId).
-		Find(&knowledge).Error
-	if err != nil {
-		return nil, err
-	}
-
 	return knowledge, nil
 }
 
