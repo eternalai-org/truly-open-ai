@@ -27,9 +27,9 @@ Replace `PRIVATE_KEY`and `AGENT_SYSTEM_PROMPT`to your private key (that has some
 
 We're created an onchain agent (id: 1711) with system prompt as follows:
 
-<figure><img src="../../.gitbook/assets/image (66).png" alt=""><figcaption></figcaption></figure>
-
 {% embed url="https://basescan.org/tx/0x81a326f117e16353e573d402629e05625046da4864b9d7364e79d64fa44cf137" %}
+
+<figure><img src="../../.gitbook/assets/image (66).png" alt=""><figcaption></figcaption></figure>
 
 ## Step 2: Clone ZerePy repository
 
