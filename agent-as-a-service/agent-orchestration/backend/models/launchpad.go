@@ -5,10 +5,15 @@ import (
 )
 
 type LaunchpadStatus string
+type LaunchpadTier string
 
 const (
 	LaunchpadStatusNew LaunchpadStatus = "new"
 	LaunchpadStatusEnd LaunchpadStatus = "end"
+
+	LaunchpadTier1 LaunchpadTier = "Tier 1"
+	LaunchpadTier2 LaunchpadTier = "Tier 2"
+	LaunchpadTier3 LaunchpadTier = "Tier 3"
 )
 
 type Launchpad struct {
@@ -29,9 +34,11 @@ type Launchpad struct {
 
 type LaunchpadMember struct {
 	gorm.Model
-	UserAddress  string
-	LaunchpadID  uint
+	UserAddress  string `gorm:"unique_index:lp_member_main_idx"`
+	TwitterID    string `gorm:"unique_index:lp_member_main_idx"`
+	LaunchpadID  uint   `gorm:"unique_index:lp_member_main_idx"`
 	Launchpad    *Launchpad
 	TweetID      string
 	TweetContent string `gorm:"type:longtext"`
+	Tier         string
 }
