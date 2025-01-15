@@ -1749,6 +1749,23 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 			KnowledgeBaseId: assistant.KnowledgeBaseID,
 		},
 	}
+
+	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(daos.GetDBMainCtx(context.Background()), assistant.ID)
+	if len(knowledgeAgentsUsed) > 0 {
+		for _, item := range knowledgeAgentsUsed {
+			itemAdd := models.AgentWakeupKnowledgeBase{
+				KbId: item.KbId,
+			}
+			if item.AgentInfo != nil {
+				itemAdd.ChainId = fmt.Sprintf("%v", item.AgentInfo.NetworkID)
+			}
+			if request.AgentMetaData.KbAgents == nil {
+				request.AgentMetaData.KbAgents = []models.AgentWakeupKnowledgeBase{}
+			}
+
+			request.AgentMetaData.KbAgents = append(request.AgentMetaData.KbAgents, itemAdd)
+		}
+	}
 	request.MetaData.TwitterUsername = assistant.TwitterUsername
 	body, err := helpers.CurlURLString(
 		s.conf.AgentOffchain.Url+"/async/enqueue",
