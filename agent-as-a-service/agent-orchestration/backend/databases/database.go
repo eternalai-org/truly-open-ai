@@ -103,6 +103,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		// launchpad
 		(*models.Launchpad)(nil),
 		(*models.LaunchpadMember)(nil),
+		(*models.LaunchpadTransaction)(nil),
 
 		(*models.AbilityLuckyMoney)(nil),
 	}
