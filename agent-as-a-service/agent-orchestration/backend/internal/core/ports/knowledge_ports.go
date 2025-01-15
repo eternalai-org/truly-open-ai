@@ -20,4 +20,5 @@ type IKnowledgeUsecase interface {
 	Webhook(context.Context, *models.RagResponse) (*models.KnowledgeBase, error)
 	WebhookFile(context.Context, string, []byte, uint) (*models.KnowledgeBase, error)
 	MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error)
+	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
 }
