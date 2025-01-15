@@ -174,6 +174,41 @@ func (s *Service) MemeEventsByTransactionEventResp(ctx context.Context, networkI
 				}
 			}
 		}
+		{
+			poolMap := map[string]bool{}
+			for _, event := range eventResp.Transfer {
+				poolMap[strings.ToLower(event.To)] = true
+			}
+			poolArr := []string{}
+			for pool := range poolMap {
+				poolArr = append(poolArr, pool)
+			}
+			lps, err := s.dao.FindLaunchpad(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"address in (?)": {poolArr},
+				},
+				map[string][]interface{}{},
+				[]string{},
+				0,
+				999999,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			poolMap = map[string]bool{}
+			for _, lp := range lps {
+				poolMap[strings.ToLower(lp.Address)] = true
+			}
+			for _, event := range eventResp.Transfer {
+				if poolMap[strings.ToLower(event.To)] {
+					err = s.CreateErc20TokenTransferEventLaunchpad(ctx, networkID, event)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
+		}
 	}
 	//
 	{
@@ -696,6 +731,10 @@ func (s *Service) CreateErc20TokenTransferEvent(ctx context.Context, networkID u
 							}
 						}
 					}
+					err = s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
+					if err != nil {
+						return errs.NewError(err)
+					}
 					//update subscription package
 					switch networkID {
 					case models.ETHEREUM_CHAIN_ID,
@@ -703,6 +742,10 @@ func (s *Service) CreateErc20TokenTransferEvent(ctx context.Context, networkID u
 						{
 							eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxHash, event.Index)
 							s.ProcessDeposit(ctx, networkID, eventId, event.TxHash, toAddress, event.Value)
+							err = s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
+							if err != nil {
+								return errs.NewError(err)
+							}
 						}
 					}
 					return nil
@@ -715,6 +758,30 @@ func (s *Service) CreateErc20TokenTransferEvent(ctx context.Context, networkID u
 				if event.Value.Cmp(common.Big0) > 0 {
 					go s.AgentTeleAlertByID(ctx, agent.ID, event.TxHash, models.ConvertWeiToBigFloat(event.Value, 18), networkID)
 				}
+			}
+		}
+	}
+	return nil
+}
+
+func (s *Service) CreateErc20TokenTransferEventLaunchpad(ctx context.Context, networkID uint64, event *ethapi.Erc20TokenTransferEventResp) error {
+	if s.conf.ExistsedConfigKey(networkID, "eai_contract_address") {
+		contractAddress := strings.ToLower(event.ContractAddress)
+		eaiAddress := s.conf.GetConfigKeyString(networkID, "eai_contract_address")
+		toAddress := strings.ToLower(event.To)
+		if !strings.EqualFold(toAddress, models.ETH_ZERO_ADDRESS) && strings.EqualFold(contractAddress, eaiAddress) {
+			err := daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					err := s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
 			}
 		}
 	}
