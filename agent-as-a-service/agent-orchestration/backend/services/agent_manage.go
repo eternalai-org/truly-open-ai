@@ -365,6 +365,8 @@ func (s *Service) verifyInscription(signatureHex string, signer, publicKey strin
 
 func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string, req *serializers.AssistantsReq) (*models.AgentInfo, error) {
 	var agent *models.AgentInfo
+	updateMap := make(map[string]interface{})
+	updateKb := false
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -374,19 +376,28 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 					map[string][]interface{}{
 						"agent_id = ?": {req.AgentID},
 					},
-					map[string][]interface{}{}, []string{})
+					map[string][]interface{}{
+						"KnowledgeBase": {},
+					},
+					[]string{})
 				if err != nil {
 					return errs.NewError(err)
 				}
 
 				if agent != nil {
-					agent, err = s.dao.FirstAgentInfoByID(tx, agent.ID, map[string][]interface{}{}, true)
+					agent, err = s.dao.FirstAgentInfoByID(tx, agent.ID,
+						map[string][]interface{}{
+							"KnowledgeBase": {},
+						}, true,
+					)
 					if err != nil {
 						return errs.NewError(err)
 					}
 				}
 			} else {
-				agent, err = s.dao.FirstAgentInfoByID(tx, req.ID, map[string][]interface{}{}, true)
+				agent, err = s.dao.FirstAgentInfoByID(tx, req.ID, map[string][]interface{}{
+					"KnowledgeBase": {},
+				}, true)
 				if err != nil {
 					return errs.NewError(err)
 				}
@@ -457,8 +468,8 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 				}
 
 				if req.CreateKnowledgeRequest != nil && agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase {
+					updateKb = true
 					kbReq := req.CreateKnowledgeRequest
-					updateMap := make(map[string]interface{})
 					if kbReq.Name != "" {
 						updateMap["name"] = kbReq.Name
 						agent.AgentName = kbReq.Name
@@ -475,21 +486,8 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 						updateMap["network_id"] = kbReq.NetworkID
 					}
 
-					i, err := s.KnowledgeUsecase.GetAgentInfoKnowledgeBaseByAgentId(ctx, agent.ID)
-					if err != nil {
-						return err
-					}
-					agent.AgentKBId = i.KnowledgeBaseId
-					return s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, i.KnowledgeBaseId, updateMap)
-				}
-
-				for _, id := range req.KbIds {
-					_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
-						AgentInfoId:     agent.ID,
-						KnowledgeBaseId: id,
-					})
-					if err != nil {
-						return err
+					if kbReq.ThumbnailUrl != "" {
+						updateMap["thumbnail_url"] = kbReq.ThumbnailUrl
 					}
 				}
 
@@ -500,6 +498,27 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 	)
 	if err != nil {
 		return nil, errs.NewError(err)
+	}
+
+	if updateKb {
+		if err := s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, agent.AgentKBId, updateMap); err != nil {
+			return nil, err
+		}
+		i, err := s.KnowledgeUsecase.GetKnowledgeBaseById(ctx, agent.AgentKBId)
+		if err != nil {
+			return nil, err
+		}
+		agent.KnowledgeBase = i
+	}
+
+	for _, id := range req.KbIds {
+		_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
+			AgentInfoId:     agent.ID,
+			KnowledgeBaseId: id,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return agent, nil
