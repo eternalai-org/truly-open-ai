@@ -91,3 +91,8 @@ type UpdateKnowledgeBaseWithSignatureRequest struct {
 	RandomNonceUri string `json:"random_nonce_uri"`
 	SignatureUri   string `json:"signature_uri"`*/
 }
+
+type RetrieveKnowledgeRequest struct {
+	Prompt string `json:"prompt"`
+	KbId   string `json:"kb_id"`
+}
