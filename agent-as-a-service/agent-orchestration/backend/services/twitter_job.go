@@ -128,13 +128,23 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID,
 	}
 	if lst != nil {
 		for _, v := range lst.LookUps {
-			tmp := helpers.ParseStringToDateTimeTwitter(v.Tweet.CreatedAt)
-			err = s.dao.Create(daos.GetDBMainCtx(ctx), &models.TwitterTweet{
-				TwitterID: v.Tweet.AuthorID,
-				TweetID:   v.Tweet.ID,
-				FullText:  v.Tweet.Text,
-				PostedAt:  *tmp,
-			})
+			err = daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					tmp := helpers.ParseStringToDateTimeTwitter(v.Tweet.CreatedAt)
+					err = s.dao.Create(daos.GetDBMainCtx(ctx), &models.TwitterTweet{
+						TwitterID: v.Tweet.AuthorID,
+						TweetID:   v.Tweet.ID,
+						FullText:  v.Tweet.Text,
+						PostedAt:  *tmp,
+					})
+					if err != nil {
+						return errs.NewError(err)
+					}
+					//call chain of thought to find tier
+					return nil
+				},
+			)
 			if err != nil {
 				return nil, errs.NewError(err)
 			}
