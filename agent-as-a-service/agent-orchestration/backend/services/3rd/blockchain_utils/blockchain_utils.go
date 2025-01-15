@@ -362,10 +362,10 @@ func (c *Client) SolanaValidateAddress(mint string) (bool, error) {
 }
 
 type SolanaBalanceByToken struct {
-	Amount         numeric.BigInt `json:"amount"`
-	Decimals       int            `json:"decimals"`
-	UIAmount       float64        `json:"ui_amount"`
-	UIAmountString string         `json:"ui_amount_string"`
+	Amount         string  `json:"amount"`
+	Decimals       int     `json:"decimals"`
+	UIAmount       float64 `json:"uiAmount"`
+	UIAmountString string  `json:"uiAmountString"`
 }
 
 func (c *Client) SolanaBalanceByToken(address, mint string) (*SolanaBalanceByToken, error) {
@@ -374,7 +374,7 @@ func (c *Client) SolanaBalanceByToken(address, mint string) (*SolanaBalanceByTok
 	}{}
 	err := c.methodJSON(
 		http.MethodGet,
-		c.buildUrl(fmt.Sprintf(`/solana/balance/%s/%s`, mint, address)),
+		c.buildUrl(fmt.Sprintf(`solana/balance/%s/%s`, mint, address)),
 		nil,
 		&resp,
 	)
