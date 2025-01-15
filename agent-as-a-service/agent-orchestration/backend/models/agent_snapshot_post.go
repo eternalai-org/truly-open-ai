@@ -333,6 +333,11 @@ type WakeupRequestMetadata struct {
 	KnowledgeBaseId string             `json:"knowledge_base_id"`
 }
 
+type AgentWakeupKnowledgeBase struct {
+	KbId    string `json:"kb_id"`
+	ChainId string `json:"chain_id"`
+}
+
 type AgentMetadataRequest struct {
 	TokenInfo struct {
 		Name    string `json:"name"`
@@ -340,6 +345,7 @@ type AgentMetadataRequest struct {
 		Address string `json:"address"`
 		Chain   string `json:"chain"`
 	} `json:"token_info"`
+	KbAgents []AgentWakeupKnowledgeBase `json:"kb_agents"`
 }
 
 type CallWakeupRequest struct {

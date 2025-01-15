@@ -18,6 +18,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	resty "github.com/go-resty/resty/v2"
+	"github.com/jinzhu/gorm"
 
 	"go.uber.org/zap"
 )
@@ -38,6 +39,10 @@ type knowledgeUsecase struct {
 
 func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {
 	return uc.agentInfoKnowledgeBaseRepo.Create(ctx, model)
+}
+
+func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(tx *gorm.DB, socialAgentId uint) ([]*models.KnowledgeBase, error) {
+	return uc.agentInfoKnowledgeBaseRepo.GetKBAgentsUsedOfSocialAgent(tx, socialAgentId)
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {

@@ -1,7 +1,6 @@
 package main_test
 
 import (
-	"context"
 	"crypto/tls"
 	"net/http"
 	"testing"
@@ -43,7 +42,7 @@ func init() {
 
 func Test_JOB(t *testing.T) {
 	// ts.JobScanAgentTwitterPostForTA(context.Background())
-	ts.MemeAddPositionInternal(context.Background(), 47219)
+	// ts.RetryAgentDeployToken(context.Background(), 51265)
 	// ts.JobUpdateOffchainAutoOutputForMission(context.Background())
 	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
