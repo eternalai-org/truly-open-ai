@@ -14,72 +14,60 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
  * @dev Implementation of decentralized inference standard AI721.
  */
 contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
-    /// @dev Constants
-    uint256 private constant PORTION_DENOMINATOR = 10000;
-
     /// @dev Storage
-    mapping(uint256 nftId => TokenMetaData) private _datas;
+    mapping(uint256 agentId => TokenMetaData) private _datas;
+    mapping(uint256 agentId => uint256) public _poolBalance;
     uint256 private _nextTokenId;
-    uint256 private _mintPrice;
-    address private _royaltyReceiver;
-    uint16 private _royaltyPortion;
     address public _gpuManager;
     IERC20 private immutable _tokenFee;
-
-    mapping(uint256 nftId => uint256) public _poolBalance;
-    mapping(address nftId => mapping(bytes32 signature => bool))
-        public _signaturesUsed;
-
-    /// @dev Modifiers
-    modifier onlyAgentOwner(uint256 nftId) {
-        _checkAgentOwner(msg.sender, nftId);
-        _;
-    }
 
     /// @dev constructor
     constructor(
         string memory name_,
         string memory symbol_,
-        uint256 mintPrice_,
-        address royaltyReceiver_,
-        uint16 royaltyPortion_,
         uint256 nextTokenId_,
         address gpuManager_,
         IERC20 tokenFee_
     ) ERC721(name_, symbol_) {
-        _mintPrice = mintPrice_;
-        _royaltyReceiver = royaltyReceiver_;
-        _royaltyPortion = royaltyPortion_;
+        require(
+            gpuManager_ != address(0) && address(tokenFee_) != address(0),
+            "Zero address"
+        );
+
         _nextTokenId = nextTokenId_;
         _gpuManager = gpuManager_;
         _tokenFee = tokenFee_;
     }
 
-    function _setMintPrice(uint256 mintPrice) internal virtual {
-        _mintPrice = mintPrice;
-
-        emit MintPriceUpdate(mintPrice);
-    }
-
-    function _setRoyaltyReceiver(address royaltyReceiver_) internal virtual {
-        _royaltyReceiver = royaltyReceiver_;
-
-        emit RoyaltyReceiverUpdate(royaltyReceiver_);
-    }
-
-    function _setRoyaltyPortion(uint16 royaltyPortion_) internal virtual {
-        _royaltyPortion = royaltyPortion_;
-
-        emit RoyaltyPortionUpdate(royaltyPortion_);
-    }
-
-    function _setGPUManager(address gpuManager) internal virtual {
+    /**
+     * @dev Internal function to update the GPU manager address.
+     * Reverts if the provided address is the zero address.
+     *
+     * @param gpuManager The new address of the GPU manager.
+     *
+     * Emits a {GPUManagerUpdate} event.
+     */
+    function _updateGPUManager(address gpuManager) internal virtual {
         if (gpuManager == address(0)) revert InvalidData();
 
         _gpuManager = gpuManager;
         emit GPUManagerUpdate(gpuManager);
     }
 
+    /**
+     * @dev Mints a new agent with the specified parameters.
+     * Reverts with `InvalidAgentData` if the provided data is empty.
+     *
+     * @param to The address to which the agent will be minted.
+     * @param uri The URI associated with the agent.
+     * @param data The system prompt of the agent.
+     * @param fee The using fee associated with the agent.
+     * @param agentId The ID of the agent.
+     * @param promptKey The key for the system prompt.
+     * @param promptScheduler The address of the prompt scheduler.
+     * @param modelId The ID of the model.
+     * @return The ID of the minted agent.
+     */
     function _mint(
         address to,
         string calldata uri,
@@ -106,6 +94,19 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         return agentId;
     }
 
+    /**
+     * @dev Wraps the minting process by finding the next available agent ID and minting a new agent.
+     * Reverts with `InvalidAgentData` if the provided data is empty.
+     *
+     * @param to The address to which the agent will be minted.
+     * @param uri The URI associated with the agent.
+     * @param data The system prompt of the agent.
+     * @param fee The using fee associated with the agent.
+     * @param promptKey The key for the system prompt.
+     * @param promptScheduler The address of the prompt scheduler.
+     * @param modelId The ID of the model that is used by thee agent.
+     * @return The ID of the minted agent.
+     */
     function _wrapMint(
         address to,
         string calldata uri,
@@ -115,13 +116,6 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         address promptScheduler,
         uint32 modelId
     ) internal virtual returns (uint256) {
-        SafeERC20.safeTransferFrom(
-            _tokenFee,
-            msg.sender,
-            address(this),
-            _mintPrice
-        );
-
         while (_datas[_nextTokenId].isUsed) {
             _nextTokenId++;
         }
@@ -136,22 +130,34 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         if (bytes(uri).length == 0) revert InvalidAgentData();
     }
 
-    function updateAgentURI(
+    /**
+     * @dev Updates the URI of an agent.
+     * @param agentId The ID of the agent.
+     * @param uri The new URI of the agent.
+     */
+    function _updateAgentURI(
         uint256 agentId,
         string calldata uri
-    ) public virtual override onlyAgentOwner(agentId) {
+    ) internal virtual {
         _validateURI(uri);
 
         _setTokenURI(agentId, uri);
         emit AgentURIUpdate(agentId, uri);
     }
 
-    function updateAgentData(
+    /**
+     * @dev Updates the data of an agent.
+     * @param agentId The ID of the agent.
+     * @param sysPrompt The new system prompt data.
+     * @param promptKey The key of the prompt.
+     * @param promptIdx The index of the prompt.
+     */
+    function _updateAgentData(
         uint256 agentId,
         bytes calldata sysPrompt,
         string calldata promptKey,
         uint256 promptIdx
-    ) public virtual override onlyAgentOwner(agentId) {
+    ) internal virtual {
         _validateAgentData(agentId, sysPrompt, promptIdx, promptKey);
 
         emit AgentDataUpdate(
@@ -164,20 +170,32 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         _datas[agentId].sysPrompts[promptKey][promptIdx] = sysPrompt;
     }
 
-    function updateAgentModelId(
+    /**
+     * @dev This function modifies the model ID associated with an existing agent.
+     * @param agentId The unique identifier of the agent to update.
+     * @param newModelId The new model ID to assign to the agent.
+     */
+    function _updateAgentModelId(
         uint256 agentId,
         uint32 newModelId
-    ) public virtual override onlyAgentOwner(agentId) {
+    ) internal virtual {
         emit AgentModelIdUpdate(agentId, _datas[agentId].modelId, newModelId);
 
         _datas[agentId].modelId = newModelId;
     }
 
-    function updateSchedulePrompt(
+    /**
+     * @dev Updates the prompt scheduler for a given agent.
+     * Emits an {AgentPromptSchedulerUpdate} event.
+     *
+     * @param agentId The ID of the agent whose prompt scheduler is being updated.
+     * @param newPromptScheduler The address of the new prompt scheduler.
+     */
+    function _updatePromptScheduler(
         uint256 agentId,
         address newPromptScheduler
-    ) public virtual onlyAgentOwner(agentId) {
-        emit AgentPromptSchedulerdUpdate(
+    ) internal virtual {
+        emit AgentPromptSchedulerUpdate(
             agentId,
             _datas[agentId].promptScheduler,
             newPromptScheduler
@@ -186,34 +204,28 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         _datas[agentId].promptScheduler = newPromptScheduler;
     }
 
-    function _checkUpdatePromptPermission(
-        uint256 agentId,
-        bytes calldata sysPrompt,
-        uint256 promptIdx,
-        uint256 randomNonce,
-        bytes calldata signature
-    ) internal virtual {
-        address agentOwner = _ownerOf(agentId);
-        (address signer, bytes32 signHash) = _recover(
-            keccak256(
-                abi.encode(
-                    sysPrompt,
-                    agentId,
-                    promptIdx,
-                    randomNonce,
-                    address(this),
-                    block.chainid
-                )
-            ),
-            signature
-        );
+    /**
+     * @dev Updates the fee of an agent.
+     * @notice The agent fee is typically greater than or equal to the model usage fee.
+     * @param agentId The ID of the agent.
+     * @param fee The fee to use this agent.
+     */
+    function _updateAgentFee(uint256 agentId, uint fee) internal virtual {
+        if (_datas[agentId].fee != fee) {
+            _datas[agentId].fee = uint128(fee);
+        }
 
-        if (_signaturesUsed[agentOwner][signHash]) revert SignatureUsed();
-        _signaturesUsed[agentOwner][signHash] = true;
-
-        _checkAgentOwner(signer, agentId);
+        emit AgentFeeUpdate(agentId, fee);
     }
 
+    /**
+     * @dev Validates the agent data by checking the system prompt and prompt index.
+     * Reverts with `InvalidAgentData` if the system prompt is empty.
+     *
+     * @param agentId The ID of the agent.
+     * @param sysPrompt The system prompt data in bytes.
+     * @param promptKey The key associated with the prompt.
+     */
     function _validateAgentData(
         uint256 agentId,
         bytes calldata sysPrompt,
@@ -225,76 +237,17 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         if (promptIdx >= len) revert InvalidAgentPromptIndex();
     }
 
-    function updateAgentDataWithSignature(
-        uint256 agentId,
-        bytes calldata sysPrompt,
-        string calldata promptKey,
-        uint256 promptIdx,
-        uint256 randomNonce,
-        bytes calldata signature
-    ) public virtual override {
-        _validateAgentData(agentId, sysPrompt, promptIdx, promptKey);
-        _checkUpdatePromptPermission(
-            agentId,
-            sysPrompt,
-            promptIdx,
-            randomNonce,
-            signature
-        );
-
-        emit AgentDataUpdate(
-            agentId,
-            promptIdx,
-            _datas[agentId].sysPrompts[promptKey][promptIdx],
-            sysPrompt
-        );
-
-        _datas[agentId].sysPrompts[promptKey][promptIdx] = sysPrompt;
-    }
-
-    function _checkUpdateUriPermission(
-        uint256 agentId,
-        string calldata uri,
-        uint256 randomNonce,
-        bytes calldata signature
-    ) internal virtual {
-        address agentOwner = _ownerOf(agentId);
-        (address signer, bytes32 signHash) = _recover(
-            keccak256(
-                abi.encode(
-                    agentId,
-                    uri,
-                    randomNonce,
-                    address(this),
-                    block.chainid
-                )
-            ),
-            signature
-        );
-
-        if (_signaturesUsed[agentOwner][signHash]) revert SignatureUsed();
-        _signaturesUsed[agentOwner][signHash] = true;
-        _checkAgentOwner(signer, agentId);
-    }
-
-    function updateAgentUriWithSignature(
-        uint256 agentId,
-        string calldata uri,
-        uint256 randomNonce,
-        bytes calldata signature
-    ) public virtual override {
-        _validateURI(uri);
-
-        _checkUpdateUriPermission(agentId, uri, randomNonce, signature);
-        _setTokenURI(agentId, uri);
-        emit AgentURIUpdate(agentId, uri);
-    }
-
-    function addNewAgentData(
+    /**
+     * @dev Adds new data to an agent.
+     * @param agentId The ID of the agent.
+     * @param promptKey The key of the prompt.
+     * @param sysPrompt The new system prompt data.
+     */
+    function _addNewAgentData(
         uint256 agentId,
         string calldata promptKey,
         bytes calldata sysPrompt
-    ) public virtual override onlyAgentOwner(agentId) {
+    ) internal virtual {
         if (sysPrompt.length == 0) revert InvalidAgentData();
 
         _datas[agentId].sysPrompts[promptKey].push(sysPrompt);
@@ -302,17 +255,9 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         emit AgentDataAddNew(agentId, _datas[agentId].sysPrompts[promptKey]);
     }
 
-    function updateAgentFee(
-        uint256 agentId,
-        uint fee
-    ) public virtual override onlyAgentOwner(agentId) {
-        if (_datas[agentId].fee != fee) {
-            _datas[agentId].fee = uint128(fee);
-        }
-
-        emit AgentFeeUpdate(agentId, fee);
-    }
-
+    /**
+     * @dev See {IAI721Upgradeable-topUpPoolBalance}.
+     */
     function topUpPoolBalance(
         uint256 agentId,
         uint256 amount
@@ -328,19 +273,28 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         emit TopUpPoolBalance(agentId, msg.sender, amount);
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-getAgentFee}.
+     */
     function getAgentFee(
         uint256 agentId
-    ) public view virtual returns (uint256) {
+    ) external view virtual returns (uint256) {
         return _datas[agentId].fee;
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-getAgentSystemPrompt}.
+     */
     function getAgentSystemPrompt(
         uint256 agentId,
         string calldata promptKey
-    ) public view virtual returns (bytes[] memory) {
+    ) external view virtual returns (bytes[] memory) {
         return _datas[agentId].sysPrompts[promptKey];
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-infer}.
+     */
     function infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
@@ -373,6 +327,9 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         );
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-infer}.
+     */
     function infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
@@ -403,6 +360,28 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         );
     }
 
+    /**
+     * @dev Internal function to handle inference requests for a given agent.
+     *
+     * This function performs several checks and operations:
+     * 1. Validates the existence of system prompts for the given agent and prompt key.
+     * 2. Ensures the provided fee amount meets the required fee for the agent.
+     * 3. Transfers the fee amount from the sender to the contract.
+     * 4. Encodes the forward calldata with the system prompts.
+     * 5. Retrieves the minimum fee required to use the GPU for the agent's model.
+     * 6. Adjusts the agent's pool balance and transfers any remaining fee back to the agent owner if applicable.
+     * 7. Approves the prompt scheduler to use the estimated fee.
+     *
+     * @param agentId The ID of the agent for which inference is requested.
+     * @param fwdCalldata The calldata to be forwarded for inference.
+     * @param promptKey The key to identify the system prompt.
+     * @param feeAmount The fee amount provided for the inference request.
+     *
+     * @return estFeeWH The estimated fee required for the inference must be paid to the miner.
+     * @return fwdData The encoded forward data including system prompts and calldata.
+     *
+     * @notice Reverts if the agent data or fee is invalid, or if there are insufficient funds.
+     */
     function _infer(
         uint256 agentId,
         bytes calldata fwdCalldata,
@@ -453,29 +432,49 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         return (estFeeWH, fwdData);
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-dataOf}.
+     */
     function dataOf(
         uint256 agentId
-    ) public view virtual returns (uint128, bool) {
-        return (_datas[agentId].fee, _datas[agentId].isUsed);
-    }
-
-    function royaltyInfo(
-        uint256 agentId,
-        uint256 salePrice
-    ) public view virtual returns (address, uint256) {
-        agentId;
+    )
+        external
+        view
+        virtual
+        returns (
+            uint128 fee,
+            bool isUsed,
+            uint32 modelId,
+            address promptScheduler,
+            uint256 poolBalance
+        )
+    {
+        TokenMetaData storage data = _datas[agentId];
         return (
-            _royaltyReceiver,
-            (salePrice * _royaltyPortion) / PORTION_DENOMINATOR
+            data.fee,
+            data.isUsed,
+            data.modelId,
+            data.promptScheduler,
+            _poolBalance[agentId]
         );
     }
 
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
     function tokenURI(
         uint256 agentId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
         return super.tokenURI(agentId);
     }
 
+    /**
+     * @dev Checks if the given user is the owner of the specified agent.
+     * Reverts with an `Unauthorized` error if the user is not the owner.
+     *
+     * @param user The address of the user to check.
+     * @param agentId The ID of the agent to check ownership for.
+     */
     function _checkAgentOwner(
         address user,
         uint256 agentId
@@ -483,6 +482,9 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         if (user != _ownerOf(agentId)) revert Unauthorized();
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-getAgentIdByOwner}.
+     */
     function getAgentIdByOwner(
         address owner
     ) external view returns (uint256[] memory) {
@@ -496,43 +498,35 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         return agentIds;
     }
 
+    /**
+     * @dev See {IAI721Upgradeable-nextTokenId}.
+     */
     function nextTokenId() external view returns (uint256) {
         return _nextTokenId;
     }
 
-    function royaltyReceiver() external view returns (address) {
-        return _royaltyReceiver;
-    }
-
-    function royaltyPortion() external view returns (uint16) {
-        return _royaltyPortion;
-    }
-
+    /**
+     * @dev Concatenates an array of system prompts into a single bytes array,
+     *      with each prompt separated by a semicolon.
+     * @param sysPrompts An array of bytes representing the system prompts to be concatenated.
+     * @return A bytes array containing all the concatenated system prompts separated by semicolons.
+     */
     function _concatSystemPrompts(
         bytes[] memory sysPrompts
     ) internal pure virtual returns (bytes memory) {
         uint256 len = sysPrompts.length;
-        bytes memory concatedPrompt;
+        bytes memory prompt;
 
         for (uint256 i = 0; i < len; i++) {
-            concatedPrompt = abi.encodePacked(
-                concatedPrompt,
-                sysPrompts[i],
-                ";"
-            );
+            prompt = abi.encodePacked(prompt, sysPrompts[i], ";");
         }
 
-        return concatedPrompt;
+        return prompt;
     }
 
-    function _recover(
-        bytes32 structHash,
-        bytes calldata signature
-    ) internal pure returns (address, bytes32) {
-        bytes32 hash = ECDSA.toEthSignedMessageHash(structHash);
-        return (ECDSA.recover(hash, signature), hash);
-    }
-
+    /**
+     * @dev See {ERC721-_beforeTokenTransfer}.
+     */
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -542,12 +536,18 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
     }
 
+    /**
+     * @dev See {ERC721-_burn}.
+     */
     function _burn(
         uint256 agentId
     ) internal override(ERC721, ERC721URIStorage) {
         super._burn(agentId);
     }
 
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721Enumerable, ERC721URIStorage) returns (bool) {
