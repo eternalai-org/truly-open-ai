@@ -125,6 +125,7 @@ func (s *Server) Routers() {
 			abilitiesAPI := agentAPI.Group("/mission")
 			{
 				abilitiesAPI.POST("update/:id", s.CreateUpdateAgentSnapshotMission)
+				abilitiesAPI.DELETE("/:id", s.DeleteAgentSnapshotMission)
 				abilitiesAPI.GET("configs", s.GetAgentMissionConfigs)
 				abilitiesAPI.GET("tokens", s.GetAgentMissionTokens)
 			}

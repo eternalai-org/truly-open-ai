@@ -1278,6 +1278,38 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 	return s.GetAgentInfoDetailByAgentID(ctx, agentID)
 }
 
+func (s *Service) DeleteAgentSnapshotMission(ctx context.Context, missionID uint, userAddress string) (bool, error) {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			missionInfo, err := s.dao.FirstAgentSnapshotMissionByID(tx,
+				missionID,
+				map[string][]interface{}{
+					"AgentInfo": {},
+				}, false,
+			)
+
+			if err != nil {
+				return errs.NewError(err)
+			}
+
+			if missionInfo != nil && missionInfo.AgentInfo != nil && strings.EqualFold(missionInfo.AgentInfo.Creator, userAddress) {
+				err = tx.Delete(missionInfo).Error
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+
+			return nil
+		},
+	)
+
+	if err != nil {
+		return false, errs.NewError(err)
+	}
+	return true, nil
+}
+
 func (s *Service) FollowListDefaultTwitters(ctx context.Context, agentID uint) error {
 	listFollow, err := s.dao.GetListTwitterDefaultFollow(daos.GetDBMainCtx(ctx))
 	if err != nil {

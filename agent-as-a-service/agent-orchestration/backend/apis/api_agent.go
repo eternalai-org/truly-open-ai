@@ -328,6 +328,22 @@ func (s *Server) CreateUpdateAgentSnapshotMission(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfoResp(resp)})
 }
 
+func (s *Server) DeleteAgentSnapshotMission(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	missionID := s.uintFromContextParam(c, "id")
+	resp, err := s.nls.DeleteAgentSnapshotMission(ctx, missionID, userAddress)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
+}
+
 func (s *Server) GetBrainDetailByTweetID(c *gin.Context) {
 	ctx := s.requestContext(c)
 	tweetID := s.stringFromContextParam(c, "id")

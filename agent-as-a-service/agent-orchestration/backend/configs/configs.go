@@ -187,6 +187,7 @@ type Config struct {
 	RagApi                      string                       `json:"rag_api"`
 	ListTestToolSet             string                       `json:"list_test_tool_set"`
 	LuckyMoneyAdminAddress      string                       `json:"lucky_money_admin_address"`
+	LuckyMoneyAdminAddressSol   string                       `json:"lucky_money_admin_address_sol"`
 	WebhookUrl                  string                       `json:"webhook_url"`
 	KnowledgeBaseConfig         KnowledgeBaseConfig          `json:"knowledge_base_config"`
 }
