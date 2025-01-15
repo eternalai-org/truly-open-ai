@@ -19,6 +19,7 @@ type KnowledgeBaseRepo interface {
 	ListKnowledgeBaseByAddress(ctx context.Context, address string) ([]*models.KnowledgeBase, error)
 	UpdateStatus(ctx context.Context, model *models.KnowledgeBase) error
 	UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
+	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
 }
 
 func (r *knowledgeBaseRepo) UpdateStatus(ctx context.Context, model *models.KnowledgeBase) error {
@@ -89,6 +90,17 @@ func (r *knowledgeBaseRepo) UpdateKnowledgeBaseById(ctx context.Context, id uint
 		return result.Error
 	}
 	return nil
+}
+func (r *knowledgeBaseRepo) GetKnowledgeBaseByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
+	knowledge := &models.KnowledgeBase{}
+	err := r.db.WithContext(ctx).
+		Preload("KnowledgeBaseFiles").
+		Where("kb_id = ?", kbId).
+		First(knowledge).Error
+	if err != nil {
+		return nil, err
+	}
+	return knowledge, nil
 }
 
 func NewKnowledgeBaseRepository(db *gorm.DB) KnowledgeBaseRepo {

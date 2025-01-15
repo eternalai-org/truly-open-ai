@@ -238,7 +238,7 @@ func (s *Service) RunJobs(ctx context.Context) error {
 		},
 	)
 
-	gocron.Every(30).Second().Do(
+	gocron.Every(1).Minutes().Do(
 		func() {
 			s.JobCreateAgentKnowledgeBase(context.Background())
 		},

@@ -233,3 +233,37 @@ func (s *Server) AgentUseKnowledgeBase(c *gin.Context) {
 
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
+
+func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	req := &serializers.UpdateKnowledgeBaseWithSignatureRequest{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseByKBId(ctx, req.KnowledgeBaseId)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	if info.UserAddress != userAddress {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
+		return
+	}
+
+	info, err = s.nls.UpdateKnowledgeBaseInContractWithSignature(ctx, info, req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: info})
+}

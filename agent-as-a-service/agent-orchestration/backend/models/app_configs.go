@@ -6,7 +6,7 @@ import (
 )
 
 var KeyConfigNameWalletDeploy = "wallet_deploy"
-var KeyConfigNameModelId = "model_id"
+var KeyConfigNameModelId = "knowledge_base_model_id"
 var KeyConfigNameKnowledgeBaseWorkerHubAddress = "know_ledge_base_worker_hub_address"
 var KeyConfigNameKnowledgeBaseTokenContractAddress = "knowledge_base_token_contract_address"
 

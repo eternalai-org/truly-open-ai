@@ -31,7 +31,6 @@ type KnowledgeBase struct {
 	Name                   string               `json:"name"`
 	Description            string               `json:"description"`
 	AgentInfoId            string               `json:"agent_info_id"`
-	ResultUrl              string               `json:"result_url"`
 	NetworkID              uint64               `json:"network_id"`
 	KBTokenContractAddress string               `json:"kb_token_contract_address"`
 	KBTokenID              string               `json:"kb_token_id" gorm:"index"`
