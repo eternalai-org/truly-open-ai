@@ -13,16 +13,18 @@ const (
 
 type Launchpad struct {
 	gorm.Model
-	TwitterPostID   uint   `gorm:"unique_index"`
-	TweetId         string `gorm:"unique_index"`
-	Name            string
-	Description     string `gorm:"type:text"`
-	TwitterId       string
-	TwitterUsername string
-	TwitterName     string
-	Address         string
-	LastScanID      string
-	Status          LaunchpadStatus
+	TwitterPostID          uint   `gorm:"unique_index"`
+	TweetId                string `gorm:"unique_index"`
+	Name                   string
+	Description            string `gorm:"type:text"`
+	TwitterId              string
+	TwitterUsername        string
+	TwitterName            string
+	Address                string
+	LastScanID             string
+	Status                 LaunchpadStatus
+	AgentSnapshotMissionID uint
+	AgentSnapshotMission   *AgentSnapshotMission
 }
 
 type LaunchpadMember struct {
