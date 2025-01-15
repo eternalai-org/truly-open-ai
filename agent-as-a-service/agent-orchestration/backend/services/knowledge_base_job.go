@@ -44,10 +44,24 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 				zap.Any("err", err), zap.Any("kb", item))
 		}
 	}
+	list, err = s.KnowledgeUsecase.GetManyKnowledgeBaseByQuery(ctx, fmt.Sprintf("status = '%v' AND filecoin_hash <> '' AND kb_id <> '' ", models.KnowledgeBaseStatusPaymentReceipt), "id asc", 0, 10)
+	if err != nil {
+		return err
+	}
+	for _, item := range list {
+		err = s.DeployAgentKnowledgeBase(ctx, item)
+		if err != nil {
+			logger.Info("JobCreateAgentKnowledgeBase", "CreateAgentKnowledgeBase",
+				zap.Any("err", err), zap.Any("kb", item))
+		}
+	}
 	return nil
 }
 
 func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.KnowledgeBase) error {
+	if len(info.FilecoinHash) == 0 {
+		return fmt.Errorf("file coin hash is empty")
+	}
 	var err error
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
 	if err != nil {
