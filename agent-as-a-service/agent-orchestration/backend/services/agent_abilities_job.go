@@ -93,7 +93,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 			var retErr error
 			if len(missions) > 0 {
 				for _, mission := range missions {
-					err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "")
+					err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "", "")
 					if err != nil {
 						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, mission.ID))
 					}
@@ -299,7 +299,7 @@ func (s *Service) JobAgentSnapshotPostActionCancelled(ctx context.Context) error
 	return nil
 }
 
-func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, orgTweetID, tokenSymbol string) error {
+func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, orgTweetID, tokenSymbol string, toolList string) error {
 	err := s.JobRunCheck(
 		ctx,
 		fmt.Sprintf("AgentSnapshotPostCreate_%d", missionID),
@@ -382,6 +382,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if mission.MissionStore != nil {
 						missionStoreFee = numeric.BigFloat{*big.NewFloat(float64(mission.MissionStore.Price))}
 						inferFee = numeric.BigFloat{*models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float)}
+					}
+					if toolList != "" {
+						mission.ToolList = toolList
 					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,

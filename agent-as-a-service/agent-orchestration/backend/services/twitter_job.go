@@ -121,7 +121,7 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID, sinceID string) (*twitter.TweetRecentSearch, error) {
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
 	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", parentTweetID), sinceID, 50)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -141,9 +141,14 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID,
 					if err != nil {
 						return errs.NewError(err)
 					}
-					//ask ai to check join message
-
-					//if yes call chain of thought to find tier
+					address := helpers.ExtractEtherAddress(v.Tweet.Text)
+					if address != "" {
+						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey)
+						err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "", toolList)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
 					return nil
 				},
 			)

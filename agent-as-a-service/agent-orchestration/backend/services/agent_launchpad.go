@@ -304,6 +304,40 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 							if err != nil {
 								return errs.NewError(err)
 							}
+							//create mission template
+							agentInfo := twitterPost.AgentInfo
+							mission := &models.AgentSnapshotMission{}
+							mission.NetworkID = agentInfo.NetworkID
+							mission.AgentInfoID = agentInfo.ID
+							mission.UserPrompt = fmt.Sprintf(`Project Description: %s
+
+Task: Analyze the data provided for the specified Twitter user (note: this data belongs to the user and is not associated with your Twitter account). Predict the percentage value of their potential contribution to the project. Based on this prediction, classify the user into one of the following tiers:
+	•	Tier 1: Contribution percentage over 80%
+	•	Tier 2: Contribution percentage between 51% and 80%
+	•	Tier 3: Contribution percentage 50% or below
+
+The final output should clearly indicate the tier to which the user belongs.`, lp.Description)
+							mission.ToolSet = "launchpad_join"
+							mission.Enabled = false
+							mission.IsTesting = true
+							mission.ReplyEnabled = true
+							mission.AgentType = models.AgentInfoAgentTypeNormal
+							toolList := `[{"description":"API to get twitter tweets","executor":"https://agent.api.eternalai.org/api/internal/twitter/user/recent-info?id=%s","headers":{"api-key": "%s"},"label":"query","method":"GET","name":"get_twitter_tweets","params":[]}]`
+							mission.ToolList = toolList
+							if mission.ToolList != "" {
+								mission.ReactMaxSteps = 5
+							}
+							//
+							err = s.dao.Save(tx, mission)
+							if err != nil {
+								return errs.NewError(err)
+							}
+							//
+							lp.AgentSnapshotMissionID = mission.ID
+							err = s.dao.Save(tx, lp)
+							if err != nil {
+								return errs.NewError(err)
+							}
 						}
 						twitterPost.Status = models.AgentTwitterPostStatusReplied
 						err = s.dao.Save(tx, twitterPost)
@@ -314,6 +348,7 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 						if err != nil {
 							return errs.NewError(err)
 						}
+
 					}
 					return nil
 				},
@@ -439,7 +474,9 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 					map[string][]interface{}{
 						"status = ?": {models.LaunchpadStatusNew},
 					},
-					map[string][]interface{}{},
+					map[string][]interface{}{
+						"AgentSnapshotMission": {},
+					},
 					[]string{},
 					0,
 					1000,
@@ -453,7 +490,7 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 						func(tx *gorm.DB) error {
 							l, _ := s.dao.FirstLaunchpadByID(tx, launchpad.ID, map[string][]interface{}{}, true)
 							if l != nil {
-								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.TweetId, launchpad.LastScanID)
+								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.TweetId, launchpad.LastScanID, launchpad.AgentSnapshotMission)
 								if err != nil {
 									return err
 								}
