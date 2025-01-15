@@ -81,7 +81,30 @@ func (s *Server) webhookKnowledgeFile(c *gin.Context) {
 }
 
 func (s *Server) listKnowledgeByAgent(c *gin.Context) {
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: nil})
+	ctx := s.requestContext(c)
+	ms, err := s.nls.SyncAgentInfoDetailByAgentID(ctx, s.stringFromContextParam(c, "id"))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	data, err := s.nls.KnowledgeUsecase.MapKnowledgeBaseByAgentIds(ctx, []uint{ms.ID})
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	resp := []*serializers.KnowledgeBase{}
+	if kbs, ok := data[ms.ID]; ok {
+		for _, kb := range kbs {
+			kbR := &serializers.KnowledgeBase{}
+			if err := utils.Copy(kbR, kb); err != nil {
+				ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+				return
+			}
+			resp = append(resp, kbR)
+		}
+	}
+
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 	return
 }
 
