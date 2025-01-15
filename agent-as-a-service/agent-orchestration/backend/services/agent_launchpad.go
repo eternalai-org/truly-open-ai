@@ -15,10 +15,40 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *Service) ProxyAdminDAOUpgrade(ctx context.Context, networkID uint64, proxyAddress string) (string, error) {
+	txHash, err := s.GetEthereumClient(context.Background(), networkID).
+		ProxyAdminUpgrade(
+			s.conf.GetConfigKeyString(networkID, "proxy_admin_address"),
+			s.GetAddressPrk(s.conf.GetConfigKeyString(networkID, "dao_pool_address")),
+			helpers.HexToAddress(proxyAddress),
+			helpers.HexToAddress(s.conf.GetConfigKeyString(networkID, "dao_treasury_logic_address")),
+		)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	time.Sleep(10 * time.Second)
+	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	return txHash, nil
+}
+
+func (s *Service) DeployDAOTreasuryLogic(ctx context.Context, networkID uint64) (string, error) {
+	address, _, err := s.GetEthereumClient(context.Background(), networkID).
+		DeployDAOTreasury(
+			s.GetAddressPrk(s.conf.GetConfigKeyString(networkID, "dao_pool_address")),
+		)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	return address, nil
+}
+
 func (s *Service) DeployDAOTreasuryAddress(ctx context.Context, networkID uint64) (string, error) {
 	data, err := s.GetEthereumClient(context.Background(), networkID).DAOTreasuryInitializeData(
 		helpers.HexToAddress(s.conf.GetConfigKeyString(networkID, "uniswap_position_mamanger_address")),
-		helpers.HexToAddress(s.conf.GetConfigKeyString(networkID, "proxy_admin_address")),
+		helpers.HexToAddress(s.conf.GetConfigKeyString(networkID, "eai_contract_address")),
 	)
 	if err != nil {
 		return "", errs.NewError(err)

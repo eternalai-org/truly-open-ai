@@ -1,8 +1,8 @@
 package main_test
 
 import (
-	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -47,7 +47,11 @@ func Test_JOB(t *testing.T) {
 	// ts.JobUpdateOffchainAutoOutputForMission(context.Background())
 	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
-	ts.AgentDeployDAOToken(context.Background(), 1)
+	fmt.Println(
+	// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
+	// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
+	// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
+	)
 	select {}
 }
 
