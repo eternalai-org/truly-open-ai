@@ -132,6 +132,15 @@ func (s *Service) GetEthereumClient(ctx context.Context, networkID uint64) *etha
 			if isBtcL1 {
 				ethApi.InscribeTxsLog = s.InscribeTxsLog
 			}
+			if s.conf.ExistsedConfigKey(
+				networkID,
+				"gas_rpc_url",
+			) {
+				ethApi.BaseGasURL = s.conf.GetConfigKeyString(
+					networkID,
+					"gas_rpc_url",
+				)
+			}
 			s.ethApiMap[networkID] = ethApi
 		} else {
 			panic(errors.New("rpc url is not found"))
