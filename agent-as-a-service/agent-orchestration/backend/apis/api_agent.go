@@ -16,7 +16,12 @@ func (s *Server) GetListAgent(c *gin.Context) {
 	chain := s.chainFromContextQuery(c)
 	creator := s.stringFromContextQuery(c, "creator")
 	agentType := s.uintFromContextQuery(c, "agent_type")
-	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, page, limit)
+	kbStatus, err := s.uint64FromContextQuery(c, "kb_status")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, int64(kbStatus), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -42,7 +47,12 @@ func (s *Server) GetListAgentForDojo(c *gin.Context) {
 	chain := s.chainFromContextQuery(c)
 	creator := s.stringFromContextQuery(c, "creator")
 	agentType := s.uintFromContextQuery(c, "agent_type")
-	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, page, limit)
+	kbStatus, err := s.uint64FromContextQuery(c, "kb_status")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ms, count, err := s.nls.GetListAgentInfos(ctx, chain, creator, agentType, int64(kbStatus), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

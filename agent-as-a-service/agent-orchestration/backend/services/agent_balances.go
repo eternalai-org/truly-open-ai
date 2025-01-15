@@ -39,7 +39,7 @@ func (s *Service) FindAgentSnapshotPostAction(ctx context.Context, agentId uint)
 	return s.dao.FindAgentSnapshotPostAction(daos.GetDBMainCtx(ctx), filters, preloads, []string{"id DESC"}, 0, 50)
 }
 
-func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentType uint, page, limit int) ([]*models.AgentInfo, uint, error) {
+func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentType uint, kbStatus int64, page, limit int) ([]*models.AgentInfo, uint, error) {
 	selected := []string{
 		"agent_infos.*",
 	}
@@ -56,6 +56,12 @@ func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creat
 	if agentType > 0 {
 		filters["agent_type= ?"] = []interface{}{agentType}
 	}
+
+	if kbStatus > 0 {
+		joinFilters["JOIN knowledge_bases kb ON kb.id = agent_infos.agent_kb_id"] = []interface{}{}
+		filters["kb.status = ?"] = []interface{}{kbStatus}
+	}
+
 	keys, err := s.dao.FindAgentInfoJoinSelect(
 		daos.GetDBMainCtx(ctx),
 		selected,

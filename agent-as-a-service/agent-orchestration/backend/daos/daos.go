@@ -11,9 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	dbMain *gorm.DB
-)
+var dbMain *gorm.DB
 
 func InitDBConn(dbMainConn *gorm.DB) {
 	dbMain = dbMainConn
@@ -374,6 +372,7 @@ func (d *DAO) firstJoinSelect(tx *gorm.DB, m interface{}, selected []string, joi
 	}
 	return nil
 }
+
 func (d *DAO) findJoinSelect4Page(tx *gorm.DB, m interface{}, ms interface{}, selected []string, joins map[string][]interface{}, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, page uint, limit uint, forUpdate bool) (uint, error) {
 	var count uint
 	offset := page*limit - limit
