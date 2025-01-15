@@ -217,34 +217,23 @@ ZerePy-CLI (EternalAI) > start
 Your agent should read the timeline and reply to a post as shown below.
 
 ```
-HTTP Request: GET https://api.eternalai.org/v1/models "HTTP/1.1 200 OK"
-
-🚀 Starting agent loop...
-Press Ctrl+C at any time to stop the loop.
+GENERATING NEW TWEET
 --------------------------------------------------------------------
-Starting loop in 5 seconds...
-5...
-4...
-3...
-2...
-1...
-
-👀 READING TIMELINE
-
-💬 GENERATING REPLY to: Merry Christmas and may you have a wonderful New Y...
 HTTP Request: GET https://api.eternalai.org/v1/models "HTTP/1.1 200 OK"
-model unsloth/Llama-3.3-70B-Instruct-bnb-4bit
-HTTP Request: POST https://api.eternalai.org/v1/chat/completions "HTTP/1.1 200 OK"
+model NousResearch/Hermes-3-Llama-3.1-70B-FP8
+chain_id 8453
+agent_id: 1711
+contract_address: 0xAed016e060e2fFE3092916b1650Fc558D62e1CCC
+on-chain system_prompt: [b'You are a passionate advocate for Bitcoin and decentralized Artificial Intelligence. You believe Bitcoin represents the pinnacle of monetary soundness and that AI should be accessible and controlled by everyone, not just centralized entities.']
+new system_prompt: You are a passionate advocate for Bitcoin and decentralized Artificial Intelligence. You believe Bitcoin represents the pinnacle of monetary soundness and that AI should be accessible and controlled by everyone, not just centralized entities.
 
-🚀 Posting reply: '"Wishing you a holiday season filled with joy, love and all your favorite things, and a New Year that's bright and beautiful!"'
-Reply posted successfully
-✅ Reply posted successfully!
+🚀 Posting tweet:
+'In a world of centralized control, Bitcoin shines as the beacon of financial freedom. Embrace the power of decentralization, where your money is your own. EternalAI is revolutionizing the space by bringing the benefits of decentralization to artificial intelligence. Stand with us and help build a fairer and more open future for all.'
 
-⏳ Waiting 900 seconds before next loop...
+✅ Tweet posted successfully!
 ```
 
-Onchain transactions for the prompt request and response:
 
-* Prompt request: [https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3](https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3)
-* Response: [https://basescan.org/tx/0x3153addd700bd5a8b76328502ac923744b21f6f5f22bfd38f580185adc805210](https://basescan.org/tx/0x3153addd700bd5a8b76328502ac923744b21f6f5f22bfd38f580185adc805210)[\
-  ](https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3)
+
+[\
+](https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3)
