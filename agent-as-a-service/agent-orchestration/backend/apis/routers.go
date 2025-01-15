@@ -137,6 +137,7 @@ func (s *Server) Routers() {
 			// dojo
 			agentAPI.GET("/dojo/list", s.GetListAgentForDojo)
 			agentAPI.GET("/dojo/:id", s.GetAgentDetailByAgentIDForDojo)
+			agentAPI.GET("/dojo/:id/knowledge-base", s.listKnowledgeByAgent)
 			agentAPI.POST("/create_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentCreateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant_in_contract", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistantInContract)
@@ -226,12 +227,17 @@ func (s *Server) Routers() {
 			// Token management
 			tokenAPI := internalAPI.Group("/trade")
 			{
-				tokenAPI.GET("tokens", s.GetAgentTradeTokens)
+				tokenAPI.GET("/tokens", s.GetAgentTradeTokens)
 				tokenAPI.GET("/search", s.DexSearchPair)
 				tokenAPI.GET("/trade-history/latest", s.DexPairsTradeLatest)
 				tokenAPI.GET("/solana/chart-24h/:mint", s.GetSolanaDataChart24Hour)
 				tokenAPI.GET("/dexscreen-info", s.DexScreenInfo)
 				tokenAPI.GET("/analytic", s.GetTradeAnalytic)
+			}
+			// launchpad management
+			launchpadAPI := internalAPI.Group("/launchpad")
+			{
+				launchpadAPI.POST("/:id/tier/:member_id", s.SetTier)
 			}
 		}
 		// deprecated

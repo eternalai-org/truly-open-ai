@@ -169,7 +169,7 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 		}
 
 		userPrompt := fmt.Sprintf(`
-		Rewrite this for a Twitter post: 
+		Rewrite this for a Twitter post, don't change symbol token $EAI or $%s:
 
 		"Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!"
 
@@ -178,7 +178,7 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 		{"content": ""}
 		
 		Respond with only the JSON string, without any additional explanation.
-		`, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
+		`, agentInfo.TokenSymbol, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
 		fmt.Println(userPrompt)
 
 		aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())
@@ -336,7 +336,7 @@ func (s *Service) LuckyMoneyCollectPost(ctx context.Context, missionID uint) err
 											}
 											tokenBalance = models.ConvertWeiToBigFloat(balance, 18)
 										} else {
-											userBalance, _ := s.blockchainUtils.SolanaBalanceByToken(snapshotPostAction.AgentInfo.TokenAddress, userAddress)
+											userBalance, _ := s.blockchainUtils.SolanaBalanceByToken(userAddress, snapshotPostAction.AgentInfo.TokenAddress)
 											if userBalance != nil {
 												tokenBalance = big.NewFloat(userBalance.UIAmount)
 											}
@@ -571,56 +571,59 @@ func (s *Service) LuckyMoneyProcessUserReward(ctx context.Context, luckyID uint)
 						luckyMoneyAdminAddress := strings.ToLower(s.conf.LuckyMoneyAdminAddress)
 						luckyMoneyAdminAddressSol := strings.ToLower(s.conf.LuckyMoneyAdminAddressSol)
 						var txHash string
-						if agentInfo.TokenNetworkID == models.SOLANA_CHAIN_ID {
-							decimalsMint := 9
-							if agentInfo.TokenAddress != "" {
-								decimalsMint, err = s.GetSolanaTokenDecimals(agentInfo.TokenAddress)
-								if err != nil {
-									return errs.NewError(errs.ErrBadRequest)
+						eaiAddress := strings.ToLower(s.conf.GetConfigKeyString(agentInfo.TokenNetworkID, "eai_contract_address"))
+						if eaiAddress != "" {
+							if agentInfo.TokenNetworkID == models.SOLANA_CHAIN_ID {
+								decimalsMint := 9
+								if agentInfo.TokenAddress != "" {
+									decimalsMint, err = s.GetSolanaTokenDecimals(agentInfo.TokenAddress)
+									if err != nil {
+										return errs.NewError(errs.ErrBadRequest)
+									}
 								}
+
+								rAmount, _ := m.RewardAmount.Float.Float64()
+								transferReq := &blockchainutils.SolanaTransferReq{
+									Mint:      eaiAddress,
+									Amount:    uint64(rAmount * math.Pow10(decimalsMint)),
+									ToAddress: m.UserAddress,
+								}
+								txHash, err = s.blockchainUtils.SolanaTransfer(luckyMoneyAdminAddressSol, transferReq)
+							} else {
+								txHash, err = s.GetEthereumClient(ctx, agentInfo.TokenNetworkID).Erc20Transfer(
+									eaiAddress,
+									s.GetAddressPrk(luckyMoneyAdminAddress), m.UserAddress,
+									models.ConvertBigFloatToWei(&m.RewardAmount.Float, 18).String(),
+								)
 							}
 
-							rAmount, _ := m.RewardAmount.Float.Float64()
-							transferReq := &blockchainutils.SolanaTransferReq{
-								Mint:      agentInfo.TokenAddress,
-								Amount:    uint64(rAmount * math.Pow10(decimalsMint)),
-								ToAddress: m.UserAddress,
+							if err != nil {
+								m.Error = err.Error()
+							} else {
+								m.TxHash = txHash
+								m.Status = models.LuckyMoneyStatusDone
 							}
-							txHash, err = s.blockchainUtils.SolanaTransfer(luckyMoneyAdminAddressSol, transferReq)
-						} else {
-							txHash, err = s.GetEthereumClient(ctx, agentInfo.TokenNetworkID).Erc20Transfer(
-								agentInfo.TokenAddress,
-								s.GetAddressPrk(luckyMoneyAdminAddress), m.UserAddress,
-								models.ConvertBigFloatToWei(&m.RewardAmount.Float, 18).String(),
-							)
-						}
+							err = s.dao.Save(tx, m)
+							if err != nil {
+								return errs.NewError(err)
+							}
 
-						if err != nil {
-							m.Error = err.Error()
-						} else {
-							m.TxHash = txHash
-							m.Status = models.LuckyMoneyStatusDone
-						}
-						err = s.dao.Save(tx, m)
-						if err != nil {
-							return errs.NewError(err)
-						}
-
-						if m.Status == models.LuckyMoneyStatusDone {
-							_ = s.dao.Create(
-								tx,
-								&models.AgentEaiTopup{
-									NetworkID:      agentInfo.NetworkID,
-									EventId:        fmt.Sprintf("agent_lucky_money_%d", m.ID),
-									AgentInfoID:    agentInfo.ID,
-									Type:           models.AgentEaiTopupTypeSpent,
-									Amount:         m.RewardAmount,
-									Status:         models.AgentEaiTopupStatusDone,
-									DepositAddress: m.UserAddress,
-									ToAddress:      m.UserAddress,
-									Toolset:        string(models.ToolsetTypeLuckyMoneys),
-								},
-							)
+							if m.Status == models.LuckyMoneyStatusDone {
+								_ = s.dao.Create(
+									tx,
+									&models.AgentEaiTopup{
+										NetworkID:      agentInfo.NetworkID,
+										EventId:        fmt.Sprintf("agent_lucky_money_%d", m.ID),
+										AgentInfoID:    agentInfo.ID,
+										Type:           models.AgentEaiTopupTypeSpent,
+										Amount:         m.RewardAmount,
+										Status:         models.AgentEaiTopupStatusDone,
+										DepositAddress: m.UserAddress,
+										ToAddress:      m.UserAddress,
+										Toolset:        string(models.ToolsetTypeLuckyMoneys),
+									},
+								)
+							}
 						}
 						//reply to user
 					}
@@ -642,7 +645,8 @@ func (s *Service) LuckyMoneyProcessUserReward(ctx context.Context, luckyID uint)
 func (s *Service) TestUtil() {
 	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
 	// fmt.Println(etherAddress)
-	mediaID, err := s.twitterAPI.UploadImage("https://cdn.bvm.network/agent/de799a2a-860f-4d28-83d1-785973f6b3b7.png", []string{})
-	fmt.Println(mediaID)
+
+	resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "UOS"))
+	fmt.Println(resp.LastPrice)
 	fmt.Println(err)
 }

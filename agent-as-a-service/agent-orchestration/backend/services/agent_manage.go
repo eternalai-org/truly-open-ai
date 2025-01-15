@@ -223,6 +223,8 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		kbReq.UserAddress = strings.ToLower(address)
 		kbReq.DepositAddress = agent.ETHAddress
 		kbReq.SolanaDepositAddress = agent.SOLAddress
+		kbReq.NetworkID = req.ChainID
+		kbReq.AgentInfoId = agent.ID
 		kb, err := s.KnowledgeUsecase.CreateKnowledgeBase(ctx, req.CreateKnowledgeRequest)
 		if err != nil {
 			return nil, err
@@ -459,6 +461,10 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 					updateMap := make(map[string]interface{})
 					if kbReq.Name != "" {
 						updateMap["name"] = kbReq.Name
+						agent.AgentName = kbReq.Name
+						if err := s.dao.Save(tx, agent); err != nil {
+							return errs.NewError(err)
+						}
 					}
 
 					if kbReq.Description != "" {
@@ -475,6 +481,16 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 					}
 					agent.AgentKBId = i.KnowledgeBaseId
 					return s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, i.KnowledgeBaseId, updateMap)
+				}
+
+				for _, id := range req.KbIds {
+					_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
+						AgentInfoId:     agent.ID,
+						KnowledgeBaseId: id,
+					})
+					if err != nil {
+						return err
+					}
 				}
 
 				go s.AgentCreateMissionDefault(context.Background(), agent.ID)

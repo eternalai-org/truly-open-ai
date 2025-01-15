@@ -47,7 +47,7 @@ You can find the list of supported chains and models [here](https://docs.eternal
 
 For this tutorial, we'll use **Base** and **Hermes 3 70B,** so we need to update the chain ID in the `agent_with_eternalai.rs` from 45762 to 8453.&#x20;
 
-<figure><img src="../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 4: Build your Rig agent
 
@@ -111,7 +111,7 @@ Let's look at an onchain prompt transaction on BaseScan. You can verify that thi
 
 {% embed url="https://basescan.org/tx/0x409089de35d5529a8ef2ee8af93d71a1eef7c774e27bfd939c0bffdffcdef82a" %}
 
-<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 6: Verify the onchain response transaction
 
@@ -119,7 +119,7 @@ Now, let's look at the onchain response tx on BaseScan. You can see the actual r
 
 {% embed url="https://basescan.org/tx/0x55756e7b4368bd39b7e7e16741361f4d4871836f93a67a14d98c88ff2b5dce59" %}
 
-<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 7 (Advanced): Reproduce the response
 
@@ -129,17 +129,13 @@ More agents will live among us, so we think it's important to build onchain-veri
 
 As with anything in crypto — "Don't trust the AI, verify it."
 
-{% content-ref url="dont-trust-verify.md" %}
-[dont-trust-verify.md](dont-trust-verify.md)
-{% endcontent-ref %}
-
-
+{% embed url="https://docs.eternalai.org/eternal-ai/decentralized-inference-api/tutorials/dont-trust-verify" %}
 
 ### Step 8 (Advanced): Read the whitepaper
 
 If you want to understand how Eternal AI's Decentralized Inference works, you can read the ["AI-powered Base" whitepaper](https://x.com/punk3700/status/1869428187450749093).
 
-<figure><img src="../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Congrats!
 

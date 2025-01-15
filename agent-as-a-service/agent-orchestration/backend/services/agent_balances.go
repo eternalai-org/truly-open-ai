@@ -39,7 +39,7 @@ func (s *Service) FindAgentSnapshotPostAction(ctx context.Context, agentId uint)
 	return s.dao.FindAgentSnapshotPostAction(daos.GetDBMainCtx(ctx), filters, preloads, []string{"id DESC"}, 0, 50)
 }
 
-func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentType uint, kbStatus int64, page, limit int) ([]*models.AgentInfo, uint, error) {
+func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentTypes []uint, kbStatus int64, page, limit int) ([]*models.AgentInfo, uint, error) {
 	selected := []string{
 		"agent_infos.*",
 	}
@@ -53,8 +53,8 @@ func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creat
 		filters["creator = ?"] = []interface{}{strings.ToLower(creator)}
 	}
 
-	if agentType > 0 {
-		filters["agent_type= ?"] = []interface{}{agentType}
+	if len(agentTypes) != 0 {
+		filters["agent_type IN (?)"] = []interface{}{agentTypes}
 	}
 
 	if kbStatus > 0 {

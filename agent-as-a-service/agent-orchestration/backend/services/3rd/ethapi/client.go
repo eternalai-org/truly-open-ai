@@ -75,11 +75,13 @@ func (b *BlockResp) Hash() string {
 type Client struct {
 	evmapi.BaseClient
 	BaseURL     string
+	BaseGasURL  string
 	BlockMap    map[uint64]*BlockResp
 	BlockMapMtx sync.Mutex
 	//
 	chainID           uint64
 	client            *ethclient.Client
+	gasClient         *ethclient.Client
 	MinGasPrice       string
 	BTCL1             bool
 	BlockTimeDisabled bool
@@ -96,6 +98,20 @@ func (c *Client) getClient() (*ethclient.Client, error) {
 		c.client = client
 	}
 	return c.client, nil
+}
+
+func (c *Client) getGasClient() (*ethclient.Client, error) {
+	if c.gasClient == nil {
+		if c.BaseGasURL == "" {
+			c.BaseGasURL = c.BaseURL
+		}
+		client, err := ethclient.Dial(c.BaseGasURL)
+		if err != nil {
+			return nil, err
+		}
+		c.gasClient = client
+	}
+	return c.gasClient, nil
 }
 
 func (c *Client) GetClient() (*ethclient.Client, error) {
@@ -363,7 +379,7 @@ func (c *Client) GetChainID() (uint64, error) {
 }
 
 func (c *Client) getGasPrice() (*big.Int, error) {
-	client, err := c.getClient()
+	client, err := c.getGasClient()
 	if err != nil {
 		return nil, err
 	}
@@ -379,6 +395,7 @@ func (c *Client) getGasPrice() (*big.Int, error) {
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println(gasPrice.String())
 		gasPrice = common.Big0.Quo(
 			common.Big0.Mul(gasPrice, big.NewInt(12)),
 			big.NewInt(10),
@@ -389,7 +406,7 @@ func (c *Client) getGasPrice() (*big.Int, error) {
 }
 
 func (c *Client) getGasTipCap() (*big.Int, error) {
-	client, err := c.getClient()
+	client, err := c.getGasClient()
 	if err != nil {
 		return nil, err
 	}
@@ -425,34 +442,39 @@ func (c *Client) GetCachedGasPriceAndTipCap() (*big.Int, *big.Int, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	cachedGasTipCap, err := c.getGasTipCap()
-	if err != nil {
-		return nil, nil, err
-	}
-	chainID, err := c.GetChainID()
-	if err != nil {
-		return nil, nil, err
-	}
-	switch chainID {
-	case 43114:
-		{
-			if cachedGasPrice.Cmp(big.NewInt(1000000000)) < 0 {
-				cachedGasPrice = big.NewInt(1000000000)
-			}
-			if cachedGasTipCap.Cmp(big.NewInt(1000000000)) < 0 {
-				cachedGasTipCap = big.NewInt(1000000000)
-			}
-		}
-	case 8453:
-		{
-			if cachedGasPrice.Cmp(big.NewInt(20000000)) < 0 {
-				cachedGasPrice = big.NewInt(20000000)
-			}
-			if cachedGasTipCap.Cmp(big.NewInt(20000000)) < 0 {
-				cachedGasTipCap = big.NewInt(20000000)
-			}
-		}
-	}
+	cachedGasTipCap := cachedGasPrice
+	// cachedGasTipCap, err := c.getGasTipCap()
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+	// chainID, err := c.GetChainID()
+	// if err != nil {
+	// 	return nil, nil, err
+	// }
+	// switch chainID {
+	// case 43114:
+	// 	{
+	// 		if cachedGasPrice.Cmp(big.NewInt(1000000000)) < 0 {
+	// 			cachedGasPrice = big.NewInt(1000000000)
+	// 		}
+	// 		if cachedGasTipCap.Cmp(big.NewInt(1000000000)) < 0 {
+	// 			cachedGasTipCap = big.NewInt(1000000000)
+	// 		}
+	// 	}
+	// case 8453:
+	// 	{
+	// 		fmt.Println(cachedGasPrice.String())
+	// 		fmt.Println(cachedGasTipCap.String())
+	// 		if cachedGasPrice.Cmp(big.NewInt(20000000)) < 0 {
+	// 			cachedGasPrice = big.NewInt(20000000)
+	// 		}
+	// 		if cachedGasTipCap.Cmp(big.NewInt(20000000)) < 0 {
+	// 			cachedGasTipCap = big.NewInt(20000000)
+	// 		}
+	// 	}
+	// }
+	fmt.Println(cachedGasPrice.String())
+	fmt.Println(cachedGasTipCap.String())
 	return cachedGasPrice, cachedGasTipCap, nil
 }
 

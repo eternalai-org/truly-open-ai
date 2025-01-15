@@ -121,6 +121,7 @@ func (s *Service) CreateMemePool(ctx context.Context, networkID uint64, event *e
 					}
 				}
 			}
+
 			if s.conf.ExistsedConfigKey(networkID, "uniswap_factory_contract_address") {
 				swapFactoryAddr := s.conf.GetConfigKeyString(networkID, "uniswap_factory_contract_address")
 				if strings.EqualFold(swapFactoryAddr, event.ContractAddress) {

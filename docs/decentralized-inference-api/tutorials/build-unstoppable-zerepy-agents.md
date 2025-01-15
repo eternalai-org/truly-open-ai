@@ -1,4 +1,8 @@
-# Use ZerePy framework with EternalAI API
+---
+hidden: true
+---
+
+# Build unstoppable ZerePy agents
 
 In the tutorial, we describe how to use ZerePy framework with EternalAI API (instead of OpenAI API).
 

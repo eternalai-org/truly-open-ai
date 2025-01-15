@@ -18,6 +18,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	resty "github.com/go-resty/resty/v2"
+	"github.com/jinzhu/gorm"
 
 	"go.uber.org/zap"
 )
@@ -38,6 +39,10 @@ type knowledgeUsecase struct {
 
 func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {
 	return uc.agentInfoKnowledgeBaseRepo.Create(ctx, model)
+}
+
+func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(tx *gorm.DB, socialAgentId uint) ([]*models.KnowledgeBase, error) {
+	return uc.agentInfoKnowledgeBaseRepo.GetKBAgentsUsedOfSocialAgent(tx, socialAgentId)
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
@@ -182,7 +187,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 }
 
 func (uc *knowledgeUsecase) ListKnowledgeBase(ctx context.Context, req *models.ListKnowledgeBaseRequest) ([]*serializers.KnowledgeBase, error) {
-	resp, err := uc.knowledgeBaseRepo.ListByAddress(ctx, req.UserAddress)
+	resp, err := uc.knowledgeBaseRepo.List(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -385,4 +390,8 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 
 func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
 	return uc.knowledgeBaseRepo.GetByKBId(ctx, kbId)
+}
+
+func (uc *knowledgeUsecase) GetManyKnowledgeBaseByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error) {
+	return uc.knowledgeBaseRepo.GetManyByQuery(ctx, query, orderOption, offset, limit)
 }

@@ -30,7 +30,8 @@ type KnowledgeBase struct {
 	DepositTxHash          string               `json:"deposit_tx_hash"`
 	Name                   string               `json:"name"`
 	Description            string               `json:"description"`
-	AgentInfoId            string               `json:"agent_info_id"`
+	AgentInfoId            uint                 `json:"agent_info_id"`
+	AgentInfo              *AgentInfo           `json:"agent_info" gorm:"foreignkey:AgentInfoId;references:ID"`
 	NetworkID              uint64               `json:"network_id"`
 	KBTokenContractAddress string               `json:"kb_token_contract_address"`
 	KBTokenID              string               `json:"kb_token_id" gorm:"index"`
@@ -59,8 +60,9 @@ type KnowledgeBaseFile struct {
 }
 
 type ListKnowledgeBaseRequest struct {
-	UserAddress string `json:"user_address" form:"-"`
-	AgentIds    []uint `json:"agent_ids"`
+	UserAddress string  `json:"user_address" form:"-"`
+	AgentIds    []uint  `json:"agent_ids" form:"agent_ids"`
+	Statuses    []int64 `json:"statuses" form:"statuses"`
 }
 
 func (m *KnowledgeBase) FileUrls() []string {

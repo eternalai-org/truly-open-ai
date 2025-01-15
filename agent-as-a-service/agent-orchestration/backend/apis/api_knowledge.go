@@ -80,6 +80,11 @@ func (s *Server) webhookKnowledgeFile(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: "success"})
 }
 
+func (s *Server) listKnowledgeByAgent(c *gin.Context) {
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: nil})
+	return
+}
+
 func (s *Server) listKnowledge(c *gin.Context) {
 	ctx := s.requestContext(c)
 	userAddress, err := s.getUserAddressFromTK1Token(c)
@@ -88,9 +93,12 @@ func (s *Server) listKnowledge(c *gin.Context) {
 		return
 	}
 
-	req := &models.ListKnowledgeBaseRequest{
-		UserAddress: userAddress,
+	req := &models.ListKnowledgeBaseRequest{}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
 	}
+	req.UserAddress = userAddress
 
 	resp, err := s.nls.KnowledgeUsecase.ListKnowledgeBase(ctx, req)
 	if err != nil {

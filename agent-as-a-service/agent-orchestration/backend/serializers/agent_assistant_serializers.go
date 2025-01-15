@@ -58,6 +58,7 @@ type AssistantsReq struct {
 	TwinTwitterUsernames   string                  `json:"twin_twitter_usernames"`
 	MissionTopics          string                  `json:"mission_topics"`
 	CreateKnowledgeRequest *CreateKnowledgeRequest `json:"create_knowledge_request"`
+	KbIds                  []uint                  `json:"kb_ids"`
 }
 
 func (m *AssistantsReq) GetAssistantCharacter(character interface{}) string {

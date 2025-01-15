@@ -203,7 +203,6 @@ func (s *Service) CheckTwitterPostForTA(tx *gorm.DB, agentInfoID uint, twitterUs
 												m.TokenSymbol = strings.ToUpper(tokenInfo.TokenSymbol)
 												m.Prompt = tokenInfo.Personality
 												m.PostType = models.AgentSnapshotPostActionTypeTradeAnalytic
-
 												err = s.dao.Create(tx, m)
 												if err != nil {
 													return errs.NewError(err)
@@ -316,7 +315,14 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 					if existPosts != nil && len(existPosts) >= 3 {
 						isValid = false
 					}
-					// }
+
+					if isValid {
+						//check valid token symbol
+						binanceInfo, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, twitterPost.TokenSymbol))
+						if err != nil || (binanceInfo.LastPrice == "") {
+							isValid = false
+						}
+					}
 
 					if isValid {
 						if twitterPost.Status == models.AgentTwitterPostStatusNew &&
@@ -357,7 +363,7 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 								return errs.NewError(err)
 							}
 							for _, mission := range missions {
-								err = s.AgentSnapshotPostCreate(ctx, mission.ID, twitterPost.TwitterPostID, twitterPost.TokenSymbol, "")
+								err = s.AgentSnapshotPostCreate(ctx, mission.ID, twitterPost.TwitterPostID, twitterPost.TokenSymbol)
 								if err != nil {
 									return errs.NewError(err)
 								}
@@ -370,7 +376,7 @@ func (s *Service) ProcessMissionTradingAnalytic(ctx context.Context, twitterPost
 							}
 						}
 					} else {
-						twitterPost.Status = models.AgentTwitterPostStatusValid
+						twitterPost.Status = models.AgentTwitterPostStatusInvalid
 						err = s.dao.Save(tx, twitterPost)
 						if err != nil {
 							return errs.NewError(err)

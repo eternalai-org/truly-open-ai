@@ -3,12 +3,14 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 )
 
@@ -121,7 +123,7 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID uint, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
 	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", parentTweetID), sinceID, 50)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -132,7 +134,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID,
 				daos.GetDBMainCtx(ctx),
 				func(tx *gorm.DB) error {
 					tmp := helpers.ParseStringToDateTimeTwitter(v.Tweet.CreatedAt)
-					err = s.dao.Create(daos.GetDBMainCtx(ctx), &models.TwitterTweet{
+					err = s.dao.Create(tx, &models.TwitterTweet{
 						TwitterID: v.Tweet.AuthorID,
 						TweetID:   v.Tweet.ID,
 						FullText:  v.Tweet.Text,
@@ -143,8 +145,54 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID,
 					}
 					address := helpers.ExtractEtherAddress(v.Tweet.Text)
 					if address != "" {
+						//check join
+						member, err := s.dao.FirstLaunchpadMember(tx, map[string][]interface{}{
+							// "user_address = ?": {strings.ToLower(address)},
+							"twitter_id = ?":   {v.Tweet.AuthorID},
+							"launchpad_id = ?": {launchpadID},
+						}, map[string][]interface{}{}, []string{})
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if member == nil {
+							member = &models.LaunchpadMember{
+								UserAddress:  strings.ToLower(address),
+								TwitterID:    v.Tweet.AuthorID,
+								LaunchpadID:  launchpadID,
+								TweetID:      v.Tweet.ID,
+								TweetContent: v.Tweet.Text,
+								Tier:         string(models.LaunchpadTier3),
+							}
+							err = s.dao.Create(tx, member)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						} else if member.UserAddress != strings.ToLower(address) {
+							member.UserAddress = strings.ToLower(address)
+							member.TweetID = v.Tweet.ID
+							member.TweetContent = v.Tweet.Text
+							member.Tier = string(models.LaunchpadTier3)
+							member.ReplyPostID = ""
+							err = s.dao.Save(tx, member)
+							if err != nil {
+								return errs.NewError(err)
+							}
+						}
 						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey)
-						err = s.AgentSnapshotPostCreate(ctx, mission.ID, "", "", toolList)
+						newMission := &models.AgentSnapshotMission{}
+						err = copier.Copy(newMission, mission)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						newMission.ID = 0
+						newMission.ToolList = toolList
+						newMission.LaunchpadMemberID = member.ID
+						newMission.ReactMaxSteps = 2
+						err = s.dao.Create(tx, newMission)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						err = s.AgentSnapshotPostCreate(ctx, newMission.ID, "", "")
 						if err != nil {
 							return errs.NewError(err)
 						}

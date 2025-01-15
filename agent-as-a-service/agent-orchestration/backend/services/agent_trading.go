@@ -839,11 +839,7 @@ func (s *Service) GetTradeAnalytic(ctx context.Context, token string) (interface
 		resp.OpenTime = binanceInfo.OpenTime
 		resp.CloseTime = binanceInfo.CloseTime
 
-		analyticInfo, err := s.taapi.BulkRequest(token)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-
+		analyticInfo, _ := s.taapi.BulkRequest(token)
 		if analyticInfo != nil {
 			for _, item := range analyticInfo.Data {
 				if item.ID == "fibonacciretracement" {
