@@ -141,7 +141,9 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, parentTweetID,
 					if err != nil {
 						return errs.NewError(err)
 					}
-					//call chain of thought to find tier
+					//ask ai to check join message
+
+					//if yes call chain of thought to find tier
 					return nil
 				},
 			)
