@@ -191,8 +191,11 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		agent.AgentType = models.AgentInfoAgentTypeKnowledgeBase
 	}
 
-	err := s.dao.Create(daos.GetDBMainCtx(ctx), agent)
-	if err != nil {
+	if agent.AgentName == "" && req.CreateKnowledgeRequest != nil {
+		agent.AgentName = req.CreateKnowledgeRequest.Name
+	}
+
+	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
 		return nil, errs.NewError(err)
 	}
 
@@ -200,14 +203,14 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 	agentTokenInfo.AgentInfoID = agent.ID
 	agentTokenInfo.NetworkID = agent.TokenNetworkID
 	agentTokenInfo.NetworkName = models.GetChainName(agent.TokenNetworkID)
-	err = s.dao.Create(daos.GetDBMainCtx(ctx), agentTokenInfo)
-	if err != nil {
+
+	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agentTokenInfo); err != nil {
 		return nil, errs.NewError(err)
 	}
 
 	agent.TokenInfoID = agentTokenInfo.ID
-	err = s.dao.Save(daos.GetDBMainCtx(ctx), agent)
-	if err != nil {
+
+	if err := s.dao.Save(daos.GetDBMainCtx(ctx), agent); err != nil {
 		return nil, errs.NewError(err)
 	}
 
@@ -232,9 +235,9 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		// if err != nil {
 		// 	return nil, err
 		// }
+
 		agent.AgentKBId = kb.ID
-		err = s.dao.Save(daos.GetDBMainCtx(ctx), agent)
-		if err != nil {
+		if err := s.dao.Save(daos.GetDBMainCtx(ctx), agent); err != nil {
 			return nil, errs.NewError(err)
 		}
 		oKb, _ := s.KnowledgeUsecase.GetKnowledgeBaseById(ctx, kb.ID)
