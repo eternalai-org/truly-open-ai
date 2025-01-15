@@ -1,6 +1,8 @@
 package serializers
 
-import "time"
+import (
+	"time"
+)
 
 type CreateKnowledgeRequest struct {
 	Name                 string  `json:"name" form:"name"`
@@ -73,4 +75,19 @@ type RetrieveKnowledgeBaseResponse struct {
 	} `json:"result"`
 	Error  interface{} `json:"error"`
 	Status string      `json:"status"`
+}
+
+type UpdateKnowledgeBaseWithSignatureRequest struct {
+	KnowledgeBaseId string `json:"knowledge_base_id" `
+	NetworkID       string `json:"network_id"`
+	//sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte
+	HashData        string `json:"hash_data"`
+	PromptKeyData   string `json:"prompt_key_data"`
+	RandomNonceData string `json:"random_nonce_data"`
+	SignatureData   string `json:"signature_data"`
+
+	//uint256 agentId, string uri, uint256 randomNonce, bytes signature
+	/*HashUri        string `json:"hash_uri"`
+	RandomNonceUri string `json:"random_nonce_uri"`
+	SignatureUri   string `json:"signature_uri"`*/
 }
