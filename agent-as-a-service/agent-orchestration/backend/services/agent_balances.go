@@ -62,10 +62,12 @@ func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creat
 		joinFilters,
 		filters,
 		map[string][]interface{}{
-			"TwitterInfo":    {},
-			"TmpTwitterInfo": {},
-			"Meme":           {`deleted_at IS NULL`},
-			"TokenInfo":      {},
+			"TwitterInfo":                      {},
+			"TmpTwitterInfo":                   {},
+			"Meme":                             {`deleted_at IS NULL`},
+			"TokenInfo":                        {},
+			"KnowledgeBase":                    {},
+			"KnowledgeBase.KnowledgeBaseFiles": {},
 		},
 		[]string{"created_at desc"}, page, limit,
 	)
@@ -174,6 +176,8 @@ func (s *Service) GetAgentInfoDetailByAgentID(ctx context.Context, agentID strin
 			"TokenInfo":                         {},
 			"AgentSnapshotMission":              {"enabled = 1 and is_testing=0"},
 			"AgentSnapshotMission.MissionStore": {},
+			"KnowledgeBase":                     {},
+			"KnowledgeBase.KnowledgeBaseFiles":  {},
 		},
 		[]string{},
 	)
