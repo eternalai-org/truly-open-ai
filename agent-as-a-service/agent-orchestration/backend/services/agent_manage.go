@@ -461,6 +461,10 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 					updateMap := make(map[string]interface{})
 					if kbReq.Name != "" {
 						updateMap["name"] = kbReq.Name
+						agent.AgentName = kbReq.Name
+						if err := s.dao.Save(tx, agent); err != nil {
+							return errs.NewError(err)
+						}
 					}
 
 					if kbReq.Description != "" {
