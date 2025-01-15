@@ -187,7 +187,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 }
 
 func (uc *knowledgeUsecase) ListKnowledgeBase(ctx context.Context, req *models.ListKnowledgeBaseRequest) ([]*serializers.KnowledgeBase, error) {
-	resp, err := uc.knowledgeBaseRepo.ListByAddress(ctx, req.UserAddress)
+	resp, err := uc.knowledgeBaseRepo.List(ctx, req)
 	if err != nil {
 		return nil, err
 	}

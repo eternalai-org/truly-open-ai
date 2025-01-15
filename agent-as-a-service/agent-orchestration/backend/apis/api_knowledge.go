@@ -93,9 +93,12 @@ func (s *Server) listKnowledge(c *gin.Context) {
 		return
 	}
 
-	req := &models.ListKnowledgeBaseRequest{
-		UserAddress: userAddress,
+	req := &models.ListKnowledgeBaseRequest{}
+	if err := c.ShouldBindQuery(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
 	}
+	req.UserAddress = userAddress
 
 	resp, err := s.nls.KnowledgeUsecase.ListKnowledgeBase(ctx, req)
 	if err != nil {

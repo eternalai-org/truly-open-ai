@@ -616,18 +616,18 @@ func (s *Server) GetTwitterDataForLaunchpad(c *gin.Context) {
 
 // launchpad
 func (s *Server) SetTier(c *gin.Context) {
-	ctx := s.requestContext(c)
-	var req serializers.TierReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	launchpadID := s.uintFromContextParam(c, "id")
-	memberID := s.uintFromContextParam(c, "member_id")
-	err := s.nls.TweetByToken(ctx, uint(agentInfoID), &req)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+	// ctx := s.requestContext(c)
+	// var req serializers.TierReq
+	// if err := c.ShouldBindJSON(&req); err != nil {
+	// 	ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+	// 	return
+	// }
+	// launchpadID := s.uintFromContextParam(c, "id")
+	// memberID := s.uintFromContextParam(c, "member_id")
+	// err := s.nls.TweetByToken(ctx, uint(agentInfoID), &req)
+	// if err != nil {
+	// 	ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+	// 	return
+	// }
+	// ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
