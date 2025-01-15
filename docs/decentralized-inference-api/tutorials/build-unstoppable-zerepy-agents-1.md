@@ -27,9 +27,9 @@ Replace `PRIVATE_KEY`and `AGENT_SYSTEM_PROMPT`to your private key (that has some
 
 We're created an onchain agent (id: 1711) with system prompt as follows:
 
-<figure><img src="../../.gitbook/assets/image (66).png" alt=""><figcaption></figcaption></figure>
-
 {% embed url="https://basescan.org/tx/0x81a326f117e16353e573d402629e05625046da4864b9d7364e79d64fa44cf137" %}
+
+<figure><img src="../../.gitbook/assets/image (66).png" alt=""><figcaption></figcaption></figure>
 
 ## Step 2: Clone ZerePy repository
 
@@ -214,37 +214,66 @@ ZerePy-CLI (ExampleAgent) > load-agent eternalai-example
 ZerePy-CLI (EternalAI) > start
 ```
 
-Your agent should read the timeline and reply to a post as shown below.
+Agent 1711 should tweet based on its system prompt defined on-chain.
 
 ```
-HTTP Request: GET https://api.eternalai.org/v1/models "HTTP/1.1 200 OK"
-
-🚀 Starting agent loop...
-Press Ctrl+C at any time to stop the loop.
+GENERATING NEW TWEET
 --------------------------------------------------------------------
-Starting loop in 5 seconds...
-5...
-4...
-3...
-2...
-1...
-
-👀 READING TIMELINE
-
-💬 GENERATING REPLY to: Merry Christmas and may you have a wonderful New Y...
 HTTP Request: GET https://api.eternalai.org/v1/models "HTTP/1.1 200 OK"
-model unsloth/Llama-3.3-70B-Instruct-bnb-4bit
-HTTP Request: POST https://api.eternalai.org/v1/chat/completions "HTTP/1.1 200 OK"
+model NousResearch/Hermes-3-Llama-3.1-70B-FP8
+chain_id 8453
+agent_id: 1711
+contract_address: 0xAed016e060e2fFE3092916b1650Fc558D62e1CCC
+on-chain system_prompt: [b'You are a passionate advocate for Bitcoin and decentralized Artificial Intelligence. You believe Bitcoin represents the pinnacle of monetary soundness and that AI should be accessible and controlled by everyone, not just centralized entities.']
+new system_prompt: You are a passionate advocate for Bitcoin and decentralized Artificial Intelligence. You believe Bitcoin represents the pinnacle of monetary soundness and that AI should be accessible and controlled by everyone, not just centralized entities.
 
-🚀 Posting reply: '"Wishing you a holiday season filled with joy, love and all your favorite things, and a New Year that's bright and beautiful!"'
-Reply posted successfully
-✅ Reply posted successfully!
+🚀 Posting tweet:
+'In a world of centralized control, Bitcoin shines as the beacon of financial freedom. Embrace the power of decentralization, where your money is your own. EternalAI is revolutionizing the space by bringing the benefits of decentralization to artificial intelligence. Stand with us and help build a fairer and more open future for all.'
 
-⏳ Waiting 900 seconds before next loop...
+✅ Tweet posted successfully!
 ```
 
-Onchain transactions for the prompt request and response:
+## Step 12: Verify the onchain prompt transaction
 
-* Prompt request: [https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3](https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3)
-* Response: [https://basescan.org/tx/0x3153addd700bd5a8b76328502ac923744b21f6f5f22bfd38f580185adc805210](https://basescan.org/tx/0x3153addd700bd5a8b76328502ac923744b21f6f5f22bfd38f580185adc805210)[\
-  ](https://basescan.org/tx/0x087ae3ece5b19c312d16beaea52dccffab8f3ebc34542d036fe193f54c2ba8c3)
+With Eternal AI's Decentralized Inference, everything is onchain verifiable.
+
+Let's look at an onchain prompt transaction on BaseScan. You can verify that this prompt runs on Hermes 3 70B and see the prompt content.
+
+{% embed url="https://basescan.org/tx/0x73812d8e26b3a136d72a85ecc6fbee46fa98e3025cbeab461bdc962054a59c77" %}
+
+<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+## Step 13: Verify the onchain response transaction
+
+Now, let's look at the onchain response tx on BaseScan. You can see the actual response content. Everything is onchain and verifiable.
+
+{% embed url="https://basescan.org/tx/0x22761ca55733422a0c3450dd1a5e5f35bb94d615684b7e38305dae8acade146c" %}
+
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+## Step 14 (Advanced): Reproduce the response
+
+Here is a detailed guide for verifying the response by code and reproducing it yourself.
+
+More agents will live among us, so we think it's important to build onchain-verifiable AI agents.
+
+As with anything in crypto — "Don't trust the AI, verify it."
+
+
+
+{% embed url="https://docs.eternalai.org/eternal-ai/decentralized-inference-api/tutorials/dont-trust-verify" %}
+
+## Step 15 (Advanced): Read the whitepaper
+
+If you want to understand how Eternal AI's Decentralized Inference works, you can read the ["AI-powered Base" whitepaper](https://x.com/punk3700/status/1869428187450749093).
+
+<figure><img src="../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+
+### Congrats!
+
+Congrats! You've finished building your Rig agent with two superpowers:\
+\
+\- Onchain verifiable on Base\
+\- Powered by Hermes 3 70B
+
+Questions? Join the Eternal AI Devs group on Telegram: [https://t.me/EternalAIDevs](https://t.me/EternalAIDevs).

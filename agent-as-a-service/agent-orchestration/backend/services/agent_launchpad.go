@@ -10,6 +10,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
 	"github.com/jinzhu/gorm"
 )
@@ -577,6 +578,94 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 	)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) SetTier(ctx context.Context, launchpadID, memberID uint, req *serializers.TierReq) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			lp, err := s.dao.FirstLaunchpadByID(tx, launchpadID, map[string][]interface{}{}, false)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if lp != nil {
+				member, err := s.dao.FirstLaunchpadMemberByID(tx, memberID, map[string][]interface{}{}, true)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if member != nil && member.LaunchpadID == lp.ID {
+					member.Tier = req.Tier
+					member.ReplyContent = req.Message
+					err = s.dao.Save(tx, member)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					s.ReplyAfterJoinLaunchpad(tx, lp.TwitterPostID, lp.ID, member.ID, member.ReplyContent)
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) ReplyAfterJoinLaunchpad(tx *gorm.DB, twitterPostID, launchpadId uint, memberID uint, replyContent string) error {
+	if twitterPostID > 0 && launchpadId > 0 && memberID > 0 {
+		twitterPost, err := s.dao.FirstAgentTwitterPostByID(
+			tx,
+			twitterPostID,
+			map[string][]interface{}{
+				"AgentInfo.TwitterInfo": {},
+			},
+			false,
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		launchpad, err := s.dao.FirstLaunchpadByID(
+			tx,
+			launchpadId,
+			map[string][]interface{}{},
+			false,
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		member, err := s.dao.FirstLaunchpadMemberByID(
+			tx,
+			memberID,
+			map[string][]interface{}{},
+			false,
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && member.ReplyPostID == "" {
+			replyContent = strings.TrimSpace(replyContent)
+			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID, "")
+			if err != nil {
+				_ = tx.Model(member).Updates(
+					map[string]interface{}{
+						"reply_content": replyContent,
+						"error":         err.Error(),
+					},
+				)
+			} else {
+				_ = tx.Model(member).Updates(
+					map[string]interface{}{
+						"reply_content": replyContent,
+						"reply_post_at": helpers.TimeNow(),
+						"reply_post_id": refId,
+						"error":         "",
+					},
+				).Error
+			}
+		}
 	}
 	return nil
 }

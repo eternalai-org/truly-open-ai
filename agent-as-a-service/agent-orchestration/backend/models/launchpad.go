@@ -54,6 +54,10 @@ type LaunchpadMember struct {
 	TweetID      string
 	TweetContent string `gorm:"type:longtext"`
 	Tier         string
+	ReplyContent string `gorm:"type:longtext"`
+	ReplyPostAt  *time.Time
+	ReplyPostID  string
+	Error        string           `gorm:"type:longtext"`
 	FundBalance  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TotalBalance numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }

@@ -223,9 +223,8 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		kbReq.UserAddress = strings.ToLower(address)
 		kbReq.DepositAddress = agent.ETHAddress
 		kbReq.SolanaDepositAddress = agent.SOLAddress
-		kbReq.NetworkID = agent.NetworkID
+		kbReq.NetworkID = req.ChainID
 		kbReq.AgentInfoId = agent.ID
-
 		kb, err := s.KnowledgeUsecase.CreateKnowledgeBase(ctx, req.CreateKnowledgeRequest)
 		if err != nil {
 			return nil, err

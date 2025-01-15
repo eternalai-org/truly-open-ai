@@ -172,6 +172,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 							member.TweetID = v.Tweet.ID
 							member.TweetContent = v.Tweet.Text
 							member.Tier = string(models.LaunchpadTier3)
+							member.ReplyPostID = ""
 							err = s.dao.Save(tx, member)
 							if err != nil {
 								return errs.NewError(err)
@@ -186,6 +187,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 						newMission.ID = 0
 						newMission.ToolList = toolList
 						newMission.LaunchpadMemberID = member.ID
+						newMission.ReactMaxSteps = 2
 						err = s.dao.Create(tx, newMission)
 						if err != nil {
 							return errs.NewError(err)
