@@ -48,6 +48,8 @@ type KnowledgeBase struct {
 	KBTokenContractAddress string               `json:"kb_token_contract_address"`
 	KBTokenID              string               `json:"kb_token_id"`
 	KbId                   string               `json:"kb_id"`
+	ThumbnailUrl           string               `json:"thumbnail_url"`
+	LastErrorMessage       string               `json:"last_error_message"`
 }
 
 type KnowledgeBaseFile struct {
