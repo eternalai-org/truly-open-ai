@@ -129,11 +129,7 @@ More agents will live among us, so we think it's important to build onchain-veri
 
 As with anything in crypto — "Don't trust the AI, verify it."
 
-{% content-ref url="dont-trust-verify.md" %}
-[dont-trust-verify.md](dont-trust-verify.md)
-{% endcontent-ref %}
-
-
+{% embed url="https://docs.eternalai.org/eternal-ai/decentralized-inference-api/tutorials/dont-trust-verify" %}
 
 ### Step 8 (Advanced): Read the whitepaper
 
