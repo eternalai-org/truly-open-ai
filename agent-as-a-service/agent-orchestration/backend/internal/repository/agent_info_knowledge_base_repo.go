@@ -13,11 +13,11 @@ type agentInfoKnowledgeBaseRepo struct {
 
 type IAgentInfoKnowledgeBaseRepo interface {
 	Create(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error)
-	ListAgentInfoKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error)
-	GetAgentInfoKnowledgeBaseByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error)
+	ListByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error)
+	GetByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error)
 }
 
-func (r *agentInfoKnowledgeBaseRepo) GetAgentInfoKnowledgeBaseByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error) {
+func (r *agentInfoKnowledgeBaseRepo) GetByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error) {
 	knowledge := &models.AgentInfoKnowledgeBase{}
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBase").
@@ -31,7 +31,7 @@ func (r *agentInfoKnowledgeBaseRepo) GetAgentInfoKnowledgeBaseByAgentId(ctx cont
 	return knowledge, nil
 }
 
-func (r *agentInfoKnowledgeBaseRepo) ListAgentInfoKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error) {
+func (r *agentInfoKnowledgeBaseRepo) ListByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error) {
 	resp := []*models.AgentInfoKnowledgeBase{}
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBase").
