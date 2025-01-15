@@ -491,32 +491,37 @@ func (s *Service) LuckyMoneyActionExecuted(ctx context.Context, snapshotPostID u
 								}
 							}
 
-							action := &models.AgentSnapshotPostAction{
-								NetworkID:              snapshotPost.NetworkID,
-								AgentInfoID:            snapshotPost.AgentInfoID,
-								AgentSnapshotPostID:    snapshotPostID,
-								AgentSnapshotMissionID: snapshotPost.AgentSnapshotMissionID,
-								AgentTwitterId:         agentInfo.TwitterID,
-								ScheduleAt:             &randomTime,
-								ReqRefID:               snapshotPost.InferTxHash,
-								ToolSet:                models.ToolsetType(snapshotPost.Toolset),
-								Content:                content,
-								Status:                 status,
-								Type:                   models.AgentSnapshotPostActionTypeTweet,
-								RewardUser:             mission.RewardUser,
-								RewardAmount:           mission.RewardAmount,
+							if agentInfo.TokenNetworkID > 0 {
+								action := &models.AgentSnapshotPostAction{
+									NetworkID:              snapshotPost.NetworkID,
+									AgentInfoID:            snapshotPost.AgentInfoID,
+									AgentSnapshotPostID:    snapshotPostID,
+									AgentSnapshotMissionID: snapshotPost.AgentSnapshotMissionID,
+									AgentTwitterId:         agentInfo.TwitterID,
+									ScheduleAt:             &randomTime,
+									ReqRefID:               snapshotPost.InferTxHash,
+									ToolSet:                models.ToolsetType(snapshotPost.Toolset),
+									Content:                content,
+									Status:                 status,
+									Type:                   models.AgentSnapshotPostActionTypeTweet,
+									RewardUser:             mission.RewardUser,
+									RewardAmount:           mission.RewardAmount,
+								}
+
+								err = s.dao.Create(tx, action)
+								if err != nil {
+									return errs.NewError(err)
+								}
+								snapshotPost.Status = models.AgentSnapshotPostStatusInferResolved
+							} else {
+								snapshotPost.Status = models.AgentSnapshotPostStatusInvalid
 							}
 
-							err = s.dao.Create(tx, action)
-							if err != nil {
-								return errs.NewError(err)
-							}
-
-							snapshotPost.Status = models.AgentSnapshotPostStatusInferResolved
 							err = s.dao.Save(tx, snapshotPost)
 							if err != nil {
 								return errs.NewError(err)
 							}
+
 						}
 						return nil
 					},
@@ -559,14 +564,14 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 		userPrompt := fmt.Sprintf(`
 		Rewrite this for a Twitter post: 
 
-		"Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an Ethereum address %s win! 🚀 Fastest fingers only!"
+		"Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!"
 
 		Return a JSON response with the following format:
 
 		{"content": ""}
 		
 		Respond with only the JSON string, without any additional explanation.
-		`, rewardAmount, missionInfo.RewardUser, strMinHolding)
+		`, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
 		fmt.Println(userPrompt)
 
 		aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())
@@ -590,5 +595,7 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 func (s *Service) TestUtil() {
 	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
 	// fmt.Println(etherAddress)
-
+	mediaID, err := s.twitterAPI.UploadImage("https://cdn.bvm.network/agent/de799a2a-860f-4d28-83d1-785973f6b3b7.png", []string{})
+	fmt.Println(mediaID)
+	fmt.Println(err)
 }
