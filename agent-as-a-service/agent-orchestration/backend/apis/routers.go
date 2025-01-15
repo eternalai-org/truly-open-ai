@@ -327,5 +327,10 @@ func (s *Server) Routers() {
 			knowledgeApi.POST("/update-with-signature", s.updateKnowledgeBaseInContractWithSignature)
 		}
 
+		knowledgeBasePublicApi := rootAPI.Group("/knowledge")
+		{
+			knowledgeBasePublicApi.POST("/retrieve", s.retrieveKnowledge)
+		}
+
 	}
 }
