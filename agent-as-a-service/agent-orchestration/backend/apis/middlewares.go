@@ -383,6 +383,20 @@ func (s *Server) float64FromContextQuery(c *gin.Context, query string) (float64,
 	return num, nil
 }
 
+func (s *Server) ptrUintFromContextQuery(c *gin.Context, query string) (*uint, error) {
+	val := strings.TrimSpace(c.Query(query))
+	if val == "" {
+		return nil, nil
+	}
+
+	num, err := strconv.ParseUint(val, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	v := uint(num)
+	return &v, nil
+}
+
 func (s *Server) uint64FromContextQuery(c *gin.Context, query string) (uint64, error) {
 	val := strings.TrimSpace(c.Query(query))
 	if val == "" {
