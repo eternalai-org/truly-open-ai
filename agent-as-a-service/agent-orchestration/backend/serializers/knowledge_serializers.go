@@ -8,6 +8,7 @@ type CreateKnowledgeRequest struct {
 	Name                 string  `json:"name" form:"name"`
 	Description          string  `json:"description" form:"description"`
 	NetworkID            uint64  `json:"network_id" form:"network_id"`
+	AgentInfoId          uint    `json:"agent_info_id" form:"-"`
 	Files                []*File `json:"files" form:"files"`
 	UserAddress          string  `json:"user_address" form:"-"`
 	DepositAddress       string  `json:"-" form:"-"`
@@ -39,7 +40,7 @@ type KnowledgeBase struct {
 	DepositTxHash          string               `json:"deposit_tx_hash"`
 	Name                   string               `json:"name"`
 	Description            string               `json:"description"`
-	AgentId                string               `json:"agent_id"`
+	AgentInfoId            uint                 `json:"agent_info_id"`
 	ResultUrl              string               `json:"result_url"`
 	NetworkID              uint64               `json:"network_id"`
 	Fee                    float64              `json:"fee"`
