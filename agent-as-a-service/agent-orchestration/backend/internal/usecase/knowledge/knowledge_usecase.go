@@ -391,3 +391,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
 	return uc.knowledgeBaseRepo.GetByKBId(ctx, kbId)
 }
+
+func (uc *knowledgeUsecase) GetManyKnowledgeBaseByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error) {
+	return uc.knowledgeBaseRepo.GetManyByQuery(ctx, query, orderOption, offset, limit)
+}
