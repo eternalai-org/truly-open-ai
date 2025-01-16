@@ -383,7 +383,7 @@ The final output should clearly indicate the tier to which the user belongs. Sub
 							toolList := `[{"description":"API to get twitter tweets ","executor":"https://agent.api.eternalai.org/api/internal/twitter/user/recent-info?id=%s","headers":{"api-key": "%s"},"label":"query","method":"GET","name":"get_twitter_tweets","params":[]},{"description":"API to submit result","executor":"https://agent.api.eternalai.org/api/internal/launchpad/%d/tier/%d","headers":{"api-key": "%s"},"label":"action","method":"POST","name":"submit_result","params":[{"name":"tier","dtype":"string"},{"name":"message","dtype":"string"}]}]`
 							mission.ToolList = toolList
 							if mission.ToolList != "" {
-								mission.ReactMaxSteps = 5
+								mission.ReactMaxSteps = 2
 							}
 							//
 							err = s.dao.Save(tx, mission)
