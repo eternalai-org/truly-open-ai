@@ -329,9 +329,11 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 
 		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() > 0 {
 			updatedFields := make(map[string]interface{})
-			if kn.Status == models.KnowledgeBaseStatusWaitingPayment {
-				updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
+			if int(kn.Status) >= int(models.KnowledgeBaseStatusPaymentReceipt) {
+				return nil
 			}
+
+			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
 			updatedFields["deposit_chain_id"] = nId
 			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
