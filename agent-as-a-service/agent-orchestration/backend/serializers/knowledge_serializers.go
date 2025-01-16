@@ -101,6 +101,8 @@ type UpdateKnowledgeBaseWithSignatureRequest struct {
 }
 
 type RetrieveKnowledgeRequest struct {
-	Prompt string `json:"prompt"`
-	KbId   string `json:"kb_id"`
+	Prompt    string  `json:"prompt"`
+	KbId      string  `json:"kb_id"`
+	TopK      int     `json:"top_k"`
+	Threshold float64 `json:"threshold"`
 }

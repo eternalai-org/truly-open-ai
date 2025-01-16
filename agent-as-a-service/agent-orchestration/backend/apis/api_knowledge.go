@@ -316,13 +316,20 @@ func (s *Server) retrieveKnowledge(c *gin.Context) {
 	if s.conf.KnowledgeBaseConfig.KbChatTopK > 0 {
 		chatTopK = s.conf.KnowledgeBaseConfig.KbChatTopK
 	}
+	if req.TopK > 0 {
+		chatTopK = req.TopK
+	}
+	var threshold *float64
+	if req.Threshold > 0 {
+		threshold = &req.Threshold
+	}
 
 	resp, err := s.nls.RetrieveKnowledge(ctx, []openai2.ChatCompletionMessage{{
 		Content: req.Prompt,
 		Role:    openai2.ChatMessageRoleUser,
 	}}, []*models.KnowledgeBase{{
 		KbId: req.KbId,
-	}}, &chatTopK, nil)
+	}}, &chatTopK, threshold)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
