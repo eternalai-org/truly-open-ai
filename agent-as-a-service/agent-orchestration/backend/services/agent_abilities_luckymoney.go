@@ -32,7 +32,7 @@ func (s *Service) JobLuckyMoneyActionExecuted(ctx context.Context) error {
 					map[string][]interface{}{},
 					[]string{
 						"updated_at asc",
-					}, 0, 999,
+					}, 0, 10,
 				)
 				if err != nil {
 					return errs.NewError(err)
