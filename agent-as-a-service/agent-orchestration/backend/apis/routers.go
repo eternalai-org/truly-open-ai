@@ -237,7 +237,7 @@ func (s *Server) Routers() {
 			// launchpad management
 			launchpadAPI := internalAPI.Group("/launchpad")
 			{
-				launchpadAPI.POST("/:id/tier/:member_id", s.SetTier)
+				launchpadAPI.POST("/:id/tier/:member_id", s.ExecuteLaunchpadTier)
 			}
 		}
 		// deprecated
