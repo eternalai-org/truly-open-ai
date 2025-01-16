@@ -63,9 +63,32 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if kn.KbId != "" {
 		updatedFields["status"] = models.KnowledgeBaseStatusDone
 	}
+
 	updatedFields["filecoin_hash"] = fmt.Sprintf("ipfs://%s", hash)
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
 		return nil, err
+	}
+
+	i := 0
+	for {
+		if i > 5 {
+			break
+		}
+		kb1, err := uc.knowledgeBaseRepo.GetById(ctx, id)
+		if err != nil {
+			return kn, nil
+		}
+
+		if kb1.FilecoinHash != "" && kb1.KbId != "" && kb1.Status == models.KnowledgeBaseStatusPaymentReceipt {
+			updatedFields := make(map[string]interface{})
+			updatedFields["status"] = models.KnowledgeBaseStatusDone
+			if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
+				return nil, err
+			}
+			break
+		}
+		time.Sleep(1 * time.Second)
+		i += 1
 	}
 	return kn, nil
 }
@@ -277,18 +300,6 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 		zap.Any("knPrice", knPrice),
 		zap.Any("_knPrice", _knPrice),
 	)
-
-	// balance, err := utils.GetBalanceOnSolanaChain(ctx, kn.SolanaDepositAddress)
-	// if err != nil {
-	// 	logger.Logger().Error("GetBalanceOnSolanaChain", zap.Error(err))
-	// }
-
-	// if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() >= 0 {
-	// 	kn.Status = models.KnowledgeBaseStatusPaymentReceipt
-	// 	if err := uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
-	// 		return err
-	// 	}
-	// }
 
 	for networkId, net := range uc.networks {
 		nId, err := strconv.ParseUint(networkId, 10, 64)
