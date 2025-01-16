@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
@@ -646,7 +647,12 @@ func (s *Service) TestUtil() {
 	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
 	// fmt.Println(etherAddress)
 
-	resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "UOS"))
-	fmt.Println(resp.LastPrice)
-	fmt.Println(err)
+	// resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "UOS"))
+	// fmt.Println(resp.LastPrice)
+	// fmt.Println(err)
+	for _, item := range configs.BINANCE_TOKENS {
+		if strings.HasSuffix(item, "/USDT") {
+			fmt.Println(strings.Split(item, "/")[0])
+		}
+	}
 }

@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
@@ -37,14 +36,27 @@ type MissionTokensConfig struct {
 }
 
 func GetMissionTokenConfig() ([]MissionTokensConfig, error) {
-	jsonbody, err := json.Marshal(MISSION_TOKEN_CONFIGS)
-	if err != nil {
-		return nil, errs.NewError(err)
+	mapToken := map[string]map[string]string{}
+	for _, item := range MISSION_TOKEN_CONFIGS {
+		mapToken[item["symbol"]] = item
 	}
+	// jsonbody, err := json.Marshal(MISSION_TOKEN_CONFIGS)
+	// if err != nil {
+	// 	return nil, errs.NewError(err)
+	// }
 
 	v := []MissionTokensConfig{}
-	if err := json.Unmarshal(jsonbody, &v); err != nil {
-		return nil, errs.NewError(err)
+	for _, item := range BINANCE_TOKENS {
+		i := MissionTokensConfig{
+			Symbol:   item,
+			Name:     item,
+			ImageUrl: "",
+		}
+		if v, ok := mapToken[item]; ok {
+			i.Name = v["name"]
+			i.ImageUrl = v["image_url"]
+		}
+		v = append(v, i)
 	}
 
 	return v, nil

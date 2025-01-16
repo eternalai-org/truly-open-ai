@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 
@@ -286,10 +287,10 @@ func (s *Service) JobAgentTwitterPostCreateLaunchpad(ctx context.Context) error 
 					},
 					map[string][]interface{}{},
 					[]string{
-						"post_at desc",
+						"rand()",
 					},
 					0,
-					5,
+					2,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -355,13 +356,16 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 								Name:            twitterPost.TokenDesc,
 								Status:          models.LaunchpadStatusNew,
 								MaxFundBalance:  numeric.NewBigFloatFromString("105000"),
-								TgeBalance:      numeric.NewBigFloatFromString("80000000"),
+								TgeBalance:      numeric.NewBigFloatFromString("800000000"),
 								TotalSupply:     numeric.NewBigFloatFromString("1000000000"),
 							}
 							err = s.dao.Create(tx, lp)
 							if err != nil {
 								return errs.NewError(err)
 							}
+							tier1, _ := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.02)).Float64()
+							tier2, _ := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.01)).Float64()
+							tier3, _ := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.005)).Float64()
 							//create mission template
 							agentInfo := twitterPost.AgentInfo
 							mission := &models.AgentSnapshotMission{}
@@ -370,11 +374,11 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 							mission.UserPrompt = fmt.Sprintf(`Project Description: %s
 
 Task: Analyze the data provided for the specified Twitter user (note: this data belongs to the user and is not associated with your Twitter account). Predict the percentage value of their potential contribution to the project. Based on this prediction, classify the user into one of the following tiers:
-	•	Tier 1: Contribution percentage over 80%% (with a maximum allocation of 2100 eai for investment)
-	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of 1050 eai for investment)
-	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of 525 eai for investment)
+	•	Tier 1: Contribution percentage over 80%% (with a maximum allocation of %%.0f eai for investment)
+	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of %%.0f eai for investment)
+	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of %%.0f eai for investment)
 
-The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including tier, percent, and maximum allocation) through the submit_result API.`, lp.Description)
+The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including tier, percent, and maximum allocation) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
 							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
 							mission.NotDelay = true
 							mission.Enabled = false
@@ -569,7 +573,7 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 				launchpads, err := s.dao.FindLaunchpad(
 					daos.GetDBMainCtx(ctx),
 					map[string][]interface{}{
-						"status = ?": {models.LaunchpadStatusNew},
+						"status = ?": {models.LaunchpadStatusRunning},
 					},
 					map[string][]interface{}{
 						"AgentSnapshotMission": {},
@@ -587,7 +591,7 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 						func(tx *gorm.DB) error {
 							l, _ := s.dao.FirstLaunchpadByID(tx, launchpad.ID, map[string][]interface{}{}, true)
 							if l != nil {
-								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.ID, launchpad.TweetId, launchpad.LastScanID, launchpad.AgentSnapshotMission)
+								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad)
 								if err != nil {
 									return err
 								}
@@ -630,8 +634,18 @@ func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberI
 					return errs.NewError(err)
 				}
 				if member != nil && member.LaunchpadID == lp.ID {
+					tier1 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.02))
+					tier2 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.01))
+					tier3 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.005))
 					member.Tier = req.Tier
 					member.ReplyContent = req.Message
+					if member.Tier == string(models.LaunchpadTier1) {
+						member.MaxFundBalance = numeric.BigFloat{*tier1}
+					} else if member.Tier == string(models.LaunchpadTier2) {
+						member.MaxFundBalance = numeric.BigFloat{*tier2}
+					} else if member.Tier == string(models.LaunchpadTier3) {
+						member.MaxFundBalance = numeric.BigFloat{*tier3}
+					}
 					err = s.dao.Save(tx, member)
 					if err != nil {
 						return errs.NewError(err)
