@@ -258,6 +258,8 @@ func (uc *knowledgeUsecase) UpdateKnowledgeBaseById(ctx context.Context, id uint
 }
 
 func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
+	start := time.Now()
+	defer logger.Info("knowledgeUsecase", "WatchWalletChange", zap.Any("start", start), zap.Any("end", time.Now()))
 	offset := 0
 	limit := 30
 	for {
@@ -275,15 +277,16 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 
 		for _, k := range resp {
 			if err := uc.checkBalance(ctx, k); err != nil {
-				return err
+				continue
 			}
 
 			if k.Status == models.KnowledgeBaseStatusPaymentReceipt {
 				if _, err := uc.insertFilesToRAG(ctx, k); err != nil {
-					return err
+					continue
 				}
 			}
 		}
+
 		offset += len(resp)
 	}
 	return nil
@@ -328,18 +331,24 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 		}
 
 		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() > 0 {
-			updatedFields := make(map[string]interface{})
-			if int(kn.Status) >= int(models.KnowledgeBaseStatusPaymentReceipt) {
+			kn1, err := uc.GetKnowledgeBaseById(ctx, kn.ID)
+			if err != nil {
+				return err
+			}
+
+			if int(kn1.Status) >= int(models.KnowledgeBaseStatusPaymentReceipt) {
 				return nil
 			}
 
+			updatedFields := make(map[string]interface{})
 			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
 			updatedFields["deposit_chain_id"] = nId
-			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
 			if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 				return err
 			}
+
+			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
 		}
 	}
 	return nil
