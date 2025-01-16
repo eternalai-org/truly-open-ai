@@ -10,6 +10,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 )
@@ -123,16 +124,18 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID uint, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
-	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", parentTweetID), sinceID, 50)
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *models.Launchpad) (*twitter.TweetRecentSearch, error) {
+	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", launchpad.TweetId), launchpad.LastScanID, 50)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
 	if lst != nil {
 		for _, v := range lst.LookUps {
-			err = daos.WithTransaction(
+			newMissionID := uint(0)
+			daos.WithTransaction(
 				daos.GetDBMainCtx(ctx),
 				func(tx *gorm.DB) error {
+
 					tmp := helpers.ParseStringToDateTimeTwitter(v.Tweet.CreatedAt)
 					err = s.dao.Create(tx, &models.TwitterTweet{
 						TwitterID: v.Tweet.AuthorID,
@@ -144,24 +147,26 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 						return errs.NewError(err)
 					}
 					address := helpers.ExtractEtherAddress(v.Tweet.Text)
-					if address != "" {
+					if address != "" && address != launchpad.Address {
 						//check join
 						member, err := s.dao.FirstLaunchpadMember(tx, map[string][]interface{}{
 							// "user_address = ?": {strings.ToLower(address)},
 							"twitter_id = ?":   {v.Tweet.AuthorID},
-							"launchpad_id = ?": {launchpadID},
+							"launchpad_id = ?": {launchpad.ID},
 						}, map[string][]interface{}{}, []string{})
 						if err != nil {
 							return errs.NewError(err)
 						}
 						if member == nil {
 							member = &models.LaunchpadMember{
-								UserAddress:  strings.ToLower(address),
-								TwitterID:    v.Tweet.AuthorID,
-								LaunchpadID:  launchpadID,
-								TweetID:      v.Tweet.ID,
-								TweetContent: v.Tweet.Text,
-								Tier:         string(models.LaunchpadTier3),
+								NetworkID:      launchpad.NetworkID,
+								UserAddress:    strings.ToLower(address),
+								TwitterID:      v.Tweet.AuthorID,
+								LaunchpadID:    launchpad.ID,
+								TweetID:        v.Tweet.ID,
+								TweetContent:   v.Tweet.Text,
+								Tier:           string(models.LaunchpadTier3),
+								MaxFundBalance: numeric.NewBigFloatFromString("525"),
 							}
 							err = s.dao.Create(tx, member)
 							if err != nil {
@@ -178,9 +183,9 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 								return errs.NewError(err)
 							}
 						}
-						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey)
+						toolList := fmt.Sprintf(launchpad.AgentSnapshotMission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey, launchpad.ID, member.ID, s.conf.InternalApiKey)
 						newMission := &models.AgentSnapshotMission{}
-						err = copier.Copy(newMission, mission)
+						err = copier.Copy(newMission, launchpad.AgentSnapshotMission)
 						if err != nil {
 							return errs.NewError(err)
 						}
@@ -192,17 +197,16 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 						if err != nil {
 							return errs.NewError(err)
 						}
-						err = s.AgentSnapshotPostCreate(ctx, newMission.ID, "", "")
-						if err != nil {
-							return errs.NewError(err)
-						}
+						newMissionID = newMission.ID
+
 					}
 					return nil
 				},
 			)
-			if err != nil {
-				return nil, errs.NewError(err)
+			if newMissionID > 0 {
+				s.AgentSnapshotPostCreate(ctx, newMissionID, "", "")
 			}
+
 		}
 	}
 	return lst, nil

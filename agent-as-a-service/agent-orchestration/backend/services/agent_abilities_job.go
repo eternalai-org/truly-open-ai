@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
+	"go.uber.org/zap"
+
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
@@ -1230,6 +1233,16 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 						if agentSnapshotPost != nil {
 							if agentSnapshotPost.ResponseId != "" {
 								if agentSnapshotPost.Status == models.AgentSnapshotPostStatusInferSubmitted {
+									if agentSnapshotPost.CreatedAt.Before(time.Now().Add(-30 * time.Hour)) {
+										err = daos.GetDBMainCtx(ctx).
+											Model(agentSnapshotPost).
+											UpdateColumn("status", models.AgentSnapshotPostStatusInferFailed).
+											Error
+										if err != nil {
+											return errs.NewError(err)
+										}
+										return nil
+									}
 									offchainAutoAgentOutput, err := s.dojoAPI.OffchainAutoAgentOutput(s.conf.AgentOffchain.Url, agentSnapshotPost.ResponseId, s.conf.AgentOffchain.ApiKey)
 									if err != nil {
 										return errs.NewError(err)
@@ -1488,8 +1501,8 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 					},
 					map[string][]interface{}{},
 					[]string{
-						"updated_at asc",
-					}, 0, 999,
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1509,7 +1522,9 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 						"agent_snapshot_post_id > 0":                        {},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1584,7 +1599,9 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"status = ?": {models.AgentSnapshotPostStatusInferSubmitted},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1604,7 +1621,9 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"status = ?": {models.AgentSnapshotPostStatusInferSubmitted},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1624,7 +1643,9 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"agent_snapshot_post_id > 0":                     {},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1644,7 +1665,9 @@ func (s *Service) JobUpdateOffchainAutoOutput3Hour(ctx context.Context) error {
 						"agent_snapshot_post_id > 0":                     {},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1726,6 +1749,7 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 	if err != nil {
 		return "", errs.NewError(err)
 	}
+	agentMetaDataRequest.KbAgents = []models.AgentWakeupKnowledgeBase{}
 	request := &models.CallWakeupRequest{
 		Toolkit:       []interface{}{},
 		Prompt:        logRequest.UserPrompt,
@@ -1775,6 +1799,12 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		},
 		&request,
 	)
+	input, _ := json.Marshal(request)
+	logger.Info("callWakeup", "async_enqueue",
+		zap.Any("url", s.conf.AgentOffchain.Url+"/async/enqueue"),
+		zap.Any("input", string(input)),
+		zap.Any("output", body),
+		zap.Any("err", err))
 	if err != nil {
 		return "", errs.NewError(err)
 	}
