@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -160,14 +159,14 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 						}
 						if member == nil {
 							member = &models.LaunchpadMember{
-								NetworkID:    launchpad.NetworkID,
-								UserAddress:  strings.ToLower(address),
-								TwitterID:    v.Tweet.AuthorID,
-								LaunchpadID:  launchpad.ID,
-								TweetID:      v.Tweet.ID,
-								TweetContent: v.Tweet.Text,
-								Tier:         string(models.LaunchpadTier3),
-								HardCap:      numeric.BigFloat{*big.NewFloat(525)},
+								NetworkID:      launchpad.NetworkID,
+								UserAddress:    strings.ToLower(address),
+								TwitterID:      v.Tweet.AuthorID,
+								LaunchpadID:    launchpad.ID,
+								TweetID:        v.Tweet.ID,
+								TweetContent:   v.Tweet.Text,
+								Tier:           string(models.LaunchpadTier3),
+								MaxFundBalance: numeric.NewBigFloatFromString("525"),
 							}
 							err = s.dao.Create(tx, member)
 							if err != nil {

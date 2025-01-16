@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"strings"
 	"time"
 
@@ -634,11 +633,11 @@ func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberI
 					member.Tier = req.Tier
 					member.ReplyContent = req.Message
 					if member.Tier == string(models.LaunchpadTier1) {
-						member.HardCap = numeric.BigFloat{*big.NewFloat(2100)}
+						member.MaxFundBalance = numeric.NewBigFloatFromString("2100")
 					} else if member.Tier == string(models.LaunchpadTier2) {
-						member.HardCap = numeric.BigFloat{*big.NewFloat(1050)}
+						member.MaxFundBalance = numeric.NewBigFloatFromString("1050")
 					} else if member.Tier == string(models.LaunchpadTier3) {
-						member.HardCap = numeric.BigFloat{*big.NewFloat(525)}
+						member.MaxFundBalance = numeric.NewBigFloatFromString("525")
 					}
 					err = s.dao.Save(tx, member)
 					if err != nil {
