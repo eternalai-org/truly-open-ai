@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -58,7 +59,7 @@ func Test_JOB(t *testing.T) {
 }
 
 func Test_UTIL(t *testing.T) {
-	ts.TestUtil()
+	ts.JobScanRepliesByLaunchpadTweetID(context.Background())
 }
 
 func Test_SRV(t *testing.T) {
