@@ -1876,6 +1876,25 @@ func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) err
 						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
 					}
 				}
+				ms, err = s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"status = ?":                    {models.AgentSnapshotPostStatusInferError},
+						"agent_info_id > 0":             {},
+						"agent_snapshot_mission_id > 0": {},
+						"fee > 0":                       {},
+					},
+					map[string][]interface{}{},
+					[]string{}, 0, 999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, m := range ms {
+					err := s.AgentSnapshotPostStatusInferRefund(ctx, m.ID)
+					if err != nil {
+						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+					}
+				}
 			}
 			return retErr
 		},
@@ -1900,7 +1919,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						map[string][]interface{}{
 							"AgentInfo": {},
 						},
-						false,
+						true,
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -1942,6 +1961,27 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 								Toolset:        toolSet,
 							},
 						)
+					}
+					if inferPost != nil &&
+						inferPost.Status == models.AgentSnapshotPostStatusInferError &&
+						inferPost.AgentInfo != nil &&
+						inferPost.AgentSnapshotMissionID > 0 {
+						agentInfo := inferPost.AgentInfo
+						err = tx.Model(inferPost).Updates(
+							map[string]interface{}{
+								"fee": numeric.NewBigFloatFromString("0"),
+							},
+						).
+							Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+						err = tx.Model(agentInfo).
+							UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
+							Error
+						if err != nil {
+							return errs.NewError(err)
+						}
 					}
 					return nil
 				},
