@@ -1501,8 +1501,8 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 					},
 					map[string][]interface{}{},
 					[]string{
-						"updated_at asc",
-					}, 0, 999,
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1522,7 +1522,9 @@ func (s *Service) JobUpdateOffchainAutoOutput(ctx context.Context) error {
 						"agent_snapshot_post_id > 0":                        {},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{
+						"rand()",
+					}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
