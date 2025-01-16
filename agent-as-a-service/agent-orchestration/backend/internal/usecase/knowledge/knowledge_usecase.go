@@ -329,8 +329,8 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 
 		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() > 0 {
 			updatedFields := make(map[string]interface{})
-			if kn.Status == models.KnowledgeBaseStatusPaymentReceipt {
-				continue
+			if int(kn.Status) >= int(models.KnowledgeBaseStatusPaymentReceipt) {
+				return nil
 			}
 
 			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
