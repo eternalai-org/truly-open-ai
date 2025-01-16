@@ -511,14 +511,17 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 		agent.KnowledgeBase = i
 	}
 
+	agentInfoKbs := []*models.AgentInfoKnowledgeBase{}
 	for _, id := range req.KbIds {
-		_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, &models.AgentInfoKnowledgeBase{
+		i := &models.AgentInfoKnowledgeBase{
 			AgentInfoId:     agent.ID,
 			KnowledgeBaseId: id,
-		})
-		if err != nil {
-			return nil, err
 		}
+		agentInfoKbs = append(agentInfoKbs, i)
+	}
+	_, err = s.KnowledgeUsecase.CreateAgentInfoKnowledgeBase(ctx, agentInfoKbs, agent.ID)
+	if err != nil {
+		return nil, err
 	}
 
 	return agent, nil

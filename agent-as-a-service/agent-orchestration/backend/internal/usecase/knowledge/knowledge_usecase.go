@@ -36,8 +36,8 @@ type knowledgeUsecase struct {
 	webhookUrl    string
 }
 
-func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {
-	return uc.agentInfoKnowledgeBaseRepo.Create(ctx, model)
+func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, models []*models.AgentInfoKnowledgeBase, agentInfoId uint) ([]*models.AgentInfoKnowledgeBase, error) {
+	return uc.agentInfoKnowledgeBaseRepo.CreateList(ctx, models, agentInfoId)
 }
 
 func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error) {
