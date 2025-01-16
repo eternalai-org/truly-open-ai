@@ -1865,7 +1865,7 @@ func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) err
 						"agent_snapshot_mission_id > 0": {},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -1884,7 +1884,7 @@ func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) err
 						"fee > 0":                       {},
 					},
 					map[string][]interface{}{},
-					[]string{}, 0, 999,
+					[]string{}, 0, 999999,
 				)
 				if err != nil {
 					return errs.NewError(err)

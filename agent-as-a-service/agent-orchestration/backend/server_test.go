@@ -49,14 +49,13 @@ func Test_JOB(t *testing.T) {
 	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
 	fmt.Println(
-		// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
-		// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
-		// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
-		// ts.CreateSOLAddress(context.Background()),
-		// ts.CreateETHAddress(context.Background()),
-		// ts.JobAgentTgeTransferDAOToken(context.Background()),
-		// ts.JobAgentAddLiquidityDAOToken(context.Background()),
-		ts.JobAgentSnapshotPostStatusInferRefund(context.Background()),
+	// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
+	// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
+	// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
+	// ts.CreateSOLAddress(context.Background()),
+	// ts.CreateETHAddress(context.Background()),
+	// ts.JobAgentTgeTransferDAOToken(context.Background()),
+	// ts.JobAgentAddLiquidityDAOToken(context.Background()),
 	)
 	select {}
 }
