@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -10,6 +11,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/copier"
 	"github.com/jinzhu/gorm"
 )
@@ -165,6 +167,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 								TweetID:      v.Tweet.ID,
 								TweetContent: v.Tweet.Text,
 								Tier:         string(models.LaunchpadTier3),
+								HardCap:      numeric.BigFloat{*big.NewFloat(525)},
 							}
 							err = s.dao.Create(tx, member)
 							if err != nil {
