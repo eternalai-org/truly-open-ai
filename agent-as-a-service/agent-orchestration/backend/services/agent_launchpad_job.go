@@ -109,6 +109,9 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 								if maxFundAmount.Cmp(models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)) > 0 {
 									maxFundAmount = models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)
 								}
+								if lp.Status != models.LaunchpadStatusRunning {
+									maxFundAmount = big.NewFloat(0)
+								}
 								if maxFundAmount.Cmp(big.NewFloat(0)) > 0 {
 									fundBalance := &lptx.Amount.Float
 									refundBalance := big.NewFloat(0)
@@ -194,6 +197,32 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 	return nil
 }
 
+func (s *Service) JobAgentLuanchpadEnd(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobAgentLuanchpadEnd",
+		func() error {
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) JobAgentLuanchpadFailed(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobAgentLuanchpadFailed",
+		func() error {
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *Service) AgentDeployDAOToken(ctx context.Context, memeID uint) error {
 	err := s.JobRunCheck(
 		ctx,
@@ -211,80 +240,83 @@ func (s *Service) AgentDeployDAOToken(ctx context.Context, memeID uint) error {
 			if m == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if m.TokenSymbol == "" {
-				for i := 0; i < 3; i++ {
-					tokenInfo, err := s.GenerateTokenInfoFromSystemPrompt(ctx, "", m.Name)
-					if err != nil {
-						continue
-					}
-					m.TokenSymbol = tokenInfo.TokenSymbol
-					m.TokenName = tokenInfo.TokenName
-					m.TokenImageUrl = tokenInfo.TokenImageUrl
-					err = daos.GetDBMainCtx(ctx).Model(&m).
-						Updates(
-							map[string]interface{}{
-								"token_name":      m.TokenName,
-								"token_symbol":    m.TokenSymbol,
-								"token_image_url": m.TokenImageUrl,
-							},
-						).Error
-					if err != nil {
-						return errs.NewError(err)
-					}
-					break
-				}
+			if m.Status == models.LaunchpadStatusEnd {
 				if m.TokenSymbol == "" {
-					_ = daos.GetDBMainCtx(ctx).Model(&m).
-						Updates(
-							map[string]interface{}{
-								"status": models.LaunchpadStatusTokenError,
-							},
-						).Error
-					return errs.NewError(err)
+					for i := 0; i < 3; i++ {
+						tokenInfo, err := s.GenerateTokenInfoFromSystemPrompt(ctx, "", m.Name)
+						if err != nil {
+							continue
+						}
+						m.TokenSymbol = tokenInfo.TokenSymbol
+						m.TokenName = tokenInfo.TokenName
+						m.TokenImageUrl = tokenInfo.TokenImageUrl
+						err = daos.GetDBMainCtx(ctx).Model(&m).
+							Updates(
+								map[string]interface{}{
+									"token_name":      m.TokenName,
+									"token_symbol":    m.TokenSymbol,
+									"token_image_url": m.TokenImageUrl,
+								},
+							).Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+						break
+					}
+					if m.TokenSymbol == "" {
+						_ = daos.GetDBMainCtx(ctx).Model(&m).
+							Updates(
+								map[string]interface{}{
+									"status": models.LaunchpadStatusTokenError,
+								},
+							).Error
+						return errs.NewError(err)
+					}
 				}
-			}
-			if m.Status == models.LaunchpadStatusEnd && m.TokenSymbol != "" && m.TokenAddress == "" {
-				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "dao_pool_address"))
-				tokenAddress, txHash, err := func() (string, string, error) {
-					tokenAddr, tokenHash, err := s.GetEthereumClient(ctx, m.NetworkID).
-						DeployDAOTToken(
-							s.GetAddressPrk(daoPoolAddress),
-							m.TokenName,
-							m.TokenSymbol,
-						)
+				if m.Status == models.LaunchpadStatusEnd && m.TokenSymbol != "" && m.TokenAddress == "" {
+					daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "dao_pool_address"))
+					tokenAddress, txHash, err := func() (string, string, error) {
+						tokenAddr, tokenHash, err := s.GetEthereumClient(ctx, m.NetworkID).
+							DeployDAOTToken(
+								s.GetAddressPrk(daoPoolAddress),
+								m.TokenName,
+								m.TokenSymbol,
+							)
+						if err != nil {
+							return tokenAddr, tokenHash, errs.NewError(err)
+						}
+						time.Sleep(5 * time.Second)
+						err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(tokenHash)
+						if err != nil {
+							return tokenAddr, tokenHash, errs.NewError(err)
+						}
+						return tokenAddr, tokenHash, nil
+					}()
 					if err != nil {
-						return tokenAddr, tokenHash, errs.NewError(err)
-					}
-					time.Sleep(5 * time.Second)
-					err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(tokenHash)
-					if err != nil {
-						return tokenAddr, tokenHash, errs.NewError(err)
-					}
-					return tokenAddr, tokenHash, nil
-				}()
-				if err != nil {
-					err = daos.GetDBMainCtx(ctx).Model(&m).
-						Updates(
-							map[string]interface{}{
-								"token_address":        strings.ToLower(tokenAddress),
-								"status":               models.LaunchpadStatusTokenError,
-								"deploy_token_tx_hash": txHash,
-							},
-						).Error
-					if err != nil {
-						return errs.NewError(err)
-					}
-				} else {
-					err = daos.GetDBMainCtx(ctx).Model(&m).
-						Updates(
-							map[string]interface{}{
-								"token_address":        strings.ToLower(tokenAddress),
-								"total_supply":         numeric.NewBigFloatFromString("1000000000"),
-								"deploy_token_tx_hash": txHash,
-							},
-						).Error
-					if err != nil {
-						return errs.NewError(err)
+						err = daos.GetDBMainCtx(ctx).Model(&m).
+							Updates(
+								map[string]interface{}{
+									"token_address":        strings.ToLower(tokenAddress),
+									"status":               models.LaunchpadStatusTokenError,
+									"deploy_token_tx_hash": txHash,
+								},
+							).Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+					} else {
+						err = daos.GetDBMainCtx(ctx).Model(&m).
+							Updates(
+								map[string]interface{}{
+									"status":               models.LaunchpadStatusTokenCreated,
+									"token_address":        strings.ToLower(tokenAddress),
+									"total_supply":         numeric.NewBigFloatFromString("1000000000"),
+									"deploy_token_tx_hash": txHash,
+								},
+							).Error
+						if err != nil {
+							return errs.NewError(err)
+						}
 					}
 				}
 			}
@@ -314,7 +346,7 @@ func (s *Service) AgentSettleDAOToken(ctx context.Context, memeID uint) error {
 			if m == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if m.Status == models.LaunchpadStatusEnd && m.SettleFundTxHash == "" {
+			if m.Status == models.LaunchpadStatusTokenCreated && m.SettleFundTxHash == "" {
 				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "dao_pool_address"))
 				txHash, err := func() (string, error) {
 					hash, err := s.GetEthereumClient(ctx, m.NetworkID).
@@ -445,6 +477,92 @@ func (s *Service) AgentAddLiquidityDAOToken(ctx context.Context, memeID uint) er
 							map[string]interface{}{
 								"status":                models.LaunchpadStatusDone,
 								"add_liquidity_tx_hash": txHash,
+							},
+						).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
+	err := s.JobRunCheck(
+		ctx,
+		fmt.Sprintf("AgentAddLiquidityDAOToken_%d", id),
+		func() error {
+			mb, err := s.dao.FirstLaunchpadMemberByID(
+				daos.GetDBMainCtx(ctx),
+				id,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if mb == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			m, err := s.dao.FirstLaunchpadByID(
+				daos.GetDBMainCtx(ctx),
+				mb.LaunchpadID,
+				map[string][]interface{}{},
+				false,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if m == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if m.Status == models.LaunchpadStatusSettled && mb.TokenTransferTxHash == "" {
+				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "dao_pool_address"))
+				txHash, err := func() (string, error) {
+					hash, err := s.GetEthereumClient(ctx, m.NetworkID).
+						Erc20Transfer(
+							m.TokenAddress,
+							s.GetAddressPrk(daoPoolAddress),
+							mb.UserAddress,
+							models.ConvertBigFloatToWei(&mb.TokenBalance.Float, 18).Text(10),
+						)
+					if err != nil {
+						return "", errs.NewError(err)
+					}
+					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+						Updates(
+							map[string]interface{}{
+								"token_transfer_tx_hash": hash,
+							},
+						).Error
+					time.Sleep(5 * time.Second)
+					err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(hash)
+					if err != nil {
+						return hash, errs.NewError(err)
+					}
+					return hash, nil
+				}()
+				if err != nil {
+					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+						Updates(
+							map[string]interface{}{
+								"token_transfer_tx_hash": txHash,
+								"status":                 models.LaunchpadMemberStatusTgeError,
+							},
+						).Error
+					return errs.NewError(err)
+				} else {
+					err = daos.GetDBMainCtx(ctx).Model(&mb).
+						Updates(
+							map[string]interface{}{
+								"token_transfer_tx_hash": txHash,
+								"status":                 models.LaunchpadMemberStatusTgeDone,
 							},
 						).Error
 					if err != nil {
