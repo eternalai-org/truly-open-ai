@@ -57,6 +57,7 @@ type Launchpad struct {
 	DeployTokenTxHash      string
 	TgeBalance             numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	MaxFundBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RefundBalance          numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 type LaunchpadMember struct {

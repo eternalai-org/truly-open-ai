@@ -12,6 +12,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -353,6 +354,9 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 								Description:     twitterPost.Content,
 								Name:            twitterPost.TokenDesc,
 								Status:          models.LaunchpadStatusNew,
+								MaxFundBalance:  numeric.NewBigFloatFromString("105000"),
+								TgeBalance:      numeric.NewBigFloatFromString("80000000"),
+								TotalSupply:     numeric.NewBigFloatFromString("1000000000"),
 							}
 							err = s.dao.Create(tx, lp)
 							if err != nil {
