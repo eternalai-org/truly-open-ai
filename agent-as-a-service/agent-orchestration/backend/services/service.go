@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/agent_info"
 	"math/big"
 	"sync"
 	"time"
@@ -75,6 +76,7 @@ type Service struct {
 
 	KnowledgeUsecase ports.IKnowledgeUsecase
 	AppConfigUseCase ports.IAppConfigUseCase
+	AgentInfoUseCase ports.IAgentInfoUseCase
 }
 
 func NewService(conf *configs.Config) *Service {
@@ -165,8 +167,11 @@ func NewService(conf *configs.Config) *Service {
 		conf.Lighthouse.Apikey,
 		conf.WebhookUrl,
 	)
-	appConfigBaseRepo := repository.NewAppConfigRepository(gormDB)
-	s.AppConfigUseCase = appconfig.NewAppConfigUseCase(appConfigBaseRepo)
+	appConfigRepo := repository.NewAppConfigRepository(gormDB)
+	s.AppConfigUseCase = appconfig.NewAppConfigUseCase(appConfigRepo)
+
+	agentInfoRepo := repository.NewAgentInfoRepository(gormDB)
+	s.AgentInfoUseCase = agent_info.NewAgentInfoUseCase(agentInfoRepo)
 	return s
 }
 

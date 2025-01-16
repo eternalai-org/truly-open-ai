@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/eth"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/zkclient"
@@ -62,16 +61,11 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 }
 
 func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.KnowledgeBase) error {
-	agent, err := s.dao.FirstAgentInfo(daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{
-			"id = ?": {info.AgentInfoId},
-		},
-		map[string][]interface{}{}, []string{})
-	if err != nil {
-		return errs.NewError(err)
-	}
 	if len(info.FilecoinHash) == 0 {
 		return fmt.Errorf("file coin hash is empty")
+	}
+	if len(info.KBTokenID) > 0 {
+		return fmt.Errorf("token minted , not mint again")
 	}
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
 	if err != nil {
@@ -168,8 +162,10 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if err != nil {
 		return err
 	}
-	agent.Status = models.AssistantStatusReady
-	err = s.dao.Save(daos.GetDBMainCtx(ctx), agent)
+	err = s.AgentInfoUseCase.UpdateAgentInfoById(ctx, info.AgentInfoId,
+		map[string]interface{}{
+			"status": models.AssistantStatusReady,
+		})
 	if err != nil {
 		return errs.NewError(err)
 	}
