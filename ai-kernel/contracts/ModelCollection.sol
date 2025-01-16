@@ -11,7 +11,7 @@ import {ERC721URIStorageUpgradeable} from "@openzeppelin/contracts-upgradeable/t
 import {IERC721MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/IERC721MetadataUpgradeable.sol";
 import {EIP712Upgradeable} from "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
 
-import {TransferHelper} from "./lib/TransferHelper.sol";
+import {TransferHelper} from "./library/TransferHelper.sol";
 import {ModelCollectionStorage} from "./storages/ModelCollectionStorage.sol";
 
 contract ModelCollection is
