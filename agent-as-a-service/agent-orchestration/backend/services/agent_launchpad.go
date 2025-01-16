@@ -355,7 +355,7 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 								Name:            twitterPost.TokenDesc,
 								Status:          models.LaunchpadStatusNew,
 								MaxFundBalance:  numeric.NewBigFloatFromString("105000"),
-								TgeBalance:      numeric.NewBigFloatFromString("80000000"),
+								TgeBalance:      numeric.NewBigFloatFromString("800000000"),
 								TotalSupply:     numeric.NewBigFloatFromString("1000000000"),
 							}
 							err = s.dao.Create(tx, lp)
