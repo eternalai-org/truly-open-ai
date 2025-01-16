@@ -569,12 +569,12 @@ func (s *Service) LuckyMoneyProcessUserReward(ctx context.Context, luckyID uint)
 							return errs.NewError(errs.ErrBadRequest)
 						}
 
-						luckyMoneyAdminAddress := strings.ToLower(s.conf.LuckyMoneyAdminAddress)
-						luckyMoneyAdminAddressSol := strings.ToLower(s.conf.LuckyMoneyAdminAddressSol)
 						var txHash string
 						eaiAddress := strings.ToLower(s.conf.GetConfigKeyString(agentInfo.TokenNetworkID, "eai_contract_address"))
 						if eaiAddress != "" {
+							luckyMoneyAdminAddress := strings.ToLower(s.conf.LuckyMoneyAdminAddress)
 							if agentInfo.TokenNetworkID == models.SOLANA_CHAIN_ID {
+								luckyMoneyAdminAddress = strings.ToLower(s.conf.LuckyMoneyAdminAddressSol)
 								decimalsMint := 9
 								if agentInfo.TokenAddress != "" {
 									decimalsMint, err = s.GetSolanaTokenDecimals(agentInfo.TokenAddress)
@@ -589,8 +589,17 @@ func (s *Service) LuckyMoneyProcessUserReward(ctx context.Context, luckyID uint)
 									Amount:    uint64(rAmount * math.Pow10(decimalsMint)),
 									ToAddress: m.UserAddress,
 								}
-								txHash, err = s.blockchainUtils.SolanaTransfer(luckyMoneyAdminAddressSol, transferReq)
+
+								if luckyMoneyAdminAddress == "" {
+									return errs.NewError(errs.ErrBadRequest)
+								}
+
+								txHash, err = s.blockchainUtils.SolanaTransfer(luckyMoneyAdminAddress, transferReq)
 							} else {
+								if luckyMoneyAdminAddress == "" {
+									return errs.NewError(errs.ErrBadRequest)
+								}
+
 								txHash, err = s.GetEthereumClient(ctx, agentInfo.TokenNetworkID).Erc20Transfer(
 									eaiAddress,
 									s.GetAddressPrk(luckyMoneyAdminAddress), m.UserAddress,
