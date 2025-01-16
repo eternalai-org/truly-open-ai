@@ -50,6 +50,9 @@ type KnowledgeBase struct {
 	KbId                   string               `json:"kb_id"`
 	ThumbnailUrl           string               `json:"thumbnail_url"`
 	LastErrorMessage       string               `json:"last_error_message"`
+	UsageFee               float64              `json:"usage_fee"`
+	UserCount              int64                `json:"user_count"`
+	UsageCount             int64                `json:"usage_count"`
 }
 
 type KnowledgeBaseFile struct {
