@@ -173,16 +173,9 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 							if err != nil {
 								return errs.NewError(err)
 							}
-						} else if member.UserAddress != strings.ToLower(address) {
-							member.UserAddress = strings.ToLower(address)
-							member.TweetID = v.Tweet.ID
-							member.TweetContent = v.Tweet.Text
-							member.Tier = string(models.LaunchpadTier3)
-							member.ReplyPostID = ""
-							err = s.dao.Save(tx, member)
-							if err != nil {
-								return errs.NewError(err)
-							}
+						} else {
+							//one X join one time per launchpad
+							return nil
 						}
 						toolList := fmt.Sprintf(launchpad.AgentSnapshotMission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey, launchpad.ID, member.ID, s.conf.InternalApiKey)
 						newMission := &models.AgentSnapshotMission{}

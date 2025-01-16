@@ -45,7 +45,8 @@ type Launchpad struct {
 	AgentSnapshotMissionID uint
 	AgentSnapshotMission   *AgentSnapshotMission
 	StartAt                *time.Time
-	EndAt                  *time.Time       `gorm:"index"`
+	EndAt                  *time.Time `gorm:"index"`
+	FinishedAt             *time.Time
 	FundBalance            numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TotalBalance           numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	SettleFundTxHash       string
@@ -65,9 +66,11 @@ type Launchpad struct {
 type LaunchpadMemberStatus string
 
 const (
-	LaunchpadMemberStatusNew      LaunchpadMemberStatus = "new"
-	LaunchpadMemberStatusTgeDone  LaunchpadMemberStatus = "tge_done"
-	LaunchpadMemberStatusTgeError LaunchpadMemberStatus = "tge_error"
+	LaunchpadMemberStatusNew         LaunchpadMemberStatus = "new"
+	LaunchpadMemberStatusTgeDone     LaunchpadMemberStatus = "tge_done"
+	LaunchpadMemberStatusTgeError    LaunchpadMemberStatus = "tge_error"
+	LaunchpadMemberStatusDone        LaunchpadMemberStatus = "done"
+	LaunchpadMemberStatusRefundError LaunchpadMemberStatus = "refund_error"
 )
 
 type LaunchpadMember struct {
