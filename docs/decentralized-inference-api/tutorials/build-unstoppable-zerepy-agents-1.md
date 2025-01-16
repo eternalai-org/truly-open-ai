@@ -20,10 +20,10 @@ cd eternal-ai/developer-guides/examples/how-to-mint-agent
 
 npm i
 
-export RPC_URL=https://mainnet.base.org PRIVATE_KEY=<PRIVATE_KEY> AGENT_SYSTEM_PROMPT=<AGENT_SYSTEM_PROMPT>  AGENT_URI="eternalAIAgent" AGENT_FEE=0  && ts-node ./mintAgent.ts
+export RPC_URL=https://mainnet.base.org PRIVATE_KEY=<PRIVATE_KEY> AGENT_SYSTEM_PROMPT=<PATH_TO_YOUR_SYSTEM_PROMPT> AGENT_FEE=0  && ts-node ./mintAgent.ts
 ```
 
-Replace `PRIVATE_KEY`and `AGENT_SYSTEM_PROMPT`to your private key (that has some ETH on Base) and system prompt respectively.
+Replace `PRIVATE_KEY`and `AGENT_SYSTEM_PROMPT`to your private key (that has some ETH on Base) and path to system prompt file respectively.
 
 We're created an onchain agent (id: 1711) with system prompt as follows:
 
