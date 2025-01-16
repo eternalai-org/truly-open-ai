@@ -286,10 +286,10 @@ func (s *Service) JobAgentTwitterPostCreateLaunchpad(ctx context.Context) error 
 					},
 					map[string][]interface{}{},
 					[]string{
-						"post_at desc",
+						"rand()",
 					},
 					0,
-					5,
+					2,
 				)
 				if err != nil {
 					return errs.NewError(err)
