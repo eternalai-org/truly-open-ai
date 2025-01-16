@@ -69,9 +69,10 @@ type AgentUseKnowledgeBaseRequest struct {
 }
 
 type RetrieveKnowledgeBaseRequest struct {
-	Query string   `json:"query"`
-	TopK  int      `json:"top_k"`
-	Kb    []string `json:"kb"`
+	Query     string   `json:"query"`
+	TopK      int      `json:"top_k"`
+	Kb        []string `json:"kb"`
+	Threshold float64  `json:"threshold"`
 }
 
 type RetrieveKnowledgeBaseResponse struct {

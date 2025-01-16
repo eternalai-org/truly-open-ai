@@ -322,7 +322,7 @@ func (s *Server) retrieveKnowledge(c *gin.Context) {
 		Role:    openai2.ChatMessageRoleUser,
 	}}, []*models.KnowledgeBase{{
 		KbId: req.KbId,
-	}}, &chatTopK)
+	}}, &chatTopK, nil)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

@@ -904,7 +904,7 @@ func (s *Service) PreviewAgentSystemPromp(ctx context.Context, personality, ques
 	return aiStr, nil
 }
 
-func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.ChatCompletionMessage, knowledgeBases []*models.KnowledgeBase, topK *int) (*serializers.RetrieveKnowledgeBaseResponse, error) {
+func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.ChatCompletionMessage, knowledgeBases []*models.KnowledgeBase, topK *int, threshold *float64) (*serializers.RetrieveKnowledgeBaseResponse, error) {
 	if len(knowledgeBases) == 0 {
 		return nil, errs.NewError(errors.New("knowledge bases is empty"))
 	}
@@ -913,6 +913,10 @@ func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.Chat
 	if topK != nil {
 		topKQuery = *topK
 	}
+	th := 0.2
+	if threshold != nil {
+		th = *threshold
+	}
 
 	request := serializers.RetrieveKnowledgeBaseRequest{
 		Query: userPrompt,
@@ -920,6 +924,7 @@ func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.Chat
 		Kb: []string{
 			knowledgeBases[0].KbId,
 		},
+		Threshold: th,
 	}
 
 	body, err := helpers.CurlURLString(
@@ -972,11 +977,11 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string
 			[]string{"id desc"},
 		)
 		if agentInfoKnowledegeBase != nil && agentInfoKnowledegeBase.KnowledgeBase != nil {
-			retrieveKnowledgeBaseResponse, err := s.RetrieveKnowledge(ctx, llmMessage, []*models.KnowledgeBase{agentInfoKnowledegeBase.KnowledgeBase}, nil)
+			retrieveKnowledgeBaseResponse, err := s.RetrieveKnowledge(ctx, llmMessage, []*models.KnowledgeBase{agentInfoKnowledegeBase.KnowledgeBase}, nil, nil)
 			if err == nil && retrieveKnowledgeBaseResponse != nil {
 				agentKnowledge := ""
 				for _, knowledge := range retrieveKnowledgeBaseResponse.Result {
-					if knowledge.Score >= 0.5 {
+					if knowledge.Score >= 0.2 {
 						agentKnowledge += knowledge.Content + "\n"
 					}
 				}
