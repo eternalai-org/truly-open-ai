@@ -59,18 +59,18 @@ class AgentTwitter {
   };
 
   createAndRunDagent = async () => {
-    // const privateKey = this.environment.PRIVATE_KEY;
-    //
-    // if (!privateKey && !this.authenParams) {
-    //   dagentLogger.error("Please provide private key or params token.");
-    // }
-    // await this.dagent.init(this.authenParams);
-    // // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
-    // const agent = await this.createDagent();
-    //
-    // if (agent?.id) {
-    //   await this.linkDagentToTwitter(agent.id);
-    // }
+    const privateKey = this.environment.PRIVATE_KEY;
+
+    if (!privateKey && !this.authenParams) {
+      dagentLogger.error("Please provide private key or params token.");
+    }
+    await this.dagent.init(this.authenParams);
+    // await this.dagent.setupMissions("6763d7524ee1600e1122b6f6");
+    const agent = await this.createDagent();
+
+    if (agent?.id) {
+      await this.linkDagentToTwitter(agent.id);
+    }
 
     const direct = new Direct({
       routers: [createApiRouter()]
@@ -98,6 +98,15 @@ class AgentTwitter {
         status: agent.status,
       };
     }));
+
+    await this.linkDagentToTwitter(agent.id);
+
+    const direct = new Direct({
+      routers: [
+          createApiRouter(),
+      ]
+    });
+    direct.start(80);
   };
 
 }
@@ -113,13 +122,13 @@ dotenv.config();
 
 // Case set PRIVATE_KEY
 const agentTwitter = new AgentTwitter();
-agentTwitter.createAndRunDagent()
-    .then(() => {
-      dagentLogger.info("Code run completed...");
-    });
-
-// // Case agent created and run
-// agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+// agentTwitter.createAndRunDagent()
 //     .then(() => {
 //       dagentLogger.info("Code run completed...");
 //     });
+
+// // Case agent created and run
+agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+    .then(() => {
+      dagentLogger.info("Code run completed...");
+    });
