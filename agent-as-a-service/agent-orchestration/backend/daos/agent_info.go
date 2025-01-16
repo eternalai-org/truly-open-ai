@@ -57,9 +57,7 @@ func (d *DAO) FindAgentInfo(tx *gorm.DB, filters map[string][]interface{}, prelo
 }
 
 func (d *DAO) FindAgentInfo4Page(tx *gorm.DB, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, page int, limit int) ([]*models.AgentInfo, uint, error) {
-	var (
-		offset = (page - 1) * limit
-	)
+	offset := (page - 1) * limit
 	var ms []*models.AgentInfo
 	if err := d.find(tx, &ms, filters, preloads, orders, offset, limit, false); err != nil {
 		return nil, 0, errs.NewError(err)
@@ -72,9 +70,7 @@ func (d *DAO) FindAgentInfo4Page(tx *gorm.DB, filters map[string][]interface{}, 
 }
 
 func (d *DAO) FindAgentInfoJoin(tx *gorm.DB, joins map[string][]interface{}, filters map[string][]interface{}, preloads map[string][]interface{}, orders []string, page int, limit int) ([]*models.AgentInfo, error) {
-	var (
-		offset = (page - 1) * limit
-	)
+	offset := (page - 1) * limit
 	var ms []*models.AgentInfo
 	err := d.findJoin(tx, &ms, joins, filters, preloads, orders, offset, limit, false)
 	if err != nil {

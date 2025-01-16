@@ -202,6 +202,7 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		IsBingSearch:    m.IsBingSearch,
 		RewardAmount:    m.RewardAmount,
 		RewardUser:      m.RewardUser,
+		MinTokenHolding: m.MinTokenHolding,
 		MissionStoreID:  m.MissionStoreID,
 		MissionStore:    NewMissionStoreResp(m.MissionStore),
 	}

@@ -245,10 +245,11 @@ func (s *Service) RunJobs(ctx context.Context) error {
 				func() error {
 					s.JobAgentTwitterPostCreateLaunchpad(context.Background())
 					s.JobAgentLaunchpadEnd(context.Background())
-					s.JobAgentLaunchpadFailed(context.Background())
 					s.JobAgentDeployDAOToken(context.Background())
 					s.JobAgentSettleDAOToken(context.Background())
+					s.JobAgentTgeTransferDAOToken(context.Background())
 					s.JobAgentAddLiquidityDAOToken(context.Background())
+					s.JobAgentTgeRefundBaseToken(context.Background())
 					return nil
 				},
 			)

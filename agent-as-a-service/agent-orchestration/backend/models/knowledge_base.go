@@ -46,6 +46,7 @@ type KnowledgeBase struct {
 	CurrentGroupFileId     int64                `json:"current_group_file_id"`
 	KbId                   string               `json:"kb_id"`
 	ThumbnailUrl           string               `json:"thumbnail_url"`
+	UsageFee               float64              `json:"usage_fee"`
 }
 
 type KnowledgeBaseFile struct {
