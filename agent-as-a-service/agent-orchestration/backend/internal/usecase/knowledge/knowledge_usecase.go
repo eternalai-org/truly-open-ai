@@ -79,7 +79,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 			return kn, nil
 		}
 
-		if kb1.FilecoinHash != "" && kb1.KbId != "" && kb1.Status == models.KnowledgeBaseStatusPaymentReceipt {
+		if kb1.FilecoinHash != "" && kb1.KbId != "" && int(kb1.Status) < int(models.KnowledgeBaseStatusDone) {
 			updatedFields := make(map[string]interface{})
 			updatedFields["status"] = models.KnowledgeBaseStatusDone
 			if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
@@ -329,7 +329,9 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 
 		if balance.Cmp(_knPrice) >= 0 && _knPrice.Uint64() > 0 {
 			updatedFields := make(map[string]interface{})
-			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
+			if kn.Status == models.KnowledgeBaseStatusWaitingPayment {
+				updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
+			}
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
 			updatedFields["deposit_chain_id"] = nId
 			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
