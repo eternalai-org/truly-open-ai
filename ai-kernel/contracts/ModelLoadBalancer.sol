@@ -5,7 +5,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {ModelLoadBalancerStorage, Set} from "./storages/ModelLoadBalancerStorage.sol";
-import {TransferHelper} from "./lib/TransferHelper.sol";
+import {TransferHelper} from "./library/TransferHelper.sol";
 import {IGPUManager} from "./interfaces/IGPUManager.sol";
 import {IInferable} from "./interfaces/IInferable.sol";
 
