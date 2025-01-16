@@ -55,7 +55,8 @@ func Test_JOB(t *testing.T) {
 		// ts.CreateSOLAddress(context.Background()),
 		// ts.CreateETHAddress(context.Background()),
 		// ts.JobAgentTgeTransferDAOToken(context.Background()),
-		ts.JobAgentAddLiquidityDAOToken(context.Background()),
+		// ts.JobAgentAddLiquidityDAOToken(context.Background()),
+		ts.JobAgentSnapshotPostStatusInferRefund(context.Background()),
 	)
 	select {}
 }
