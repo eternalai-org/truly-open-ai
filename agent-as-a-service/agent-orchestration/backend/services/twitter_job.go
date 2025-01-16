@@ -146,7 +146,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 					if err != nil {
 						return errs.NewError(err)
 					}
-					address := helpers.ExtractEtherAddress(v.Tweet.Text)
+					address := helpers.ExtractEVMAddress(v.Tweet.Text)
 					if address != "" && address != launchpad.Address {
 						//check join
 						member, err := s.dao.FirstLaunchpadMember(tx, map[string][]interface{}{
