@@ -18,7 +18,6 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	resty "github.com/go-resty/resty/v2"
-	"github.com/jinzhu/gorm"
 
 	"go.uber.org/zap"
 )
@@ -41,8 +40,8 @@ func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, mo
 	return uc.agentInfoKnowledgeBaseRepo.Create(ctx, model)
 }
 
-func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(tx *gorm.DB, socialAgentId uint) ([]*models.KnowledgeBase, error) {
-	return uc.agentInfoKnowledgeBaseRepo.GetKBAgentsUsedOfSocialAgent(tx, socialAgentId)
+func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error) {
+	return uc.knowledgeBaseRepo.GetKBAgentsUsedOfSocialAgent(ctx, socialAgentId)
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
@@ -198,15 +197,18 @@ func (uc *knowledgeUsecase) ListKnowledgeBase(ctx context.Context, req *models.L
 	return result, nil
 }
 
-func (uc *knowledgeUsecase) MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint]*models.KnowledgeBase, error) {
+func (uc *knowledgeUsecase) MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint][]*models.KnowledgeBase, error) {
 	resp, err := uc.agentInfoKnowledgeBaseRepo.ListByAgentIds(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
 
-	data := make(map[uint]*models.KnowledgeBase)
+	data := make(map[uint][]*models.KnowledgeBase)
 	for _, r := range resp {
-		data[r.AgentInfoId] = r.KnowledgeBase
+		if _, ok := data[r.AgentInfoId]; !ok {
+			data[r.AgentInfoId] = make([]*models.KnowledgeBase, 0)
+		}
+		data[r.AgentInfoId] = append(data[r.AgentInfoId], r.KnowledgeBase)
 	}
 
 	return data, nil

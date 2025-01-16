@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
+	"go.uber.org/zap"
 	"math/big"
 	"strconv"
 	"strings"
@@ -1726,6 +1728,7 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 	if err != nil {
 		return "", errs.NewError(err)
 	}
+	agentMetaDataRequest.KbAgents = []models.AgentWakeupKnowledgeBase{}
 	request := &models.CallWakeupRequest{
 		Toolkit:       []interface{}{},
 		Prompt:        logRequest.UserPrompt,
@@ -1750,7 +1753,7 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		},
 	}
 
-	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(daos.GetDBMainCtx(context.Background()), assistant.ID)
+	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(context.Background(), assistant.ID)
 	if len(knowledgeAgentsUsed) > 0 {
 		for _, item := range knowledgeAgentsUsed {
 			itemAdd := models.AgentWakeupKnowledgeBase{
@@ -1775,6 +1778,12 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		},
 		&request,
 	)
+	input, _ := json.Marshal(request)
+	logger.Info("callWakeup", "async_enqueue",
+		zap.Any("url", s.conf.AgentOffchain.Url+"/async/enqueue"),
+		zap.Any("input", string(input)),
+		zap.Any("output", body),
+		zap.Any("err", err))
 	if err != nil {
 		return "", errs.NewError(err)
 	}

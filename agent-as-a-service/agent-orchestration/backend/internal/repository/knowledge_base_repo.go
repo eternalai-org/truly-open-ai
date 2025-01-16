@@ -22,6 +22,21 @@ type KnowledgeBaseRepo interface {
 	UpdateById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
 	GetByKBId(context.Context, string) (*models.KnowledgeBase, error)
 	GetManyByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error)
+	GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error)
+}
+
+func (r *knowledgeBaseRepo) GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error) {
+	knowledge := []*models.KnowledgeBase{}
+	err := r.db.WithContext(ctx).
+		Preload("AgentInfo").
+		Where("kb_id <> '' and id IN (SELECT knowledge_base_id FROM agent_info_knowledge_bases WHERE agent_info_id = ?)",
+			socialAgentId).
+		Find(&knowledge).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return knowledge, nil
 }
 
 func (r *knowledgeBaseRepo) UpdateStatus(ctx context.Context, model *models.KnowledgeBase) error {

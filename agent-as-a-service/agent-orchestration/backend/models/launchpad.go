@@ -11,11 +11,16 @@ type LaunchpadStatus string
 type LaunchpadTier string
 
 const (
-	LaunchpadStatusNew       LaunchpadStatus = "new"
-	LaunchpadStatusRunning   LaunchpadStatus = "running"
-	LaunchpadStatusEnd       LaunchpadStatus = "end"
-	LaunchpadStatusDone      LaunchpadStatus = "done"
-	LaunchpadStatusCancelled LaunchpadStatus = "cancelled"
+	LaunchpadStatusNew         LaunchpadStatus = "new"
+	LaunchpadStatusRunning     LaunchpadStatus = "running"
+	LaunchpadStatusEnd         LaunchpadStatus = "end"
+	LaunchpadStatusDone        LaunchpadStatus = "done"
+	LaunchpadStatusCancelled   LaunchpadStatus = "cancelled"
+	LaunchpadStatusTokenError  LaunchpadStatus = "token_error"
+	LaunchpadStatusSettleError LaunchpadStatus = "settle_error"
+	LaunchpadStatusSettled     LaunchpadStatus = "settled"
+	LaunchpadStatusTge         LaunchpadStatus = "tge"
+	LaunchpadStatusPoolError   LaunchpadStatus = "pool_error"
 
 	LaunchpadTier1 LaunchpadTier = "Tier 1"
 	LaunchpadTier2 LaunchpadTier = "Tier 2"
@@ -43,23 +48,36 @@ type Launchpad struct {
 	TotalBalance           numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	SettleFundTxHash       string
 	CancelFundTxHash       string
+	AddLiquidityTxHash     string
+	TokenAddress           string `gorm:"index"`
+	TokenName              string
+	TokenSymbol            string
+	TokenImageUrl          string
+	TotalSupply            numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	DeployTokenTxHash      string
+	TgeBalance             numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	MaxFundBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RefundBalance          numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 type LaunchpadMember struct {
 	gorm.Model
-	UserAddress  string `gorm:"unique_index:lp_member_main_idx"`
-	TwitterID    string `gorm:"unique_index:lp_member_main_idx"`
-	LaunchpadID  uint   `gorm:"unique_index:lp_member_main_idx"`
-	Launchpad    *Launchpad
-	TweetID      string
-	TweetContent string `gorm:"type:longtext"`
-	Tier         string
-	ReplyContent string `gorm:"type:longtext"`
-	ReplyPostAt  *time.Time
-	ReplyPostID  string
-	Error        string           `gorm:"type:longtext"`
-	FundBalance  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	TotalBalance numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	UserAddress    string `gorm:"unique_index:lp_member_main_idx"`
+	TwitterID      string `gorm:"unique_index:lp_member_main_idx"`
+	LaunchpadID    uint   `gorm:"unique_index:lp_member_main_idx"`
+	Launchpad      *Launchpad
+	TweetID        string
+	TweetContent   string `gorm:"type:longtext"`
+	Tier           string
+	ReplyContent   string `gorm:"type:longtext"`
+	ReplyPostAt    *time.Time
+	ReplyPostID    string
+	Error          string           `gorm:"type:longtext"`
+	FundBalance    numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	MaxFundBalance numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	TotalBalance   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RefundBalance  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	TokenBalance   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 type LaunchpadTransactionType string
@@ -67,6 +85,7 @@ type LaunchpadTransactionStatus string
 
 const (
 	LaunchpadTransactionTypeDeposit LaunchpadTransactionType = "deposit"
+	LaunchpadTransactionTypeRefund  LaunchpadTransactionType = "refund"
 
 	LaunchpadTransactionStatusDone LaunchpadTransactionStatus = "done"
 )
@@ -80,5 +99,6 @@ type LaunchpadTransaction struct {
 	LaunchpadID uint
 	UserAddress string
 	Amount      numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Fee         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Status      LaunchpadTransactionStatus
 }

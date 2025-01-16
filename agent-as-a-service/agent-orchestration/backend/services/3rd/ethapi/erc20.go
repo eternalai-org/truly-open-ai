@@ -180,3 +180,26 @@ func (c *Client) Erc1155IsApprovedForAll(erc20Addr string, addr string, operator
 	}
 	return balance, nil
 }
+
+func (c *Client) Erc20ApproveMaxCheck(contractAddr string, prkHex string, daoToken common.Address) (string, error) {
+	pbkHex, _, err := c.parsePrkAuth(prkHex)
+	if err != nil {
+		return "", err
+	}
+	allowance, err := c.Erc20Allowance(daoToken.Hex(), pbkHex.Hex(), contractAddr)
+	if err != nil {
+		return "", err
+	}
+	if allowance.Cmp(common.Big0) <= 0 {
+		approveHash, err := c.Erc20ApproveMax(
+			daoToken.Hex(),
+			prkHex,
+			contractAddr,
+		)
+		if err != nil {
+			return "", err
+		}
+		return approveHash, nil
+	}
+	return "", nil
+}
