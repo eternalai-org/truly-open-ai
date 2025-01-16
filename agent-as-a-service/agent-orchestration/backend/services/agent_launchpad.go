@@ -12,6 +12,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 
@@ -26,7 +27,7 @@ func (s *Service) ProxyAdminDAOUpgrade(ctx context.Context, networkID uint64, pr
 	if err != nil {
 		return "", errs.NewError(err)
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
 	if err != nil {
 		return "", errs.NewError(err)
@@ -63,7 +64,7 @@ func (s *Service) DeployDAOTreasuryAddress(ctx context.Context, networkID uint64
 	if err != nil {
 		return "", errs.NewError(err)
 	}
-	time.Sleep(10 * time.Second)
+	time.Sleep(5 * time.Second)
 	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
 	if err != nil {
 		return "", errs.NewError(err)
@@ -353,6 +354,9 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 								Description:     twitterPost.Content,
 								Name:            twitterPost.TokenDesc,
 								Status:          models.LaunchpadStatusNew,
+								MaxFundBalance:  numeric.NewBigFloatFromString("105000"),
+								TgeBalance:      numeric.NewBigFloatFromString("80000000"),
+								TotalSupply:     numeric.NewBigFloatFromString("1000000000"),
 							}
 							err = s.dao.Create(tx, lp)
 							if err != nil {
@@ -366,18 +370,18 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 							mission.UserPrompt = fmt.Sprintf(`Project Description: %s
 
 Task: Analyze the data provided for the specified Twitter user (note: this data belongs to the user and is not associated with your Twitter account). Predict the percentage value of their potential contribution to the project. Based on this prediction, classify the user into one of the following tiers:
-	•	Tier 1: Contribution percentage over 80%%
-	•	Tier 2: Contribution percentage between 51%% and 80%%
-	•	Tier 3: Contribution percentage 50%% or below
+	•	Tier 1: Contribution percentage over 80%% (with a maximum allocation of 2100 eai for investment)
+	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of 1050 eai for investment)
+	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of 525 eai for investment)
 
-The final output should clearly indicate the tier to which the user belongs.`, lp.Description)
+The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including tier, percent, and maximum allocation) through the submit_result API.`, lp.Description)
 							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
 							mission.NotDelay = true
 							mission.Enabled = false
 							mission.IsTesting = true
 							mission.ReplyEnabled = true
 							mission.AgentType = models.AgentInfoAgentTypeNormal
-							toolList := `[{"description":"API to get twitter tweets","executor":"https://agent.api.eternalai.org/api/internal/twitter/user/recent-info?id=%s","headers":{"api-key": "%s"},"label":"query","method":"GET","name":"get_twitter_tweets","params":[]}]`
+							toolList := `[{"description":"API to get twitter tweets ","executor":"https://agent.api.eternalai.org/api/internal/twitter/user/recent-info?id=%s","headers":{"api-key": "%s"},"label":"query","method":"GET","name":"get_twitter_tweets","params":[]},{"description":"API to submit result","executor":"https://agent.api.eternalai.org/api/internal/launchpad/%d/tier/%d","headers":{"api-key": "%s"},"label":"action","method":"POST","name":"submit_result","params":[{"name":"tier","dtype":"string"},{"name":"message","dtype":"string"}]}]`
 							mission.ToolList = toolList
 							if mission.ToolList != "" {
 								mission.ReactMaxSteps = 5
@@ -514,14 +518,14 @@ func (s *Service) ReplyAferAutoCreateLaunchpad(tx *gorm.DB, twitterPostID, launc
 			// We're thrilled to announce our new Dao Fund initiative, Dao %s! This visionary project empowers decentralized AI innovation through the power of community-owned compute resources.
 
 			// 📥 Funding Address: %s
-			// 🚀 Whitelist Applications: Now Open! Reply to this message with your Solana address to apply.
+			// 🚀 Whitelist Applications: Now Open! Reply to this message with your Base address to apply.
 
 			// Join us in shaping the future of decentralized AI!
 			// 			`, launchpad.Name, launchpad.Address)
 
 			replyContent := fmt.Sprintf(`
 📥 Funding Address: %s
-🚀 Whitelist Applications: Now Open! Reply to this message with your Solana address to apply.
+🚀 Whitelist Applications: Now Open! Reply to this message with your Base address to apply.
 			`, launchpad.Address)
 
 			replyContent = strings.TrimSpace(replyContent)
@@ -612,7 +616,7 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) SetTier(ctx context.Context, launchpadID, memberID uint, req *serializers.TierReq) error {
+func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberID uint, req *serializers.TierReq) error {
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {

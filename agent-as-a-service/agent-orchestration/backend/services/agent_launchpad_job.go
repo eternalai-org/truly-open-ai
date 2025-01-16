@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 	"time"
 
@@ -49,6 +50,15 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 							return errs.NewError(err)
 						}
 						if lp != nil {
+							lp, err := s.dao.FirstLaunchpadByID(
+								tx,
+								lp.ID,
+								map[string][]interface{}{},
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
 							lpm, err := s.dao.FirstLaunchpadMember(
 								tx,
 								map[string][]interface{}{
@@ -71,6 +81,15 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 									return errs.NewError(err)
 								}
 							}
+							lpm, err = s.dao.FirstLaunchpadMemberByID(
+								tx,
+								lpm.ID,
+								map[string][]interface{}{},
+								true,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
 							lptx = &models.LaunchpadTransaction{
 								NetworkID:   networkID,
 								LaunchpadID: lp.ID,
@@ -86,19 +105,84 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 								return errs.NewError(err)
 							}
 							if lptx.Status == models.LaunchpadTransactionStatusDone {
-								err = tx.Model(lpm).
-									UpdateColumn("fund_balance", gorm.Expr("fund_balance + ?", lptx.Amount)).
-									UpdateColumn("total_balance", gorm.Expr("total_balance + ?", lptx.Amount)).
-									Error
-								if err != nil {
-									return errs.NewError(err)
+								maxFundAmount := models.SubBigFloats(&lp.MaxFundBalance.Float, &lp.FundBalance.Float)
+								if maxFundAmount.Cmp(models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)) > 0 {
+									maxFundAmount = models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)
 								}
-								err = tx.Model(lp).
-									UpdateColumn("fund_balance", gorm.Expr("fund_balance + ?", lptx.Amount)).
-									UpdateColumn("total_balance", gorm.Expr("total_balance + ?", lptx.Amount)).
-									Error
-								if err != nil {
-									return errs.NewError(err)
+								if maxFundAmount.Cmp(big.NewFloat(0)) > 0 {
+									fundBalance := &lptx.Amount.Float
+									refundBalance := big.NewFloat(0)
+									if fundBalance.Cmp(maxFundAmount) > 0 {
+										fundBalance = maxFundAmount
+										refundBalance = models.SubBigFloats(&lptx.Amount.Float, fundBalance)
+									}
+									err = tx.Model(lpm).Updates(
+										map[string]interface{}{
+											"fund_balance":   gorm.Expr("fund_balance + ?", numeric.NewBigFloatFromFloat(fundBalance)),
+											"refund_balance": gorm.Expr("refund_balance + ?", numeric.NewBigFloatFromFloat(refundBalance)),
+											"total_balance":  gorm.Expr("total_balance + ?", lptx.Amount),
+										},
+									).Error
+									if err != nil {
+										return errs.NewError(err)
+									}
+									err = tx.Model(lp).Updates(
+										map[string]interface{}{
+											"fund_balance":   gorm.Expr("fund_balance + ?", numeric.NewBigFloatFromFloat(fundBalance)),
+											"refund_balance": gorm.Expr("refund_balance + ?", numeric.NewBigFloatFromFloat(refundBalance)),
+											"total_balance":  gorm.Expr("total_balance + ?", lptx.Amount),
+										},
+									).Error
+									if err != nil {
+										return errs.NewError(err)
+									}
+									// update token balance
+									lpm, err = s.dao.FirstLaunchpadMemberByID(
+										tx,
+										lpm.ID,
+										map[string][]interface{}{},
+										true,
+									)
+									if err != nil {
+										return errs.NewError(err)
+									}
+									lp, err := s.dao.FirstLaunchpadByID(
+										tx,
+										lp.ID,
+										map[string][]interface{}{},
+										true,
+									)
+									if err != nil {
+										return errs.NewError(err)
+									}
+									tokenBalance := models.QuoBigFloats(
+										models.MulBigFloats(&lpm.FundBalance.Float, &lp.TgeBalance.Float),
+										&lp.MaxFundBalance.Float,
+									)
+									lpm.TokenBalance = numeric.NewBigFloatFromFloat(tokenBalance)
+									err = s.dao.Save(tx, lpm)
+									if err != nil {
+										return errs.NewError(err)
+									}
+								} else {
+									err = tx.Model(lpm).Updates(
+										map[string]interface{}{
+											"refund_balance": gorm.Expr("refund_balance + ?", lptx.Amount),
+											"total_balance":  gorm.Expr("total_balance + ?", lptx.Amount),
+										},
+									).Error
+									if err != nil {
+										return errs.NewError(err)
+									}
+									err = tx.Model(lp).Updates(
+										map[string]interface{}{
+											"refund_balance": gorm.Expr("refund_balance + ?", lptx.Amount),
+											"total_balance":  gorm.Expr("total_balance + ?", lptx.Amount),
+										},
+									).Error
+									if err != nil {
+										return errs.NewError(err)
+									}
 								}
 							}
 						}
