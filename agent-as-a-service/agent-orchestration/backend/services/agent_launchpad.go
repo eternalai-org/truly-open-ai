@@ -518,14 +518,14 @@ func (s *Service) ReplyAferAutoCreateLaunchpad(tx *gorm.DB, twitterPostID, launc
 			// We're thrilled to announce our new Dao Fund initiative, Dao %s! This visionary project empowers decentralized AI innovation through the power of community-owned compute resources.
 
 			// 📥 Funding Address: %s
-			// 🚀 Whitelist Applications: Now Open! Reply to this message with your Solana address to apply.
+			// 🚀 Whitelist Applications: Now Open! Reply to this message with your Base address to apply.
 
 			// Join us in shaping the future of decentralized AI!
 			// 			`, launchpad.Name, launchpad.Address)
 
 			replyContent := fmt.Sprintf(`
 📥 Funding Address: %s
-🚀 Whitelist Applications: Now Open! Reply to this message with your Solana address to apply.
+🚀 Whitelist Applications: Now Open! Reply to this message with your Base address to apply.
 			`, launchpad.Address)
 
 			replyContent = strings.TrimSpace(replyContent)
