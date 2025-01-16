@@ -10,6 +10,44 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
+const (
+	EAI_OldWH_ChainID      = "43338" // workerHub version 0 , other chain workerHub v1
+	BaseChainID            = "8453"
+	BaseChainIDInt         = 8453
+	BitAiChainID           = "222671"
+	DAGIChainID            = "222672"
+	HermesChain            = "45762"
+	ArbitrumChainID        = "42161"
+	DuckChainID            = "5545"
+	PolygonChainID         = "137"
+	ZkSyncChainID          = "324"
+	ZkSyncChainIDInt       = 324
+	EthereumChainID        = "1"
+	BscChainID             = "56"
+	AbstractTestnetChainID = "11124"
+	SubtensorEVMChainID    = "964"
+	SubtensorEVMChainIDInt = 964
+	SolanaChainID          = "1111"
+	SolanaModelID          = "990001"
+	IPFSPrefix             = "ipfs://"
+	TronChainID            = "728126428"
+)
+
+type RPCResponse struct {
+	JSONRPC string          `json:"jsonrpc"`
+	Result  *ResultResponse `json:"result"`
+	ID      int             `json:"id"`
+}
+
+type ResultResponse struct {
+	Hash          string  `json:"hash"`
+	BlockHash     *string `json:"blockHash"`
+	BlockNumber   *string `json:"blockNumber"`
+	Number        *string `json:"number"`
+	ChainID       string  `json:"chainId"`
+	L1BlockNumber *string `json:"l1BlockNumber"`
+}
+
 var config *Config
 
 func init() {

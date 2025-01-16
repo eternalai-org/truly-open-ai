@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/eth"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/zkclient"
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"strconv"
@@ -79,6 +81,10 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if len(priKey) == 0 {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no priKey for network %v", info.NetworkID)
 	}
+	_, pubKey, err := eth.GetAccountInfo(priKey)
+	if err != nil {
+		return fmt.Errorf("JobCreateAgentKnowledgeBase error: get account info: %v", err)
+	}
 	kbWorkerHubAddress := appConfig[models.KeyConfigNameKnowledgeBaseWorkerHubAddress]
 	if len(kbWorkerHubAddress) == 0 {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no KnowledgeBaseWorkerHubAddress for network %v", info.NetworkID)
@@ -115,26 +121,35 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if err != nil {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to pack ABI data: %v", err)
 	}
-	client := s.GetEVMClient(ctx, info.NetworkID)
-	tx, err := client.Transact(tokenContractAddress, priKey, dataBytes, big.NewInt(0))
+
+	rpc := s.conf.GetConfigKeyString(
+		info.NetworkID,
+		"rpc_url",
+	)
+	var paymasterAddress, paymasterToken string
+	var paymasterFeeZero bool
+	if s.conf.ExistsedConfigKey(info.NetworkID, "paymaster_address") &&
+		s.conf.ExistsedConfigKey(info.NetworkID, "paymaster_token") {
+		paymasterAddress = s.conf.GetConfigKeyString(info.NetworkID, "paymaster_address")
+		paymasterToken = s.conf.GetConfigKeyString(info.NetworkID, "paymaster_token")
+		paymasterFeeZero = s.conf.GetConfigKeyBool(info.NetworkID, "paymaster_fee_zero")
+	}
+	aiZkClient := zkclient.NewZkClient(rpc,
+		paymasterFeeZero,
+		paymasterAddress,
+		paymasterToken)
+
+	tx, err := aiZkClient.Transact(priKey, *pubKey, common.HexToAddress(tokenContractAddress), big.NewInt(0), dataBytes)
 	if err != nil {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to transact: %v", err)
 	}
-	ethClient, err := s.GetEthereumClient(ctx, info.NetworkID).GetClient()
-	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to get EthereumClient: %v", err)
-	}
-	txReceipt, err := s.GetEthereumClient(ctx, info.NetworkID).WaitMinedTxReceipt(ctx, common.HexToHash(tx))
-	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to wait tx receipt: %v", err)
-	}
-	contract, err := aikb721.NewEternalAIKB721(common.HexToAddress(tokenContractAddress), ethClient)
+	contract, err := aikb721.NewEternalAIKB721(common.HexToAddress(tokenContractAddress), nil)
 	if err != nil {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to new either contract: %v", err)
 	}
 	tokenId := ""
-	for _, log := range txReceipt.Logs {
-		inferData, err := contract.ParseNewToken(*log)
+	for _, log := range tx.Logs {
+		inferData, err := contract.ParseNewToken(log.Log)
 		if err == nil {
 			tokenId = inferData.TokenId.String()
 			break
@@ -142,7 +157,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	}
 	info.KBTokenID = tokenId
 	info.KBTokenContractAddress = tokenContractAddress
-	info.KBTokenMintTx = tx
+	info.KBTokenMintTx = strings.ToLower(tx.TxHash.Hex())
 	info.Status = models.KnowledgeBaseStatusMinted
 	err = s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, info.ID, map[string]interface{}{
 		"status":                    info.Status,
