@@ -116,7 +116,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	} else {
 		updatedFields["kb_id"] = req.Result.Kb
 		if kn.FilecoinHash != "" {
-			updatedFields["status"] = models.KnowledgeBaseFileStatusDone
+			updatedFields["status"] = models.KnowledgeBaseStatusDone
 		}
 	}
 
