@@ -244,7 +244,7 @@ func (s *Service) RunJobs(ctx context.Context) error {
 				"JobAgentLaunchpad",
 				func() error {
 					s.JobAgentTwitterPostCreateLaunchpad(context.Background())
-					s.JobAgentLuanchpadEnd(context.Background())
+					s.JobAgentLaunchpadEnd(context.Background())
 					s.JobAgentDeployDAOToken(context.Background())
 					s.JobAgentSettleDAOToken(context.Background())
 					s.JobAgentTgeTransferDAOToken(context.Background())
@@ -259,6 +259,12 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	gocron.Every(1).Minutes().Do(
 		func() {
 			s.JobCreateAgentKnowledgeBase(context.Background())
+		},
+	)
+
+	gocron.Every(1).Minutes().Do(
+		func() {
+			s.JobScanRepliesByLaunchpadTweetID(context.Background())
 		},
 	)
 

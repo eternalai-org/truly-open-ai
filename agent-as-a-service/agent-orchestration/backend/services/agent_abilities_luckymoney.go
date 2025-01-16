@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
@@ -568,12 +569,12 @@ func (s *Service) LuckyMoneyProcessUserReward(ctx context.Context, luckyID uint)
 							return errs.NewError(errs.ErrBadRequest)
 						}
 
-						luckyMoneyAdminAddress := strings.ToLower(s.conf.LuckyMoneyAdminAddress)
-						luckyMoneyAdminAddressSol := strings.ToLower(s.conf.LuckyMoneyAdminAddressSol)
 						var txHash string
 						eaiAddress := strings.ToLower(s.conf.GetConfigKeyString(agentInfo.TokenNetworkID, "eai_contract_address"))
 						if eaiAddress != "" {
+							luckyMoneyAdminAddress := strings.ToLower(s.conf.LuckyMoneyAdminAddress)
 							if agentInfo.TokenNetworkID == models.SOLANA_CHAIN_ID {
+								luckyMoneyAdminAddress = strings.ToLower(s.conf.LuckyMoneyAdminAddressSol)
 								decimalsMint := 9
 								if agentInfo.TokenAddress != "" {
 									decimalsMint, err = s.GetSolanaTokenDecimals(agentInfo.TokenAddress)
@@ -588,8 +589,17 @@ func (s *Service) LuckyMoneyProcessUserReward(ctx context.Context, luckyID uint)
 									Amount:    uint64(rAmount * math.Pow10(decimalsMint)),
 									ToAddress: m.UserAddress,
 								}
-								txHash, err = s.blockchainUtils.SolanaTransfer(luckyMoneyAdminAddressSol, transferReq)
+
+								if luckyMoneyAdminAddress == "" {
+									return errs.NewError(errs.ErrBadRequest)
+								}
+
+								txHash, err = s.blockchainUtils.SolanaTransfer(luckyMoneyAdminAddress, transferReq)
 							} else {
+								if luckyMoneyAdminAddress == "" {
+									return errs.NewError(errs.ErrBadRequest)
+								}
+
 								txHash, err = s.GetEthereumClient(ctx, agentInfo.TokenNetworkID).Erc20Transfer(
 									eaiAddress,
 									s.GetAddressPrk(luckyMoneyAdminAddress), m.UserAddress,
@@ -646,7 +656,12 @@ func (s *Service) TestUtil() {
 	// etherAddress := helpers.ExtractEtherAddress("yo 0x7c9d59cD31F27c7cBEEde2567c9fa377537bdDE0 😄😁😋")
 	// fmt.Println(etherAddress)
 
-	resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "UOS"))
-	fmt.Println(resp.LastPrice)
-	fmt.Println(err)
+	// resp, err := helpers.GetBinancePrice24h(fmt.Sprintf(`%sUSDT`, "UOS"))
+	// fmt.Println(resp.LastPrice)
+	// fmt.Println(err)
+	for _, item := range configs.BINANCE_TOKENS {
+		if strings.HasSuffix(item, "/USDT") {
+			fmt.Println(strings.Split(item, "/")[0])
+		}
+	}
 }

@@ -11,17 +11,15 @@ eternal-dagent
 │   ├── core                 # Shared core logic
 │   │   ├── index.js         # Entry point for shared logic
 │   │   └── package.json     # Library's package.json
-│   ├── client-twitter       # Twitter typescript client, extends core
+│   ├── plugin-twitter       # Twitter typescript plugin, extends core
 │   │   ├── index.js         # Entry point for shared logic, interfaces with Twitter API
 │   │   └── package.json     # Library's package.json
-│   ├── client-farcaster     # Farcaster typescript client, extends core
+│   ├── plugin-farcaster     # Farcaster typescript plugin, extends core
 │   │   ├── src/index.js     # Entry point for shared logic, interfaces with Farcaster API
 │   │   └── package.json     # Library's package.json
 │   └── client-dagent        # Wrapper for all clients
 │       ├── src/index.js     # Entry point for shared logic, interfaces with all clients
 │       └── package.json     # Library's package.json
-├── client                   # Client code
-│   └── browser              # Reactjs code user interface
 ├── tsconfig.json            # Shared TypeScript config (if applicable)
 ├── eslint.json              # Shared ESLint config
 └── yarn.lock                # Dependency lock file
@@ -32,7 +30,7 @@ eternal-dagent
 └── scripts/                 # Custom management scripts
     ├── task.js              # Script to run tasks
     ├── runDagent.js         # Script to run dagent
-    └── plugins-build.js    # Script to build all plugins
+    └── plugins-build.js     # Script to build all plugins
 ```
 
 ## 🚀 Quick Start
@@ -45,4 +43,43 @@ git clone https://github.com/eternalai-org/eternal-ai
 cp .env.example .env
 
 yarn && yarn build && yarn start:dagent
+```
+
+### Sample create a custom router
+
+```bash
+import express, { Router } from "express";
+import { dagentLogger } from "@eternal-dagent/core";
+import cors from "cors";
+
+export function createApiCustomRouter() {
+  const router = express.Router();
+
+  router.use(cors());
+  router.use(express.json());
+  router.use(express.urlencoded({ extended: true }));
+
+  router.get("/your-router", (req, res) => {
+    res.send("Hello World");
+  });
+  
+  return router;
+}
+```
+* createApiRouter() will create a router that will listen for requests on /api,
+  you can create your own router and pass it to the Direct constructor.
+
+### Run your server
+
+```bash
+add "@eternal-dagent/direct", to your package.json
+
+import { createApiRouter, Direct } from "@eternal-dagent/direct";
+
+const direct = new Direct({
+  routers: [
+      createApiRouter(),
+  ]
+});
+direct.start(80);
 ```

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 	sync "sync"
@@ -1210,11 +1211,10 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						toolList := fmt.Sprintf(s.conf.ToolLists.TradeNews, s.conf.InternalApiKey, agentInfo.ID)
 						mission.ToolList = toolList
 						mission.UserPrompt = "Analyze the coin price fluctuations in the past 24 hours, suggest which coin to buy or sell and post it on twitter"
-					} else if mission.ToolSet == models.ToolsetTypeTradeAnalytics || mission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter || mission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions {
+					} else if mission.ToolSet == models.ToolsetTypeTradeAnalytics || mission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter {
 						toolList := s.conf.ToolLists.TradeAnalytic
 						if item.Tokens == "" {
-							item.Tokens = "BTC"
-							mission.Tokens = item.Tokens
+							return errs.NewError(errs.ErrTokenNotFound)
 						}
 						if item.UserPrompt == "" {
 							mission.UserPrompt = fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, item.Tokens)
@@ -1223,6 +1223,10 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						toolList = strings.ReplaceAll(toolList, "{token_symbol}", item.Tokens)
 
 						mission.ToolList = toolList
+					} else if mission.ToolSet == models.ToolsetTypeLuckyMoneys {
+						if item.RewardAmount.Cmp(big.NewFloat(0)) <= 0 || item.RewardUser <= 0 {
+							return errs.NewError(errs.ErrBadRequest)
+						}
 					} else if item.MissionStoreID != 0 {
 						//
 						missionStore, err := s.dao.FirstMissionStoreByID(tx, item.MissionStoreID, map[string][]interface{}{}, false)

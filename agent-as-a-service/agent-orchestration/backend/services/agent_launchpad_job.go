@@ -199,9 +199,9 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 	return nil
 }
 
-func (s *Service) JobAgentLuanchpadEnd(ctx context.Context) error {
+func (s *Service) JobAgentLaunchpadEnd(ctx context.Context) error {
 	err := s.JobRunCheck(
-		ctx, "JobAgentLuanchpadEnd",
+		ctx, "JobAgentLaunchpadEnd",
 		func() error {
 			err := daos.GetDBMainCtx(ctx).
 				Model(&models.Launchpad{}).
