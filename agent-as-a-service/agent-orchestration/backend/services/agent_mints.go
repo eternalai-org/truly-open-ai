@@ -34,6 +34,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 				},
 				map[string][]interface{}{
 					"agent_infos.agent_id != ''":        {},
+					"agent_infos.agent_type <> ?":       {models.AgentInfoAgentTypeKnowledgeBase},
 					"agent_infos.agent_contract_id = ?": {""},
 					"agent_infos.agent_nft_minted = ?":  {false},
 					`agent_infos.twin_twitter_usernames is null 
