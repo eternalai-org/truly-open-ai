@@ -587,7 +587,7 @@ func (s *Service) JobScanRepliesByLaunchpadTweetID(ctx context.Context) error {
 						func(tx *gorm.DB) error {
 							l, _ := s.dao.FirstLaunchpadByID(tx, launchpad.ID, map[string][]interface{}{}, true)
 							if l != nil {
-								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.ID, launchpad.TweetId, launchpad.LastScanID, launchpad.AgentSnapshotMission)
+								meta, err := s.ScanTwitterTweetByParentID(ctx, launchpad.NetworkID, launchpad.ID, launchpad.TweetId, launchpad.LastScanID, launchpad.AgentSnapshotMission)
 								if err != nil {
 									return err
 								}

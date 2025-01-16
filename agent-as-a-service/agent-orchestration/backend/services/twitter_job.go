@@ -123,7 +123,7 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID uint, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, networkID uint64, launchpadID uint, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
 	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", parentTweetID), sinceID, 50)
 	if err != nil {
 		return nil, errs.NewError(err)
@@ -156,6 +156,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 						}
 						if member == nil {
 							member = &models.LaunchpadMember{
+								NetworkID:    networkID,
 								UserAddress:  strings.ToLower(address),
 								TwitterID:    v.Tweet.AuthorID,
 								LaunchpadID:  launchpadID,
