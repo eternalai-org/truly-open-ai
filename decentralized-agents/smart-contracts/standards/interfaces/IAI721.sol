@@ -15,19 +15,6 @@ import "./IBase.sol";
  *      specialized functionalities.
  */
 interface IAI721 {
-    /// @dev fee: The usage fee required to invoke this agent's functionalities.
-    /// @dev isUsed: Signals whether this token is actively engaged or in use.
-    /// @dev modelId: Identifies the specific model from the associated model collection utilized by this agent.
-    /// @dev promptScheduler: The address of promptScheduler contract.
-    /// @dev sysPrompts: The system prompt data of this agent, mapped from string keys to arrays of prompt data, managed by the agent's owner.
-    struct TokenMetaData {
-        uint128 fee;
-        bool isUsed;
-        uint32 modelId;
-        address promptScheduler;
-        mapping(string => bytes[]) sysPrompts;
-    }
-
     /**
      * @dev Emitted when the mint price is updated.
      * @param newValue The new mint price.
@@ -72,7 +59,7 @@ interface IAI721 {
      */
     event AgentDataUpdate(
         uint256 indexed agentId,
-        uint256 promptIndex,
+        uint256 indexed promptIndex,
         bytes oldSysPrompt,
         bytes newSysPrompt
     );
@@ -130,7 +117,7 @@ interface IAI721 {
         bytes data,
         uint fee,
         string externalData,
-        uint256 inferenceId
+        uint256 indexed inferenceId
     );
 
     /**
@@ -140,51 +127,6 @@ interface IAI721 {
      * @param amount The amount of tokens used to top up the pool balance.
      */
     event TopUpPoolBalance(uint256 agentId, address caller, uint256 amount);
-
-    /**
-     * @dev Error thrown when there are insufficient funds.
-     */
-    error InsufficientFunds();
-
-    /**
-     * @dev Error thrown when an invalid agent ID is provided.
-     */
-    error InvalidAgentId();
-
-    /**
-     * @dev Error thrown when an invalid agent fee is provided.
-     */
-    error InvalidAgentFee();
-
-    /**
-     * @dev Error thrown when invalid agent data is provided.
-     */
-    error InvalidAgentData();
-
-    /**
-     * @dev Error thrown when an invalid agent URI is provided.
-     */
-    error InvalidAgentURI();
-
-    /**
-     * @dev Error thrown when an invalid agent prompt index is provided.
-     */
-    error InvalidAgentPromptIndex();
-
-    /**
-     * @dev Error thrown when a signature has already been used.
-     */
-    error SignatureUsed();
-
-    /**
-     * @dev Error thrown when the caller is not authorized.
-     */
-    error Unauthorized();
-
-    /**
-     * @dev Error thrown when invalid data is provided.
-     */
-    error InvalidData();
 
     /**
      * @dev Returns the next agent ID.
