@@ -373,7 +373,7 @@ Task: Analyze the data provided for the specified Twitter user (note: this data 
 	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of %.0f eai for investment)
 	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of %.0f eai for investment)
 
-The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including tier, percent, and maximum allocation) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
+The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (just including tier and maximum allocation) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
 							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
 							mission.NotDelay = true
 							mission.Enabled = false
@@ -690,7 +690,7 @@ func (s *Service) ReplyAfterJoinLaunchpad(tx *gorm.DB, twitterPostID, launchpadI
 		}
 		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && member.ReplyPostID == "" {
 			replyContent = strings.TrimSpace(replyContent)
-			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID, "")
+			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, member.TweetID, "")
 			if err != nil {
 				_ = tx.Model(member).Updates(
 					map[string]interface{}{
