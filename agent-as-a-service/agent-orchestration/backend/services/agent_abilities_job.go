@@ -1233,6 +1233,16 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 						if agentSnapshotPost != nil {
 							if agentSnapshotPost.ResponseId != "" {
 								if agentSnapshotPost.Status == models.AgentSnapshotPostStatusInferSubmitted {
+									if agentSnapshotPost.CreatedAt.Before(time.Now().Add(-30 * time.Hour)) {
+										err = daos.GetDBMainCtx(ctx).
+											Model(agentSnapshotPost).
+											UpdateColumn("status", models.AgentSnapshotPostStatusInferFailed).
+											Error
+										if err != nil {
+											return errs.NewError(err)
+										}
+										return nil
+									}
 									offchainAutoAgentOutput, err := s.dojoAPI.OffchainAutoAgentOutput(s.conf.AgentOffchain.Url, agentSnapshotPost.ResponseId, s.conf.AgentOffchain.ApiKey)
 									if err != nil {
 										return errs.NewError(err)
@@ -1291,16 +1301,6 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 												Error
 											if err != nil {
 												return errs.NewError(err)
-											}
-										} else {
-											if agentSnapshotPost.CreatedAt.Before(time.Now().Add(-30 * time.Hour)) {
-												err = daos.GetDBMainCtx(ctx).
-													Model(agentSnapshotPost).
-													UpdateColumn("status", models.AgentSnapshotPostStatusInferFailed).
-													Error
-												if err != nil {
-													return errs.NewError(err)
-												}
 											}
 										}
 									}
