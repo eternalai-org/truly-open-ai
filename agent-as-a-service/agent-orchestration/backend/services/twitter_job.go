@@ -123,16 +123,18 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, networkID uint64, launchpadID uint, parentTweetID, sinceID string, mission *models.AgentSnapshotMission) (*twitter.TweetRecentSearch, error) {
-	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", parentTweetID), sinceID, 50)
+func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *models.Launchpad) (*twitter.TweetRecentSearch, error) {
+	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", launchpad.TweetId), launchpad.LastScanID, 50)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
 	if lst != nil {
 		for _, v := range lst.LookUps {
-			err = daos.WithTransaction(
+			newMissionID := uint(0)
+			daos.WithTransaction(
 				daos.GetDBMainCtx(ctx),
 				func(tx *gorm.DB) error {
+
 					tmp := helpers.ParseStringToDateTimeTwitter(v.Tweet.CreatedAt)
 					err = s.dao.Create(tx, &models.TwitterTweet{
 						TwitterID: v.Tweet.AuthorID,
@@ -144,22 +146,22 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, networkID uint
 						return errs.NewError(err)
 					}
 					address := helpers.ExtractEtherAddress(v.Tweet.Text)
-					if address != "" {
+					if address != "" && address != launchpad.Address {
 						//check join
 						member, err := s.dao.FirstLaunchpadMember(tx, map[string][]interface{}{
 							// "user_address = ?": {strings.ToLower(address)},
 							"twitter_id = ?":   {v.Tweet.AuthorID},
-							"launchpad_id = ?": {launchpadID},
+							"launchpad_id = ?": {launchpad.ID},
 						}, map[string][]interface{}{}, []string{})
 						if err != nil {
 							return errs.NewError(err)
 						}
 						if member == nil {
 							member = &models.LaunchpadMember{
-								NetworkID:    networkID,
+								NetworkID:    launchpad.NetworkID,
 								UserAddress:  strings.ToLower(address),
 								TwitterID:    v.Tweet.AuthorID,
-								LaunchpadID:  launchpadID,
+								LaunchpadID:  launchpad.ID,
 								TweetID:      v.Tweet.ID,
 								TweetContent: v.Tweet.Text,
 								Tier:         string(models.LaunchpadTier3),
@@ -179,9 +181,9 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, networkID uint
 								return errs.NewError(err)
 							}
 						}
-						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey, launchpadID, member.ID, s.conf.InternalApiKey)
+						toolList := fmt.Sprintf(launchpad.AgentSnapshotMission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey, launchpad.ID, member.ID, s.conf.InternalApiKey)
 						newMission := &models.AgentSnapshotMission{}
-						err = copier.Copy(newMission, mission)
+						err = copier.Copy(newMission, launchpad.AgentSnapshotMission)
 						if err != nil {
 							return errs.NewError(err)
 						}
@@ -193,17 +195,16 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, networkID uint
 						if err != nil {
 							return errs.NewError(err)
 						}
-						err = s.AgentSnapshotPostCreate(ctx, newMission.ID, "", "")
-						if err != nil {
-							return errs.NewError(err)
-						}
+						newMissionID = newMission.ID
+
 					}
 					return nil
 				},
 			)
-			if err != nil {
-				return nil, errs.NewError(err)
+			if newMissionID > 0 {
+				s.AgentSnapshotPostCreate(ctx, newMissionID, "", "")
 			}
+
 		}
 	}
 	return lst, nil
