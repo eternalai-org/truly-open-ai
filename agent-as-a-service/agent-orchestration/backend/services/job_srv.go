@@ -163,9 +163,6 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	// create agent
 	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateAgent, context.Background())
 	gocron.Every(1).Minute().Do(s.JobAgentTwitterPostCreateAgent, context.Background())
-	// create launchpad
-	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
-	gocron.Every(1).Minute().Do(s.JobAgentTwitterPostCreateLaunchpad, context.Background())
 
 	// trading analyze
 	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForTA, context.Background())
@@ -232,6 +229,26 @@ func (s *Service) RunJobs(ctx context.Context) error {
 					s.JobRetryAddPool2(context.Background())
 					s.JobRetryAgentDeployToken(context.Background())
 					s.JobMemeBurnPositionUniswap(context.Background())
+					return nil
+				},
+			)
+		},
+	)
+
+	// create launchpad
+	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
+	gocron.Every(30).Second().Do(
+		func() {
+			s.JobRunCheck(
+				context.Background(),
+				"JobAgentLaunchpad",
+				func() error {
+					s.JobAgentTwitterPostCreateLaunchpad(context.Background())
+					s.JobAgentLuanchpadEnd(context.Background())
+					s.JobAgentLuanchpadFailed(context.Background())
+					s.JobAgentDeployDAOToken(context.Background())
+					s.JobAgentSettleDAOToken(context.Background())
+					s.JobAgentAddLiquidityDAOToken(context.Background())
 					return nil
 				},
 			)

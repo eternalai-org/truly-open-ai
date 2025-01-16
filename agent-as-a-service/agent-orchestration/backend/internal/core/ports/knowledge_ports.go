@@ -8,7 +8,7 @@ import (
 )
 
 type IKnowledgeUsecase interface {
-	CreateAgentInfoKnowledgeBase(context.Context, *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error)
+	CreateAgentInfoKnowledgeBase(ctx context.Context, models []*models.AgentInfoKnowledgeBase, agentInfoId uint) ([]*models.AgentInfoKnowledgeBase, error)
 	GetAgentInfoKnowledgeBaseByAgentId(context.Context, uint) (*models.AgentInfoKnowledgeBase, error)
 	GetKnowledgeBaseById(context.Context, uint) (*models.KnowledgeBase, error)
 	DeleteKnowledgeBaseById(context.Context, uint) error

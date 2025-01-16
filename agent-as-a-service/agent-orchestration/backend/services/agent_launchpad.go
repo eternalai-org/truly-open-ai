@@ -286,10 +286,10 @@ func (s *Service) JobAgentTwitterPostCreateLaunchpad(ctx context.Context) error 
 					},
 					map[string][]interface{}{},
 					[]string{
-						"post_at desc",
+						"rand()",
 					},
 					0,
-					5,
+					2,
 				)
 				if err != nil {
 					return errs.NewError(err)
@@ -355,7 +355,7 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 								Name:            twitterPost.TokenDesc,
 								Status:          models.LaunchpadStatusNew,
 								MaxFundBalance:  numeric.NewBigFloatFromString("105000"),
-								TgeBalance:      numeric.NewBigFloatFromString("80000000"),
+								TgeBalance:      numeric.NewBigFloatFromString("800000000"),
 								TotalSupply:     numeric.NewBigFloatFromString("1000000000"),
 							}
 							err = s.dao.Create(tx, lp)
@@ -632,6 +632,13 @@ func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberI
 				if member != nil && member.LaunchpadID == lp.ID {
 					member.Tier = req.Tier
 					member.ReplyContent = req.Message
+					if member.Tier == string(models.LaunchpadTier1) {
+						member.MaxFundBalance = numeric.NewBigFloatFromString("2100")
+					} else if member.Tier == string(models.LaunchpadTier2) {
+						member.MaxFundBalance = numeric.NewBigFloatFromString("1050")
+					} else if member.Tier == string(models.LaunchpadTier3) {
+						member.MaxFundBalance = numeric.NewBigFloatFromString("525")
+					}
 					err = s.dao.Save(tx, member)
 					if err != nil {
 						return errs.NewError(err)

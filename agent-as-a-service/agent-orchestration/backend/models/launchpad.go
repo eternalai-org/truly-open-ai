@@ -41,11 +41,11 @@ type Launchpad struct {
 	TwitterName            string
 	Address                string
 	LastScanID             string
-	Status                 LaunchpadStatus
+	Status                 LaunchpadStatus `gorm:"index"`
 	AgentSnapshotMissionID uint
 	AgentSnapshotMission   *AgentSnapshotMission
 	StartAt                *time.Time
-	EndAt                  *time.Time
+	EndAt                  *time.Time       `gorm:"index"`
 	FundBalance            numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TotalBalance           numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	SettleFundTxHash       string
@@ -65,13 +65,14 @@ type Launchpad struct {
 type LaunchpadMemberStatus string
 
 const (
-	LaunchpadMemberStatusTgeNew   LaunchpadMemberStatus = "new"
+	LaunchpadMemberStatusNew      LaunchpadMemberStatus = "new"
 	LaunchpadMemberStatusTgeDone  LaunchpadMemberStatus = "tge_done"
 	LaunchpadMemberStatusTgeError LaunchpadMemberStatus = "tge_error"
 )
 
 type LaunchpadMember struct {
 	gorm.Model
+	NetworkID            uint64
 	UserAddress          string `gorm:"unique_index:lp_member_main_idx"`
 	TwitterID            string `gorm:"unique_index:lp_member_main_idx"`
 	LaunchpadID          uint   `gorm:"unique_index:lp_member_main_idx"`
@@ -87,6 +88,7 @@ type LaunchpadMember struct {
 	MaxFundBalance       numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TotalBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	RefundBalance        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RefundFeeBalance     numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TokenBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TokenTransferTxHash  string
 	RefundTransferTxHash string
