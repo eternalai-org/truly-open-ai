@@ -632,6 +632,13 @@ func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberI
 				if member != nil && member.LaunchpadID == lp.ID {
 					member.Tier = req.Tier
 					member.ReplyContent = req.Message
+					if member.Tier == string(models.LaunchpadTier1) {
+						member.MaxFundBalance = numeric.NewBigFloatFromString("2100")
+					} else if member.Tier == string(models.LaunchpadTier2) {
+						member.MaxFundBalance = numeric.NewBigFloatFromString("1050")
+					} else if member.Tier == string(models.LaunchpadTier3) {
+						member.MaxFundBalance = numeric.NewBigFloatFromString("525")
+					}
 					err = s.dao.Save(tx, member)
 					if err != nil {
 						return errs.NewError(err)
