@@ -373,7 +373,7 @@ Task: Analyze the data provided for the specified Twitter user (note: this data 
 	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of %.0f eai for investment)
 	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of %.0f eai for investment)
 
-The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (just including tier and maximum allocation) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
+The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including the tier and maximum allocation) through the submit_result API. For example: 'After analyzing your Twitter account and predicting your potential contribution to the project, we’ve placed you in Tier 2, with a maximum allocation of 1000 EAI for investment.'`, lp.Description, tier1, tier2, tier3)
 							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
 							mission.NotDelay = true
 							mission.Enabled = false
