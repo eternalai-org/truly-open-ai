@@ -434,7 +434,6 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if agentInfo.EaiBalance.Float.Cmp(big.NewFloat(0)) < 0 {
 						return errs.NewError(errs.ErrBadRequest)
 					}
-
 					if mission.ToolSet != models.ToolsetTypeLuckyMoneys {
 						inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, mission, inferPost)
 						if err != nil {
@@ -447,10 +446,15 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 							if err != nil {
 								return errs.NewError(err)
 							}
+							err = tx.Model(agentInfo).
+								UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
+								Error
+							if err != nil {
+								return errs.NewError(err)
+							}
 							return nil
 						}
 					}
-
 					err = s.dao.Create(
 						tx,
 						inferPost,
