@@ -39,7 +39,7 @@ func (s *Service) FindAgentSnapshotPostAction(ctx context.Context, agentId uint)
 	return s.dao.FindAgentSnapshotPostAction(daos.GetDBMainCtx(ctx), filters, preloads, []string{"id DESC"}, 0, 50)
 }
 
-func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentTypes []uint, kbStatus int64, page, limit int) ([]*models.AgentInfo, uint, error) {
+func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creator string, agentTypes []uint, kbStatus int64, keyword string, page, limit int) ([]*models.AgentInfo, uint, error) {
 	selected := []string{
 		"agent_infos.*",
 	}
@@ -51,6 +51,15 @@ func (s *Service) GetListAgentInfos(ctx context.Context, networkID uint64, creat
 	}
 	if creator != "" {
 		filters["creator = ?"] = []interface{}{strings.ToLower(creator)}
+	}
+
+	if keyword != "" {
+		search := fmt.Sprintf("%%%s%%", strings.ToLower(keyword))
+		filters[`LOWER(token_name) like ?
+			or LOWER(token_symbol) like ?
+			or LOWER(token_address) like ?
+			or LOWER(twitter_username) like ?
+			or LOWER(agent_name) like ?`] = []interface{}{search, search, search, search, search}
 	}
 
 	if len(agentTypes) != 0 {
