@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
@@ -59,10 +60,17 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 }
 
 func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.KnowledgeBase) error {
+	agent, err := s.dao.FirstAgentInfo(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"id = ?": {info.AgentInfoId},
+		},
+		map[string][]interface{}{}, []string{})
+	if err != nil {
+		return errs.NewError(err)
+	}
 	if len(info.FilecoinHash) == 0 {
 		return fmt.Errorf("file coin hash is empty")
 	}
-	var err error
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
 	if err != nil {
 		return fmt.Errorf("JobCreateAgentKnowledgeBase error: get all name value in app config: %v", err)
@@ -144,6 +152,11 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	})
 	if err != nil {
 		return err
+	}
+	agent.Status = models.AssistantStatusReady
+	err = s.dao.Save(daos.GetDBMainCtx(ctx), agent)
+	if err != nil {
+		return errs.NewError(err)
 	}
 	return nil
 }
