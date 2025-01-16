@@ -374,9 +374,9 @@ func (s *Service) AgentTwitterPostCreateLaunchpad(ctx context.Context, twitterPo
 							mission.UserPrompt = fmt.Sprintf(`Project Description: %s
 
 Task: Analyze the data provided for the specified Twitter user (note: this data belongs to the user and is not associated with your Twitter account). Predict the percentage value of their potential contribution to the project. Based on this prediction, classify the user into one of the following tiers:
-	•	Tier 1: Contribution percentage over 80%% (with a maximum allocation of %%.0f eai for investment)
-	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of %%.0f eai for investment)
-	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of %%.0f eai for investment)
+	•	Tier 1: Contribution percentage over 80%% (with a maximum allocation of %.0f eai for investment)
+	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of %.0f eai for investment)
+	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of %.0f eai for investment)
 
 The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including tier, percent, and maximum allocation) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
 							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
