@@ -28,11 +28,6 @@ func (s *Service) ProxyAdminDAOUpgrade(ctx context.Context, networkID uint64, pr
 	if err != nil {
 		return "", errs.NewError(err)
 	}
-	time.Sleep(10 * time.Second)
-	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
-	if err != nil {
-		return "", errs.NewError(err)
-	}
 	return txHash, nil
 }
 
