@@ -65,7 +65,7 @@ type Launchpad struct {
 type LaunchpadMemberStatus string
 
 const (
-	LaunchpadMemberStatusTgeNew   LaunchpadMemberStatus = "new"
+	LaunchpadMemberStatusNew      LaunchpadMemberStatus = "new"
 	LaunchpadMemberStatusTgeDone  LaunchpadMemberStatus = "tge_done"
 	LaunchpadMemberStatusTgeError LaunchpadMemberStatus = "tge_error"
 )

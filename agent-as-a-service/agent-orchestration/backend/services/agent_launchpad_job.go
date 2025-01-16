@@ -76,6 +76,7 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 									UserAddress: toAddress,
 									LaunchpadID: lp.ID,
 									Tier:        string(models.LaunchpadTier3),
+									Status:      models.LaunchpadMemberStatusNew,
 								}
 								err = s.dao.Create(tx, lpm)
 								if err != nil {
@@ -205,7 +206,6 @@ func (s *Service) JobAgentLuanchpadEnd(ctx context.Context) error {
 			err := daos.GetDBMainCtx(ctx).
 				Model(&models.Launchpad{}).
 				Where("status = ?", models.LaunchpadStatusRunning).
-				Where("end_at < now()").
 				Where("fund_balance = max_fund_balance").
 				Updates(
 					map[string]interface{}{
@@ -627,10 +627,50 @@ func (s *Service) AgentAddLiquidityDAOToken(ctx context.Context, memeID uint) er
 	return nil
 }
 
+func (s *Service) JobAgentTgeTransferDAOToken(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobAgentTgeTransferDAOToken",
+		func() error {
+			var retErr error
+			ms, err := s.dao.FindLaunchpadMemberJoinSelect(
+				daos.GetDBMainCtx(ctx),
+				[]string{"launchpad_members.*"},
+				map[string][]interface{}{
+					"join launchpads on launchpad_members.launchpad_id = launchpads.id": {},
+				},
+				map[string][]interface{}{
+					"launchpads.status = ?":        {models.LaunchpadStatusSettled},
+					"launchpad_members.status = ?": {models.LaunchpadMemberStatusNew},
+				},
+				map[string][]interface{}{},
+				[]string{
+					"rand()",
+				},
+				0,
+				5,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, m := range ms {
+				err := s.AgentTgeTransferDAOToken(ctx, m.ID)
+				if err != nil {
+					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
 	err := s.JobRunCheck(
 		ctx,
-		fmt.Sprintf("AgentAddLiquidityDAOToken_%d", id),
+		fmt.Sprintf("AgentTgeTransferDAOToken_%d", id),
 		func() error {
 			mb, err := s.dao.FirstLaunchpadMemberByID(
 				daos.GetDBMainCtx(ctx),
@@ -657,6 +697,15 @@ func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if m.Status == models.LaunchpadStatusSettled && mb.TokenTransferTxHash == "" {
+				err = daos.GetDBMainCtx(ctx).Model(&mb).
+					Updates(
+						map[string]interface{}{
+							"token_transfer_tx_hash": "pending",
+						},
+					).Error
+				if err != nil {
+					return errs.NewError(err)
+				}
 				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "dao_pool_address"))
 				txHash, err := func() (string, error) {
 					hash, err := s.GetEthereumClient(ctx, m.NetworkID).
@@ -731,6 +780,15 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if mb.RefundTransferTxHash == "" {
+				err = daos.GetDBMainCtx(ctx).Model(&mb).
+					Updates(
+						map[string]interface{}{
+							"refund_transfer_tx_hash": "pending",
+						},
+					).Error
+				if err != nil {
+					return errs.NewError(err)
+				}
 				refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, big.NewFloat(0.05))
 				refundBalance := models.SubBigFloats(&mb.RefundBalance.Float, refundFeeBalance)
 				_ = daos.GetDBMainCtx(ctx).Model(&mb).
