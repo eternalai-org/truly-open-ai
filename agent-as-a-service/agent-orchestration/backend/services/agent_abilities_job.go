@@ -1876,25 +1876,25 @@ func (s *Service) JobAgentSnapshotPostStatusInferRefund(ctx context.Context) err
 						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
 					}
 				}
-				ms, err = s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
-					map[string][]interface{}{
-						"status = ?":                    {models.AgentSnapshotPostStatusInferError},
-						"agent_info_id > 0":             {},
-						"agent_snapshot_mission_id > 0": {},
-						"fee > 0":                       {},
-					},
-					map[string][]interface{}{},
-					[]string{}, 0, 999999,
-				)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				for _, m := range ms {
-					err := s.AgentSnapshotPostStatusInferRefund(ctx, m.ID)
-					if err != nil {
-						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
-					}
-				}
+				// ms, err = s.dao.FindAgentSnapshotPost(daos.GetDBMainCtx(ctx),
+				// 	map[string][]interface{}{
+				// 		"status = ?":                    {models.AgentSnapshotPostStatusInferError},
+				// 		"agent_info_id > 0":             {},
+				// 		"agent_snapshot_mission_id > 0": {},
+				// 		"fee > 0":                       {},
+				// 	},
+				// 	map[string][]interface{}{},
+				// 	[]string{}, 0, 999999,
+				// )
+				// if err != nil {
+				// 	return errs.NewError(err)
+				// }
+				// for _, m := range ms {
+				// 	err := s.AgentSnapshotPostStatusInferRefund(ctx, m.ID)
+				// 	if err != nil {
+				// 		retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+				// 	}
+				// }
 			}
 			return retErr
 		},
