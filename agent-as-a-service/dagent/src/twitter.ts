@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
 import { DagentTwitter } from "@eternal-dagent/client-dagent";
+import {createApiRouter, Direct} from "@eternal-dagent/direct";
 
 class AgentTwitter {
   protected environment: IENV;
@@ -48,6 +49,9 @@ class AgentTwitter {
       twitter_client_id: this.environment.TWITTER.CLIENT_ID,
       twitter_oauth_url: "https://imagine-backend.bvm.network/api/webhook/twitter-oauth"
     });
+
+    // twitter_client_id: "TWlYeVpGTXFRdTQ1WW14aDJkNXk6MTpjaQ",
+    // twitter_oauth_url: "https://composed-rarely-feline.ngrok-free.app/api/webhook/twitter-oauth"
   };
 
   setupMissions = async (agentId: string) => {
@@ -56,6 +60,7 @@ class AgentTwitter {
 
   createAndRunDagent = async () => {
     const privateKey = this.environment.PRIVATE_KEY;
+
     if (!privateKey && !this.authenParams) {
       dagentLogger.error("Please provide private key or params token.");
     }
@@ -66,6 +71,12 @@ class AgentTwitter {
     if (agent?.id) {
       await this.linkDagentToTwitter(agent.id);
     }
+
+    const direct = new Direct({
+      routers: [createApiRouter()]
+    })
+
+    direct.start(80);
 
     await this.getCreatedAgents();
   };
@@ -87,6 +98,15 @@ class AgentTwitter {
         status: agent.status,
       };
     }));
+
+    await this.linkDagentToTwitter(agent.id);
+
+    const direct = new Direct({
+      routers: [
+          createApiRouter(),
+      ]
+    });
+    direct.start(80);
   };
 
 }
@@ -102,13 +122,13 @@ dotenv.config();
 
 // Case set PRIVATE_KEY
 const agentTwitter = new AgentTwitter();
-agentTwitter.createAndRunDagent()
-    .then(() => {
-      dagentLogger.info("Code run completed...");
-    });
-
-// // Case agent created and run
-// agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+// agentTwitter.createAndRunDagent()
 //     .then(() => {
 //       dagentLogger.info("Code run completed...");
 //     });
+
+// // Case agent created and run
+agentTwitter.runDagent("6763d7524ee1600e1122b6f6")
+    .then(() => {
+      dagentLogger.info("Code run completed...");
+    });
