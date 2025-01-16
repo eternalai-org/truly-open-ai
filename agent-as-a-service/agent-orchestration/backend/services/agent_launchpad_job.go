@@ -136,6 +136,34 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 									if err != nil {
 										return errs.NewError(err)
 									}
+									// update token balance
+									lpm, err = s.dao.FirstLaunchpadMemberByID(
+										tx,
+										lpm.ID,
+										map[string][]interface{}{},
+										true,
+									)
+									if err != nil {
+										return errs.NewError(err)
+									}
+									lp, err := s.dao.FirstLaunchpadByID(
+										tx,
+										lp.ID,
+										map[string][]interface{}{},
+										true,
+									)
+									if err != nil {
+										return errs.NewError(err)
+									}
+									tokenBalance := models.QuoBigFloats(
+										models.MulBigFloats(&lpm.FundBalance.Float, &lp.TgeBalance.Float),
+										&lp.MaxFundBalance.Float,
+									)
+									lpm.TokenBalance = numeric.NewBigFloatFromFloat(tokenBalance)
+									err = s.dao.Save(tx, lpm)
+									if err != nil {
+										return errs.NewError(err)
+									}
 								} else {
 									err = tx.Model(lpm).Updates(
 										map[string]interface{}{
