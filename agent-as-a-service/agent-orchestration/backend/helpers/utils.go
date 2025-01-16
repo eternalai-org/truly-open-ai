@@ -733,3 +733,12 @@ func ExtractEtherAddress(content string) string {
 	}
 	return ""
 }
+
+func ExtractEVMAddress(input string) string {
+	re := regexp.MustCompile(`0x[0-9a-fA-F]{40}`)
+	match := re.FindString(input)
+	if match != "" {
+		return match
+	}
+	return ""
+}
