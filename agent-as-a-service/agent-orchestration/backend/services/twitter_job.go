@@ -178,7 +178,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpadID ui
 								return errs.NewError(err)
 							}
 						}
-						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey)
+						toolList := fmt.Sprintf(mission.ToolList, v.Tweet.AuthorID, s.conf.InternalApiKey, launchpadID, member.ID, s.conf.InternalApiKey)
 						newMission := &models.AgentSnapshotMission{}
 						err = copier.Copy(newMission, mission)
 						if err != nil {
