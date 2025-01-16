@@ -27,7 +27,7 @@ func (s *Service) ProxyAdminDAOUpgrade(ctx context.Context, networkID uint64, pr
 	if err != nil {
 		return "", errs.NewError(err)
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
 	if err != nil {
 		return "", errs.NewError(err)
@@ -64,7 +64,7 @@ func (s *Service) DeployDAOTreasuryAddress(ctx context.Context, networkID uint64
 	if err != nil {
 		return "", errs.NewError(err)
 	}
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
 	if err != nil {
 		return "", errs.NewError(err)

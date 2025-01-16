@@ -209,34 +209,23 @@ func (s *Service) JobAgentLuanchpadEnd(ctx context.Context) error {
 				Where("fund_balance = max_fund_balance").
 				Updates(
 					map[string]interface{}{
-						"status": models.LaunchpadStatusEnd,
+						"status":      models.LaunchpadStatusEnd,
+						"finished_at": time.Now(),
 					},
 				).
 				Error
 			if err != nil {
 				return errs.NewError(err)
 			}
-			return nil
-		},
-	)
-	if err != nil {
-		return errs.NewError(err)
-	}
-	return nil
-}
-
-func (s *Service) JobAgentLuanchpadFailed(ctx context.Context) error {
-	err := s.JobRunCheck(
-		ctx, "JobAgentLuanchpadFailed",
-		func() error {
-			err := daos.GetDBMainCtx(ctx).
+			err = daos.GetDBMainCtx(ctx).
 				Model(&models.Launchpad{}).
 				Where("status = ?", models.LaunchpadStatusRunning).
 				Where("end_at < now()").
 				Where("fund_balance < max_fund_balance").
 				Updates(
 					map[string]interface{}{
-						"status": models.LaunchpadStatusFailed,
+						"status":      models.LaunchpadStatusFailed,
+						"finished_at": time.Now(),
 					},
 				).
 				Error
@@ -349,7 +338,7 @@ func (s *Service) AgentDeployDAOToken(ctx context.Context, memeID uint) error {
 						if err != nil {
 							return tokenAddr, tokenHash, errs.NewError(err)
 						}
-						time.Sleep(5 * time.Second)
+						time.Sleep(10 * time.Second)
 						err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(tokenHash)
 						if err != nil {
 							return tokenAddr, tokenHash, errs.NewError(err)
@@ -463,7 +452,7 @@ func (s *Service) AgentSettleDAOToken(ctx context.Context, memeID uint) error {
 								"settle_fund_tx_hash": hash,
 							},
 						).Error
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 					err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(hash)
 					if err != nil {
 						return hash, errs.NewError(err)
@@ -506,6 +495,26 @@ func (s *Service) JobAgentAddLiquidityDAOToken(ctx context.Context) error {
 		ctx, "JobAgentAddLiquidityDAOToken",
 		func() error {
 			var retErr error
+			err := daos.GetDBMainCtx(ctx).
+				Model(&models.Launchpad{}).
+				Where("status = ?", models.LaunchpadStatusSettled).
+				Where(`not exists(
+					select 1
+					from launchpad_members
+					where launchpad_members.launchpad_id = launchpads.id
+					and launchpad_members.status not in (
+														'tge_done', 'done'
+						)
+				)`).
+				Updates(
+					map[string]interface{}{
+						"status": models.LaunchpadStatusTge,
+					},
+				).
+				Error
+			if err != nil {
+				return errs.NewError(err)
+			}
 			ms, err := s.dao.FindLaunchpad(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
@@ -566,7 +575,7 @@ func (s *Service) AgentAddLiquidityDAOToken(ctx context.Context, memeID uint) er
 						return errs.NewError(err)
 					}
 					if hash != "" {
-						time.Sleep(5 * time.Second)
+						time.Sleep(10 * time.Second)
 						err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(hash)
 						if err != nil {
 							return errs.NewError(err)
@@ -589,7 +598,7 @@ func (s *Service) AgentAddLiquidityDAOToken(ctx context.Context, memeID uint) er
 								"add_liquidity_tx_hash": hash,
 							},
 						).Error
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 					err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(hash)
 					if err != nil {
 						return hash, errs.NewError(err)
@@ -632,15 +641,36 @@ func (s *Service) JobAgentTgeTransferDAOToken(ctx context.Context) error {
 		ctx, "JobAgentTgeTransferDAOToken",
 		func() error {
 			var retErr error
-			ms, err := s.dao.FindLaunchpadMemberJoinSelect(
+			err := daos.GetDBMainCtx(ctx).
+				Model(&models.LaunchpadMember{}).
+				Where("status = ?", models.LaunchpadMemberStatusNew).
+				Where("token_balance = 0").
+				Where(`exists(
+						select 1
+						from launchpads
+						where launchpad_members.launchpad_id = launchpads.id
+							and launchpads.status = ?
+					)`, models.LaunchpadStatusSettled).
+				Updates(
+					map[string]interface{}{
+						"status": models.LaunchpadMemberStatusTgeDone,
+					},
+				).
+				Error
+			if err != nil {
+				return errs.NewError(err)
+			}
+			ms, err := s.dao.FindLaunchpadMember(
 				daos.GetDBMainCtx(ctx),
-				[]string{"launchpad_members.*"},
 				map[string][]interface{}{
-					"join launchpads on launchpad_members.launchpad_id = launchpads.id": {},
-				},
-				map[string][]interface{}{
-					"launchpads.status = ?":        {models.LaunchpadStatusSettled},
-					"launchpad_members.status = ?": {models.LaunchpadMemberStatusNew},
+					"status = ?":        {models.LaunchpadMemberStatusNew},
+					"token_balance > 0": {},
+					`exists(
+						select 1
+						from launchpads
+						where launchpad_members.launchpad_id = launchpads.id
+							and launchpads.status = ?
+					)`: {models.LaunchpadStatusSettled},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -724,7 +754,7 @@ func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
 								"token_transfer_tx_hash": hash,
 							},
 						).Error
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 					err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(hash)
 					if err != nil {
 						return hash, errs.NewError(err)
@@ -762,6 +792,55 @@ func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
 	return nil
 }
 
+func (s *Service) JobAgentTgeRefundBaseToken(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobAgentTgeTransferDAOToken",
+		func() error {
+			var retErr error
+			err := daos.GetDBMainCtx(ctx).
+				Model(&models.LaunchpadMember{}).
+				Where("status = ?", models.LaunchpadMemberStatusTgeDone).
+				Where("refund_balance = 0").
+				Updates(
+					map[string]interface{}{
+						"status": models.LaunchpadMemberStatusDone,
+					},
+				).
+				Error
+			if err != nil {
+				return errs.NewError(err)
+			}
+			ms, err := s.dao.FindLaunchpadMember(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"status = ?":         {models.LaunchpadMemberStatusTgeDone},
+					"refund_balance > 0": {},
+				},
+				map[string][]interface{}{},
+				[]string{
+					"rand()",
+				},
+				0,
+				2,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			for _, m := range ms {
+				err := s.AgentTgeRefundBaseToken(ctx, m.ID)
+				if err != nil {
+					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
 func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 	err := s.JobRunCheck(
 		ctx,
@@ -779,7 +858,21 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 			if mb == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			if mb.RefundTransferTxHash == "" {
+			if mb.Status == models.LaunchpadMemberStatusTgeDone && mb.RefundTransferTxHash == "" {
+				refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, big.NewFloat(0.05))
+				refundBalance := models.SubBigFloats(&mb.RefundBalance.Float, refundFeeBalance)
+				if refundBalance.Cmp(big.NewFloat(0)) <= 0 {
+					err = daos.GetDBMainCtx(ctx).Model(&mb).
+						Updates(
+							map[string]interface{}{
+								"status": models.LaunchpadMemberStatusDone,
+							},
+						).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				}
 				err = daos.GetDBMainCtx(ctx).Model(&mb).
 					Updates(
 						map[string]interface{}{
@@ -789,8 +882,6 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 				if err != nil {
 					return errs.NewError(err)
 				}
-				refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, big.NewFloat(0.05))
-				refundBalance := models.SubBigFloats(&mb.RefundBalance.Float, refundFeeBalance)
 				_ = daos.GetDBMainCtx(ctx).Model(&mb).
 					Updates(
 						map[string]interface{}{
@@ -816,7 +907,7 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 								"refund_transfer_tx_hash": hash,
 							},
 						).Error
-					time.Sleep(5 * time.Second)
+					time.Sleep(10 * time.Second)
 					err = s.GetEthereumClient(ctx, mb.NetworkID).TransactionConfirmed(hash)
 					if err != nil {
 						return hash, errs.NewError(err)
@@ -828,6 +919,7 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 						Updates(
 							map[string]interface{}{
 								"refund_transfer_tx_hash": txHash,
+								"status":                  models.LaunchpadMemberStatusRefundError,
 							},
 						).Error
 					return errs.NewError(err)
@@ -836,6 +928,7 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 						Updates(
 							map[string]interface{}{
 								"refund_transfer_tx_hash": txHash,
+								"status":                  models.LaunchpadMemberStatusDone,
 							},
 						).Error
 					if err != nil {

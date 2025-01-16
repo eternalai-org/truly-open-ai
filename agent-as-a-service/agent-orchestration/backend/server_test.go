@@ -49,11 +49,13 @@ func Test_JOB(t *testing.T) {
 	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
 	fmt.Println(
-	// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
-	// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
-	// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
-	// ts.CreateSOLAddress(context.Background()),
-	// ts.CreateETHAddress(context.Background()),
+		// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
+		// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
+		// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
+		// ts.CreateSOLAddress(context.Background()),
+		// ts.CreateETHAddress(context.Background()),
+		// ts.JobAgentTgeTransferDAOToken(context.Background()),
+		ts.JobAgentAddLiquidityDAOToken(context.Background()),
 	)
 	select {}
 }
@@ -63,6 +65,6 @@ func Test_UTIL(t *testing.T) {
 }
 
 func Test_SRV(t *testing.T) {
-	// ts.ScanAgentTwitterPostFroCreateLaunchpad(context.Background())
+	ts.JobScanAgentTwitterPostForCreateLaunchpad(context.Background())
 	// ts.AgentTwitterPostCreateLaunchpad(context.Background(), 34285)
 }
