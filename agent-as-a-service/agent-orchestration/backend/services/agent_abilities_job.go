@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
-	"go.uber.org/zap"
 	"math/big"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
+	"go.uber.org/zap"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -1290,6 +1291,16 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 												Error
 											if err != nil {
 												return errs.NewError(err)
+											}
+										} else {
+											if agentSnapshotPost.CreatedAt.Before(time.Now().Add(-30 * time.Hour)) {
+												err = daos.GetDBMainCtx(ctx).
+													Model(agentSnapshotPost).
+													UpdateColumn("status", models.AgentSnapshotPostStatusInferFailed).
+													Error
+												if err != nil {
+													return errs.NewError(err)
+												}
 											}
 										}
 									}
