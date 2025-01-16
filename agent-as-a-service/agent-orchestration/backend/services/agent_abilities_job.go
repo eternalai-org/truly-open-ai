@@ -452,6 +452,14 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 							if err != nil {
 								return errs.NewError(err)
 							}
+							inferPost.Fee = numeric.NewBigFloatFromString("0")
+							err = s.dao.Save(
+								tx,
+								inferPost,
+							)
+							if err != nil {
+								return errs.NewError(err)
+							}
 							return nil
 						}
 					}
