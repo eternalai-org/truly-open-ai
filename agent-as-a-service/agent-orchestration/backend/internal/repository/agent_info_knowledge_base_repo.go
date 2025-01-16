@@ -13,6 +13,7 @@ type agentInfoKnowledgeBaseRepo struct {
 
 type IAgentInfoKnowledgeBaseRepo interface {
 	Create(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error)
+	CreateList(ctx context.Context, models []*models.AgentInfoKnowledgeBase, agentInfoId uint) ([]*models.AgentInfoKnowledgeBase, error)
 	ListByAgentIds(ctx context.Context, ids []uint) ([]*models.AgentInfoKnowledgeBase, error)
 	GetByAgentId(ctx context.Context, id uint) (*models.AgentInfoKnowledgeBase, error)
 }
@@ -42,6 +43,28 @@ func (r *agentInfoKnowledgeBaseRepo) ListByAgentIds(ctx context.Context, ids []u
 		return nil, err
 	}
 	return resp, nil
+}
+
+func (r *agentInfoKnowledgeBaseRepo) CreateList(ctx context.Context, addModels []*models.AgentInfoKnowledgeBase, agentInfoId uint) ([]*models.AgentInfoKnowledgeBase, error) {
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		removeModels := []*models.AgentInfoKnowledgeBase{}
+		if err := tx.Where("agent_info_id = ?", agentInfoId).Delete(&removeModels).Error; err != nil {
+			return err
+		}
+
+		for _, m := range addModels {
+			result := tx.Create(m)
+			if result.Error != nil {
+				return result.Error
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return addModels, nil
 }
 
 func (r *agentInfoKnowledgeBaseRepo) Create(ctx context.Context, model *models.AgentInfoKnowledgeBase) (*models.AgentInfoKnowledgeBase, error) {
