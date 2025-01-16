@@ -7,11 +7,13 @@ In the tutorial, we describe how to use ZerePy framework with EternalAI API (ins
 * Python 3.10 or higher
 * Poetry 1.5 or higher
 
-## Step 1: Create an onchain ZerePy Agent
+## Step 1: Create an on-chain ZerePy Agent
 
-EternalAI allows creating onchain Agent on +10 blockchains.&#x20;
+EternalAI allows creating on-chain Agent on +10 blockchains.&#x20;
 
-In this guide, we create a new onchain ZerePy agent on Base by running the following commands:
+In this guide, we create a new on-chain ZerePy agent on Base.
+
+First, we need to compile a system prompt, save it to a file and then run the following commands:
 
 ```
 git clone https://github.com/eternalai-org/eternal-ai.git
@@ -20,12 +22,14 @@ cd eternal-ai/developer-guides/examples/how-to-mint-agent
 
 npm i
 
-export RPC_URL=https://mainnet.base.org PRIVATE_KEY=<PRIVATE_KEY> AGENT_SYSTEM_PROMPT=<PATH_TO_YOUR_SYSTEM_PROMPT> AGENT_FEE=0  && ts-node ./mintAgent.ts
+export RPC_URL=https://mainnet.base.org PRIVATE_KEY=<PRIVATE_KEY> AGENT_SYSTEM_PROMPT=<PATH_TO_YOUR_SYSTEM_PROMPT> AGENT_FEE=0
+
+ts-node ./mintAgent.ts
 ```
 
-Replace `PRIVATE_KEY`and `AGENT_SYSTEM_PROMPT`to your private key (that has some ETH on Base) and path to system prompt file respectively.
+Note: replace `PRIVATE_KEY`and `AGENT_SYSTEM_PROMPT`to your private key (that has some ETH on Base) and path to system prompt file created above respectively.
 
-We're created an onchain agent (id: 1711) with system prompt as follows:
+We've run the commands above and created an on-chain agent (id: 1711) as shown in the follwing transaction:
 
 {% embed url="https://basescan.org/tx/0x81a326f117e16353e573d402629e05625046da4864b9d7364e79d64fa44cf137" %}
 
