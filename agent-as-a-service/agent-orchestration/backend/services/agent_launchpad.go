@@ -691,7 +691,7 @@ func (s *Service) ReplyAfterJoinLaunchpad(tx *gorm.DB, twitterPostID, launchpadI
 						"reply_content": replyContent,
 						"error":         err.Error(),
 					},
-				)
+				).Error
 			} else {
 				_ = tx.Model(member).Updates(
 					map[string]interface{}{
