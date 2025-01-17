@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/agent_info"
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/agent_info"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/usecase/appconfig"
 
@@ -142,10 +143,12 @@ func NewService(conf *configs.Config) *Service {
 		taapi:          taapi.NewTaApi(conf.TaApiKey),
 	}
 
-	gormDB := mysql.NewDefaultMysqlGormConn(nil, s.conf.DbURL)
+	gormDB := mysql.NewDefaultMysqlGormConn(nil, s.conf.DbURL, s.conf.Debug)
 	knowledgeBaseRepo := repository.NewKnowledgeBaseRepository(gormDB)
 	knowledgeBaseFileRepo := repository.NewKnowledgeBaseFileRepository(gormDB)
 	agentInfoKnowledgeBaseRepo := repository.NewAgentInfoKnowledgeBaseRepository(gormDB)
+	agentInfoRepo := repository.NewAgentInfoRepository(gormDB)
+
 	secretKey := conf.SecretKey
 	var googleSecretKey string
 	if utils.IsEnvProduction(conf.Env) {
@@ -159,18 +162,24 @@ func NewService(conf *configs.Config) *Service {
 	}
 
 	s.KnowledgeUsecase = knowledge.NewKnowledgeUsecase(
-		knowledgeBaseRepo, knowledgeBaseFileRepo,
-		agentInfoKnowledgeBaseRepo,
-		googleSecretKey,
-		s.ethApiMap, conf.Networks, s.trxApi,
-		conf.RagApi,
-		conf.Lighthouse.Apikey,
-		conf.WebhookUrl,
+		knowledge.WithRepos(
+			knowledgeBaseRepo, knowledgeBaseFileRepo,
+			agentInfoKnowledgeBaseRepo, agentInfoRepo,
+		),
+		knowledge.WithSecretKey(googleSecretKey),
+		knowledge.WithEthApiMap(s.ethApiMap),
+		knowledge.WithNetworks(conf.Networks),
+		knowledge.WithTrxApi(s.trxApi),
+		knowledge.WithRagApi(conf.RagApi),
+		knowledge.WithLighthousekey(conf.Lighthouse.Apikey),
+		knowledge.WithWebhookUrl(conf.WebhookUrl),
+		knowledge.WithNotiBot(
+			s.conf.KnowledgeBaseConfig.KBTelegramKey,
+			s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert,
+			s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert),
 	)
 	appConfigRepo := repository.NewAppConfigRepository(gormDB)
 	s.AppConfigUseCase = appconfig.NewAppConfigUseCase(appConfigRepo)
-
-	agentInfoRepo := repository.NewAgentInfoRepository(gormDB)
 	s.AgentInfoUseCase = agent_info.NewAgentInfoUseCase(agentInfoRepo)
 	return s
 }

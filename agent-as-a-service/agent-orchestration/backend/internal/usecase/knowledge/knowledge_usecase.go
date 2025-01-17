@@ -19,24 +19,125 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	resty "github.com/go-resty/resty/v2"
+	"github.com/mymmrac/telego"
 
 	"go.uber.org/zap"
 )
 
 var categoryNameTracer string = "knowledge_usecase_tracer"
 
+type KnowledgeUsecaseOption func(*knowledgeUsecase)
+
+func WithRepos(
+	knowledgeBaseRepo repository.KnowledgeBaseRepo,
+	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
+	agentInfoRepo repository.IAgentInfoRepo,
+) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.knowledgeBaseRepo = knowledgeBaseRepo
+		uc.knowledgeBaseFileRepo = knowledgeBaseFileRepo
+		uc.agentInfoKnowledgeBaseRepo = agentInfoKnowledgeBaseRepo
+		uc.agentInfoRepo = agentInfoRepo
+	}
+}
+
+func WithSecretKey(secretKey string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.secretKey = secretKey
+	}
+}
+
+func WithEthApiMap(ethApiMap map[uint64]*ethapi.Client) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.ethApiMap = ethApiMap
+	}
+}
+
+func WithNetworks(networks map[string]map[string]string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.networks = networks
+	}
+}
+
+func WithTrxApi(trxApi *trxapi.Client) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.trxApi = trxApi
+	}
+}
+
+func WithRagApi(ragApi string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.ragApi = ragApi
+	}
+}
+
+func WithLighthousekey(lighthousekey string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.lighthouseKey = lighthousekey
+	}
+}
+
+func WithWebhookUrl(webhookUrl string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.webhookUrl = webhookUrl
+	}
+}
+
+func WithNotiBot(teleKey, notiActChanId, notiErrorChanId string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
+		if err != nil {
+			logger.Fatal("with_noti_bot", zap.Error(err))
+		}
+		uc.notiBot = bot
+		i, _ := strconv.ParseInt(notiActChanId, 10, 64)
+		uc.notiActChanId = i
+
+		ei, _ := strconv.ParseInt(notiErrorChanId, 10, 64)
+		uc.notiErrorChanId = ei
+	}
+}
+
+func NewKnowledgeUsecase(options ...KnowledgeUsecaseOption) ports.IKnowledgeUsecase {
+	uc := &knowledgeUsecase{}
+	for _, opt := range options {
+		opt(uc)
+	}
+	return uc
+}
+
 type knowledgeUsecase struct {
 	knowledgeBaseRepo          repository.KnowledgeBaseRepo
 	knowledgeBaseFileRepo      repository.KnowledgeBaseFileRepo
 	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo
-	secretKey                  string
+	agentInfoRepo              repository.IAgentInfoRepo
 
-	networks      map[string]map[string]string
-	ethApiMap     map[uint64]*ethapi.Client
-	trxApi        *trxapi.Client
-	ragApi        string
-	lighthouseKey string
-	webhookUrl    string
+	secretKey       string
+	networks        map[string]map[string]string
+	ethApiMap       map[uint64]*ethapi.Client
+	trxApi          *trxapi.Client
+	ragApi          string
+	lighthouseKey   string
+	webhookUrl      string
+	notiBot         *telego.Bot
+	notiActChanId   int64
+	notiErrorChanId int64
+}
+
+func (uc *knowledgeUsecase) sendMessage(_ context.Context, content string, chanId int64) (int, error) {
+	msg := &telego.SendMessageParams{
+		ChatID: telego.ChatID{
+			ID: chanId,
+		},
+		Text: strings.TrimSpace(content),
+	}
+
+	resp, err := uc.notiBot.SendMessage(msg)
+	if err != nil {
+		return 0, err
+	}
+	return resp.MessageID, nil
 }
 
 func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, models []*models.AgentInfoKnowledgeBase, agentInfoId uint) ([]*models.AgentInfoKnowledgeBase, error) {
@@ -72,12 +173,14 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
 		return nil, err
 	}
+	uc.sendMessage(ctx, fmt.Sprintf("start_webhook_file agent: %s (%d): %s - filecoin hash: %s", kn.Name, kn.ID, updatedFields["filecoin_hash"], filename), uc.notiActChanId)
 
 	i := 0
 	for {
 		if i > 5 {
 			break
 		}
+
 		kb1, err := uc.knowledgeBaseRepo.GetById(ctx, id)
 		if err != nil {
 			return kn, nil
@@ -124,6 +227,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 		}
 	}
 
+	uc.sendMessage(ctx, fmt.Sprintf("webhook_status update kb_id for agent_id %d: %s", kn.ID, req.Result.Kb), uc.notiActChanId)
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}
@@ -131,30 +235,8 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	return kn, nil
 }
 
-func NewKnowledgeUsecase(
-	knowledgeBaseRepo repository.KnowledgeBaseRepo,
-	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
-	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
-	secretKey string,
-	ethApiMap map[uint64]*ethapi.Client,
-	networks map[string]map[string]string,
-	trxApi *trxapi.Client,
-	ragApi string,
-	lighthousekey string,
-	webhookUrl string,
-) ports.IKnowledgeUsecase {
-	return &knowledgeUsecase{
-		knowledgeBaseRepo:          knowledgeBaseRepo,
-		knowledgeBaseFileRepo:      knowledgeBaseFileRepo,
-		agentInfoKnowledgeBaseRepo: agentInfoKnowledgeBaseRepo,
-		secretKey:                  secretKey,
-		ethApiMap:                  ethApiMap,
-		networks:                   networks,
-		trxApi:                     trxApi,
-		ragApi:                     ragApi,
-		lighthouseKey:              lighthousekey,
-		webhookUrl:                 webhookUrl,
-	}
+func (uc *knowledgeUsecase) calcTrainingFee(ctx context.Context, req *serializers.CreateKnowledgeRequest) (float64, error) {
+	return 1, nil
 }
 
 func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serializers.CreateKnowledgeRequest) (*serializers.KnowledgeBase, error) {
@@ -178,7 +260,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	model.SolanaDepositAddress = strings.ToLower(req.SolanaDepositAddress)
 
 	model.Status = models.KnowledgeBaseStatusWaitingPayment
-	model.Fee = 1
+	model.Fee, _ = uc.calcTrainingFee(ctx, req)
 
 	resp, err := uc.knowledgeBaseRepo.Create(ctx, model)
 	if err != nil {

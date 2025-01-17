@@ -16,10 +16,11 @@ import (
 )
 
 // NewDefaultMysqlGormConn --
-func NewDefaultMysqlGormConn(conn *Connection, dbUrl string) *gorm.DB {
+func NewDefaultMysqlGormConn(conn *Connection, dbUrl string, debug bool) *gorm.DB {
 	if conn == nil {
 		conn = DefaultMysqlConnectionFromConfig()
 	}
+	conn.EnableLog = debug
 	settings := dbUrl
 	// settings := fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=%s&parseTime=%t&loc=%s",
 	// 	conn.User, conn.Password,
@@ -41,7 +42,6 @@ func NewDefaultMysqlGormConn(conn *Connection, dbUrl string) *gorm.DB {
 	// )
 	logSettings := dbUrl
 	logger.Info("[mysql] Gorm connecting with this configuration: ", logSettings)
-
 	zapLogger := zapgorm2.New(logger.Logger())
 	zapLogger.SlowThreshold = 10 * time.Second
 	zapLogger.LogLevel = gormlogger.Silent
