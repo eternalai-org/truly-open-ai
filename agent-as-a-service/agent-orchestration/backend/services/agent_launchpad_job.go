@@ -406,7 +406,8 @@ func (s *Service) JobAgentSettleDAOToken(ctx context.Context) error {
 			ms, err := s.dao.FindLaunchpad(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"status = ?": {models.LaunchpadStatusTokenCreated},
+					"status = ?":               {models.LaunchpadStatusTokenCreated},
+					"settle_fund_tx_hash = ''": {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -534,7 +535,8 @@ func (s *Service) JobAgentAddLiquidityDAOToken(ctx context.Context) error {
 			ms, err := s.dao.FindLaunchpad(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"status = ?": {models.LaunchpadStatusTge},
+					"status = ?":                 {models.LaunchpadStatusTge},
+					"add_liquidity_tx_hash = ''": {},
 				},
 				map[string][]interface{}{},
 				[]string{
@@ -679,8 +681,9 @@ func (s *Service) JobAgentTgeTransferDAOToken(ctx context.Context) error {
 			ms, err := s.dao.FindLaunchpadMember(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"status = ?":        {models.LaunchpadMemberStatusNew},
-					"token_balance > 0": {},
+					"status = ?":                  {models.LaunchpadMemberStatusNew},
+					"token_transfer_tx_hash = ''": {},
+					"token_balance > 0":           {},
 					`exists(
 						select 1
 						from launchpads
@@ -829,8 +832,9 @@ func (s *Service) JobAgentTgeRefundBaseToken(ctx context.Context) error {
 			ms, err := s.dao.FindLaunchpadMember(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"status = ?":         {models.LaunchpadMemberStatusTgeDone},
-					"refund_balance > 0": {},
+					"status = ?":                   {models.LaunchpadMemberStatusTgeDone},
+					"refund_transfer_tx_hash = ''": {},
+					"refund_balance > 0":           {},
 				},
 				map[string][]interface{}{},
 				[]string{
