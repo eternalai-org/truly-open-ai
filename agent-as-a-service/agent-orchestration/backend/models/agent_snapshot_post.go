@@ -218,6 +218,7 @@ type AgentSnapshotMission struct {
 	AgentInfo         *AgentInfo
 	UserPrompt        string `gorm:"type:longtext"`
 	IntervalSec       int    `gorm:"default:0"`
+	LookupInterval    int    `gorm:"default:0"`
 	Enabled           bool   `gorm:"default:0"`
 	ReplyEnabled      bool   `gorm:"default:0"`
 	IsTesting         bool   `gorm:"default:0"`
