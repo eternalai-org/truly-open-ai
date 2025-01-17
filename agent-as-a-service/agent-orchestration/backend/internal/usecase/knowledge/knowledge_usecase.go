@@ -235,7 +235,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	return kn, nil
 }
 
-func (uc *knowledgeUsecase) calcTrainingFee(ctx context.Context, req *serializers.CreateKnowledgeRequest) (float64, error) {
+func (uc *knowledgeUsecase) calcTrainingFee(_ context.Context, _ *serializers.CreateKnowledgeRequest) (float64, error) {
 	return 1, nil
 }
 
@@ -492,11 +492,17 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		return nil, err
 	}
 	kn.Status = models.KnowledgeBaseStatusProcessing
+
 	bBody, _ := json.Marshal(body)
 	kn.RagInsertFileRequest = string(bBody)
-	if err = uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
+
+	updatedFields := make(map[string]interface{})
+	updatedFields["status"] = kn.Status
+	updatedFields["rag_insert_file_request"] = kn.RagInsertFileRequest
+	if err = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}
+	uc.sendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent_id %s (%d): %s", kn.Name, kn.ID, string(bBody)), uc.notiActChanId)
 	return resp, nil
 }
 
