@@ -19,6 +19,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	resty "github.com/go-resty/resty/v2"
+	"github.com/mymmrac/telego"
 
 	"go.uber.org/zap"
 )
@@ -83,6 +84,18 @@ func WithWebhookUrl(webhookUrl string) KnowledgeUsecaseOption {
 	}
 }
 
+func WithNotiBot(teleKey string, notiActChanId int64, notiErrorChanId int64) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
+		if err != nil {
+			logger.Fatal("with_noti_bot", zap.Error(err))
+		}
+		uc.notiBot = bot
+		uc.notiActChanId = notiActChanId
+		uc.notiErrorChanId = notiErrorChanId
+	}
+}
+
 func NewKnowledgeUsecase(options ...KnowledgeUsecaseOption) ports.IKnowledgeUsecase {
 	uc := &knowledgeUsecase{}
 	for _, opt := range options {
@@ -97,13 +110,31 @@ type knowledgeUsecase struct {
 	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo
 	agentInfoRepo              repository.IAgentInfoRepo
 
-	secretKey     string
-	networks      map[string]map[string]string
-	ethApiMap     map[uint64]*ethapi.Client
-	trxApi        *trxapi.Client
-	ragApi        string
-	lighthouseKey string
-	webhookUrl    string
+	secretKey       string
+	networks        map[string]map[string]string
+	ethApiMap       map[uint64]*ethapi.Client
+	trxApi          *trxapi.Client
+	ragApi          string
+	lighthouseKey   string
+	webhookUrl      string
+	notiBot         *telego.Bot
+	notiActChanId   int64
+	notiErrorChanId int64
+}
+
+func (uc *knowledgeUsecase) sendMessage(_ context.Context, content string, chanId int64) (int, error) {
+	msg := &telego.SendMessageParams{
+		ChatID: telego.ChatID{
+			ID: chanId,
+		},
+		Text: strings.TrimSpace(content),
+	}
+
+	resp, err := uc.notiBot.SendMessage(msg)
+	if err != nil {
+		return 0, err
+	}
+	return resp.MessageID, nil
 }
 
 func (uc *knowledgeUsecase) CreateAgentInfoKnowledgeBase(ctx context.Context, models []*models.AgentInfoKnowledgeBase, agentInfoId uint) ([]*models.AgentInfoKnowledgeBase, error) {
