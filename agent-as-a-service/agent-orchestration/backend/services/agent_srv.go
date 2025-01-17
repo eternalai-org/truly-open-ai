@@ -1122,10 +1122,10 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context,
 			}
 
 			if kbIdFromKnowledegeBase != nil {
-				knowledgeBaseFromQuery, err := s.dao.FirstKnowledgeBase(daos.GetDBMainCtx(ctx), map[string][]interface{}{
+				knowledgeBaseFromQuery, _ := s.dao.FirstKnowledgeBase(daos.GetDBMainCtx(ctx), map[string][]interface{}{
 					"kb_id = ?": {*kbIdFromKnowledegeBase},
 				}, map[string][]interface{}{}, []string{"id desc"}, false)
-				if err == nil {
+				if knowledgeBaseFromQuery != nil {
 					knowledgeBaseUse = knowledgeBaseFromQuery
 				}
 			}
