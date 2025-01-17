@@ -26,86 +26,7 @@ import (
 
 var categoryNameTracer string = "knowledge_usecase_tracer"
 
-type KnowledgeUsecaseOption func(*knowledgeUsecase)
-
-func WithRepos(
-	knowledgeBaseRepo repository.KnowledgeBaseRepo,
-	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
-	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
-	agentInfoRepo repository.IAgentInfoRepo,
-) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.knowledgeBaseRepo = knowledgeBaseRepo
-		uc.knowledgeBaseFileRepo = knowledgeBaseFileRepo
-		uc.agentInfoKnowledgeBaseRepo = agentInfoKnowledgeBaseRepo
-		uc.agentInfoRepo = agentInfoRepo
-	}
-}
-
-func WithSecretKey(secretKey string) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.secretKey = secretKey
-	}
-}
-
-func WithEthApiMap(ethApiMap map[uint64]*ethapi.Client) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.ethApiMap = ethApiMap
-	}
-}
-
-func WithNetworks(networks map[string]map[string]string) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.networks = networks
-	}
-}
-
-func WithTrxApi(trxApi *trxapi.Client) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.trxApi = trxApi
-	}
-}
-
-func WithRagApi(ragApi string) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.ragApi = ragApi
-	}
-}
-
-func WithLighthousekey(lighthousekey string) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.lighthouseKey = lighthousekey
-	}
-}
-
-func WithWebhookUrl(webhookUrl string) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		uc.webhookUrl = webhookUrl
-	}
-}
-
-func WithNotiBot(teleKey, notiActChanId, notiErrorChanId string) KnowledgeUsecaseOption {
-	return func(uc *knowledgeUsecase) {
-		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
-		if err != nil {
-			logger.Error(categoryNameTracer, "with_noti_bot", zap.Error(err))
-		}
-		uc.notiBot = bot
-		i, _ := strconv.ParseInt(notiActChanId, 10, 64)
-		uc.notiActChanId = i
-
-		ei, _ := strconv.ParseInt(notiErrorChanId, 10, 64)
-		uc.notiErrorChanId = ei
-	}
-}
-
-func NewKnowledgeUsecase(options ...KnowledgeUsecaseOption) ports.IKnowledgeUsecase {
-	uc := &knowledgeUsecase{}
-	for _, opt := range options {
-		opt(uc)
-	}
-	return uc
-}
+type options func(*knowledgeUsecase)
 
 type knowledgeUsecase struct {
 	knowledgeBaseRepo          repository.KnowledgeBaseRepo
@@ -123,6 +44,85 @@ type knowledgeUsecase struct {
 	notiBot         *telego.Bot
 	notiActChanId   int64
 	notiErrorChanId int64
+}
+
+func WithRepos(
+	knowledgeBaseRepo repository.KnowledgeBaseRepo,
+	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
+	agentInfoRepo repository.IAgentInfoRepo,
+) options {
+	return func(uc *knowledgeUsecase) {
+		uc.knowledgeBaseRepo = knowledgeBaseRepo
+		uc.knowledgeBaseFileRepo = knowledgeBaseFileRepo
+		uc.agentInfoKnowledgeBaseRepo = agentInfoKnowledgeBaseRepo
+		uc.agentInfoRepo = agentInfoRepo
+	}
+}
+
+func WithSecretKey(secretKey string) options {
+	return func(uc *knowledgeUsecase) {
+		uc.secretKey = secretKey
+	}
+}
+
+func WithEthApiMap(ethApiMap map[uint64]*ethapi.Client) options {
+	return func(uc *knowledgeUsecase) {
+		uc.ethApiMap = ethApiMap
+	}
+}
+
+func WithNetworks(networks map[string]map[string]string) options {
+	return func(uc *knowledgeUsecase) {
+		uc.networks = networks
+	}
+}
+
+func WithTrxApi(trxApi *trxapi.Client) options {
+	return func(uc *knowledgeUsecase) {
+		uc.trxApi = trxApi
+	}
+}
+
+func WithRagApi(ragApi string) options {
+	return func(uc *knowledgeUsecase) {
+		uc.ragApi = ragApi
+	}
+}
+
+func WithLighthousekey(lighthousekey string) options {
+	return func(uc *knowledgeUsecase) {
+		uc.lighthouseKey = lighthousekey
+	}
+}
+
+func WithWebhookUrl(webhookUrl string) options {
+	return func(uc *knowledgeUsecase) {
+		uc.webhookUrl = webhookUrl
+	}
+}
+
+func WithNotiBot(teleKey, notiActChanId, notiErrorChanId string) options {
+	return func(uc *knowledgeUsecase) {
+		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
+		if err != nil {
+			logger.Error(categoryNameTracer, "with_noti_bot", zap.Error(err))
+		}
+		uc.notiBot = bot
+		i, _ := strconv.ParseInt(notiActChanId, 10, 64)
+		uc.notiActChanId = i
+
+		ei, _ := strconv.ParseInt(notiErrorChanId, 10, 64)
+		uc.notiErrorChanId = ei
+	}
+}
+
+func NewKnowledgeUsecase(options ...options) ports.IKnowledgeUsecase {
+	uc := &knowledgeUsecase{}
+	for _, opt := range options {
+		opt(uc)
+	}
+	return uc
 }
 
 func (uc *knowledgeUsecase) SendMessage(_ context.Context, content string, chanId int64) (int, error) {
@@ -167,6 +167,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 		logger.Error(categoryNameTracer, "upload_data_with_retry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = err.Error()
+		uc.SendMessage(ctx, fmt.Sprintf("webhook_file error upload lighthouse to agent: %s (%d) - error %s", kn.Name, kn.ID, updatedFields["last_error_message"]), uc.notiErrorChanId)
 		_ = uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields)
 		return nil, err
 	}
@@ -192,6 +193,10 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 			return kn, nil
 		}
 
+		if kb1.Status == models.KnowledgeBaseStatusDone {
+			break
+		}
+
 		if kb1.FilecoinHash != "" && kb1.KbId != "" && int(kb1.Status) < int(models.KnowledgeBaseStatusDone) {
 			updatedFields := make(map[string]interface{})
 			updatedFields["status"] = models.KnowledgeBaseStatusDone
@@ -200,6 +205,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 			}
 			break
 		}
+
 		time.Sleep(1 * time.Second)
 		i += 1
 	}
@@ -226,6 +232,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	if req.Status != "ok" {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = req.Result.Message
+		uc.SendMessage(ctx, fmt.Sprintf("webhook update agent status failed: %s (%d) - error %s", kn.Name, kn.ID, req.Result.Message), uc.notiActChanId)
 	} else {
 		updatedFields["kb_id"] = req.Result.Kb
 		if kn.FilecoinHash != "" {
