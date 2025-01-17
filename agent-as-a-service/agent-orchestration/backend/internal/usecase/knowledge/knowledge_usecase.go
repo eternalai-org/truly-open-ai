@@ -516,6 +516,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	updatedFields["status"] = kn.Status
 	updatedFields["rag_insert_file_request"] = kn.RagInsertFileRequest
 	if err = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf(" uc.knowledgeBaseRepo.UpdateById for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 		return nil, err
 	}
 	uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent_id %s (%d): %s", kn.Name, kn.ID, string(bBody)), uc.notiActChanId)

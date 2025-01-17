@@ -348,7 +348,7 @@ func (s *Service) JobCreateTokenInfo(ctx context.Context) error {
 			agents, err := s.dao.FindAgentInfo(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					"token_status in (?)":                           {[]string{"pending", "etching"}},
+					`token_status in (?) or (agent_type=2 and status="ready")`: {[]string{"pending", "etching"}},
 					"agent_nft_minted = ?":                          {true},
 					`(token_address is null or token_address = "")`: {},
 					`token_network_id > 0`:                          {},
@@ -392,95 +392,149 @@ func (s *Service) CreateTokenInfo(ctx context.Context, agentID uint) error {
 				return errs.NewError(err)
 			}
 
-			if agentInfo != nil && agentInfo.TokenStatus == "pending" && agentInfo.SystemPrompt != "" {
-				if agentInfo.TokenSymbol == "" || agentInfo.TokenName == "" {
-					promptGenerateToken := fmt.Sprintf(`
-						I want to generate my token base on this info
-						'%s'
-
-						token-name (generate if not provided, make sure it not empty)
-						token-symbol (generate if not provided, make sure it not empty)
-						token-story (generate if not provided, make sure it not empty)
-
-						Please return in string in json format including token-name, token-symbol, token-story, just only json without explanation  and token name limit with 15 characters
-					`, agentInfo.SystemPrompt)
-					aiStr, err := s.openais["Lama"].ChatMessage(promptGenerateToken)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					if aiStr != "" {
-						mapInfo := helpers.ExtractMapInfoFromOpenAI(aiStr)
-						tokenName := ""
-						tokenSymbol := ""
-						tokenDesc := ""
-						if mapInfo != nil {
-							if v, ok := mapInfo["token-name"]; ok {
-								tokenName = fmt.Sprintf(`%v`, v)
-							}
-
-							if v, ok := mapInfo["token-symbol"]; ok {
-								tokenSymbol = fmt.Sprintf(`%v`, v)
-							}
-
-							if v, ok := mapInfo["token-story"]; ok {
-								tokenDesc = fmt.Sprintf(`%v`, v)
-							}
-						}
-
-						if tokenDesc != "" && tokenName != "" && tokenSymbol != "" {
-							updateFields := map[string]interface{}{
-								"token_name": tokenName,
-								"token_desc": tokenDesc,
-							}
-
-							if agentInfo.TokenSymbol == "" {
-								updateFields["token_symbol"] = tokenSymbol
-							}
-							err := daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
-								updateFields,
-							).Error
-							if err != nil {
-								return errs.NewError(err)
-							}
-						}
-					}
-				} else if agentInfo.TokenImageUrl == "" {
-					imageUrl, err := s.GetGifImageUrlFromTokenInfo(agentInfo.TokenSymbol, agentInfo.TokenName, agentInfo.TokenDesc)
-					if err != nil {
-						return errs.NewError(err)
+			if agentInfo.TokenStatus == "" {
+				if agentInfo.AgentType == models.AgentInfoAgentTypeKnowledgeBase &&
+					agentInfo.Status == models.AssistantStatusReady &&
+					agentInfo.TokenMode == string(models.CreateTokenModeTypeAutoCreate) && agentInfo.TokenNetworkID > 0 {
+					updateFields := map[string]interface{}{
+						"token_status": "pending",
 					}
 
-					err = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
-						map[string]interface{}{
-							"token_image_url": imageUrl,
-						},
+					err := daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
+						updateFields,
 					).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
-				} else if agentInfo.TokenImageUrl != "" && agentInfo.TokenSymbol != "" {
-					tokenNetworkID := agentInfo.TokenNetworkID
-					if tokenNetworkID == 0 {
-						tokenNetworkID = agentInfo.NetworkID
-					}
+				}
+			} else {
+				if agentInfo != nil && agentInfo.TokenStatus == "pending" && agentInfo.SystemPrompt != "" {
+					if agentInfo.TokenSymbol == "" || agentInfo.TokenName == "" {
+						promptGenerateToken := fmt.Sprintf(`
+							I want to generate my token base on this info
+							'%s'
+	
+							token-name (generate if not provided, make sure it not empty)
+							token-symbol (generate if not provided, make sure it not empty)
+							token-story (generate if not provided, make sure it not empty)
+	
+							Please return in string in json format including token-name, token-symbol, token-story, just only json without explanation  and token name limit with 15 characters
+						`, agentInfo.SystemPrompt)
+						aiStr, err := s.openais["Lama"].ChatMessage(promptGenerateToken)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if aiStr != "" {
+							mapInfo := helpers.ExtractMapInfoFromOpenAI(aiStr)
+							tokenName := ""
+							tokenSymbol := ""
+							tokenDesc := ""
+							if mapInfo != nil {
+								if v, ok := mapInfo["token-name"]; ok {
+									tokenName = fmt.Sprintf(`%v`, v)
+								}
 
-					if tokenNetworkID == models.SOLANA_CHAIN_ID {
-						agentTokenAdminAddress := s.conf.GetConfigKeyString(models.GENERTAL_NETWORK_ID, "agent_token_admin_address")
-						base64Str, _ := helpers.CurlBase64String(models.GetImageUrl(agentInfo.TokenImageUrl))
-						if base64Str != "" {
-							pumfunResp, err := s.blockchainUtils.SolanaCreatePumpfunToken(
-								&blockchainutils.SolanaCreatePumpfunTokenReq{
-									Address:     agentTokenAdminAddress,
-									Name:        agentInfo.TokenName,
-									Symbol:      agentInfo.TokenSymbol,
-									Description: agentInfo.TokenDesc,
-									Twitter:     fmt.Sprintf("https://x.com/%s", agentInfo.TwitterUsername),
-									Telegram:    "",
-									Website:     "",
-									Amount:      0,
-									ImageBase64: base64Str,
-								},
-							)
+								if v, ok := mapInfo["token-symbol"]; ok {
+									tokenSymbol = fmt.Sprintf(`%v`, v)
+								}
+
+								if v, ok := mapInfo["token-story"]; ok {
+									tokenDesc = fmt.Sprintf(`%v`, v)
+								}
+							}
+
+							if tokenDesc != "" && tokenName != "" && tokenSymbol != "" {
+								updateFields := map[string]interface{}{
+									"token_name": tokenName,
+									"token_desc": tokenDesc,
+								}
+
+								if agentInfo.TokenSymbol == "" {
+									updateFields["token_symbol"] = tokenSymbol
+								}
+								err := daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
+									updateFields,
+								).Error
+								if err != nil {
+									return errs.NewError(err)
+								}
+							}
+						}
+					} else if agentInfo.TokenImageUrl == "" {
+						imageUrl, err := s.GetGifImageUrlFromTokenInfo(agentInfo.TokenSymbol, agentInfo.TokenName, agentInfo.TokenDesc)
+						if err != nil {
+							return errs.NewError(err)
+						}
+
+						err = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
+							map[string]interface{}{
+								"token_image_url": imageUrl,
+							},
+						).Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+					} else if agentInfo.TokenImageUrl != "" && agentInfo.TokenSymbol != "" {
+						tokenNetworkID := agentInfo.TokenNetworkID
+						if tokenNetworkID == 0 {
+							tokenNetworkID = agentInfo.NetworkID
+						}
+
+						if tokenNetworkID == models.SOLANA_CHAIN_ID {
+							agentTokenAdminAddress := s.conf.GetConfigKeyString(models.GENERTAL_NETWORK_ID, "agent_token_admin_address")
+							base64Str, _ := helpers.CurlBase64String(models.GetImageUrl(agentInfo.TokenImageUrl))
+							if base64Str != "" {
+								pumfunResp, err := s.blockchainUtils.SolanaCreatePumpfunToken(
+									&blockchainutils.SolanaCreatePumpfunTokenReq{
+										Address:     agentTokenAdminAddress,
+										Name:        agentInfo.TokenName,
+										Symbol:      agentInfo.TokenSymbol,
+										Description: agentInfo.TokenDesc,
+										Twitter:     fmt.Sprintf("https://x.com/%s", agentInfo.TwitterUsername),
+										Telegram:    "",
+										Website:     "",
+										Amount:      0,
+										ImageBase64: base64Str,
+									},
+								)
+								if err != nil {
+									_ = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
+										map[string]interface{}{
+											"token_position_hash": err.Error(),
+										},
+									).Error
+								} else {
+									_ = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
+										map[string]interface{}{
+											"token_address":       pumfunResp.Mint,
+											"token_status":        "created",
+											"token_signature":     pumfunResp.Signature,
+											"token_position_hash": "ok",
+										},
+									).Error
+
+									if agentInfo.RefTweetID > 0 {
+										go s.ReplyAferAutoCreateAgent(daos.GetDBMainCtx(ctx), agentInfo.RefTweetID, agentInfo.ID)
+									} else {
+										// TODO: post twitter
+										go s.PostTwitterAferCreateToken(ctx, agentInfo.ID)
+									}
+								}
+							}
+						} else {
+							// create meme
+							_, err := s.CreateMeme(
+								ctx, agentInfo.Creator,
+								tokenNetworkID,
+								&serializers.MemeReq{
+									Name:            agentInfo.TokenName,
+									Ticker:          agentInfo.TokenSymbol,
+									Description:     agentInfo.TokenDesc,
+									Image:           agentInfo.TokenImageUrl,
+									Twitter:         fmt.Sprintf("https://x.com/%s", agentInfo.TwitterUsername),
+									AgentInfoID:     agentInfo.ID,
+									BaseTokenSymbol: string(models.BaseTokenSymbolEAI),
+								})
 							if err != nil {
 								_ = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
 									map[string]interface{}{
@@ -490,50 +544,13 @@ func (s *Service) CreateTokenInfo(ctx context.Context, agentID uint) error {
 							} else {
 								_ = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
 									map[string]interface{}{
-										"token_address":       pumfunResp.Mint,
 										"token_status":        "created",
-										"token_signature":     pumfunResp.Signature,
 										"token_position_hash": "ok",
 									},
 								).Error
-
-								if agentInfo.RefTweetID > 0 {
-									go s.ReplyAferAutoCreateAgent(daos.GetDBMainCtx(ctx), agentInfo.RefTweetID, agentInfo.ID)
-								} else {
-									// TODO: post twitter
-									go s.PostTwitterAferCreateToken(ctx, agentInfo.ID)
-								}
 							}
-						}
-					} else {
-						// create meme
-						_, err := s.CreateMeme(
-							ctx, agentInfo.Creator,
-							tokenNetworkID,
-							&serializers.MemeReq{
-								Name:            agentInfo.TokenName,
-								Ticker:          agentInfo.TokenSymbol,
-								Description:     agentInfo.TokenDesc,
-								Image:           agentInfo.TokenImageUrl,
-								Twitter:         fmt.Sprintf("https://x.com/%s", agentInfo.TwitterUsername),
-								AgentInfoID:     agentInfo.ID,
-								BaseTokenSymbol: string(models.BaseTokenSymbolEAI),
-							})
-						if err != nil {
-							_ = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
-								map[string]interface{}{
-									"token_position_hash": err.Error(),
-								},
-							).Error
-						} else {
-							_ = daos.GetDBMainCtx(ctx).Model(agentInfo).Updates(
-								map[string]interface{}{
-									"token_status":        "created",
-									"token_position_hash": "ok",
-								},
-							).Error
-						}
 
+						}
 					}
 				}
 			}
