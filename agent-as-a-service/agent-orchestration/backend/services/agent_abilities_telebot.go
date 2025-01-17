@@ -105,3 +105,32 @@ func (s *Service) SendTeleMsgToChatID(ctx context.Context, content, chatID strin
 	}
 	return "", nil
 }
+
+func (s *Service) SendTeleMsgToKBChannel(ctx context.Context, content, chatID string) (string, error) {
+	bot, err := telego.NewBot(s.conf.KnowledgeBaseConfig.KBTelegramKey, telego.WithDefaultDebugLogger())
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	defer bot.Close()
+	i, err := strconv.ParseInt(chatID, 10, 64)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+
+	resp, err := bot.SendMessage(
+		&telego.SendMessageParams{
+			ChatID: telego.ChatID{
+				ID: i,
+			},
+			Text: strings.TrimSpace(content),
+		},
+	)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+
+	if resp != nil {
+		return fmt.Sprintf(`%d`, resp.MessageID), nil
+	}
+	return "", nil
+}

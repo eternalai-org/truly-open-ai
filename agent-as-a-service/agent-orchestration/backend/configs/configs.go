@@ -299,6 +299,7 @@ type KnowledgeBaseConfig struct {
 	QueryServiceUrl           string `json:"query_service_url"`
 	DirectServiceUrl          string `json:"direct_service_url"`
 	KbChatTopK                int    `json:"kb_chat_top_k"`
+	KBTelegramKey             string `json:"kb_telegram_key"`
 	KBErrorTelegramAlert      string `json:"kb_error_telegram_alert"`
 	KBActivitiesTelegramAlert string `json:"kb_activities_telegram_alert"`
 }

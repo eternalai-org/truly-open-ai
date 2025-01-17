@@ -44,6 +44,7 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 		if err != nil {
 			logger.Info("JobCreateAgentKnowledgeBase", "CreateAgentKnowledgeBase",
 				zap.Any("err", err), zap.Any("kb", item))
+			s.SendTeleMsgToKBChannel(ctx, fmt.Sprintf("CreateAgentKnowledgeBase \n err:%v \nknowledge_base_id:%v", err.Error(), item.ID), s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert)
 		}
 	}
 	list, err = s.KnowledgeUsecase.GetManyKnowledgeBaseByQuery(ctx, fmt.Sprintf("status = '%v' AND filecoin_hash <> '' AND kb_id <> '' ", models.KnowledgeBaseStatusPaymentReceipt), "id asc", 0, 10)
@@ -55,6 +56,7 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 		if err != nil {
 			logger.Info("JobCreateAgentKnowledgeBase", "CreateAgentKnowledgeBase",
 				zap.Any("err", err), zap.Any("kb", item))
+			s.SendTeleMsgToKBChannel(ctx, fmt.Sprintf("CreateAgentKnowledgeBase \n err:%v \nknowledge_base_id:%v", err.Error(), item.ID), s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert)
 		}
 	}
 	return nil
@@ -65,6 +67,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		return fmt.Errorf("file coin hash is empty")
 	}
 	if len(info.KBTokenID) > 0 {
+		oldStatus := info.Status
 		info.Status = models.KnowledgeBaseStatusMinted
 		err := s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, info.ID, map[string]interface{}{
 			"status": info.Status,
@@ -72,6 +75,10 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		if err != nil {
 			return fmt.Errorf("UpdateKnowledgeBaseById: %v", err)
 		}
+		s.SendTeleMsgToKBChannel(ctx,
+			fmt.Sprintf("Update KB Status \n kb_id:%v \n old_status:%v \n new_status:%v \n mint id :%v \n tx:%v",
+				info.ID, oldStatus, info.Status, info.KBTokenID, info.KBTokenMintTx),
+			s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert)
 		return nil
 	}
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
@@ -156,6 +163,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 			break
 		}
 	}
+	oldStatus := info.Status
 	info.KBTokenID = tokenId
 	info.KBTokenContractAddress = tokenContractAddress
 	info.KBTokenMintTx = strings.ToLower(tx.TxHash.Hex())
@@ -169,6 +177,10 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if err != nil {
 		return fmt.Errorf("error: failed to update knowledge base status: %v", err)
 	}
+	s.SendTeleMsgToKBChannel(ctx,
+		fmt.Sprintf("Update KB Status \n kb_id:%v \n old_status:%v \n new_status:%v \n mint id :%v \n tx:%v",
+			info.ID, oldStatus, info.Status, info.KBTokenID, info.KBTokenMintTx),
+		s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert)
 	err = s.AgentInfoUseCase.UpdateAgentInfoById(ctx, info.AgentInfoId,
 		map[string]interface{}{
 			"status": models.AssistantStatusReady,
