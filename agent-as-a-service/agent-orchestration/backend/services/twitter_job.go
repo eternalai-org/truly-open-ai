@@ -157,6 +157,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 							return errs.NewError(err)
 						}
 						if member == nil {
+							tier3 := models.MulBigFloats(&launchpad.MaxFundBalance.Float, numeric.NewFloatFromString("0.005"))
 							member = &models.LaunchpadMember{
 								NetworkID:      launchpad.NetworkID,
 								UserAddress:    strings.ToLower(address),
@@ -165,7 +166,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 								TweetID:        v.Tweet.ID,
 								TweetContent:   v.Tweet.Text,
 								Tier:           models.LaunchpadTier3,
-								MaxFundBalance: numeric.NewBigFloatFromString("525"),
+								MaxFundBalance: numeric.BigFloat{*tier3},
 								Status:         models.LaunchpadMemberStatusNew,
 							}
 							err = s.dao.Create(tx, member)
