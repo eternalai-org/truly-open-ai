@@ -78,6 +78,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 		if i > 5 {
 			break
 		}
+
 		kb1, err := uc.knowledgeBaseRepo.GetById(ctx, id)
 		if err != nil {
 			return kn, nil
@@ -157,6 +158,10 @@ func NewKnowledgeUsecase(
 	}
 }
 
+func (uc *knowledgeUsecase) calcTrainingFee(ctx context.Context, req *serializers.CreateKnowledgeRequest) (float64, error) {
+	return 1, nil
+}
+
 func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serializers.CreateKnowledgeRequest) (*serializers.KnowledgeBase, error) {
 	model := &models.KnowledgeBase{}
 	if err := utils.Copy(model, req); err != nil {
@@ -178,7 +183,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	model.SolanaDepositAddress = strings.ToLower(req.SolanaDepositAddress)
 
 	model.Status = models.KnowledgeBaseStatusWaitingPayment
-	model.Fee = 1
+	model.Fee, _ = uc.calcTrainingFee(ctx, req)
 
 	resp, err := uc.knowledgeBaseRepo.Create(ctx, model)
 	if err != nil {
