@@ -151,17 +151,23 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	if err != nil {
 		return fmt.Errorf("error: failed to transact: %v", err)
 	}
+	if tx == nil {
+		return fmt.Errorf("error: can find tx receipt ")
+	}
 	contract, err := aikb721.NewEternalAIKB721(common.HexToAddress(tokenContractAddress), nil)
 	if err != nil {
 		return fmt.Errorf("error: failed to new either contract: %v", err)
 	}
 	tokenId := ""
-	for _, log := range tx.Logs {
-		inferData, err := contract.ParseNewToken(log.Log)
+	for _, log := range tx.Receipt.Logs {
+		inferData, err := contract.ParseNewToken(*log)
 		if err == nil {
 			tokenId = inferData.TokenId.String()
 			break
 		}
+	}
+	if len(tokenId) == 0 {
+		return fmt.Errorf("error: no token id found in tx receipt :%v", tx.TxHash.Hex())
 	}
 	oldStatus := info.Status
 	info.KBTokenID = tokenId
@@ -183,7 +189,10 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert)
 	err = s.AgentInfoUseCase.UpdateAgentInfoById(ctx, info.AgentInfoId,
 		map[string]interface{}{
-			"status": models.AssistantStatusReady,
+			"status":                 models.AssistantStatusReady,
+			"agent_contract_id":      tokenId,
+			"agent_contract_address": info.KBTokenContractAddress,
+			"agent_nft_minted":       true,
 		})
 	if err != nil {
 		return fmt.Errorf("error: failed to update agent info: %v", err)
