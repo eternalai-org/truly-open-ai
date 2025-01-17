@@ -629,9 +629,9 @@ func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberI
 					return errs.NewError(err)
 				}
 				if member != nil && member.LaunchpadID == lp.ID {
-					tier1 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.02))
-					tier2 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.01))
-					tier3 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.005))
+					tier1 := models.MulBigFloats(&lp.MaxFundBalance.Float, numeric.NewFloatFromString("0.02"))
+					tier2 := models.MulBigFloats(&lp.MaxFundBalance.Float, numeric.NewFloatFromString("0.01"))
+					tier3 := models.MulBigFloats(&lp.MaxFundBalance.Float, numeric.NewFloatFromString("0.005"))
 					member.Tier = req.Tier
 					member.ReplyContent = req.Message
 					if member.Tier == string(models.LaunchpadTier1) {

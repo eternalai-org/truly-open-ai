@@ -150,7 +150,6 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 					if address != "" && address != launchpad.Address {
 						//check join
 						member, err := s.dao.FirstLaunchpadMember(tx, map[string][]interface{}{
-							// "user_address = ?": {strings.ToLower(address)},
 							"twitter_id = ?":   {v.Tweet.AuthorID},
 							"launchpad_id = ?": {launchpad.ID},
 						}, map[string][]interface{}{}, []string{})
