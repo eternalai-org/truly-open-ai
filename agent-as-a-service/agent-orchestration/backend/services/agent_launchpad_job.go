@@ -659,24 +659,37 @@ func (s *Service) JobAgentTgeTransferDAOToken(ctx context.Context) error {
 		ctx, "JobAgentTgeTransferDAOToken",
 		func() error {
 			var retErr error
-			err := daos.GetDBMainCtx(ctx).
-				Model(&models.LaunchpadMember{}).
-				Where("status = ?", models.LaunchpadMemberStatusNew).
-				Where("token_balance = 0").
-				Where(`exists(
-						select 1
-						from launchpads
-						where launchpad_members.launchpad_id = launchpads.id
-							and launchpads.status = ?
-					)`, models.LaunchpadStatusSettled).
-				Updates(
-					map[string]interface{}{
-						"status": models.LaunchpadMemberStatusTgeDone,
-					},
-				).
-				Error
-			if err != nil {
-				return errs.NewError(err)
+			{
+				err := daos.GetDBMainCtx(ctx).
+					Exec(`
+					update launchpad_members
+					join launchpads on launchpad_members.launchpad_id = launchpads.id
+						set launchpad_members.status = 'tge_done'
+					where launchpads.status = 'settled'
+						and launchpad_members.token_balance = 0
+						and launchpad_members.status = 'new';
+				`).
+					Error
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			{
+				err := daos.GetDBMainCtx(ctx).
+					Exec(`
+					update launchpad_members
+						join launchpads on launchpad_members.launchpad_id = launchpads.id
+					set launchpad_members.status         = 'tge_done',
+						launchpad_members.token_balance  = 0,
+						launchpad_members.refund_balance = launchpad_members.refund_balance + launchpad_members.fund_balance,
+						launchpad_members.fund_balance   = 0
+					where launchpads.status = 'cancelled'
+						and launchpad_members.status = 'new';
+				`).
+					Error
+				if err != nil {
+					return errs.NewError(err)
+				}
 			}
 			ms, err := s.dao.FindLaunchpadMember(
 				daos.GetDBMainCtx(ctx),
