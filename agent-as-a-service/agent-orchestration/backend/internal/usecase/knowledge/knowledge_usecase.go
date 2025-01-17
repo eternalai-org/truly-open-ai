@@ -23,6 +23,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var categoryNameTracer string = "knowledge_usecase_tracer"
+
 type knowledgeUsecase struct {
 	knowledgeBaseRepo          repository.KnowledgeBaseRepo
 	knowledgeBaseFileRepo      repository.KnowledgeBaseFileRepo
@@ -50,11 +52,12 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err != nil {
 		return nil, err
 	}
-	logger.Info("webhook_file", "start_webhook_file", zap.Any("knowledge_base_id", id), zap.Any("filename", filename))
+
+	logger.Info(categoryNameTracer, "start_webhook_file", zap.Any("knowledge_base_id", id), zap.Any("filename", filename))
 	updatedFields := make(map[string]interface{})
 	hash, err := lighthouse.UploadDataWithRetry(uc.lighthouseKey, fmt.Sprintf("%d_%s", time.Now().Unix(), filename), bytes)
 	if err != nil {
-		logger.Error("webhook_file_error", "upload_data_with_retry", zap.Error(err))
+		logger.Error(categoryNameTracer, "upload_data_with_retry", zap.Error(err))
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = err.Error()
 		_ = uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields)
@@ -95,7 +98,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 }
 
 func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse) (*models.KnowledgeBase, error) {
-	logger.Info("knowledgeUsecase", "webhook_update_kb", zap.Any("data", req))
+	logger.Info(categoryNameTracer, "webhook_update_kb", zap.Any("data", req))
 	if req.Result == nil {
 		return nil, nil
 	}
@@ -260,14 +263,13 @@ func (uc *knowledgeUsecase) UpdateKnowledgeBaseById(ctx context.Context, id uint
 
 func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 	start := time.Now()
-	defer logger.Info("knowledgeUsecase", "WatchWalletChange", zap.Any("start", start), zap.Any("end", time.Now()))
+	defer logger.Info(categoryNameTracer, "watch_wallet_change", zap.Any("start", start), zap.Any("end", time.Now()))
 	offset := 0
 	limit := 30
 	for {
 		resp, err := uc.knowledgeBaseRepo.GetByStatus(
 			ctx, models.KnowledgeBaseStatusWaitingPayment, offset, limit,
 		)
-		logger.Logger().Info("GetKnowledgeBaseByStatus", zap.Any("total", len(resp)))
 		if err != nil {
 			return err
 		}
@@ -299,7 +301,7 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 	_knPrice := new(big.Int)
 	_knPrice, _ = knPrice.Int(_knPrice)
 
-	logger.Info("WatchWalletChange", "checkOrderBalanceAndProcess start",
+	logger.Info(categoryNameTracer, "check_balance_and_process",
 		zap.Any("knowledge_base", kn),
 		zap.Any("knPrice", knPrice),
 		zap.Any("_knPrice", _knPrice),
@@ -399,7 +401,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		Ref:      fmt.Sprintf("%d", kn.ID),
 		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
-	logger.Info("knowledgebase", "insert_file_to_rag", zap.Any("body", body))
+	logger.Info(categoryNameTracer, "insert_file_to_rag", zap.Any("body", body))
 	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).

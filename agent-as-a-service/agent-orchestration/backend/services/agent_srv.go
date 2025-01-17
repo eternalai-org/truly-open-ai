@@ -1205,6 +1205,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 					mission.RewardAmount = item.RewardAmount
 					mission.RewardUser = item.RewardUser
 					mission.MinTokenHolding = item.MinTokenHolding
+					mission.LookupInterval = item.LookupInterval
 					//farcaster
 					if mission.ToolSet == models.ToolsetTypePostFarcaster {
 						toolList := fmt.Sprintf(s.conf.ToolLists.FarcasterPost, agentInfo.FarcasterID, authHeader, agentInfo.AgentID)
