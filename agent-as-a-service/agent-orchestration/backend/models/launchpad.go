@@ -82,7 +82,7 @@ type LaunchpadMember struct {
 	Launchpad            *Launchpad
 	TweetID              string
 	TweetContent         string `gorm:"type:longtext"`
-	Tier                 string
+	Tier                 LaunchpadTier
 	ReplyContent         string `gorm:"type:longtext"`
 	ReplyPostAt          *time.Time
 	ReplyPostID          string

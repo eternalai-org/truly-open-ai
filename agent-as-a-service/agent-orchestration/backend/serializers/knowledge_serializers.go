@@ -69,9 +69,10 @@ type AgentUseKnowledgeBaseRequest struct {
 }
 
 type RetrieveKnowledgeBaseRequest struct {
-	Query string   `json:"query"`
-	TopK  int      `json:"top_k"`
-	Kb    []string `json:"kb"`
+	Query     string   `json:"query"`
+	TopK      int      `json:"top_k"`
+	Kb        []string `json:"kb"`
+	Threshold float64  `json:"threshold"`
 }
 
 type RetrieveKnowledgeBaseResponse struct {
@@ -100,6 +101,8 @@ type UpdateKnowledgeBaseWithSignatureRequest struct {
 }
 
 type RetrieveKnowledgeRequest struct {
-	Prompt string `json:"prompt"`
-	KbId   string `json:"kb_id"`
+	Prompt    string  `json:"prompt"`
+	KbId      string  `json:"kb_id"`
+	TopK      int     `json:"top_k"`
+	Threshold float64 `json:"threshold"`
 }

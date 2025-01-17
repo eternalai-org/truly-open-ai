@@ -56,6 +56,7 @@ func Test_JOB(t *testing.T) {
 	// ts.CreateETHAddress(context.Background()),
 	// ts.JobAgentTgeTransferDAOToken(context.Background()),
 	// ts.JobAgentAddLiquidityDAOToken(context.Background()),
+	// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
 	)
 	select {}
 }

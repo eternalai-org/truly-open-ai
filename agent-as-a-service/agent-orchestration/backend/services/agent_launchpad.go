@@ -28,11 +28,6 @@ func (s *Service) ProxyAdminDAOUpgrade(ctx context.Context, networkID uint64, pr
 	if err != nil {
 		return "", errs.NewError(err)
 	}
-	time.Sleep(10 * time.Second)
-	err = s.GetEthereumClient(context.Background(), networkID).TransactionConfirmed(txHash)
-	if err != nil {
-		return "", errs.NewError(err)
-	}
 	return txHash, nil
 }
 
@@ -378,7 +373,7 @@ Task: Analyze the data provided for the specified Twitter user (note: this data 
 	•	Tier 2: Contribution percentage between 51%% and 80%% (with a maximum allocation of %.0f eai for investment)
 	•	Tier 3: Contribution percentage 50%% or below (with a maximum allocation of %.0f eai for investment)
 
-The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including tier, percent, and maximum allocation) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
+The final output should clearly indicate the tier to which the user belongs. Submit the tier and message (including the tier and maximum allocation, something like that: After analyzing your Twitter account and predicting your potential contribution to the project, we have placed you in Tier 2, with a maximum allocation of 1000 EAI for investment.) through the submit_result API.`, lp.Description, tier1, tier2, tier3)
 							mission.ToolSet = models.ToolsetTypeLaunchpadJoin
 							mission.NotDelay = true
 							mission.Enabled = false
@@ -388,7 +383,7 @@ The final output should clearly indicate the tier to which the user belongs. Sub
 							toolList := `[{"description":"API to get twitter tweets ","executor":"https://agent.api.eternalai.org/api/internal/twitter/user/recent-info?id=%s","headers":{"api-key": "%s"},"label":"query","method":"GET","name":"get_twitter_tweets","params":[]},{"description":"API to submit result","executor":"https://agent.api.eternalai.org/api/internal/launchpad/%d/tier/%d","headers":{"api-key": "%s"},"label":"action","method":"POST","name":"submit_result","params":[{"name":"tier","dtype":"string"},{"name":"message","dtype":"string"}]}]`
 							mission.ToolList = toolList
 							if mission.ToolList != "" {
-								mission.ReactMaxSteps = 5
+								mission.ReactMaxSteps = 2
 							}
 							//
 							err = s.dao.Save(tx, mission)
@@ -634,16 +629,16 @@ func (s *Service) ExecuteLaunchpadTier(ctx context.Context, launchpadID, memberI
 					return errs.NewError(err)
 				}
 				if member != nil && member.LaunchpadID == lp.ID {
-					tier1 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.02))
-					tier2 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.01))
-					tier3 := models.MulBigFloats(&lp.MaxFundBalance.Float, big.NewFloat(0.005))
-					member.Tier = req.Tier
+					tier1 := models.MulBigFloats(&lp.MaxFundBalance.Float, numeric.NewFloatFromString("0.02"))
+					tier2 := models.MulBigFloats(&lp.MaxFundBalance.Float, numeric.NewFloatFromString("0.01"))
+					tier3 := models.MulBigFloats(&lp.MaxFundBalance.Float, numeric.NewFloatFromString("0.005"))
+					member.Tier = models.LaunchpadTier(req.Tier)
 					member.ReplyContent = req.Message
-					if member.Tier == string(models.LaunchpadTier1) {
+					if member.Tier == models.LaunchpadTier1 {
 						member.MaxFundBalance = numeric.BigFloat{*tier1}
-					} else if member.Tier == string(models.LaunchpadTier2) {
+					} else if member.Tier == models.LaunchpadTier2 {
 						member.MaxFundBalance = numeric.BigFloat{*tier2}
-					} else if member.Tier == string(models.LaunchpadTier3) {
+					} else if member.Tier == models.LaunchpadTier3 {
 						member.MaxFundBalance = numeric.BigFloat{*tier3}
 					}
 					err = s.dao.Save(tx, member)
@@ -695,7 +690,7 @@ func (s *Service) ReplyAfterJoinLaunchpad(tx *gorm.DB, twitterPostID, launchpadI
 		}
 		if twitterPost != nil && launchpad != nil && twitterPost.AgentInfo != nil && twitterPost.AgentInfo.TwitterInfo != nil && member.ReplyPostID == "" {
 			replyContent = strings.TrimSpace(replyContent)
-			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, twitterPost.TwitterPostID, "")
+			refId, err := helpers.ReplyTweetByToken(twitterPost.AgentInfo.TwitterInfo.AccessToken, replyContent, member.TweetID, "")
 			if err != nil {
 				_ = tx.Model(member).Updates(
 					map[string]interface{}{

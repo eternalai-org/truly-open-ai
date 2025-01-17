@@ -47,3 +47,12 @@ func (dao *DAO) FirstKnowledgeBase(tx *gorm.DB, filters map[string][]interface{}
 	}
 	return &knowledgeBase, nil
 }
+
+func (dao *DAO) FindKnowledgeBases(tx *gorm.DB, filters map[string][]interface{}, preload map[string][]interface{}, order []string, limit, offset int, forUpdate bool) ([]*models.KnowledgeBase, error) {
+	var knowledgeBase []*models.KnowledgeBase
+	if err := dao.find(tx, &knowledgeBase, filters, preload, order, limit, offset, forUpdate); err != nil {
+		return nil, err
+	}
+
+	return knowledgeBase, nil
+}

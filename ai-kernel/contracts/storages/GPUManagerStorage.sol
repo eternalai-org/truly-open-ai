@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {IGPUManager} from "../interfaces/IGPUManager.sol";
-import {Random} from "../lib/Random.sol";
-import {Set} from "../lib/Set.sol";
+import {Random} from "../library/Random.sol";
+import {Set} from "../library/Set.sol";
 
 abstract contract GPUManagerStorage is IGPUManager {
     Random.Randomizer internal _randomizer;
