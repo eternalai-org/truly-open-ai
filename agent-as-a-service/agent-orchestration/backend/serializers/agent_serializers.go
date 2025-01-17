@@ -513,32 +513,11 @@ func NewAgentEaiTopupResp(m *models.AgentEaiTopup) *AgentEaiTopupResp {
 		DepositAddress: m.DepositAddress,
 		Toolset:        m.Toolset,
 	}
-	switch m.Toolset {
-	case "":
-		{
-			resp.ToolsetName = "Default"
-		}
-	case string(models.ToolsetTypeDefault):
-		{
-			resp.ToolsetName = "Default"
-		}
-	case string(models.ToolsetTypeReplyMentions), string(models.ToolsetTypeReplyMentionsFarcaster), string(models.ToolsetTypeShadowReply):
-		{
-			resp.ToolsetName = "Reply"
-		}
-	case string(models.ToolsetTypeReplyNonMentions), string(models.ToolsetTypeReplyNonMentionsFarcaster):
-		{
-			resp.ToolsetName = "Engage"
-		}
-	case string(models.ToolsetTypeFollow):
-		{
-			resp.ToolsetName = "Follow"
-		}
-	case string(models.ToolsetTypePost), string(models.ToolsetTypePostFarcaster):
-		{
-			resp.ToolsetName = "Post"
-		}
+	toolsetName := "Default"
+	if v, ok := models.MAP_TOOLSET_NAME[m.Toolset]; ok {
+		toolsetName = v
 	}
+	resp.ToolsetName = toolsetName
 	return resp
 }
 

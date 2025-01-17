@@ -3,6 +3,7 @@ package ethapi
 import (
 	"context"
 	"math/big"
+	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/proxyadmin"
@@ -53,6 +54,17 @@ func (c *Client) ProxyAdminUpgrade(contractAddr string, prkHex string, proxyAddr
 	client, err := c.getClient()
 	if err != nil {
 		return "", err
+	}
+	proAdmin, err := proxyadmin.NewProxyAdmin(helpers.HexToAddress(contractAddr), client)
+	if err != nil {
+		return "", err
+	}
+	nowLogic, err := proAdmin.GetProxyImplementation(&bind.CallOpts{}, proxyAddress)
+	if err != nil {
+		return "", err
+	}
+	if strings.EqualFold(nowLogic.Hex(), logic.Hex()) {
+		return "", nil
 	}
 	instanceABI, err := proxyadmin.ProxyAdminMetaData.GetAbi()
 	if err != nil {

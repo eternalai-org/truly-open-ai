@@ -1222,9 +1222,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						if item.Tokens == "" {
 							return errs.NewError(errs.ErrTokenNotFound)
 						}
-						if item.UserPrompt == "" {
-							mission.UserPrompt = fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, item.Tokens)
-						}
+						mission.UserPrompt = fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, item.Tokens)
 						toolList = strings.ReplaceAll(toolList, "{api_key}", s.conf.InternalApiKey)
 						toolList = strings.ReplaceAll(toolList, "{token_symbol}", item.Tokens)
 
