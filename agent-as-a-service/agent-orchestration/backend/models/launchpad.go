@@ -34,7 +34,6 @@ type Launchpad struct {
 	NetworkID              uint64
 	TwitterPostID          uint   `gorm:"unique_index"`
 	TweetId                string `gorm:"unique_index"`
-	ReplyTweetId           string
 	Name                   string
 	Description            string `gorm:"type:text"`
 	TwitterId              string
@@ -62,6 +61,8 @@ type Launchpad struct {
 	TgeBalance             numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	MaxFundBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	RefundBalance          numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	StartTweetId           string
+	EndTweetId             string
 }
 
 type LaunchpadMemberStatus string
