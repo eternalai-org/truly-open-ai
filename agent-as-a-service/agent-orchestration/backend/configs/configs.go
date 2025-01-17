@@ -295,8 +295,10 @@ func (cf *Config) GetConfigKeyBool(networkID uint64, name string) bool {
 }
 
 type KnowledgeBaseConfig struct {
-	EnableSimulation bool   `json:"enable_simulation"`
-	QueryServiceUrl  string `json:"query_service_url"`
-	DirectServiceUrl string `json:"direct_service_url"`
-	KbChatTopK       int    `json:"kb_chat_top_k"`
+	EnableSimulation          bool   `json:"enable_simulation"`
+	QueryServiceUrl           string `json:"query_service_url"`
+	DirectServiceUrl          string `json:"direct_service_url"`
+	KbChatTopK                int    `json:"kb_chat_top_k"`
+	KBErrorTelegramAlert      string `json:"kb_error_telegram_alert"`
+	KBActivitiesTelegramAlert string `json:"kb_activities_telegram_alert"`
 }
