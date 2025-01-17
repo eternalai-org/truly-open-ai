@@ -13,6 +13,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/ethapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/jinzhu/gorm"
 )
 
@@ -842,27 +843,33 @@ func (s *Service) JobAgentTgeRefundBaseToken(ctx context.Context) error {
 			if err != nil {
 				return errs.NewError(err)
 			}
-			ms, err := s.dao.FindLaunchpadMember(
-				daos.GetDBMainCtx(ctx),
-				map[string][]interface{}{
-					"status = ?":                   {models.LaunchpadMemberStatusTgeDone},
-					"refund_transfer_tx_hash = ''": {},
-					"refund_balance > 0":           {},
-				},
-				map[string][]interface{}{},
-				[]string{
-					"rand()",
-				},
-				0,
-				2,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			for _, m := range ms {
-				err := s.AgentTgeRefundBaseToken(ctx, m.ID)
+			{
+				networkID := models.BASE_CHAIN_ID
+				ms, err := s.dao.FindLaunchpadMember(
+					daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"network_id = ?":               {networkID},
+						"status = ?":                   {models.LaunchpadMemberStatusTgeDone},
+						"refund_transfer_tx_hash = ''": {},
+						"refund_balance > 0":           {},
+					},
+					map[string][]interface{}{},
+					[]string{
+						"rand()",
+					},
+					0,
+					50,
+				)
 				if err != nil {
-					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+					return errs.NewError(err)
+				}
+				var ids []uint
+				for _, m := range ms {
+					ids = append(ids, m.ID)
+				}
+				err = s.AgentTgeRefundBaseTokenMulti(ctx, networkID, ids)
+				if err != nil {
+					retErr = errs.MergeError(retErr, err)
 				}
 			}
 			return retErr
@@ -874,39 +881,63 @@ func (s *Service) JobAgentTgeRefundBaseToken(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
+func (s *Service) AgentTgeRefundBaseTokenMulti(ctx context.Context, networkID uint64, ids []uint) error {
 	err := s.JobRunCheck(
 		ctx,
-		fmt.Sprintf("AgentTgeRefundBaseToken_%d", id),
+		fmt.Sprintf("AgentTgeRefundBaseTokenMulti_%d", networkID),
 		func() error {
-			mb, err := s.dao.FirstLaunchpadMemberByID(
-				daos.GetDBMainCtx(ctx),
-				id,
-				map[string][]interface{}{},
-				false,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if mb == nil {
-				return errs.NewError(errs.ErrBadRequest)
-			}
-			if mb.Status == models.LaunchpadMemberStatusTgeDone && mb.RefundTransferTxHash == "" {
-				refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, numeric.NewFloatFromString("0.05"))
-				refundBalance := models.SubBigFloats(&mb.RefundBalance.Float, refundFeeBalance)
-				if refundBalance.Cmp(big.NewFloat(0)) <= 0 {
-					err = daos.GetDBMainCtx(ctx).Model(&mb).
-						Updates(
-							map[string]interface{}{
-								"status": models.LaunchpadMemberStatusDone,
-							},
-						).Error
+			if len(ids) > 0 {
+				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(networkID, "dao_pool_address"))
+				baseTokenAddress := strings.ToLower(s.conf.GetConfigKeyString(networkID, "eai_contract_address"))
+				multisendAddress := strings.ToLower(s.conf.GetConfigKeyString(networkID, "multisend_contract_address"))
+				{
+					hash, err := s.GetEthereumClient(ctx, networkID).
+						Erc20ApproveMaxCheck(
+							baseTokenAddress,
+							s.GetAddressPrk(daoPoolAddress),
+							helpers.HexToAddress(multisendAddress),
+						)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					return nil
+					time.Sleep(10 * time.Second)
+					err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
+					if err != nil {
+						return errs.NewError(err)
+					}
 				}
-				err = daos.GetDBMainCtx(ctx).Model(&mb).
+				var addresses []common.Address
+				var amounts []*big.Int
+				for _, id := range ids {
+					mb, err := s.dao.FirstLaunchpadMemberByID(
+						daos.GetDBMainCtx(ctx),
+						id,
+						map[string][]interface{}{},
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if mb == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if !(mb.Status == models.LaunchpadMemberStatusTgeDone && mb.RefundTransferTxHash == "") {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, numeric.NewFloatFromString("0.05"))
+					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+						Updates(
+							map[string]interface{}{
+								"refund_fee_balance": numeric.NewBigFloatFromFloat(refundFeeBalance),
+							},
+						).Error
+					refundBalance := models.SubBigFloats(&mb.RefundBalance.Float, refundFeeBalance)
+					addresses = append(addresses, helpers.HexToAddress(mb.UserAddress))
+					amounts = append(amounts, models.ConvertBigFloatToWei(refundBalance, 18))
+				}
+				err := daos.GetDBMainCtx(ctx).
+					Model(&models.LaunchpadMember{}).
+					Where("id in (?)", ids).
 					Updates(
 						map[string]interface{}{
 							"refund_transfer_tx_hash": "pending",
@@ -915,40 +946,37 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 				if err != nil {
 					return errs.NewError(err)
 				}
-				_ = daos.GetDBMainCtx(ctx).Model(&mb).
-					Updates(
-						map[string]interface{}{
-							"refund_fee_balance": numeric.NewBigFloatFromFloat(refundFeeBalance),
-						},
-					).Error
-				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(mb.NetworkID, "dao_pool_address"))
-				baseTokenAddress := strings.ToLower(s.conf.GetConfigKeyString(mb.NetworkID, "eai_contract_address"))
 				txHash, err := func() (string, error) {
-					hash, err := s.GetEthereumClient(ctx, mb.NetworkID).
-						Erc20Transfer(
-							baseTokenAddress,
+					hash, err := s.GetEthereumClient(ctx, networkID).
+						MultisendERC20Transfer(
+							multisendAddress,
 							s.GetAddressPrk(daoPoolAddress),
-							mb.UserAddress,
-							models.ConvertBigFloatToWei(refundBalance, 18).Text(10),
+							helpers.HexToAddress(baseTokenAddress),
+							addresses,
+							amounts,
 						)
 					if err != nil {
 						return "", errs.NewError(err)
 					}
-					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&models.LaunchpadMember{}).
+						Where("id in (?)", ids).
 						Updates(
 							map[string]interface{}{
 								"refund_transfer_tx_hash": hash,
 							},
 						).Error
 					time.Sleep(10 * time.Second)
-					err = s.GetEthereumClient(ctx, mb.NetworkID).TransactionConfirmed(hash)
+					err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
 					if err != nil {
 						return hash, errs.NewError(err)
 					}
 					return hash, nil
 				}()
 				if err != nil {
-					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+					err = daos.GetDBMainCtx(ctx).
+						Model(&models.LaunchpadMember{}).
+						Where("id in (?)", ids).
 						Updates(
 							map[string]interface{}{
 								"refund_transfer_tx_hash": txHash,
@@ -957,7 +985,9 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 						).Error
 					return errs.NewError(err)
 				} else {
-					err = daos.GetDBMainCtx(ctx).Model(&mb).
+					err = daos.GetDBMainCtx(ctx).
+						Model(&models.LaunchpadMember{}).
+						Where("id in (?)", ids).
 						Updates(
 							map[string]interface{}{
 								"refund_transfer_tx_hash": txHash,
