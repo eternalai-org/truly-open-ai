@@ -980,11 +980,28 @@ func (s *Service) RetrieveKnowledge(agentModel string, messages []openai2.ChatCo
 			Role:    openai2.ChatMessageRoleSystem,
 			Content: systemPrompt,
 		},
-		{
-			Role:    openai2.ChatMessageRoleUser,
-			Content: answerPrmptPrefix,
-		},
 	}
+
+	for i, item := range messages {
+		if item.Role == openai2.ChatMessageRoleSystem {
+			continue
+		}
+		if i == len(messages)-1 {
+			continue
+		}
+		
+		payloadAgentChat = append(payloadAgentChat, openai2.ChatCompletionMessage{
+			Role:    openai2.ChatMessageRoleUser,
+			Content: item.Content,
+		})
+	}
+
+	// add answer prompt
+	payloadAgentChat = append(payloadAgentChat, openai2.ChatCompletionMessage{
+		Role:    openai2.ChatMessageRoleUser,
+		Content: answerPrmptPrefix,
+	})
+
 	messageCallLLM, _ := json.Marshal(&payloadAgentChat)
 	url := s.conf.AgentOffchainChatUrl
 	if s.conf.KnowledgeBaseConfig.DirectServiceUrl != "" {

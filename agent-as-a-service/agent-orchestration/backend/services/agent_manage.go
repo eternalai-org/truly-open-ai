@@ -227,6 +227,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		kbReq.AgentInfoId = agent.ID
 		kb, err := s.KnowledgeUsecase.CreateKnowledgeBase(ctx, req.CreateKnowledgeRequest)
 		if err != nil {
+			s.KnowledgeUsecase.SendMessage(ctx, fmt.Sprintf("CreateKnowledgeBase for agent %s (%d) - has error: %s ", agent.AgentName, agent.ID, err.Error()), -1)
 			return nil, err
 		}
 
@@ -244,6 +245,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		}
 		oKb, _ := s.KnowledgeUsecase.GetKnowledgeBaseById(ctx, kb.ID)
 		agent.KnowledgeBase = oKb
+		s.KnowledgeUsecase.SendMessage(ctx, fmt.Sprintf("Create KB Agent DONE  %s (%d)", agent.AgentName, agent.ID), 0)
 	}
 
 	return agent, nil
