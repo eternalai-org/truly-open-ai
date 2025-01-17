@@ -542,6 +542,7 @@ Join us in shaping the future of decentralized AI!
 					},
 				).Error
 			} else {
+				launchpad.ReplyTweetId = refId
 				launchpad.StartAt = helpers.TimeNow()
 				launchpad.EndAt = helpers.TimeAdd(time.Now(), 7*24*time.Hour)
 				launchpad.Status = models.LaunchpadStatusRunning

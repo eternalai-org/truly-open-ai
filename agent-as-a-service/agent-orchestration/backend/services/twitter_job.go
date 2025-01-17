@@ -125,7 +125,7 @@ func (s *Service) JobScanTwitterLiked(ctx context.Context) error {
 }
 
 func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *models.Launchpad) (*twitter.TweetRecentSearch, error) {
-	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", launchpad.TweetId), launchpad.LastScanID, 50)
+	lst, err := s.SearchRecentTweetV1(ctx, fmt.Sprintf("in_reply_to_tweet_id:%s", launchpad.ReplyTweetId), launchpad.LastScanID, 50)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}

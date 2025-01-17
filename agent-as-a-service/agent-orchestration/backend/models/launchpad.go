@@ -34,6 +34,7 @@ type Launchpad struct {
 	NetworkID              uint64
 	TwitterPostID          uint   `gorm:"unique_index"`
 	TweetId                string `gorm:"unique_index"`
+	ReplyTweetId           string
 	Name                   string
 	Description            string `gorm:"type:text"`
 	TwitterId              string
