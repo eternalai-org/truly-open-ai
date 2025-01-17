@@ -357,7 +357,7 @@ var BINANCE_TOKENS = []string{
 	"CATI",
 	"HMSTR",
 	"EIGEN",
-	"BNSOL",
+	// "BNSOL",
 	"LUMIA",
 	"SCR",
 	"KAIA",
@@ -370,9 +370,7 @@ var BINANCE_TOKENS = []string{
 	"ORCA",
 	"MOVE",
 	"ME",
-	"VELODROME",
 	"VANA",
-	"1000CAT",
 	"USUAL",
 	"PENGU",
 	"BIO",
@@ -1047,7 +1045,7 @@ var MISSION_TOKEN_CONFIGS = []map[string]string{
 	},
 	{
 		"name":      "Ronin",
-		"symbol":    "RON",
+		"symbol":    "RONIN",
 		"image_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/14101.png",
 	},
 	{
@@ -2004,11 +2002,6 @@ var MISSION_TOKEN_CONFIGS = []map[string]string{
 		"name":      "Polyhedra Network",
 		"symbol":    "ZKJ",
 		"image_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/29779.png",
-	},
-	{
-		"name":      "Department Of Government Efficiency (dogegov.com)",
-		"symbol":    "DOGE",
-		"image_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/32778.png",
 	},
 	{
 		"name":      "Hamster Kombat",

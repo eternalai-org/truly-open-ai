@@ -70,6 +70,21 @@ var CHAIN_NAME_MAP = map[uint64]string{
 	MODE_CHAIN_ID:             "MODE",
 }
 
+var MAP_TOOLSET_NAME = map[string]string{
+	"":                             "Default",
+	"default":                      "Default",
+	"reply_mentions":               "Reply",
+	"reply_mentions_farcaster":     "Reply",
+	"shadow_reply":                 "Reply",
+	"reply_non_mentions_farcaster": "Engage",
+	"follow":                       "Follow",
+	"post":                         "Post",
+	"post_farcaster":               "Post",
+	"lucky_moneys":                 "Airdrop",
+	"trade_analytics_twitter":      "Trading Analytics",
+	"trade_analytics_mentions":     "Trading Analytics",
+}
+
 var MAP_CHAIN_ID_TO_LLM_MODEL = map[uint64]map[string]string{
 	DAGI_CHAIN_ID: { // AGI chain
 		"neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16": "200001",
