@@ -44,7 +44,7 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 		if err != nil {
 			logger.Info("JobCreateAgentKnowledgeBase", "CreateAgentKnowledgeBase",
 				zap.Any("err", err), zap.Any("kb", item))
-			s.SendTeleMsgToKBChannel(ctx, fmt.Sprintf("CreateAgentKnowledgeBase \n err:%v \nknowledge_base_id:%v", err.Error(), item.ID), s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert)
+			s.SendTeleMsgToKBChannel(ctx, fmt.Sprintf("CreateAgentKnowledgeBase \n err:%v \n knowledge_base_id:%v", err.Error(), item.ID), s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert)
 		}
 	}
 	list, err = s.KnowledgeUsecase.GetManyKnowledgeBaseByQuery(ctx, fmt.Sprintf("status = '%v' AND filecoin_hash <> '' AND kb_id <> '' ", models.KnowledgeBaseStatusPaymentReceipt), "id asc", 0, 10)
@@ -56,7 +56,7 @@ func (s *Service) CreateAgentKnowledgeBase(ctx context.Context) error {
 		if err != nil {
 			logger.Info("JobCreateAgentKnowledgeBase", "CreateAgentKnowledgeBase",
 				zap.Any("err", err), zap.Any("kb", item))
-			s.SendTeleMsgToKBChannel(ctx, fmt.Sprintf("CreateAgentKnowledgeBase \n err:%v \nknowledge_base_id:%v", err.Error(), item.ID), s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert)
+			s.SendTeleMsgToKBChannel(ctx, fmt.Sprintf("CreateAgentKnowledgeBase \n err:%v \n knowledge_base_id:%v", err.Error(), item.ID), s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert)
 		}
 	}
 	return nil
@@ -83,32 +83,32 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	}
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
 	if err != nil {
-		return fmt.Errorf("error when get all name value in app config: %v", err)
+		return fmt.Errorf("get all name value in app config: %v", err)
 	}
 	priKey := appConfig[models.KeyConfigNameWalletDeploy]
 	if len(priKey) == 0 {
-		return fmt.Errorf("error when no priKey for network %v", info.NetworkID)
+		return fmt.Errorf("not found priKey wallet deploy , network %v", info.NetworkID)
 	}
 	_, pubKey, err := eth.GetAccountInfo(priKey)
 	if err != nil {
-		return fmt.Errorf("error when get account info: %v", err)
+		return fmt.Errorf("get account info: %v", err)
 	}
 	kbWorkerHubAddress := appConfig[models.KeyConfigNameKnowledgeBaseWorkerHubAddress]
 	if len(kbWorkerHubAddress) == 0 {
-		return fmt.Errorf("error when no KnowledgeBaseWorkerHubAddress for network %v", info.NetworkID)
+		return fmt.Errorf("not found KnowledgeBaseWorkerHubAddress , network %v", info.NetworkID)
 	}
 	modelId := appConfig[models.KeyConfigNameModelId]
 	if len(modelId) == 0 {
-		return fmt.Errorf("error not found model id , network %v", info.NetworkID)
+		return fmt.Errorf("not found model id , network %v", info.NetworkID)
 	}
 	tokenContractAddress := appConfig[models.KeyConfigNameKnowledgeBaseTokenContractAddress]
 	if len(tokenContractAddress) == 0 {
-		return fmt.Errorf("error not found tokenContractAddress , network %v", info.NetworkID)
+		return fmt.Errorf("not found tokenContractAddress , network %v", info.NetworkID)
 	}
 
 	instanceABI, err := abi.JSON(strings.NewReader(aikb721.EternalAIKB721MetaData.ABI))
 	if err != nil {
-		return fmt.Errorf("error failed to read ABI JSON: %v", err)
+		return fmt.Errorf("failed to read ABI JSON: %v", err)
 	}
 
 	uri := info.FilecoinHash
@@ -127,7 +127,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	)
 	//to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
 	if err != nil {
-		return fmt.Errorf("error: failed to pack ABI data: %v", err)
+		return fmt.Errorf("failed to pack ABI data: %v", err)
 	}
 
 	rpc := s.conf.GetConfigKeyString(
@@ -149,14 +149,14 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 
 	tx, err := aiZkClient.Transact(priKey, *pubKey, common.HexToAddress(tokenContractAddress), big.NewInt(0), dataBytes)
 	if err != nil {
-		return fmt.Errorf("error: failed to transact: %v", err)
+		return fmt.Errorf("failed to transact: %v", err)
 	}
 	if tx == nil {
-		return fmt.Errorf("error: can find tx receipt ")
+		return fmt.Errorf("not found tx receipt after send tx mint")
 	}
 	contract, err := aikb721.NewEternalAIKB721(common.HexToAddress(tokenContractAddress), nil)
 	if err != nil {
-		return fmt.Errorf("error: failed to new either contract: %v", err)
+		return fmt.Errorf("failed to new either contract: %v", err)
 	}
 	tokenId := ""
 	for _, log := range tx.Receipt.Logs {
@@ -167,7 +167,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		}
 	}
 	if len(tokenId) == 0 {
-		return fmt.Errorf("error: no token id found in tx receipt :%v", tx.TxHash.Hex())
+		return fmt.Errorf("not found token id in tx receipt :%v", tx.TxHash.Hex())
 	}
 	oldStatus := info.Status
 	info.KBTokenID = tokenId
@@ -181,7 +181,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		"kb_token_mint_tx":          info.KBTokenMintTx,
 	})
 	if err != nil {
-		return fmt.Errorf("error: failed to update knowledge base status: %v", err)
+		return fmt.Errorf("failed to update knowledge base status: %v", err)
 	}
 	s.SendTeleMsgToKBChannel(ctx,
 		fmt.Sprintf("Update KB Status \n kb_id:%v \n old_status:%v \n new_status:%v \n mint id :%v \n tx:%v",
@@ -195,7 +195,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 			"agent_nft_minted":       true,
 		})
 	if err != nil {
-		return fmt.Errorf("error: failed to update agent info: %v", err)
+		return fmt.Errorf("failed to update agent info: %v", err)
 	}
 	return nil
 }

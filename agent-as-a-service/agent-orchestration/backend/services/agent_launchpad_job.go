@@ -766,7 +766,7 @@ func (s *Service) AgentTgeTransferDAOTokenMulti(ctx context.Context, launchpadID
 					"rand()",
 				},
 				0,
-				50,
+				100,
 			)
 			if err != nil {
 				return errs.NewError(err)
@@ -924,7 +924,7 @@ func (s *Service) JobAgentTgeRefundBaseToken(ctx context.Context) error {
 						"rand()",
 					},
 					0,
-					50,
+					100,
 				)
 				if err != nil {
 					return errs.NewError(err)
