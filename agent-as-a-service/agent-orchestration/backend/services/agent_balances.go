@@ -348,7 +348,7 @@ func (s *Service) JobCreateTokenInfo(ctx context.Context) error {
 			agents, err := s.dao.FindAgentInfo(
 				daos.GetDBMainCtx(ctx),
 				map[string][]interface{}{
-					`token_status in (?) or (agent_infos.agent_type=2 and agent_infos.status="ready")`: {[]string{"pending", "etching"}},
+					`token_status in (?) or (agent_type=2 and status="ready")`: {[]string{"pending", "etching"}},
 					"agent_nft_minted = ?":                          {true},
 					`(token_address is null or token_address = "")`: {},
 					`token_network_id > 0`:                          {},
