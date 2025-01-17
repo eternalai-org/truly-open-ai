@@ -263,6 +263,9 @@ func (uc *knowledgeUsecase) calcTrainingFee(_ context.Context, req *serializers.
 
 	price := total / 1_000_000 // 1 Megabyte is equal to 1000000 bytes (decimal).
 	price = round(price, 0)
+	if price == 0 {
+		price = 1
+	}
 	return price * float64(unitPrice), nil
 }
 
