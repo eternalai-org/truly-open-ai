@@ -301,7 +301,6 @@ func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
 }
 
 func (s *Server) retrieveKnowledge(c *gin.Context) {
-	ctx := s.requestContext(c)
 	req := &serializers.RetrieveKnowledgeRequest{}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
@@ -324,7 +323,7 @@ func (s *Server) retrieveKnowledge(c *gin.Context) {
 		threshold = &req.Threshold
 	}
 
-	resp, err := s.nls.RetrieveKnowledge(ctx, []openai2.ChatCompletionMessage{{
+	resp, err := s.nls.RetrieveKnowledge("", []openai2.ChatCompletionMessage{{
 		Content: req.Prompt,
 		Role:    openai2.ChatMessageRoleUser,
 	}}, []*models.KnowledgeBase{{
