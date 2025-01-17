@@ -913,9 +913,12 @@ func (s *Service) RetrieveKnowledge(agentModel string, messages []openai2.ChatCo
 		agentModel = "Llama3.3"
 	}
 	systemPrompt := openai.GetSystemPromptFromLLMMessage(messages)
+	isKbAgent := false
 	if systemPrompt == "" {
+		isKbAgent = true
 		systemPrompt = "You are a helpful assistant."
 	}
+	_ = isKbAgent
 
 	userPromptInput := openai.LastUserPrompt(messages)
 	retrieveQuery := userPromptInput
@@ -971,10 +974,13 @@ func (s *Service) RetrieveKnowledge(agentModel string, messages []openai2.ChatCo
 	for _, item := range response.Result {
 		searchResult = append(searchResult, item.Content)
 	}
-	answerPrmptPrefix := "Using the provided search results, craft a clear and informative response that directly addresses the user's query:\n\n"
+
+	answerPrmptPrefix := ""
 	for _, item := range searchResult {
 		answerPrmptPrefix += fmt.Sprintf("- %v\n", item)
 	}
+
+	answerPrmptPrefix += ". \n\nUsing the above information to address the user's input: " + userPromptInput
 	payloadAgentChat := []openai2.ChatCompletionMessage{
 		{
 			Role:    openai2.ChatMessageRoleSystem,
@@ -989,7 +995,7 @@ func (s *Service) RetrieveKnowledge(agentModel string, messages []openai2.ChatCo
 		if i == len(messages)-1 {
 			continue
 		}
-		
+
 		payloadAgentChat = append(payloadAgentChat, openai2.ChatCompletionMessage{
 			Role:    openai2.ChatMessageRoleUser,
 			Content: item.Content,
@@ -1116,10 +1122,10 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context,
 			}
 
 			if kbIdFromKnowledegeBase != nil {
-				knowledgeBaseFromQuery, err := s.dao.FirstKnowledgeBase(daos.GetDBMainCtx(ctx), map[string][]interface{}{
+				knowledgeBaseFromQuery, _ := s.dao.FirstKnowledgeBase(daos.GetDBMainCtx(ctx), map[string][]interface{}{
 					"kb_id = ?": {*kbIdFromKnowledegeBase},
 				}, map[string][]interface{}{}, []string{"id desc"}, false)
-				if err == nil {
+				if knowledgeBaseFromQuery != nil {
 					knowledgeBaseUse = knowledgeBaseFromQuery
 				}
 			}
