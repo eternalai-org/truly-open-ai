@@ -2006,11 +2006,6 @@ var MISSION_TOKEN_CONFIGS = []map[string]string{
 		"image_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/29779.png",
 	},
 	{
-		"name":      "Department Of Government Efficiency (dogegov.com)",
-		"symbol":    "DOGE",
-		"image_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/32778.png",
-	},
-	{
 		"name":      "Hamster Kombat",
 		"symbol":    "HMSTR",
 		"image_url": "https://s2.coinmarketcap.com/static/img/coins/64x64/32195.png",
