@@ -2,6 +2,7 @@ package knowledge
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strconv"
@@ -94,7 +95,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 }
 
 func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse) (*models.KnowledgeBase, error) {
-	logger.Info("knowledgeUsecase", "Webhook", zap.Any("data", req))
+	logger.Info("knowledgeUsecase", "webhook_update_kb", zap.Any("data", req))
 	if req.Result == nil {
 		return nil, nil
 	}
@@ -406,8 +407,9 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	if err != nil {
 		return nil, err
 	}
-
 	kn.Status = models.KnowledgeBaseStatusProcessing
+	bBody, _ := json.Marshal(body)
+	kn.RagInsertFileRequest = string(bBody)
 	if err = uc.knowledgeBaseRepo.UpdateStatus(ctx, kn); err != nil {
 		return nil, err
 	}

@@ -47,6 +47,7 @@ type KnowledgeBase struct {
 	KbId                   string               `json:"kb_id"`
 	ThumbnailUrl           string               `json:"thumbnail_url"`
 	UsageFee               float64              `json:"usage_fee"`
+	RagInsertFileRequest   string               `json:"rag_insert_file_request"`
 }
 
 type KnowledgeBaseFile struct {
