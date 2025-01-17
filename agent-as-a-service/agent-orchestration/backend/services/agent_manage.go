@@ -219,6 +219,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 	}
 
 	if req.CreateKnowledgeRequest != nil {
+		ctx := context.Background()
 		kbReq := req.CreateKnowledgeRequest
 		kbReq.UserAddress = strings.ToLower(address)
 		kbReq.DepositAddress = agent.ETHAddress
