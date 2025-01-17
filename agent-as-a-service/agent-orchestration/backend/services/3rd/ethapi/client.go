@@ -395,7 +395,6 @@ func (c *Client) getGasPrice() (*big.Int, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(gasPrice.String())
 		gasPrice = common.Big0.Quo(
 			common.Big0.Mul(gasPrice, big.NewInt(12)),
 			big.NewInt(10),
@@ -443,38 +442,6 @@ func (c *Client) GetCachedGasPriceAndTipCap() (*big.Int, *big.Int, error) {
 		return nil, nil, err
 	}
 	cachedGasTipCap := cachedGasPrice
-	// cachedGasTipCap, err := c.getGasTipCap()
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-	// chainID, err := c.GetChainID()
-	// if err != nil {
-	// 	return nil, nil, err
-	// }
-	// switch chainID {
-	// case 43114:
-	// 	{
-	// 		if cachedGasPrice.Cmp(big.NewInt(1000000000)) < 0 {
-	// 			cachedGasPrice = big.NewInt(1000000000)
-	// 		}
-	// 		if cachedGasTipCap.Cmp(big.NewInt(1000000000)) < 0 {
-	// 			cachedGasTipCap = big.NewInt(1000000000)
-	// 		}
-	// 	}
-	// case 8453:
-	// 	{
-	// 		fmt.Println(cachedGasPrice.String())
-	// 		fmt.Println(cachedGasTipCap.String())
-	// 		if cachedGasPrice.Cmp(big.NewInt(20000000)) < 0 {
-	// 			cachedGasPrice = big.NewInt(20000000)
-	// 		}
-	// 		if cachedGasTipCap.Cmp(big.NewInt(20000000)) < 0 {
-	// 			cachedGasTipCap = big.NewInt(20000000)
-	// 		}
-	// 	}
-	// }
-	fmt.Println(cachedGasPrice.String())
-	fmt.Println(cachedGasTipCap.String())
 	return cachedGasPrice, cachedGasTipCap, nil
 }
 
