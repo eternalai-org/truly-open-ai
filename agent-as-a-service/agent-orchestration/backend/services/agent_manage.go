@@ -454,7 +454,7 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 							agent.TokenName = tokenName
 							agent.TokenDesc = req.TokenDesc
 
-							if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && agent.AgentNftMinted {
+							if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
 								agent.TokenStatus = "pending"
 							}
 						} else {

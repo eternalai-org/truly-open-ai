@@ -646,7 +646,7 @@ func (s *Service) PostTwitterAferCreateToken(ctx context.Context, agentInfoID ui
 	return nil
 }
 
-func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, tokenAddress, search string, sortListStr []string, page, limit int) ([]*models.AgentInfo, uint, error) {
+func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, agentType int, tokenAddress, search string, sortListStr []string, page, limit int) ([]*models.AgentInfo, uint, error) {
 	sortDefault := "ifnull(agent_infos.priority, 0) desc, meme_market_cap desc"
 	if len(sortListStr) > 0 {
 		sortDefault = strings.Join(sortListStr, ", ")
@@ -671,7 +671,7 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 
 	filters := map[string][]interface{}{
 		`	
-			agent_infos.agent_contract_address is not null and agent_infos.agent_contract_address != ""
+			((agent_infos.agent_contract_address is not null and agent_infos.agent_contract_address != "") or (agent_infos.agent_type=2 and agent_infos.status="ready"))
 			and ifnull(agent_infos.priority, 0) >= 0
 			and agent_infos.id != 15
 		`: {},
@@ -688,10 +688,14 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 			or ifnull(twitter_users.name, "") like ?
 		`] = []interface{}{search, search, search, search, search, search, search}
 	}
+
+	if agentType > 0 {
+		filters["agent_infos.agent_type = ?"] = []interface{}{agentType}
+	}
 	if tokenAddress != "" {
 		filters["LOWER(agent_infos.token_address) = ? or agent_infos.agent_id = ? or agent_infos.id = ?"] = []interface{}{strings.ToLower(tokenAddress), tokenAddress, tokenAddress}
 	} else {
-		filters[`(agent_infos.agent_contract_id is not null and agent_infos.agent_contract_id != "") or (agent_infos.token_address is not null and agent_infos.token_address != "")`] = []interface{}{}
+		filters[`(agent_infos.agent_contract_id is not null and agent_infos.agent_contract_id != "") or (agent_infos.token_address is not null and agent_infos.token_address != "") or (agent_infos.agent_type=2 and agent_infos.status="ready")`] = []interface{}{}
 		if networkID == models.SOLANA_CHAIN_ID_OLD {
 			networkID = models.SOLANA_CHAIN_ID
 		}
