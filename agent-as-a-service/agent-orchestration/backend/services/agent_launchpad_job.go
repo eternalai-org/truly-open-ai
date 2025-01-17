@@ -692,33 +692,35 @@ func (s *Service) JobAgentTgeTransferDAOToken(ctx context.Context) error {
 					return errs.NewError(err)
 				}
 			}
-			ms, err := s.dao.FindLaunchpadMember(
-				daos.GetDBMainCtx(ctx),
-				map[string][]interface{}{
-					"status = ?":                  {models.LaunchpadMemberStatusNew},
-					"token_transfer_tx_hash = ''": {},
-					"token_balance > 0":           {},
-					`exists(
-						select 1
-						from launchpads
-						where launchpad_members.launchpad_id = launchpads.id
-							and launchpads.status = ?
-					)`: {models.LaunchpadStatusSettled},
-				},
-				map[string][]interface{}{},
-				[]string{
-					"rand()",
-				},
-				0,
-				5,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			for _, m := range ms {
-				err := s.AgentTgeTransferDAOToken(ctx, m.ID)
+			{
+				ms, err := s.dao.FindLaunchpad(
+					daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"status = ?": {models.LaunchpadStatusSettled},
+						`exists(
+							select 1
+							from launchpad_members
+							where launchpad_members.launchpad_id = launchpads.id
+								and launchpad_members.status = 'new'
+								and launchpad_members.token_transfer_tx_hash = ''
+								and launchpad_members.token_balance > 0
+						)`: {},
+					},
+					map[string][]interface{}{},
+					[]string{
+						"rand()",
+					},
+					0,
+					2,
+				)
 				if err != nil {
-					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+					return errs.NewError(err)
+				}
+				for _, m := range ms {
+					err := s.AgentTgeTransferDAOTokenMulti(ctx, m.ID)
+					if err != nil {
+						retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, m.ID))
+					}
 				}
 			}
 			return retErr
@@ -730,37 +732,93 @@ func (s *Service) JobAgentTgeTransferDAOToken(ctx context.Context) error {
 	return nil
 }
 
-func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
+func (s *Service) AgentTgeTransferDAOTokenMulti(ctx context.Context, launchpadID uint) error {
 	err := s.JobRunCheck(
 		ctx,
-		fmt.Sprintf("AgentTgeTransferDAOToken_%d", id),
+		fmt.Sprintf("AgentTgeTransferDAOTokenMulti_%d", launchpadID),
 		func() error {
-			mb, err := s.dao.FirstLaunchpadMemberByID(
+			launchpad, err := s.dao.FirstLaunchpadByID(
 				daos.GetDBMainCtx(ctx),
-				id,
+				launchpadID,
 				map[string][]interface{}{},
 				false,
 			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if mb == nil {
+			if launchpad == nil {
 				return errs.NewError(errs.ErrBadRequest)
 			}
-			m, err := s.dao.FirstLaunchpadByID(
+			if launchpad.Status != models.LaunchpadStatusSettled {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			networkID := launchpad.NetworkID
+			ms, err := s.dao.FindLaunchpadMember(
 				daos.GetDBMainCtx(ctx),
-				mb.LaunchpadID,
+				map[string][]interface{}{
+					"launchpad_id = ?":            {launchpad.ID},
+					"status = ?":                  {models.LaunchpadMemberStatusNew},
+					"token_transfer_tx_hash = ''": {},
+					"token_balance > 0":           {},
+				},
 				map[string][]interface{}{},
-				false,
+				[]string{
+					"rand()",
+				},
+				0,
+				50,
 			)
 			if err != nil {
 				return errs.NewError(err)
 			}
-			if m == nil {
-				return errs.NewError(errs.ErrBadRequest)
+			var ids []uint
+			for _, m := range ms {
+				ids = append(ids, m.ID)
 			}
-			if m.Status == models.LaunchpadStatusSettled && mb.TokenTransferTxHash == "" {
-				err = daos.GetDBMainCtx(ctx).Model(&mb).
+			if len(ids) > 0 {
+				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(networkID, "dao_pool_address"))
+				multisendAddress := strings.ToLower(s.conf.GetConfigKeyString(networkID, "multisend_contract_address"))
+				tokenAddress := launchpad.TokenAddress
+				{
+					hash, err := s.GetEthereumClient(ctx, networkID).
+						Erc20ApproveMaxCheck(
+							tokenAddress,
+							s.GetAddressPrk(daoPoolAddress),
+							helpers.HexToAddress(multisendAddress),
+						)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					time.Sleep(10 * time.Second)
+					err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+				var addresses []common.Address
+				var amounts []*big.Int
+				for _, id := range ids {
+					mb, err := s.dao.FirstLaunchpadMemberByID(
+						daos.GetDBMainCtx(ctx),
+						id,
+						map[string][]interface{}{},
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if mb == nil {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if mb.Status == models.LaunchpadMemberStatusNew && mb.TokenTransferTxHash == "" {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					addresses = append(addresses, helpers.HexToAddress(mb.UserAddress))
+					amounts = append(amounts, models.ConvertBigFloatToWei(&mb.TokenBalance.Float, 18))
+				}
+				err := daos.GetDBMainCtx(ctx).
+					Model(&models.LaunchpadMember{}).
+					Where("id in (?)", ids).
 					Updates(
 						map[string]interface{}{
 							"token_transfer_tx_hash": "pending",
@@ -769,33 +827,37 @@ func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
 				if err != nil {
 					return errs.NewError(err)
 				}
-				daoPoolAddress := strings.ToLower(s.conf.GetConfigKeyString(m.NetworkID, "dao_pool_address"))
 				txHash, err := func() (string, error) {
-					hash, err := s.GetEthereumClient(ctx, m.NetworkID).
-						Erc20Transfer(
-							m.TokenAddress,
+					hash, err := s.GetEthereumClient(ctx, networkID).
+						MultisendERC20Transfer(
+							multisendAddress,
 							s.GetAddressPrk(daoPoolAddress),
-							mb.UserAddress,
-							models.ConvertBigFloatToWei(&mb.TokenBalance.Float, 18).Text(10),
+							helpers.HexToAddress(tokenAddress),
+							addresses,
+							amounts,
 						)
 					if err != nil {
 						return "", errs.NewError(err)
 					}
-					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+					_ = daos.GetDBMainCtx(ctx).
+						Model(&models.LaunchpadMember{}).
+						Where("id in (?)", ids).
 						Updates(
 							map[string]interface{}{
 								"token_transfer_tx_hash": hash,
 							},
 						).Error
 					time.Sleep(10 * time.Second)
-					err = s.GetEthereumClient(ctx, m.NetworkID).TransactionConfirmed(hash)
+					err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
 					if err != nil {
 						return hash, errs.NewError(err)
 					}
 					return hash, nil
 				}()
 				if err != nil {
-					_ = daos.GetDBMainCtx(ctx).Model(&mb).
+					err = daos.GetDBMainCtx(ctx).
+						Model(&models.LaunchpadMember{}).
+						Where("id in (?)", ids).
 						Updates(
 							map[string]interface{}{
 								"token_transfer_tx_hash": txHash,
@@ -804,7 +866,9 @@ func (s *Service) AgentTgeTransferDAOToken(ctx context.Context, id uint) error {
 						).Error
 					return errs.NewError(err)
 				} else {
-					err = daos.GetDBMainCtx(ctx).Model(&mb).
+					err = daos.GetDBMainCtx(ctx).
+						Model(&models.LaunchpadMember{}).
+						Where("id in (?)", ids).
 						Updates(
 							map[string]interface{}{
 								"token_transfer_tx_hash": txHash,
