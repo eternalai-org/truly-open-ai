@@ -62,6 +62,7 @@ type AgentSnapshotMissionInfo struct {
 	RewardAmount       numeric.BigFloat          `json:"reward_amount"`
 	MinTokenHolding    numeric.BigFloat          `json:"min_token_holding"`
 	RewardUser         int                       `json:"reward_user"`
+	LookupInterval     int                       `json:"lookup_interval"`
 }
 
 type AgentInfoResp struct {
@@ -203,6 +204,7 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		RewardAmount:    m.RewardAmount,
 		RewardUser:      m.RewardUser,
 		MinTokenHolding: m.MinTokenHolding,
+		LookupInterval:  m.LookupInterval,
 		MissionStoreID:  m.MissionStoreID,
 		MissionStore:    NewMissionStoreResp(m.MissionStore),
 	}
