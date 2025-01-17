@@ -107,12 +107,14 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 								return errs.NewError(err)
 							}
 							if lptx.Status == models.LaunchpadTransactionStatusDone {
-								maxFundAmount := models.SubBigFloats(&lp.MaxFundBalance.Float, &lp.FundBalance.Float)
-								if maxFundAmount.Cmp(models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)) > 0 {
-									maxFundAmount = models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)
-								}
-								if lp.Status != models.LaunchpadStatusRunning {
+								var maxFundAmount *big.Float
+								if lp.Status != models.LaunchpadStatusRunning || lp.EndAt.Before(time.Now()) {
 									maxFundAmount = big.NewFloat(0)
+								} else {
+									maxFundAmount = models.SubBigFloats(&lp.MaxFundBalance.Float, &lp.FundBalance.Float)
+									if maxFundAmount.Cmp(models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)) > 0 {
+										maxFundAmount = models.SubBigFloats(&lpm.MaxFundBalance.Float, &lpm.FundBalance.Float)
+									}
 								}
 								if maxFundAmount.Cmp(big.NewFloat(0)) > 0 {
 									fundBalance := &lptx.Amount.Float
@@ -166,6 +168,20 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 									)
 									lpm.TokenBalance = numeric.NewBigFloatFromFloat(tokenBalance)
 									err = s.dao.Save(tx, lpm)
+									if err != nil {
+										return errs.NewError(err)
+									}
+									err = tx.
+										Model(lp).
+										Where("status = ?", models.LaunchpadStatusRunning).
+										Where("fund_balance = max_fund_balance").
+										Updates(
+											map[string]interface{}{
+												"status":      models.LaunchpadStatusEnd,
+												"finished_at": time.Now(),
+											},
+										).
+										Error
 									if err != nil {
 										return errs.NewError(err)
 									}
@@ -859,7 +875,7 @@ func (s *Service) AgentTgeRefundBaseToken(ctx context.Context, id uint) error {
 				return errs.NewError(errs.ErrBadRequest)
 			}
 			if mb.Status == models.LaunchpadMemberStatusTgeDone && mb.RefundTransferTxHash == "" {
-				refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, big.NewFloat(0.05))
+				refundFeeBalance := models.MulBigFloats(&mb.RefundBalance.Float, numeric.NewFloatFromString("0.05"))
 				refundBalance := models.SubBigFloats(&mb.RefundBalance.Float, refundFeeBalance)
 				if refundBalance.Cmp(big.NewFloat(0)) <= 0 {
 					err = daos.GetDBMainCtx(ctx).Model(&mb).
