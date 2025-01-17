@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"strconv"
 	"strings"
@@ -248,8 +249,21 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	return kn, nil
 }
 
-func (uc *knowledgeUsecase) calcTrainingFee(_ context.Context, _ *serializers.CreateKnowledgeRequest) (float64, error) {
-	return 1, nil
+func round(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
+}
+
+func (uc *knowledgeUsecase) calcTrainingFee(_ context.Context, req *serializers.CreateKnowledgeRequest) (float64, error) {
+	unitPrice := 10
+	total := float64(0)
+	for _, r := range req.Files {
+		total += float64(r.Size)
+	}
+
+	price := total / 1_000_000 // 1 Megabyte is equal to 1000000 bytes (decimal).
+	price = round(price, 0)
+	return price * float64(unitPrice), nil
 }
 
 func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serializers.CreateKnowledgeRequest) (*serializers.KnowledgeBase, error) {
