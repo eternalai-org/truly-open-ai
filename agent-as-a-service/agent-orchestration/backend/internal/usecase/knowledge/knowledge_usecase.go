@@ -88,7 +88,7 @@ func WithNotiBot(teleKey, notiActChanId, notiErrorChanId string) KnowledgeUsecas
 	return func(uc *knowledgeUsecase) {
 		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
 		if err != nil {
-			logger.Fatal("with_noti_bot", zap.Error(err))
+			logger.Error(categoryNameTracer, "with_noti_bot", zap.Error(err))
 		}
 		uc.notiBot = bot
 		i, _ := strconv.ParseInt(notiActChanId, 10, 64)
@@ -125,7 +125,13 @@ type knowledgeUsecase struct {
 	notiErrorChanId int64
 }
 
-func (uc *knowledgeUsecase) sendMessage(_ context.Context, content string, chanId int64) (int, error) {
+func (uc *knowledgeUsecase) SendMessage(_ context.Context, content string, chanId int64) (int, error) {
+	if chanId == 0 {
+		chanId = uc.notiActChanId
+	}
+	if chanId == -1 {
+		chanId = uc.notiErrorChanId
+	}
 	msg := &telego.SendMessageParams{
 		ChatID: telego.ChatID{
 			ID: chanId,
@@ -173,7 +179,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
 		return nil, err
 	}
-	uc.sendMessage(ctx, fmt.Sprintf("start_webhook_file agent: %s (%d): %s - filecoin hash: %s", kn.Name, kn.ID, updatedFields["filecoin_hash"], filename), uc.notiActChanId)
+	uc.SendMessage(ctx, fmt.Sprintf("start_webhook_file agent: %s (%d): %s - filecoin hash: %s", kn.Name, kn.ID, updatedFields["filecoin_hash"], filename), uc.notiActChanId)
 
 	i := 0
 	for {
@@ -227,7 +233,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 		}
 	}
 
-	uc.sendMessage(ctx, fmt.Sprintf("webhook_status update kb_id for agent_id %d: %s", kn.ID, req.Result.Kb), uc.notiActChanId)
+	uc.SendMessage(ctx, fmt.Sprintf("webhook_status update kb_id for agent_id %d: %s", kn.ID, req.Result.Kb), uc.notiActChanId)
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}
@@ -432,6 +438,8 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 				return err
 			}
+			content := fmt.Sprintf("Received amount for kb: %s (%d) on chain #%d", kn.Name, kn.ID, nId)
+			uc.SendMessage(ctx, content, uc.notiActChanId)
 
 			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
 		}
@@ -489,6 +497,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		SetResult(resp).
 		Post(fmt.Sprintf("%s/api/insert", uc.ragApi))
 	if err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 		return nil, err
 	}
 	kn.Status = models.KnowledgeBaseStatusProcessing
@@ -502,7 +511,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	if err = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}
-	uc.sendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent_id %s (%d): %s", kn.Name, kn.ID, string(bBody)), uc.notiActChanId)
+	uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent_id %s (%d): %s", kn.Name, kn.ID, string(bBody)), uc.notiActChanId)
 	return resp, nil
 }
 

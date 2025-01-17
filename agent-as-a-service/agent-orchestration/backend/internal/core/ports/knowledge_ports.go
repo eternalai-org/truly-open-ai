@@ -23,4 +23,5 @@ type IKnowledgeUsecase interface {
 	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
 	GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error)
 	GetManyKnowledgeBaseByQuery(context.Context, string, string, int, int) ([]*models.KnowledgeBase, error)
+	SendMessage(_ context.Context, content string, chanId int64) (int, error)
 }
