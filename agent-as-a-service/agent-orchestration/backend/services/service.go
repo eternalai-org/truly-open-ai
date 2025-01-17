@@ -173,10 +173,13 @@ func NewService(conf *configs.Config) *Service {
 		knowledge.WithRagApi(conf.RagApi),
 		knowledge.WithLighthousekey(conf.Lighthouse.Apikey),
 		knowledge.WithWebhookUrl(conf.WebhookUrl),
+		knowledge.WithNotiBot(
+			s.conf.KnowledgeBaseConfig.KBTelegramKey,
+			s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert,
+			s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert),
 	)
 	appConfigRepo := repository.NewAppConfigRepository(gormDB)
 	s.AppConfigUseCase = appconfig.NewAppConfigUseCase(appConfigRepo)
-
 	s.AgentInfoUseCase = agent_info.NewAgentInfoUseCase(agentInfoRepo)
 	return s
 }

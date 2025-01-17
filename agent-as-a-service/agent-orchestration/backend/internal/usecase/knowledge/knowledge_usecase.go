@@ -84,15 +84,18 @@ func WithWebhookUrl(webhookUrl string) KnowledgeUsecaseOption {
 	}
 }
 
-func WithNotiBot(teleKey string, notiActChanId int64, notiErrorChanId int64) KnowledgeUsecaseOption {
+func WithNotiBot(teleKey, notiActChanId, notiErrorChanId string) KnowledgeUsecaseOption {
 	return func(uc *knowledgeUsecase) {
 		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
 		if err != nil {
 			logger.Fatal("with_noti_bot", zap.Error(err))
 		}
 		uc.notiBot = bot
-		uc.notiActChanId = notiActChanId
-		uc.notiErrorChanId = notiErrorChanId
+		i, _ := strconv.ParseInt(notiActChanId, 10, 64)
+		uc.notiActChanId = i
+
+		ei, _ := strconv.ParseInt(notiErrorChanId, 10, 64)
+		uc.notiErrorChanId = ei
 	}
 }
 
@@ -170,6 +173,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
 		return nil, err
 	}
+	uc.sendMessage(ctx, fmt.Sprintf("start_webhook_file agent: %s (%d): %s - filecoin hash: %s", kn.Name, kn.ID, updatedFields["filecoin_hash"], filename), uc.notiActChanId)
 
 	i := 0
 	for {
@@ -223,6 +227,7 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 		}
 	}
 
+	uc.sendMessage(ctx, fmt.Sprintf("webhook_status update kb_id for agent_id %d: %s", kn.ID, req.Result.Kb), uc.notiActChanId)
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}
