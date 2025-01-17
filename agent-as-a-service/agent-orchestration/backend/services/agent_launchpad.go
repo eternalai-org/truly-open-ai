@@ -17,6 +17,17 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+func (s *Service) DeployMultisend(ctx context.Context, networkID uint64) (string, error) {
+	address, _, err := s.GetEthereumClient(context.Background(), networkID).
+		DeployMultisend(
+			s.GetAddressPrk(s.conf.GetConfigKeyString(networkID, "dao_pool_address")),
+		)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	return address, nil
+}
+
 func (s *Service) ProxyAdminDAOUpgrade(ctx context.Context, networkID uint64, proxyAddress string) (string, error) {
 	txHash, err := s.GetEthereumClient(context.Background(), networkID).
 		ProxyAdminUpgrade(
