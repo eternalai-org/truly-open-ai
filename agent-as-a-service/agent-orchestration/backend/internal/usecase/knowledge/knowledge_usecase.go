@@ -25,12 +25,79 @@ import (
 
 var categoryNameTracer string = "knowledge_usecase_tracer"
 
+type KnowledgeUsecaseOption func(*knowledgeUsecase)
+
+func WithRepos(
+	knowledgeBaseRepo repository.KnowledgeBaseRepo,
+	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
+	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
+	agentInfoRepo repository.IAgentInfoRepo,
+) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.knowledgeBaseRepo = knowledgeBaseRepo
+		uc.knowledgeBaseFileRepo = knowledgeBaseFileRepo
+		uc.agentInfoKnowledgeBaseRepo = agentInfoKnowledgeBaseRepo
+		uc.agentInfoRepo = agentInfoRepo
+	}
+}
+
+func WithSecretKey(secretKey string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.secretKey = secretKey
+	}
+}
+
+func WithEthApiMap(ethApiMap map[uint64]*ethapi.Client) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.ethApiMap = ethApiMap
+	}
+}
+
+func WithNetworks(networks map[string]map[string]string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.networks = networks
+	}
+}
+
+func WithTrxApi(trxApi *trxapi.Client) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.trxApi = trxApi
+	}
+}
+
+func WithRagApi(ragApi string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.ragApi = ragApi
+	}
+}
+
+func WithLighthousekey(lighthousekey string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.lighthouseKey = lighthousekey
+	}
+}
+
+func WithWebhookUrl(webhookUrl string) KnowledgeUsecaseOption {
+	return func(uc *knowledgeUsecase) {
+		uc.webhookUrl = webhookUrl
+	}
+}
+
+func NewKnowledgeUsecase(options ...KnowledgeUsecaseOption) ports.IKnowledgeUsecase {
+	uc := &knowledgeUsecase{}
+	for _, opt := range options {
+		opt(uc)
+	}
+	return uc
+}
+
 type knowledgeUsecase struct {
 	knowledgeBaseRepo          repository.KnowledgeBaseRepo
 	knowledgeBaseFileRepo      repository.KnowledgeBaseFileRepo
 	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo
-	secretKey                  string
+	agentInfoRepo              repository.IAgentInfoRepo
 
+	secretKey     string
 	networks      map[string]map[string]string
 	ethApiMap     map[uint64]*ethapi.Client
 	trxApi        *trxapi.Client
@@ -130,32 +197,6 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	}
 
 	return kn, nil
-}
-
-func NewKnowledgeUsecase(
-	knowledgeBaseRepo repository.KnowledgeBaseRepo,
-	knowledgeBaseFileRepo repository.KnowledgeBaseFileRepo,
-	agentInfoKnowledgeBaseRepo repository.IAgentInfoKnowledgeBaseRepo,
-	secretKey string,
-	ethApiMap map[uint64]*ethapi.Client,
-	networks map[string]map[string]string,
-	trxApi *trxapi.Client,
-	ragApi string,
-	lighthousekey string,
-	webhookUrl string,
-) ports.IKnowledgeUsecase {
-	return &knowledgeUsecase{
-		knowledgeBaseRepo:          knowledgeBaseRepo,
-		knowledgeBaseFileRepo:      knowledgeBaseFileRepo,
-		agentInfoKnowledgeBaseRepo: agentInfoKnowledgeBaseRepo,
-		secretKey:                  secretKey,
-		ethApiMap:                  ethApiMap,
-		networks:                   networks,
-		trxApi:                     trxApi,
-		ragApi:                     ragApi,
-		lighthouseKey:              lighthousekey,
-		webhookUrl:                 webhookUrl,
-	}
 }
 
 func (uc *knowledgeUsecase) calcTrainingFee(ctx context.Context, req *serializers.CreateKnowledgeRequest) (float64, error) {
