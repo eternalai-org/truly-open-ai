@@ -904,12 +904,27 @@ func (s *Service) PreviewAgentSystemPromp(ctx context.Context, personality, ques
 	return aiStr, nil
 }
 
-func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.ChatCompletionMessage, knowledgeBases []*models.KnowledgeBase, topK *int, threshold *float64) (*serializers.RetrieveKnowledgeBaseResponse, error) {
+func (s *Service) RetrieveKnowledge(agentModel string, messages []openai2.ChatCompletionMessage,
+	knowledgeBases []*models.KnowledgeBase, topK *int, threshold *float64) (string, error) {
 	if len(knowledgeBases) == 0 {
-		return nil, errs.NewError(errors.New("knowledge bases is empty"))
+		return "", errs.NewError(errors.New("knowledge bases is empty"))
 	}
-	userPrompt := openai.LastUserPrompt(messages)
-	topKQuery := 50
+	if agentModel == "" {
+		agentModel = "Llama3.3"
+	}
+	systemPrompt := openai.GetSystemPromptFromLLMMessage(messages)
+	if systemPrompt == "" {
+		systemPrompt = "You are a helpful assistant."
+	}
+
+	userPromptInput := openai.LastUserPrompt(messages)
+	retrieveQuery := userPromptInput
+	retrieveQueryFromLLM, _ := s.GenerateKnowledgeQuery(systemPrompt, userPromptInput)
+	if retrieveQueryFromLLM != nil {
+		retrieveQuery = *retrieveQueryFromLLM
+	}
+
+	topKQuery := 5
 	if topK != nil {
 		topKQuery = *topK
 	}
@@ -919,7 +934,7 @@ func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.Chat
 	}
 
 	request := serializers.RetrieveKnowledgeBaseRequest{
-		Query: userPrompt,
+		Query: retrieveQuery,
 		TopK:  topKQuery,
 		Kb: []string{
 			knowledgeBases[0].KbId,
@@ -927,25 +942,126 @@ func (s *Service) RetrieveKnowledge(ctx context.Context, messages []openai2.Chat
 		Threshold: th,
 	}
 
-	body, err := helpers.CurlURLString(
-		s.conf.KnowledgeBaseConfig.QueryServiceUrl,
-		"POST",
-		map[string]string{},
-		&request,
+	// retry
+	var (
+		body string
+		err  error
 	)
-	if err != nil {
-		return nil, errs.NewError(err)
+	maxRetry := 10
+	for i := 1; i <= maxRetry; i++ {
+		body, err = helpers.CurlURLString(
+			s.conf.KnowledgeBaseConfig.QueryServiceUrl,
+			"POST",
+			map[string]string{},
+			&request,
+		)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second)
 	}
+
 	response := &serializers.RetrieveKnowledgeBaseResponse{}
 	err = json.Unmarshal([]byte(body), response)
 	if err != nil {
-		return nil, errs.NewError(err)
+		return "", errs.NewError(err)
 	}
 
-	return response, nil
+	searchResult := []string{}
+	for _, item := range response.Result {
+		searchResult = append(searchResult, item.Content)
+	}
+	answerPrmptPrefix := "Using the provided search results, craft a clear and informative response that directly addresses the user's query:\n\n"
+	for _, item := range searchResult {
+		answerPrmptPrefix += fmt.Sprintf("- %v\n", item)
+	}
+	payloadAgentChat := []openai2.ChatCompletionMessage{
+		{
+			Role:    openai2.ChatMessageRoleSystem,
+			Content: systemPrompt,
+		},
+		{
+			Role:    openai2.ChatMessageRoleUser,
+			Content: answerPrmptPrefix,
+		},
+	}
+	messageCallLLM, _ := json.Marshal(&payloadAgentChat)
+	url := s.conf.AgentOffchainChatUrl
+	if s.conf.KnowledgeBaseConfig.DirectServiceUrl != "" {
+		url = s.conf.KnowledgeBaseConfig.DirectServiceUrl
+	}
+
+	stringResp, err := s.openais["Agent"].CallDirectlyEternalLLM(string(messageCallLLM), agentModel, url)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	return stringResp, nil
 }
 
-func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string, agentId *uint) (string, error) {
+func (s *Service) GenerateKnowledgeQuery(systemPrompt, textUserInput string) (*string, error) {
+	baseModel := "Llama3.3"
+	url := s.conf.AgentOffchainChatUrl
+	if s.conf.KnowledgeBaseConfig.DirectServiceUrl != "" {
+		url = s.conf.KnowledgeBaseConfig.DirectServiceUrl
+	}
+
+	generateQueryPrefix := `Generate a concise and effective search query to retrieve relevant information from the database. Ensure the query is clear, simple, and optimized for accurate results based on the input question:
+%v
+Respond in stringified JSON format with the following structure:
+{
+  "query": "<generated_query>"
+}`
+	userPrompt := fmt.Sprintf(generateQueryPrefix, textUserInput)
+	messages := []openai2.ChatCompletionMessage{
+		{
+			Role:    openai2.ChatMessageRoleSystem,
+			Content: systemPrompt,
+		},
+		{
+			Role:    openai2.ChatMessageRoleUser,
+			Content: userPrompt,
+		},
+	}
+
+	maxRetry := 10
+	messageCallLLM, _ := json.Marshal(&messages)
+
+	var queryStringResp *string
+	for i := 1; i <= maxRetry; i++ {
+		if i > 1 {
+			time.Sleep(time.Second)
+		}
+
+		stringResp, err := s.openais["Agent"].CallDirectlyEternalLLM(string(messageCallLLM), baseModel, url)
+		if err != nil || stringResp == "" {
+			continue
+		}
+		// find { and } in stringResp
+		startIndex := strings.Index(stringResp, "{")
+		endIndex := strings.LastIndex(stringResp, "}")
+		if startIndex == -1 || endIndex == -1 {
+			continue
+		}
+		queryStringRespJson := stringResp[startIndex : endIndex+1]
+		queryStringRespMap := map[string]string{}
+		err = json.Unmarshal([]byte(queryStringRespJson), &queryStringRespMap)
+		if err != nil {
+			continue
+		}
+		if _, ok := queryStringRespMap["query"]; !ok {
+			continue
+		}
+
+		val := queryStringRespMap["query"]
+		queryStringResp = &val
+		break
+	}
+
+	return queryStringResp, nil
+}
+
+func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context,
+	messages string, agentId *uint, kbIdFromKnowledegeBase *string) (string, error) {
 	var agentInfo *models.AgentInfo
 	baseModel := "NousResearch/Hermes-3-Llama-3.1-70B-FP8"
 	if agentId != nil {
@@ -966,26 +1082,40 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context, messages string
 		}
 	}
 
-	if s.conf.KnowledgeBaseConfig.EnableSimulation && agentInfo != nil {
-		// get last knowledge base of agent
-		agentInfoKnowledegeBase, _ := s.dao.FirstAgentInfoKnowledgeBaseByAgentInfoID(
-			daos.GetDBMainCtx(ctx),
-			agentInfo.ID,
-			map[string][]interface{}{
-				"KnowledgeBase": {},
-			},
-			[]string{"id desc"},
-		)
-		if agentInfoKnowledegeBase != nil && agentInfoKnowledegeBase.KnowledgeBase != nil {
-			retrieveKnowledgeBaseResponse, err := s.RetrieveKnowledge(ctx, llmMessage, []*models.KnowledgeBase{agentInfoKnowledegeBase.KnowledgeBase}, nil, nil)
-			if err == nil && retrieveKnowledgeBaseResponse != nil {
-				agentKnowledge := ""
-				for _, knowledge := range retrieveKnowledgeBaseResponse.Result {
-					if knowledge.Score >= 0.2 {
-						agentKnowledge += knowledge.Content + "\n"
-					}
+	{
+		if s.conf.KnowledgeBaseConfig.EnableSimulation && agentInfo != nil {
+			// get last knowledge base of agent
+			var knowledgeBaseUse *models.KnowledgeBase
+			agentInfoKnowledgeBase, _ := s.dao.FirstAgentInfoKnowledgeBaseByAgentInfoID(
+				daos.GetDBMainCtx(ctx),
+				agentInfo.ID,
+				map[string][]interface{}{
+					"KnowledgeBase": {}, // must preload
+				},
+				[]string{"id desc"},
+			)
+			if agentInfoKnowledgeBase != nil && agentInfoKnowledgeBase.KnowledgeBase != nil {
+				knowledgeBaseUse = agentInfoKnowledgeBase.KnowledgeBase
+			}
+
+			if kbIdFromKnowledegeBase != nil {
+				knowledgeBaseFromQuery, err := s.dao.FirstKnowledgeBase(daos.GetDBMainCtx(ctx), map[string][]interface{}{
+					"kb_id = ?": {*kbIdFromKnowledegeBase},
+				}, map[string][]interface{}{}, []string{"id desc"}, false)
+				if err == nil {
+					knowledgeBaseUse = knowledgeBaseFromQuery
 				}
-				systemContent += "\n. Your knowledge: \n" + agentKnowledge
+			}
+			if knowledgeBaseUse != nil {
+				retrieveKnowledgeBaseResponse, err := s.RetrieveKnowledge(baseModel, llmMessage, []*models.KnowledgeBase{
+					knowledgeBaseUse,
+				}, nil, nil)
+
+				if err != nil {
+					return "", err
+				}
+
+				return retrieveKnowledgeBaseResponse, nil
 			}
 		}
 	}
