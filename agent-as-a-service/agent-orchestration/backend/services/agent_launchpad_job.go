@@ -789,10 +789,12 @@ func (s *Service) AgentTgeTransferDAOTokenMulti(ctx context.Context, launchpadID
 					if err != nil {
 						return errs.NewError(err)
 					}
-					time.Sleep(10 * time.Second)
-					err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
-					if err != nil {
-						return errs.NewError(err)
+					if hash != "" {
+						time.Sleep(10 * time.Second)
+						err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
+						if err != nil {
+							return errs.NewError(err)
+						}
 					}
 				}
 				var addresses []common.Address
@@ -810,7 +812,7 @@ func (s *Service) AgentTgeTransferDAOTokenMulti(ctx context.Context, launchpadID
 					if mb == nil {
 						return errs.NewError(errs.ErrBadRequest)
 					}
-					if mb.Status == models.LaunchpadMemberStatusNew && mb.TokenTransferTxHash == "" {
+					if !(mb.Status == models.LaunchpadMemberStatusNew && mb.TokenTransferTxHash == "") {
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					addresses = append(addresses, helpers.HexToAddress(mb.UserAddress))
@@ -964,10 +966,12 @@ func (s *Service) AgentTgeRefundBaseTokenMulti(ctx context.Context, networkID ui
 					if err != nil {
 						return errs.NewError(err)
 					}
-					time.Sleep(10 * time.Second)
-					err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
-					if err != nil {
-						return errs.NewError(err)
+					if hash != "" {
+						time.Sleep(10 * time.Second)
+						err = s.GetEthereumClient(ctx, networkID).TransactionConfirmed(hash)
+						if err != nil {
+							return errs.NewError(err)
+						}
 					}
 				}
 				var addresses []common.Address
