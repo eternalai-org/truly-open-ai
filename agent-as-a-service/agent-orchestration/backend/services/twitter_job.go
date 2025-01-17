@@ -164,7 +164,7 @@ func (s *Service) ScanTwitterTweetByParentID(ctx context.Context, launchpad *mod
 								LaunchpadID:    launchpad.ID,
 								TweetID:        v.Tweet.ID,
 								TweetContent:   v.Tweet.Text,
-								Tier:           string(models.LaunchpadTier3),
+								Tier:           models.LaunchpadTier3,
 								MaxFundBalance: numeric.NewBigFloatFromString("525"),
 								Status:         models.LaunchpadMemberStatusNew,
 							}

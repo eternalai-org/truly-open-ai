@@ -75,7 +75,7 @@ func (s *Service) LaunchpadErc20TokenTransferEvent(tx *gorm.DB, networkID uint64
 									NetworkID:   lp.NetworkID,
 									UserAddress: toAddress,
 									LaunchpadID: lp.ID,
-									Tier:        string(models.LaunchpadTier3),
+									Tier:        models.LaunchpadTier3,
 									Status:      models.LaunchpadMemberStatusNew,
 								}
 								err = s.dao.Create(tx, lpm)
