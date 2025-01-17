@@ -65,36 +65,43 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		return fmt.Errorf("file coin hash is empty")
 	}
 	if len(info.KBTokenID) > 0 {
-		return fmt.Errorf("token minted , not mint again")
+		info.Status = models.KnowledgeBaseStatusMinted
+		err := s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, info.ID, map[string]interface{}{
+			"status": info.Status,
+		})
+		if err != nil {
+			return fmt.Errorf("UpdateKnowledgeBaseById: %v", err)
+		}
+		return nil
 	}
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
 	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: get all name value in app config: %v", err)
+		return fmt.Errorf("error when get all name value in app config: %v", err)
 	}
 	priKey := appConfig[models.KeyConfigNameWalletDeploy]
 	if len(priKey) == 0 {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no priKey for network %v", info.NetworkID)
+		return fmt.Errorf("error when no priKey for network %v", info.NetworkID)
 	}
 	_, pubKey, err := eth.GetAccountInfo(priKey)
 	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: get account info: %v", err)
+		return fmt.Errorf("error when get account info: %v", err)
 	}
 	kbWorkerHubAddress := appConfig[models.KeyConfigNameKnowledgeBaseWorkerHubAddress]
 	if len(kbWorkerHubAddress) == 0 {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no KnowledgeBaseWorkerHubAddress for network %v", info.NetworkID)
+		return fmt.Errorf("error when no KnowledgeBaseWorkerHubAddress for network %v", info.NetworkID)
 	}
 	modelId := appConfig[models.KeyConfigNameModelId]
 	if len(modelId) == 0 {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no modelId for network %v", info.NetworkID)
+		return fmt.Errorf("error not found model id , network %v", info.NetworkID)
 	}
 	tokenContractAddress := appConfig[models.KeyConfigNameKnowledgeBaseTokenContractAddress]
 	if len(tokenContractAddress) == 0 {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: no tokenContractAddress for network %v", info.NetworkID)
+		return fmt.Errorf("error not found tokenContractAddress , network %v", info.NetworkID)
 	}
 
 	instanceABI, err := abi.JSON(strings.NewReader(aikb721.EternalAIKB721MetaData.ABI))
 	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to read ABI JSON: %v", err)
+		return fmt.Errorf("error failed to read ABI JSON: %v", err)
 	}
 
 	uri := info.FilecoinHash
@@ -113,7 +120,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	)
 	//to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
 	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to pack ABI data: %v", err)
+		return fmt.Errorf("error: failed to pack ABI data: %v", err)
 	}
 
 	rpc := s.conf.GetConfigKeyString(
@@ -135,11 +142,11 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 
 	tx, err := aiZkClient.Transact(priKey, *pubKey, common.HexToAddress(tokenContractAddress), big.NewInt(0), dataBytes)
 	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to transact: %v", err)
+		return fmt.Errorf("error: failed to transact: %v", err)
 	}
 	contract, err := aikb721.NewEternalAIKB721(common.HexToAddress(tokenContractAddress), nil)
 	if err != nil {
-		return fmt.Errorf("JobCreateAgentKnowledgeBase error: failed to new either contract: %v", err)
+		return fmt.Errorf("error: failed to new either contract: %v", err)
 	}
 	tokenId := ""
 	for _, log := range tx.Logs {
@@ -160,14 +167,14 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		"kb_token_mint_tx":          info.KBTokenMintTx,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("error: failed to update knowledge base status: %v", err)
 	}
 	err = s.AgentInfoUseCase.UpdateAgentInfoById(ctx, info.AgentInfoId,
 		map[string]interface{}{
 			"status": models.AssistantStatusReady,
 		})
 	if err != nil {
-		return errs.NewError(err)
+		return fmt.Errorf("error: failed to update agent info: %v", err)
 	}
 	return nil
 }
