@@ -1,0 +1,19 @@
+name: Docker production build
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build-eth-research-rag-production:
+    uses: TrustlessComputer/tc-github-action-templates/.github/workflows/docker-build-and-push.yaml@main
+    with:
+      DOCKER_IMAGE_NAME: eth-research-rag
+      DOCKERFILE_NAME: Dockerfile
+      CONCURRENCY_GROUP: docker_build_production
+      RUNNER_TAG: ubuntu-latest
+    secrets:
+      GCLOUD_DEV_SERVICE_ACCOUNT_JSON: ${{ secrets.GCLOUD_DEV_SERVICE_ACCOUNT_JSON }}
+      SECRET_DEPLOY_GITHUB_USER: ${{ secrets.SECRET_DEPLOY_GITHUB_USER }}
+      SECRET_DEPLOY_GITHUB_TOKEN: ${{ secrets.SECRET_DEPLOY_GITHUB_TOKEN }}
