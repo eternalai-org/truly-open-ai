@@ -229,6 +229,7 @@ type Config struct {
 		RpcUrl string `json:"rpc_url"`
 		ApiKey string `json:"api_key"`
 	} `json:"tron"`
+	PrivateKeys                 map[string]string            `json:"private_keys"`
 	Networks                    map[string]map[string]string `json:"networks"`
 	AdminAutoCreateAgentAddress string                       `json:"admin_auto_create_agent_address"`
 	SecretKey                   string                       `json:"secret_key"`

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"sync"
 	"time"
 
@@ -185,11 +186,21 @@ func NewService(conf *configs.Config) *Service {
 }
 
 func (s *Service) GetAddressPrk(address string) string {
-	prkHex, err := s.coreClient.GetAddressPrk(
-		address,
-	)
-	if err != nil {
-		panic(err)
+	var prkHex string
+	var err error
+	for k, v := range s.conf.PrivateKeys {
+		if strings.EqualFold(k, address) {
+			prkHex = v
+			break
+		}
+	}
+	if prkHex == "" {
+		prkHex, err = s.coreClient.GetAddressPrk(
+			address,
+		)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return prkHex
 }

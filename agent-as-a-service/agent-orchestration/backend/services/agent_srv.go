@@ -269,6 +269,10 @@ func (s *Service) AgentCreateMissionDefault(ctx context.Context, agentInfoID uin
 				agentInfo.ID,
 			).Error
 		}
+	case models.GANACHE_CHAIN_ID,
+		models.HARDHAT_CHAIN_ID:
+		{
+		}
 	default:
 		{
 			_ = daos.GetDBMainCtx(ctx).Exec(

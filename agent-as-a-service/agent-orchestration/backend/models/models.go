@@ -25,6 +25,8 @@ const (
 	DURATION_30D = 30 * 24 * 3600
 	DURATION_90D = 90 * 24 * 3600
 
+	GANACHE_CHAIN_ID          = uint64(5777)
+	HARDHAT_CHAIN_ID          = uint64(31337)
 	ETERNAL_AI_CHAIN_ID       = uint64(43338)
 	BTC_CHAIN_ID              = uint64(0)
 	ETHEREUM_CHAIN_ID         = uint64(1)

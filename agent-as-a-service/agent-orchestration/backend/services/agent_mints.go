@@ -364,7 +364,9 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 	if agentInfo != nil {
 		if agentInfo.MintHash == "" {
 			switch agentInfo.NetworkID {
-			case models.SHARDAI_CHAIN_ID,
+			case models.GANACHE_CHAIN_ID,
+				models.HARDHAT_CHAIN_ID,
+				models.SHARDAI_CHAIN_ID,
 				models.HERMES_CHAIN_ID,
 				models.BASE_CHAIN_ID,
 				models.ETHEREUM_CHAIN_ID,
