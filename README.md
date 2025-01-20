@@ -6,7 +6,7 @@ What is needed is an end-to-end solution that puts everything together in a cohe
 
 ## Design Principles
 
-* ** Decentralize everything **. Decentralize at every step. Question every component of the system to decentralize it. Ensure that no single point of failure or control exists.
+* **Decentralize everything**. Decentralize at every step. Question every component of the system to decentralize it. Ensure that no single point of failure or control exists.
 * **Everything is an agent**. Not just regular agents, every entity, whether a swarm of agents, an AI model storage system, a GPU node, a cross-chain agent communication bridge, or an infrastructure service, is represented as an agent.
 * **Small is beautiful**. Agents should be small, efficient, and modular.
 * **Do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
@@ -22,8 +22,8 @@ Truly Open AI is an end-to-end, production-grade, multichain infrastructure for 
 
 |Component  | Description |
 |--|--|
-| [agent-as-a-service](/agent-as-a-service) |  |
-| [agent-as-a-service](https://github.com/eternalai-org/truly-open-ai/tree/master/agent-as-a-service) |  |
+| [ai-kernel](/agent-as-a-service) | The central component of the AI-powered blockchain architecture |
+| [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management |
 
 ## To start using Truly Open AI
 
