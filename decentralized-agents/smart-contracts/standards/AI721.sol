@@ -8,12 +8,27 @@ import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IAI721Errors} from "./interfaces/IAI721Errors.sol";
 
 /**
  * @title AI721
  * @dev Implementation of decentralized inference standard AI721.
  */
-contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
+contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
+
+    /// @dev fee: The usage fee required to invoke this agent's functionalities.
+    /// @dev isUsed: Signals whether this token is actively engaged or in use.
+    /// @dev modelId: Identifies the specific model from the associated model collection utilized by this agent.
+    /// @dev promptScheduler: The address of promptScheduler contract.
+    /// @dev sysPrompts: The system prompt data of this agent, mapped from string keys to arrays of prompt data, managed by the agent's owner.
+    struct TokenMetaData {
+        uint128 fee;
+        bool isUsed;
+        uint32 modelId;
+        address promptScheduler;
+        mapping(string => bytes[]) sysPrompts;
+    }
+
     /// @dev Storage
     mapping(uint256 agentId => TokenMetaData) private _datas;
     mapping(uint256 agentId => uint256) public _poolBalance;

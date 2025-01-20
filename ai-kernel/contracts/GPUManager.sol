@@ -87,11 +87,11 @@ contract GPUManager is
         _minerMinimumStake = _minerMinimumStake;
     }
 
-    function setWEAIAddress(address wEAIToken) external onlyOwner {
+    function setWEAIAddress(address wEAITokenAddress) external onlyOwner {
         _updateEpoch();
 
-        if (wEAIToken == address(0)) revert InvalidAddress();
-        _wEAIToken = wEAIToken;
+        if (wEAITokenAddress == address(0)) revert InvalidAddress();
+        _wEAIToken = wEAITokenAddress;
     }
 
     function registerModel(
@@ -632,4 +632,77 @@ contract GPUManager is
         return
             _minerAddressesByModel[modelId].values.length >= minerRequirement;
     }
+
+    function wEAIToken() external view returns (address) {
+        return _wEAIToken;
+    }
+
+    function modelCollection() external view returns (address) {
+        return _modelCollection;
+    }
+
+    function promptScheduler() external view returns (address) {
+        return _promptScheduler;
+    }
+
+    function treasury() external view returns (address) {
+        return _treasury;
+    }
+
+    function models(uint32 modelId) external view returns (Model memory) {
+        return _models[modelId];
+    }
+
+    function miners(address miner) external view returns (Worker memory) {
+        return _miners[miner];
+    }
+
+    function minerUnstakeRequests(address miner) external view returns (UnstakeRequest memory) {
+        return _minerUnstakeRequests[miner];
+    }
+
+    function rewardInEpoch(uint256 epoch) external view returns (MinerEpochState memory) {
+        return _rewardInEpoch[epoch];
+    }
+
+    function minFeeToUse() external view returns (uint256) {
+        return _minFeeToUse;
+    }
+
+    function minerMinimumStake() external view returns (uint256) {
+        return _minerMinimumStake;
+    }
+
+    function unstakeDelayTime() external view returns (uint40) {
+        return _unstakeDelayTime;
+    }
+
+    function penaltyDuration() external view returns (uint40) {
+        return _penaltyDuration;
+    }
+
+    function finePercentage() external view returns (uint16) {
+        return _finePercentage;
+    }
+
+    function maximumTier() external view returns (uint16) {
+        return _maximumTier;
+    }
+
+    function currentEpoch() external view returns (uint40) {
+        return _currentEpoch;
+    }
+
+    function blocksPerEpoch() external view returns (uint256) {
+        return _blocksPerEpoch;
+    }
+
+    function lastBlock() external view returns (uint256) {
+        return _lastBlock;
+    }
+
+    function rewardPerEpoch() external view returns (uint256) {
+        return _rewardPerEpoch;
+    }
 }
+
