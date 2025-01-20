@@ -976,7 +976,7 @@ func (s *Service) ScanEventsByChain(ctx context.Context, networkID uint64) error
 							return errs.NewError(err)
 						}
 						if lastBlockNumber <= 0 {
-							return errs.NewError(errs.ErrBadRequest)
+							lastBlockNumber = 1
 						}
 						chain.LastBlockNumber = lastBlockNumber
 						err = s.dao.Create(
@@ -1052,7 +1052,7 @@ func (s *Service) ScanEventsByChain(ctx context.Context, networkID uint64) error
 								return errs.NewError(err)
 							}
 							if lastBlockNumber <= 0 {
-								return errs.NewError(errs.ErrBadRequest)
+								lastBlockNumber = 1
 							}
 							chain.LastBlockNumber = lastBlockNumber
 							err = s.dao.Create(

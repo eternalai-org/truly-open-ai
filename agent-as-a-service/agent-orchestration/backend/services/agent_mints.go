@@ -360,9 +360,56 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 	if agentInfo != nil {
 		if agentInfo.MintHash == "" {
 			switch agentInfo.NetworkID {
-			case models.GANACHE_CHAIN_ID,
-				models.HARDHAT_CHAIN_ID,
-				models.SHARDAI_CHAIN_ID,
+			case models.GANACHE_CHAIN_ID:
+				{
+					agentUriData := models.AgentUriData{
+						Name: agentInfo.AgentName,
+					}
+					agentUriBytes, err := json.Marshal(agentUriData)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					uriHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "uri"), agentUriBytes)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					systemContentHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "system_content"), []byte(agentInfo.SystemPrompt))
+					if err != nil {
+						return errs.NewError(err)
+					}
+					txHash, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).Dagent721Mint(
+						s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+						s.GetAddressPrk(
+							helpers.RandomInStrings(
+								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
+							),
+						),
+						helpers.HexToAddress(agentInfo.Creator),
+						"ipfs://"+uriHash,
+						[]byte("ipfs://"+systemContentHash),
+						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
+						"",
+						helpers.HexToAddress(s.conf.GetConfigKeyString(agentInfo.NetworkID, "prompt_scheduler_contract_address")),
+						0,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = daos.GetDBMainCtx(ctx).
+						Model(agentInfo).
+						Updates(
+							map[string]interface{}{
+								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+								"mint_hash":              txHash,
+								"status":                 models.AssistantStatusMinting,
+								"reply_enabled":          true,
+							},
+						).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+			case models.SHARDAI_CHAIN_ID,
 				models.HERMES_CHAIN_ID,
 				models.BASE_CHAIN_ID,
 				models.ETHEREUM_CHAIN_ID,
