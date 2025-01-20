@@ -18,7 +18,7 @@ services:
       - 3306:3306
   backend:
     build:
-      dockerfile: ./Dockerfile.local
+      dockerfile: ./Dockerfile.compose
     ports:
       - 8480:8480
     extra_hosts:
