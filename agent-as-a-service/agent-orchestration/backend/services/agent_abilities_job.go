@@ -66,6 +66,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 					)`: {
 						[]uint64{
 							models.SHARDAI_CHAIN_ID,
+							models.ETHEREUM_CHAIN_ID,
 							models.BASE_CHAIN_ID,
 							models.HERMES_CHAIN_ID,
 							models.ARBITRUM_CHAIN_ID,

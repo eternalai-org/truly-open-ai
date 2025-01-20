@@ -49,6 +49,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 					"agent_infos.network_id in (?)": {
 						[]uint64{
 							models.SHARDAI_CHAIN_ID,
+							models.ETHEREUM_CHAIN_ID,
 							models.BITTENSOR_CHAIN_ID,
 							models.SOLANA_CHAIN_ID,
 							models.BASE_CHAIN_ID,
