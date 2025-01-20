@@ -12,8 +12,8 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "decentralized-inference",
-		Usage: "EAI decentralized-inference application",
+		Name:  "eai",
+		Usage: "EAI application",
 		Commands: []*cli.Command{
 			{
 				Name:  "server",
@@ -28,6 +28,26 @@ func main() {
 					svr.Start()
 					return nil
 				},
+			},
+			{
+				Name:        "chat",
+				Usage:       "EAI chat",
+				Description: "EAI chat",
+				Category:    "chat",
+				Subcommands: []*cli.Command{{
+					Name:   "start",
+					Action: nil,
+				}},
+			},
+			{
+				Name:        "config",
+				Usage:       "EAI chat",
+				Description: "EAI chat",
+				Category:    "chat",
+				Subcommands: []*cli.Command{{
+					Name:   "start",
+					Action: nil,
+				}},
 			},
 		},
 	}
