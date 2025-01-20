@@ -154,37 +154,40 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 	}
 
 	// generate address
-	{
-		ethAddress, err := s.CreateETHAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
+	switch agent.NetworkID {
+	case models.GANACHE_CHAIN_ID, models.HARDHAT_CHAIN_ID:
+		{
+			// nothing for local
 		}
-		agent.ETHAddress = strings.ToLower(ethAddress)
-		agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
-
-		solAddress, err := s.CreateSOLAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
+	default:
+		{
+			ethAddress, err := s.CreateETHAddress(ctx)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			agent.ETHAddress = strings.ToLower(ethAddress)
+			agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+			solAddress, err := s.CreateSOLAddress(ctx)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			agent.SOLAddress = solAddress
+			addressBtc, err := s.CreateBTCAddress(ctx)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			agent.TipBtcAddress = addressBtc
+			addressEth, err := s.CreateETHAddress(ctx)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			agent.TipEthAddress = addressEth
+			addressSol, err := s.CreateSOLAddress(ctx)
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			agent.TipSolAddress = addressSol
 		}
-		agent.SOLAddress = solAddress
-
-		addressBtc, err := s.CreateBTCAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipBtcAddress = addressBtc
-
-		addressEth, err := s.CreateETHAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipEthAddress = addressEth
-
-		addressSol, err := s.CreateSOLAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipSolAddress = addressSol
 	}
 
 	if req.CreateKnowledgeRequest != nil {
