@@ -20,16 +20,37 @@ Truly Open AI is an end-to-end, production-grade, multichain infrastructure for 
 
 <img width="2704" alt="eternal-kernel" src="https://github.com/user-attachments/assets/83bc3827-9326-453e-b8f5-d2821f32978e" />
 
+
 |Component  | Description |
 |--|--|
 | [ai-kernel](/agent-as-a-service) | The central component of the AI-powered blockchain architecture |
 | [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management |
 
-## To start using Truly Open AI
+
+## Deploy your first agent
+
+#### Step 1: Run a local chain
 
 TODO: Write this section
 
-## To start developing Truly Open AI
+#### Step 2: Run a local cluster with Llama 3B
+
+TODO: Write this section
+
+#### Step 3: Deploy Agent as a Service infrastructure
+
+TODO: Write this section
+
+### Step 4: Deploy an agent
+
+TODO: Write this section
+
+### Step 5: Chat with the agent
+
+TODO: Write this section
+
+
+## Contribute to Truly Open AI
 
 TODO: Write this section
 
