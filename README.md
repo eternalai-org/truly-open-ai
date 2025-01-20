@@ -20,7 +20,7 @@ Truly Open AI is an end-to-end, production-grade, multichain infrastructure for 
 
 Here are the major components of the Truly Open AI software stack.
 
-|Component  | Description |
+|Component&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | Description |
 |--|--|
 | [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management. |
 | [ai-architectures](/ai-architectures) | The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
