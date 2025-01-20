@@ -324,6 +324,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		resp.Meme = NewMemeRespWithToken(m.Meme)
 		resp.Meme.Percent = m.MemePercent
 		resp.Meme.MarketCap = m.MemeMarketCap
+		resp.UsdMarketCap, _ = m.MemeMarketCap.Float64()
 		resp.Meme.TradeUrl = ""
 		if m.TokenNetworkID == models.SOLANA_CHAIN_ID {
 			resp.Meme.Status = string(models.MemeStatusAddPoolExternal)
