@@ -48,11 +48,11 @@ TODO: Write this section
 
 TODO: Write this section
 
-### Step 4: Deploy an agent
+#### Step 4: Deploy an agent
 
 TODO: Write this section
 
-### Step 5: Chat with the agent
+#### Step 5: Chat with the agent
 
 TODO: Write this section
 
