@@ -388,7 +388,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						"ipfs://"+uriHash,
 						[]byte("ipfs://"+systemContentHash),
 						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
-						"",
+						"ai721",
 						helpers.HexToAddress(s.conf.GetConfigKeyString(agentInfo.NetworkID, "prompt_scheduler_contract_address")),
 						0,
 					)
