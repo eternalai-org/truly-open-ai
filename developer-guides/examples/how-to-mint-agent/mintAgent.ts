@@ -103,7 +103,7 @@ async function mintAgent() {
       wallet
     );
 
-    const modelIds = await gpuManager.getNOMiner();
+    const modelIds = await gpuManager.getModelIds();
     console.log("Available models:", modelIds);
     if (modelIds.length === 0) {
       throw new Error("No models available");
