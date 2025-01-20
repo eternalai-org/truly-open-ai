@@ -3,7 +3,7 @@ package mysql
 import (
 	"fmt"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"gorm.io/gorm"
 )
 

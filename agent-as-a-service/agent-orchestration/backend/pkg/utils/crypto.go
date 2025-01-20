@@ -3,8 +3,8 @@ package utils
 import (
 	"strings"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/encrypt"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/eth"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/pkg/encrypt"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/pkg/eth"
 )
 
 // return encryptedPrivateKeyKey, address,  error

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/configs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services"
 	"github.com/getsentry/raven-go"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

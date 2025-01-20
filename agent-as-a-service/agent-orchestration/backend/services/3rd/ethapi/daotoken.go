@@ -3,7 +3,7 @@ package ethapi
 import (
 	"math/big"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/daotoken"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/daotoken"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 )
 

@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/helpers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/jinzhu/gorm"
 )
 

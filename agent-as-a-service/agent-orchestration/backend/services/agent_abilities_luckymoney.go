@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
-	blockchainutils "github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/configs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/helpers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
+	blockchainutils "github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/jinzhu/gorm"
 )
 

@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/encrypt"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/pkg/encrypt"
 
 	"github.com/gagliardetto/solana-go/rpc"
 

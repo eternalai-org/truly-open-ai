@@ -1,4 +1,4 @@
-module github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend
+module github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend
 
 go 1.23.1
 

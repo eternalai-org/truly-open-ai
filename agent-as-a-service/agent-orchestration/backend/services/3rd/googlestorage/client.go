@@ -9,7 +9,7 @@ import (
 	"mime/multipart"
 
 	"cloud.google.com/go/storage"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"google.golang.org/api/option"
 )
 
