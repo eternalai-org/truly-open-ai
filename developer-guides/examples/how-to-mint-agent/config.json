@@ -1,0 +1,10 @@
+{
+    "base_mainnet": {
+        "promptSchedulerAddress": "0x963691C0b25a8d0866EA17CefC1bfBDb6Ec27894",
+        "gpuManagerAddress": "0x14A008005cfa25621dD48E958EA33d14dd519d0d"
+    },
+    "abstract_testnet": {
+        "promptSchedulerAddress": "0x48A5fFC060C64D86C16C590f9D253510C37BB07c",
+        "gpuManagerAddress": "0x2D272cb80f5A24aA887fbF310a4b3523D49415F3"
+    }
+}
