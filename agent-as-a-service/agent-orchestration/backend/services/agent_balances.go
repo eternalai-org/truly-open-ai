@@ -692,6 +692,7 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 			and ifnull(agent_infos.priority, 0) >= 0
 			and agent_infos.id != 15
 		`: {},
+		// `agent_infos.token_address != null and agent_infos.token_address != ""`: {},
 	}
 	if search != "" {
 		search = fmt.Sprintf("%%%s%%", strings.ToLower(search))

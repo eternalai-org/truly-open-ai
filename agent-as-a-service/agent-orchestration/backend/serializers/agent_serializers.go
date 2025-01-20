@@ -348,6 +348,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 				TokenAddress: m.TokenAddress,
 				MarketCap:    numeric.NewBigFloatFromString("6700"),
 			}
+			resp.UsdMarketCap = float64(6700)
 		}
 	}
 
