@@ -10,6 +10,7 @@ from .models import (
     APIStatus,
     ResponseMessage
 )
+import requests
 
 from docling.datamodel.base_models import InputFormat, DocItemLabel
 from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -38,6 +39,7 @@ import asyncio
 from typing import AsyncGenerator
 from .state import get_insertion_request_handler
 from .wrappers import telegram_kit
+import schedule
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,7 @@ async def mk_embedding(text: str, model_use: EmbeddingModel) -> List[float]:
             timeout=httpx.Timeout(60.0),
         )
         
+        
     if response.status_code != 200:
         raise ValueError(f"Failed to get embedding from {url}; Reason: {response.text}")
 
@@ -121,9 +124,11 @@ async def mk_cog_embedding(text: str, model_use: EmbeddingModel) -> List[float]:
     headers = {
         # 'Authorization': 'Bearer {}'.format(get_embedding_model_api_key(model_use))
     }
+    
     data = {
         'input': {"texts": [text]},
     }
+    
     async with httpx.AsyncClient() as client:
         response = await client.post(
             url + '/predictions',
@@ -263,18 +268,25 @@ async def chunking_and_embedding(url_or_texts: Union[str, List[str]], model_use:
     else:
         raise ValueError("Invalid input type; Expecting str or list of str, got {}".format(type(url_or_texts)))
 
-async def export_kb_data(collection: str, kb: str, workspace_directory: str, destination_file: str):
-    fields_output = ['content', 'reference', 'embedding', 'hash']
+async def export_collection_data(collection: str, workspace_directory: str, filter_expr='', include_embedding=True, include_identity=False) -> str:
+    fields_output = ['content', 'reference', 'hash']
+
+    if include_embedding:   
+        fields_output.append('embedding')
+  
+    if include_identity:
+        fields_output.append('kb')
+
     cli: MilvusClient = milvus_kit.get_reusable_milvus_client(const.MILVUS_HOST)
 
     if not cli.has_collection(collection):
         raise Exception(f"Collection {collection } not found")
 
-    logger.info(f"Exporting {kb} from {collection} to {workspace_directory}...")
+    logger.info(f"Exporting {filter_expr} from {collection} to {workspace_directory}...")
 
     it = cli.query_iterator(
         collection, 
-        filter=f"kb == {kb!r}",
+        filter=filter_expr,
         output_fields=fields_output,
         batch_size=100
     )
@@ -293,47 +305,56 @@ async def export_kb_data(collection: str, kb: str, workspace_directory: str, des
         removed = 0
         
         for i, item in enumerate(h):
-            if item in hashes:
+            _h = item if not include_identity else f"{item}{batch[i]['kb']}"
+
+            if _h in hashes:
                 removed += 1
                 mask[i] = False 
             else:
-                hashes.add(item)
+                hashes.add(_h)
 
         if removed == len(batch):
             continue
 
-        vec.extend([
-            item['embedding'] 
-            for i, item in enumerate(batch) 
-            if mask[i]
-        ])
+        if include_embedding:
+            vec.extend([
+                item['embedding'] 
+                for i, item in enumerate(batch) 
+                if mask[i]
+            ])
 
         meta.extend([
             {
                 'content': item['content'],
-                'reference': item['reference'] if len(item['reference']) else None
+                'reference': item['reference'] if len(item['reference']) else None,
+                **({'kb': item['kb']} if include_identity else {}),
             } 
             for i, item in enumerate(batch)
             if mask[i]
         ])
 
-        logger.info(f"Exported {len(vec)}...")
+        logger.info(f"Exported {len(hashes)}...")
 
-    vec = np.array(vec)
+    if include_embedding:
+        vec = np.array(vec)
 
-    logging.info(f"Export {kb} from {collection}: Making meta.json")
+    logging.info(f"Export {filter_expr} from {collection}: Making meta.json")
     with open(os.path.join(workspace_directory, 'meta.json'), 'w') as fp:
-        json.dump(meta, fp)
+        await sync2async(json.dump)(meta, fp)
 
-    logging.info(f"Export {kb} from {collection}: Making vec.npy")
-    np.save(os.path.join(workspace_directory, 'vec.npy'), vec)
+    if include_embedding:
+        logging.info(f"Export {filter_expr} from {collection}: Making vec.npy")
+        await sync2async(np.save)(os.path.join(workspace_directory, 'vec.npy'), vec)
 
-    logging.info(f"Export {kb} from {collection}: Making {destination_file}")
+    destination_file = f"{workspace_directory}/data.zip"
+    logging.info(f"Export {filter_expr} from {collection}: Making {destination_file}")
     with zipfile.ZipFile(destination_file, 'w') as z:
-        z.write(os.path.join(workspace_directory, 'meta.json'), 'meta.json')
-        z.write(os.path.join(workspace_directory, 'vec.npy'), 'vec.npy')
+        await sync2async(z.write)(os.path.join(workspace_directory, 'meta.json'), 'meta.json')
+    
+        if include_embedding:
+            await sync2async(z.write)(os.path.join(workspace_directory, 'vec.npy'), 'vec.npy')
 
-    logging.info(f"Export {kb} from {collection}: Done (filesize: {os.path.getsize(destination_file) / 1024 / 1024:.2f} MB)")
+    logging.info(f"Export {filter_expr} from {collection}: Done (filesize: {os.path.getsize(destination_file) / 1024 / 1024:.2f} MB)")
     return destination_file
 
 _running_tasks = set([])
@@ -402,14 +423,13 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
             if n_chunks > 0:
                 wspace = get_tmp_directory()
-                des_fname = os.path.join(wspace, f"{kb}.zip")
-
                 os.makedirs(wspace, exist_ok=True)
 
                 try:
-                    result_file = await export_kb_data(
+                    result_file = await export_collection_data(
                         model_use.identity(), 
-                        kb, wspace, des_fname
+                        wspace,
+                        f'kb == {kb!r}'
                     )
 
                     file_submitted = await hook_result(req.hook, result_file)
@@ -442,7 +462,7 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    "https://agent.api.eternalai.org/api/knowledge/webhook",
+                    const.ETERNALAI_RESULT_HOOK_URL,
                     json=ResponseMessage(
                         result=response.model_dump(),
                         status=status,
@@ -453,13 +473,14 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
             logger.info(f"Hook response: {response.status_code}; {response.text}")
 
-        get_insertion_request_handler().delete(req.id)
+        await sync2async(get_insertion_request_handler().delete)(req.id)
         return n_chunks
 
     finally:
         _running_tasks.remove(req.id)
 
-async def resume_pending_tasks(event_loop: asyncio.AbstractEventLoop):
+@schedule.every(5).minutes.do
+def resume_pending_tasks():
     logger.info("Scanning for pending tasks...")
 
     handler = get_insertion_request_handler()
@@ -467,19 +488,19 @@ async def resume_pending_tasks(event_loop: asyncio.AbstractEventLoop):
     logger.info(f"Found {len(handler.get_all())} pending tasks")
     pending_tasks = handler.get_all()
 
-    futures = []
-
     for task in pending_tasks:
         if task.id in _running_tasks:
             continue
 
-        futures.append(event_loop.create_task(process_data(task, get_default_embedding_model())))
-
-    logger.info(f"Resuming {len(futures)} pending tasks...")
-    if len(futures) > 0:
-        await asyncio.gather(*futures)
-
-    logger.info("All pending tasks are done")
+        # TODO: change this
+        logger.info(f"Resuming task {task.id}")
+        requests.post(
+            "http://localhost:8000/api/insert", 
+            json={
+                **task.model_dump(),
+                "is_re_submit": True
+            }
+        )
 
 def get_collection_num_entities(collection_name: str) -> int:
     cli = milvus_kit.get_reusable_milvus_client(const.MILVUS_HOST)
@@ -594,7 +615,7 @@ async def get_sample(kb: str, k: int) -> List[QueryResult]:
     model_identity = embedding_model.identity()
     cli: MilvusClient = milvus_kit.get_reusable_milvus_client(const.MILVUS_HOST) 
 
-    results = await sync2async(cli.query)(
+    results = cli.query(
         model_identity,
         filter=f"kb == {kb!r}", 
         output_fields=fields_output
@@ -625,11 +646,11 @@ async def drop_kb(kb: str):
     for model in models:
         identity = model.identity()
 
-        if not await sync2async(cli.has_collection)(identity):
+        if not cli.has_collection(identity):
             logger.error(f"Collection {identity} not found")
             continue
 
-        resp: dict = await sync2async(cli.delete)(
+        resp: dict = cli.delete(
             collection_name=identity,
             filter=f"kb == {kb!r}"
         )
@@ -648,11 +669,11 @@ async def run_query(req: QueryInputSchema) -> List[QueryResult]:
     model_identity = embedding_model.identity()
 
     embedding = await mk_cog_embedding(req.query, embedding_model)
-    
-    cli: MilvusClient = milvus_kit.get_reusable_milvus_client(const.MILVUS_HOST) 
-    row_count = await sync2async(get_collection_num_entities)(model_identity)
 
-    res = await sync2async(cli.search)(
+    cli: MilvusClient = milvus_kit.get_reusable_milvus_client(const.MILVUS_HOST) 
+    row_count = get_collection_num_entities(model_identity)
+
+    res = cli.search(
         collection_name=model_identity,
         data=[embedding],
         filter=f"kb in {req.kb}",

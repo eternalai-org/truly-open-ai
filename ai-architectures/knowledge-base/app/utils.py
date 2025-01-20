@@ -7,9 +7,9 @@ from typing import Generator, AsyncGenerator
 import tempfile
 import os
 from functools import wraps
-from threading import Semaphore as ThreadedSemaphore
 from starlette.concurrency import run_in_threadpool
 from app.models import EmbeddingModel, SimMetric
+from asyncio import Semaphore as AsyncSemaphore
 
 
 def get_content_checksum(data: Union[bytes, str]) -> str:
@@ -44,23 +44,14 @@ def sync2async(sync_func: Callable):
     return async_func
 
 def limit_asyncio_concurrency(num_of_concurrent_calls: int):
-    # semaphore = Semaphore(num_of_concurrent_calls)
-    semaphore = ThreadedSemaphore(num_of_concurrent_calls)
-    async_acquire = sync2async(semaphore.acquire)
+    semaphore = AsyncSemaphore(num_of_concurrent_calls)
 
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            try:
-                await async_acquire()
-                res = await func(*args, **kwargs)
-            finally:
-                semaphore.release()
-
-            return res
-                
+            async with semaphore:
+                return await func(*args, **kwargs)                
         return wrapper
-
     return decorator
 
 def random_payload(length: int) -> str:
@@ -96,3 +87,15 @@ def estimate_ip_from_distance(distance, model_use: EmbeddingModel):
         return 1.0 / (1.0 + distance)
 
     return distance
+
+import aiofiles
+
+async def iter_file(file_name: str):
+    async with aiofiles.open(file_name, "rb") as f:
+        while True:
+            chunk = await f.read(1024 * 20)
+
+            if not chunk:
+                break
+
+            yield chunk

@@ -16,9 +16,8 @@ import schedule
 import time
 from pymilvus import connections
 from app import constants as const
-from typing import Annotated, Optional
-from app.handlers import resume_pending_tasks
-import asyncio
+from typing import Annotated
+import asyncio, nest_asyncio; nest_asyncio.apply()
 
 SECRET_TOKEN = os.environ.get("API_SECRET_TOKEN", "")
 
@@ -106,36 +105,24 @@ if __name__ == "__main__":
             status_code=200
         )
 
-    _previous_thread: Optional[threading.Thread] = None    
-    event_loop = asyncio.get_event_loop()
+    event_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(event_loop)
 
-    def wrapped_resume_task():
-        global _previous_thread, event_loop
-
-        if _previous_thread is not None and _previous_thread.is_alive():
-            return
-
-        _previous_thread = threading.Thread(
-            target=lambda: event_loop.run_until_complete(resume_pending_tasks(event_loop=event_loop)), 
-            daemon=True
-        )
-
-        _previous_thread.start()
-
-    schedule.every(30).minutes.do(wrapped_resume_task)
- 
     scheduler_thread = threading.Thread(
         target=scheduler_job, 
         daemon=True
     )
     scheduler_thread.start()
-    
-    uvicorn.run(
+
+    config = uvicorn.Config(
         api_app, 
+        loop=event_loop,
         host=HOST,
         port=PORT,
         log_level="info",
         timeout_keep_alive=300,
-        log_config=logging_config,
-        loop="asyncio"
+        log_config=logging_config
     )
+
+    server = uvicorn.Server(config)
+    event_loop.run_until_complete(server.serve())
