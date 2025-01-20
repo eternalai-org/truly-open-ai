@@ -124,6 +124,7 @@ type AgentInfoResp struct {
 	TokenDesc                 string                 `json:"token_desc"`
 	ExternalChartUrl          string                 `json:"external_chart_url"`
 	MissionTopics             string                 `json:"mission_topics"`
+	GraphData                 string                 `json:"graph_data"`
 }
 
 type AgentTwitterPostResp struct {
@@ -276,6 +277,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		TokenDesc:            m.TokenDesc,
 		ExternalChartUrl:     m.ExternalChartUrl,
 		MissionTopics:        m.MissionTopics,
+		GraphData:            m.GraphData,
 	}
 
 	if m.NftTokenImage != "" {

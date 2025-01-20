@@ -701,3 +701,119 @@ func (s *Service) JobMigrateTronAddress(ctx context.Context) error {
 	}
 	return nil
 }
+
+// //
+func (s *Service) AgentCreateAgentStudio(ctx context.Context, address string, graphData string) (*models.AgentInfo, error) {
+	reqs := []*models.AgentStudio{}
+	json.Unmarshal([]byte(graphData), reqs)
+
+	if len(reqs) <= 0 {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	req := reqs[0]
+	agent := &models.AgentInfo{
+		Version:     "2",
+		AgentID:     helpers.RandomBigInt(12).Text(16),
+		Status:      models.AssistantStatusPending,
+		AgentName:   req.Title,
+		Creator:     strings.ToLower(address),
+		ScanEnabled: false,
+		GraphData:   graphData,
+	}
+	for _, item := range req.Children {
+		switch item.CategoryIdx {
+		case "personality":
+			{
+				agent.SystemPrompt = item.Title
+			}
+		case "blockchain":
+			{
+				chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
+				agent.NetworkID = models.GetChainID(chainName)
+				agent.NetworkName = models.GetChainName(agent.NetworkID)
+			}
+		case "decentralized_inference":
+			{
+				agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
+			}
+		case "token":
+			{
+				tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
+				if err != nil {
+					return nil, errs.NewError(errs.ErrBadRequest)
+				}
+				agent.TokenNetworkID = uint64(tokenChainId)
+			}
+		default:
+			{
+
+			}
+		}
+	}
+
+	if agent.TokenNetworkID > 0 {
+		if !(agent.TokenNetworkID == models.POLYGON_CHAIN_ID || agent.TokenNetworkID == models.ZKSYNC_CHAIN_ID) {
+			agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
+		} else {
+			agent.TokenNetworkID = models.GENERTAL_NETWORK_ID
+			agent.TokenMode = string(models.TokenSetupEnumNoToken)
+		}
+	}
+	// generate address
+	{
+		ethAddress, err := s.CreateETHAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.ETHAddress = strings.ToLower(ethAddress)
+		agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+
+		solAddress, err := s.CreateSOLAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.SOLAddress = solAddress
+
+		addressBtc, err := s.CreateBTCAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.TipBtcAddress = addressBtc
+
+		addressEth, err := s.CreateETHAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.TipEthAddress = addressEth
+
+		addressSol, err := s.CreateSOLAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.TipSolAddress = addressSol
+	}
+
+	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
+		return nil, errs.NewError(err)
+	}
+	agentTokenInfo := &models.AgentTokenInfo{}
+	agentTokenInfo.AgentInfoID = agent.ID
+	agentTokenInfo.NetworkID = agent.TokenNetworkID
+	agentTokenInfo.NetworkName = models.GetChainName(agent.TokenNetworkID)
+
+	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agentTokenInfo); err != nil {
+		return nil, errs.NewError(err)
+	}
+
+	agent.TokenInfoID = agentTokenInfo.ID
+
+	if err := s.dao.Save(daos.GetDBMainCtx(ctx), agent); err != nil {
+		return nil, errs.NewError(err)
+	}
+
+	return nil, nil
+}
+
+func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address string, req *serializers.AssistantsReq) (*models.AgentInfo, error) {
+	return nil, nil
+}

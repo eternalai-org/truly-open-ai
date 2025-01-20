@@ -213,6 +213,7 @@ type AgentInfo struct {
 	InferenceCalls       int64
 	ExternalChartUrl     string
 	MissionTopics        string `gorm:"type:longtext"`
+	GraphData            string `gorm:"type:longtext"`
 
 	TwinTwitterUsernames    string           `gorm:"index"` // multiple twitter usernames, split by ,
 	TwinStatus              TwinStatus       `gorm:"index"`
@@ -626,4 +627,21 @@ type AgentChainFee struct {
 	InferFee  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	MintFee   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	TokenFee  numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+}
+
+type AgentStudioChildren struct {
+	ID          uint                   `json:"id"`
+	Idx         string                 `json:"idx"`
+	CategoryIdx string                 `json:"categoryIdx"`
+	Title       string                 `json:"title"`
+	Data        map[string]interface{} `json:"data"`
+}
+
+type AgentStudio struct {
+	ID          uint                   `json:"id"`
+	Idx         string                 `json:"idx"`
+	CategoryIdx string                 `json:"categoryIdx"`
+	Title       string                 `json:"title"`
+	Data        map[string]interface{} `json:"data"`
+	Children    []*AgentStudioChildren `json:"children"`
 }
