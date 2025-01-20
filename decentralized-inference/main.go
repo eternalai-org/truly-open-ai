@@ -1,6 +1,7 @@
 package main
 
 import (
+	"decentralized-inference/cmd/other/chat"
 	"decentralized-inference/cmd/server"
 	"decentralized-inference/internal/logger"
 	"fmt"
@@ -34,20 +35,21 @@ func main() {
 				Usage:       "EAI chat",
 				Description: "EAI chat",
 				Category:    "chat",
-				Subcommands: []*cli.Command{{
-					Name:   "start",
-					Action: nil,
-				}},
-			},
-			{
-				Name:        "config",
-				Usage:       "EAI chat",
-				Description: "EAI chat",
-				Category:    "chat",
-				Subcommands: []*cli.Command{{
-					Name:   "start",
-					Action: nil,
-				}},
+				Subcommands: []*cli.Command{
+					{
+						Name: "start",
+						Action: func(c *cli.Context) error {
+							logger.GetLoggerInstanceFromContext(c.Context).Info("Starting chat")
+							return chat.AgentTerminalChat(c.Context)
+						},
+					},
+					{
+						Name: "config-all",
+						Action: func(c *cli.Context) error {
+							return chat.AgentTerminalChatConfig(c.Context)
+						},
+					},
+				},
 			},
 		},
 	}
