@@ -383,8 +383,9 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentContractAddress := s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address")
 					txHash, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).Dagent721Mint(
-						s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+						agentContractAddress,
 						s.GetAddressPrk(
 							helpers.RandomInStrings(
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
@@ -405,7 +406,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						Model(agentInfo).
 						Updates(
 							map[string]interface{}{
-								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+								"agent_contract_address": agentContractAddress,
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,
@@ -444,8 +445,9 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentContractAddress := s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address")
 					txHash, err := s.GetEVMClient(ctx, agentInfo.NetworkID).SystemPromptManagerMint(
-						s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+						agentContractAddress,
 						s.GetAddressPrk(
 							helpers.RandomInStrings(
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
@@ -463,7 +465,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						Model(agentInfo).
 						Updates(
 							map[string]interface{}{
-								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+								"agent_contract_address": agentContractAddress,
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,
