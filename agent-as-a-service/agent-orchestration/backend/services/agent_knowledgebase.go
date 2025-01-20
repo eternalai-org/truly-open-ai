@@ -5,9 +5,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 )
 
 func (s *Service) AgentUseKnowledgeBase(ctx context.Context, request *serializers.AgentUseKnowledgeBaseRequest) (*models.AgentInfoKnowledgeBase, error) {

@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/systempromptmanager"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/helpers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/systempromptmanager"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/google/uuid"
@@ -377,8 +377,15 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
+					modelID, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).GPUManagerGetModelID(
+						s.conf.GetConfigKeyString(agentInfo.NetworkID, "gpu_manager_contract_address"),
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					agentContractAddress := s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address")
 					txHash, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).Dagent721Mint(
-						s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+						agentContractAddress,
 						s.GetAddressPrk(
 							helpers.RandomInStrings(
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
@@ -388,9 +395,9 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						"ipfs://"+uriHash,
 						[]byte("ipfs://"+systemContentHash),
 						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
-						"",
+						"ai721",
 						helpers.HexToAddress(s.conf.GetConfigKeyString(agentInfo.NetworkID, "prompt_scheduler_contract_address")),
-						0,
+						modelID,
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -399,7 +406,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						Model(agentInfo).
 						Updates(
 							map[string]interface{}{
-								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+								"agent_contract_address": agentContractAddress,
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,
@@ -438,8 +445,9 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentContractAddress := s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address")
 					txHash, err := s.GetEVMClient(ctx, agentInfo.NetworkID).SystemPromptManagerMint(
-						s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+						agentContractAddress,
 						s.GetAddressPrk(
 							helpers.RandomInStrings(
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
@@ -457,7 +465,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						Model(agentInfo).
 						Updates(
 							map[string]interface{}{
-								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+								"agent_contract_address": agentContractAddress,
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,

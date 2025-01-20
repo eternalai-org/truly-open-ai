@@ -3,7 +3,7 @@ package ethapi
 import (
 	"strings"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/iv3swaprouter"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/binds/iv3swaprouter"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
