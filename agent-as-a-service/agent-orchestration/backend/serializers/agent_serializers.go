@@ -325,6 +325,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		resp.Meme.TradeUrl = ""
 		if m.TokenNetworkID == models.SOLANA_CHAIN_ID {
 			resp.Meme.Status = string(models.MemeStatusAddPoolExternal)
+			resp.Meme.TokenAddress = m.TokenAddress
 		}
 	} else {
 		if m.TokenInfo != nil && m.TokenAddress != "" && m.TokenInfo.PriceUsd.Cmp(big.NewFloat(0)) > 0 {
@@ -342,13 +343,11 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 			resp.Meme.MarketCap = m.MemeMarketCap
 		} else if m.TokenAddress != "" && m.TokenNetworkID == models.SOLANA_CHAIN_ID {
 			resp.Meme = &MemeResp{
-				TradeUrl: fmt.Sprintf("https://pump.fun/coin/%s", m.TokenAddress),
-				Status:   string(models.MemeStatusAddPoolExternal),
+				Status:       string(models.MemeStatusAddPoolExternal),
+				TradeUrl:     fmt.Sprintf("https://pump.fun/coin/%s", m.TokenAddress),
+				TokenAddress: m.TokenAddress,
+				MarketCap:    numeric.NewBigFloatFromString("6700"),
 			}
-		}
-
-		if m.TokenNetworkID == models.SOLANA_CHAIN_ID && resp.Meme != nil {
-			resp.Meme.Status = string(models.MemeStatusAddPoolExternal)
 		}
 	}
 
