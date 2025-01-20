@@ -21,6 +21,7 @@ configs/firebase_service_account.json
 configs/google_storage.json
 configs/pubsub.json
 configs/config.json
+configs/config.json_
 config/config.json
 vendor*
 tmp/*

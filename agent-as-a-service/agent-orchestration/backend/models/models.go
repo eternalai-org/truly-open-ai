@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
-	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/configs"
+	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/shopspring/decimal"
 )
 
@@ -25,7 +25,7 @@ const (
 	DURATION_30D = 30 * 24 * 3600
 	DURATION_90D = 90 * 24 * 3600
 
-	GANACHE_CHAIN_ID          = uint64(5777)
+	GANACHE_CHAIN_ID          = uint64(1337)
 	HARDHAT_CHAIN_ID          = uint64(31337)
 	ETERNAL_AI_CHAIN_ID       = uint64(43338)
 	BTC_CHAIN_ID              = uint64(0)

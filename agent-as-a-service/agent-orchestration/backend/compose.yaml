@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  redis:
+    image: docker.io/bitnami/redis:7.4
+    environment:
+      ALLOW_EMPTY_PASSWORD: yes
+    ports:
+      - 6379:6379
+  mysql:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: main
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    ports:
+      - 3306:3306
+  backend:
+    build:
+      dockerfile: ./Dockerfile.compose
+    ports:
+      - 8480:8480
+    extra_hosts:
+      - host.docker.internal:host-gateway

@@ -1,0 +1,33 @@
+{
+  "env": "dev",
+  "port": 8480,
+  "job": true,
+  "db_url": "admin:admin@tcp(mysql:3306)/main?charset=utf8mb4&parseTime=True&loc=UTC",
+  "encrypt_authen_key": "admin",
+  "redis": {
+    "addr": "redis:6379",
+    "password": "",
+    "db": 0
+  },
+  "private_keys": {
+    "0x2c6583710bDB4B17588C45726f39d301A97bC992": "0xd9a5b20eb25608d7c81d56ea1ad866456ba6b9ec40f82e93d1b3ddd03e519926"
+  },
+  "networks": {
+    "1337": {
+      "agent_admin_address": "0x2c6583710bDB4B17588C45726f39d301A97bC992",
+      "agent_contract_address": "",
+      "dagent721_contract_address": "",
+      "prompt_scheduler_contract_address": "",
+      "eai_contract_address": "",
+      "explorer_url": "",
+      "meme_pool_address": "",
+      "network_id": "1337",
+      "rpc_url": "http://host.docker.internal:8545",
+      "memeswap_factory_contract_address": "",
+      "memeswap_position_mamanger_address": "",
+      "uniswap_factory_contract_address": "",
+      "uniswap_position_mamanger_address": "",
+      "weth9_contract_address": ""
+    }
+  }
+}
