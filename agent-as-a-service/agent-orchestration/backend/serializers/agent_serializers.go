@@ -346,9 +346,9 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 				Status:       string(models.MemeStatusAddPoolExternal),
 				TradeUrl:     fmt.Sprintf("https://pump.fun/coin/%s", m.TokenAddress),
 				TokenAddress: m.TokenAddress,
-				MarketCap:    numeric.NewBigFloatFromString("6700"),
+				MarketCap:    numeric.NewBigFloatFromString("6740"),
 			}
-			resp.UsdMarketCap = float64(6700)
+			resp.UsdMarketCap = float64(6740)
 		}
 	}
 
