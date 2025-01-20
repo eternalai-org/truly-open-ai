@@ -24,6 +24,30 @@ import (
 	"golang.org/x/text/language"
 )
 
+func (s *Service) GetAgentChainFee(tx *gorm.DB, networkID uint64) (*models.AgentChainFee, error) {
+	agentChainFee, err := s.dao.FirstAgentChainFee(
+		tx,
+		map[string][]interface{}{
+			"network_id = ?": {networkID},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if agentChainFee == nil {
+		agentChainFee = &models.AgentChainFee{
+			NetworkID: networkID,
+		}
+		err = s.dao.Create(tx, agentChainFee)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+	}
+	return agentChainFee, nil
+}
+
 func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 	err := s.JobRunCheck(
 		ctx,
@@ -370,13 +394,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					if err != nil {
 						return errs.NewError(err)
 					}
-					agentChainFee, err := s.dao.FirstAgentChainFee(
+					agentChainFee, err := s.GetAgentChainFee(
 						tx,
-						map[string][]interface{}{
-							"network_id = ?": {agentInfo.NetworkID},
-						},
-						map[string][]interface{}{},
-						[]string{},
+						agentInfo.NetworkID,
 					)
 					if err != nil {
 						return errs.NewError(err)

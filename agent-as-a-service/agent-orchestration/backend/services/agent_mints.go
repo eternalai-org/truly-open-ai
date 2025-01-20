@@ -119,13 +119,9 @@ func (s *Service) AgentMintNft(ctx context.Context, agentInfoID uint) error {
 					mintFee = numeric.NewFloatFromString("0.0")
 					checkFee = numeric.NewFloatFromString("0.0")
 				} else {
-					agentChainFee, err := s.dao.FirstAgentChainFee(
+					agentChainFee, err := s.GetAgentChainFee(
 						daos.GetDBMainCtx(ctx),
-						map[string][]interface{}{
-							"network_id = ?": {agent.NetworkID},
-						},
-						map[string][]interface{}{},
-						[]string{},
+						agent.NetworkID,
 					)
 					if err != nil {
 						return errs.NewError(err)

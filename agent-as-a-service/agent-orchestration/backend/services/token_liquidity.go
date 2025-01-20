@@ -76,13 +76,9 @@ func (s *Service) CreateMeme(ctx context.Context, address string, networkID uint
 		models.AVALANCHE_C_CHAIN_ID,
 		models.APE_CHAIN_ID:
 		{
-			agentChainFee, err := s.dao.FirstAgentChainFee(
+			agentChainFee, err := s.GetAgentChainFee(
 				daos.GetDBMainCtx(ctx),
-				map[string][]interface{}{
-					"network_id = ?": {meme.NetworkID},
-				},
-				map[string][]interface{}{},
-				[]string{},
+				meme.NetworkID,
 			)
 			if err != nil {
 				return nil, errs.NewError(err)
