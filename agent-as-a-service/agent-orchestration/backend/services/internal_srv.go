@@ -567,7 +567,8 @@ func (s *Service) GetListUserMentionsByUsername(ctx context.Context, username, p
 
 					for _, tweets := range tweetMentions.Tweets {
 						if _, ok := mapID[tweets.ID]; !ok {
-							if s.TweetIsMention(tweets, user.TwitterUsername) && !strings.EqualFold(tweets.AuthorID, user.TwitterID) {
+							// if s.TweetIsMention(tweets, user.TwitterUsername) && !strings.EqualFold(tweets.AuthorID, user.TwitterID) {
+							if !strings.EqualFold(tweets.AuthorID, user.TwitterID) {
 								replied, _ := s.CacheCheckIsTweetReplied(ctx, tweets.ID)
 								if !replied {
 									listRealMentions = append(listRealMentions, tweets)
