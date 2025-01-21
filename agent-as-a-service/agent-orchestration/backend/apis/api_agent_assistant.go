@@ -37,7 +37,7 @@ func (s *Server) AgentCreateAgentStudio(c *gin.Context) {
 
 func (s *Server) AgentUpdateAgentStudio(c *gin.Context) {
 	ctx := s.requestContext(c)
-	var req serializers.AssistantsReq
+	var req serializers.StudioReq
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
@@ -50,7 +50,8 @@ func (s *Server) AgentUpdateAgentStudio(c *gin.Context) {
 		return
 	}
 
-	resp, err := s.nls.AgentUpdateAgentStudio(ctx, userAddress, &req)
+	agentID := s.stringFromContextParam(c, "id")
+	resp, err := s.nls.AgentUpdateAgentStudio(ctx, userAddress, agentID, req.GraphData)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

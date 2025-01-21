@@ -706,9 +706,9 @@ func (s *Service) JobMigrateTronAddress(ctx context.Context) error {
 }
 
 // //
-func (s *Service) AgentCreateAgentStudio(ctx context.Context, address string, graphData string) (*models.AgentInfo, error) {
-	reqs := []*models.AgentStudio{}
-	json.Unmarshal([]byte(graphData), reqs)
+func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData string) (*models.AgentInfo, error) {
+	var reqs []*models.AgentStudio
+	json.Unmarshal([]byte(graphData), &reqs)
 
 	if len(reqs) <= 0 {
 		return nil, errs.NewError(errs.ErrBadRequest)
@@ -716,6 +716,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address string, gr
 	req := reqs[0]
 	agent := &models.AgentInfo{
 		Version:     "2",
+		AgentType:   models.AgentInfoAgentTypeReasoning,
 		AgentID:     helpers.RandomBigInt(12).Text(16),
 		Status:      models.AssistantStatusPending,
 		AgentName:   req.Title,
@@ -746,6 +747,9 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address string, gr
 					return nil, errs.NewError(errs.ErrBadRequest)
 				}
 				agent.TokenNetworkID = uint64(tokenChainId)
+				if agent.TokenNetworkID > 0 {
+					agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
+				}
 			}
 		default:
 			{
@@ -754,14 +758,14 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address string, gr
 		}
 	}
 
-	if agent.TokenNetworkID > 0 {
-		if !(agent.TokenNetworkID == models.POLYGON_CHAIN_ID || agent.TokenNetworkID == models.ZKSYNC_CHAIN_ID) {
-			agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
-		} else {
-			agent.TokenNetworkID = models.GENERTAL_NETWORK_ID
-			agent.TokenMode = string(models.TokenSetupEnumNoToken)
-		}
+	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, agent.AgentName, agent.SystemPrompt)
+	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
+		agent.TokenSymbol = tokenInfo.TokenSymbol
+		agent.TokenName = agent.AgentName
+		agent.TokenDesc = tokenInfo.TokenDesc
+		agent.TokenImageUrl = tokenInfo.TokenImageUrl
 	}
+
 	// generate address
 	{
 		ethAddress, err := s.CreateETHAddress(ctx)
@@ -814,9 +818,85 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address string, gr
 		return nil, errs.NewError(err)
 	}
 
-	return nil, nil
+	return agent, nil
 }
 
-func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address string, req *serializers.AssistantsReq) (*models.AgentInfo, error) {
-	return nil, nil
+func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, graphData string) (*models.AgentInfo, error) {
+	var agent *models.AgentInfo
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			var err error
+			agent, err = s.dao.FirstAgentInfo(tx,
+				map[string][]interface{}{
+					"agent_id = ?": {agentID},
+				},
+				map[string][]interface{}{},
+				[]string{})
+			if err != nil {
+				return errs.NewError(err)
+			}
+
+			if agent != nil {
+				if !strings.EqualFold(agent.Creator, address) {
+					return errs.NewError(errs.ErrInvalidOwner)
+				}
+
+				agent, _ = s.dao.FirstAgentInfoByID(tx, agent.ID, map[string][]interface{}{}, true)
+
+				var reqs []*models.AgentStudio
+				json.Unmarshal([]byte(graphData), &reqs)
+
+				if len(reqs) <= 0 {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				req := reqs[0]
+
+				for _, item := range req.Children {
+					switch item.CategoryIdx {
+					case "personality":
+						{
+							agent.SystemPrompt = item.Title
+						}
+					case "blockchain":
+						{
+							chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
+							agent.NetworkID = models.GetChainID(chainName)
+							agent.NetworkName = models.GetChainName(agent.NetworkID)
+						}
+					case "decentralized_inference":
+						{
+							agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
+						}
+					case "token":
+						{
+							tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
+							if err != nil {
+								return errs.NewError(errs.ErrBadRequest)
+							}
+							agent.TokenNetworkID = uint64(tokenChainId)
+							if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
+								agent.TokenStatus = "pending"
+							}
+						}
+					default:
+						{
+
+						}
+					}
+				}
+				agent.GraphData = graphData
+				err := s.dao.Save(tx, agent)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+			return nil
+		},
+	)
+
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return agent, nil
 }
