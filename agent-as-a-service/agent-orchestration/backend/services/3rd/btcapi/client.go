@@ -162,7 +162,7 @@ func (c *Client) Address() (string, string, error) {
 				}
 			default:
 				{
-					panic(errors.New("invalid network"))
+					networkParams = &chaincfg.MainNetParams
 				}
 			}
 		}
