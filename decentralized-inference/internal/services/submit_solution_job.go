@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -23,6 +24,36 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
+
+func (s *Service) GetData(data []byte) ([]byte, error) {
+	dataString := string(data)
+	dataByte := data
+	var err error
+	if strings.HasPrefix(dataString, config.IPFSPrefix) {
+		data, _, err = lighthouse.DownloadDataSimpleWithRetry(dataString)
+		if err != nil {
+			return nil, err
+		}
+	} else if strings.HasPrefix(dataString, config.FilePrefix) {
+		fileName := strings.TrimPrefix(dataString, config.FilePrefix)
+		dataByte, err = os.ReadFile(fmt.Sprintf("%v/%v", config.GetConfig().FilePathInfer, fileName))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return dataByte, nil
+}
+func (s *Service) WriteInput(address string, data []byte) (string, error) {
+	filePath := config.GetConfig().FilePathInfer
+	filePath = strings.TrimSuffix(filePath, "/")
+	fileName := fmt.Sprintf("%v_%v", address, time.Now().Unix())
+	fileFullDir := fmt.Sprintf("%v/%v", filePath, fileName)
+	err := os.WriteFile(fileFullDir, data, 0644)
+	if err != nil {
+		return "", err
+	}
+	return fileName, nil
+}
 
 func (s *Service) JobWatchSubmitSolution(chainConfig *models.ChainConfig) {
 	ctx := context.Background()
@@ -219,49 +250,24 @@ func (s *Service) filterEventSolutionSubmission(ctx context.Context, whContract 
 				Data:      requestInfo.Output,
 			}
 		}
-
-		switch predictResult.Storage {
-		case eaimodel.LightHouseStorageType:
-			if strings.Contains(predictResult.ResultURI, "ipfs://") {
-				resultDataText, _, err := lighthouse.DownloadDataSimple(predictResult.ResultURI)
-				if err != nil {
-					return err
-				}
-				predictResult.Data = resultDataText
-			}
-
-		default:
-			if predictResult.ResultURI != "" {
-				if strings.Contains(predictResult.ResultURI, "ipfs://") {
-					resultDataText, _, err := lighthouse.DownloadDataSimple(predictResult.ResultURI)
-					if err != nil {
-						return err
-					}
-					predictResult.Data = resultDataText
-				}
+		if len(predictResult.ResultURI) > 0 {
+			predictResult.Data, err = s.GetData([]byte(predictResult.ResultURI))
+			if err != nil {
+				return err
 			}
 		}
 
 		var batchInfers []*models.BatchInferHistory
 
-		// Detect if  is batch
-		if strings.HasPrefix(string(requestInfo.Input), config.IPFSPrefix) {
-			inputBytes, _, err := lighthouse.DownloadDataSimpleWithRetry(string(requestInfo.Input))
-			if err != nil {
-				logger.GetLoggerInstanceFromContext(ctx).Error("[JobWatchWorkerHubNewInferZKChain] DownloadDataSimpleWithRetry",
-					zap.Any("Input", requestInfo.Input), zap.Error(err))
-				if err.Error() != "error response code =404" {
-					return err
-				}
-			}
-
-			var batchFullPrompts []*models.BatchInferHistory
-			err = json.Unmarshal(inputBytes, &batchFullPrompts)
-			if err == nil && len(batchFullPrompts) > 0 {
-				batchInfers = batchFullPrompts
-			}
+		inputBytes, err := s.GetData(requestInfo.Input)
+		if err != nil {
+			return err
 		}
-
+		var batchFullPrompts []*models.BatchInferHistory
+		err = json.Unmarshal(inputBytes, &batchFullPrompts)
+		if err == nil && len(batchFullPrompts) > 0 {
+			batchInfers = batchFullPrompts
+		}
 		assignmentHistory := &models.ModelWorkerProcessHistories{
 			AssignmentId:    inferId,
 			WorkerAddress:   strings.ToLower(requestInfo.ProcessedMiner.Hex()),
