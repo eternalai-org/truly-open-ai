@@ -50,6 +50,15 @@ type MongoConfig struct {
 	Db  string `json:"db"`
 }
 
+type ChatConfig struct {
+	ServerBaseUrl                  string `json:"server_base_url"`
+	ChainRpc                       string `json:"chain_rpc"`
+	Dagent721ContractAddress       string `json:"dagent721_contract_address"`
+	AgentID                        string `json:"agent_id"`
+	PromptSchedulerContractAddress string `json:"prompt_scheduler_contract_address"`
+	InferWalletKey                 string `json:"infer_wallet_key"`
+}
+
 func Load() (*Config, error) {
 	file, err := os.Open("config.json")
 	if err != nil {
