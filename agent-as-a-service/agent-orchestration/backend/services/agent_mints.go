@@ -360,7 +360,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 	if agentInfo != nil {
 		if agentInfo.MintHash == "" {
 			switch agentInfo.NetworkID {
-			case models.GANACHE_CHAIN_ID:
+			case models.LOCAL_CHAIN_ID:
 				{
 					agentUriData := models.AgentUriData{
 						Name: agentInfo.AgentName,
@@ -369,28 +369,35 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					uriHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "uri"), agentUriBytes)
+					uriHash, err := helpers.WriteFileEternalTemp(agentUriBytes)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					systemContentHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "system_content"), []byte(agentInfo.SystemPrompt))
+					systemContentHash, err := helpers.WriteFileEternalTemp([]byte(agentInfo.SystemPrompt))
 					if err != nil {
 						return errs.NewError(err)
 					}
+					modelID, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).GPUManagerGetModelID(
+						s.conf.GetConfigKeyString(agentInfo.NetworkID, "gpu_manager_contract_address"),
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					agentContractAddress := s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address")
 					txHash, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).Dagent721Mint(
-						s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+						agentContractAddress,
 						s.GetAddressPrk(
 							helpers.RandomInStrings(
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
 							),
 						),
 						helpers.HexToAddress(agentInfo.Creator),
-						"ipfs://"+uriHash,
-						[]byte("ipfs://"+systemContentHash),
+						uriHash,
+						[]byte(systemContentHash),
 						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
 						"ai721",
 						helpers.HexToAddress(s.conf.GetConfigKeyString(agentInfo.NetworkID, "prompt_scheduler_contract_address")),
-						0,
+						modelID,
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -399,7 +406,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						Model(agentInfo).
 						Updates(
 							map[string]interface{}{
-								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "dagent721_contract_address"),
+								"agent_contract_address": agentContractAddress,
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,
@@ -438,8 +445,9 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentContractAddress := s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address")
 					txHash, err := s.GetEVMClient(ctx, agentInfo.NetworkID).SystemPromptManagerMint(
-						s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+						agentContractAddress,
 						s.GetAddressPrk(
 							helpers.RandomInStrings(
 								strings.Split(s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_admin_address"), ","),
@@ -457,7 +465,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 						Model(agentInfo).
 						Updates(
 							map[string]interface{}{
-								"agent_contract_address": s.conf.GetConfigKeyString(agentInfo.NetworkID, "agent_contract_address"),
+								"agent_contract_address": agentContractAddress,
 								"mint_hash":              txHash,
 								"status":                 models.AssistantStatusMinting,
 								"reply_enabled":          true,
@@ -553,27 +561,48 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 		return errs.NewError(err)
 	}
 	if agentInfo != nil {
-		data, _, err := lighthouse.DownloadDataSimple(event.Uri)
-		if err != nil {
-			dataInfo := map[string]interface{}{}
-			err = json.Unmarshal([]byte(event.Uri), &dataInfo)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			uri := dataInfo["agent_uri"].(string)
-			data, _, err = lighthouse.DownloadDataSimple(uri)
-			if err != nil {
-				return errs.NewError(err)
-			}
-		}
-		systemPrompt, _, err := lighthouse.DownloadDataSimple(string(event.SysPrompt))
-		if err != nil {
-			return errs.NewError(err)
-		}
 		var info models.AgentUriData
-		err = json.Unmarshal(data, &info)
-		if err != nil {
-			return errs.NewError(err)
+		var systemPrompt []byte
+		switch agentInfo.NetworkID {
+		case models.LOCAL_CHAIN_ID:
+			{
+				data, err := helpers.ReadFileEternalTemp(event.Uri)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				systemPrompt, err = helpers.ReadFileEternalTemp(string(event.SysPrompt))
+				if err != nil {
+					return errs.NewError(err)
+				}
+				err = json.Unmarshal(data, &info)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+		default:
+			{
+				data, _, err := lighthouse.DownloadDataSimple(event.Uri)
+				if err != nil {
+					dataInfo := map[string]interface{}{}
+					err = json.Unmarshal([]byte(event.Uri), &dataInfo)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					uri := dataInfo["agent_uri"].(string)
+					data, _, err = lighthouse.DownloadDataSimple(uri)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+				systemPrompt, _, err = lighthouse.DownloadDataSimple(string(event.SysPrompt))
+				if err != nil {
+					return errs.NewError(err)
+				}
+				err = json.Unmarshal(data, &info)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
 		}
 		err = daos.GetDBMainCtx(ctx).
 			Model(agentInfo).

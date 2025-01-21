@@ -12,6 +12,53 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func (s *Server) AgentCreateAgentStudio(c *gin.Context) {
+	ctx := s.requestContext(c)
+	req := &serializers.StudioReq{}
+
+	if err := c.ShouldBindJSON(req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+
+	resp, err := s.nls.AgentCreateAgentStudio(ctx, userAddress, req.GraphData)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+}
+
+func (s *Server) AgentUpdateAgentStudio(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.StudioReq
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+
+	agentID := s.stringFromContextParam(c, "id")
+	resp, err := s.nls.AgentUpdateAgentStudio(ctx, userAddress, agentID, req.GraphData)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+}
+
 func (s *Server) AgentCreateAgentAssistant(c *gin.Context) {
 	ctx := s.requestContext(c)
 	req := &serializers.AssistantsReq{}

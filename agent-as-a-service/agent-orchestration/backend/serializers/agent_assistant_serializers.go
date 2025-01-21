@@ -147,6 +147,8 @@ type Assistants struct {
 	TwinStatus           string  `json:"twin_status"`
 	TwinTrainingProgress float64 `json:"twin_training_progress"`
 	TwinTrainingMessage  string  `json:"twin_training_message"`
+
+	GraphData string `json:"graph_data"`
 }
 
 type AssistantResp struct {
@@ -205,6 +207,7 @@ func NewAssistantResp(m *models.AgentInfo) *AssistantResp {
 	resp.TwinStatus = string(m.TwinStatus)
 	resp.TwinTrainingProgress = m.TwinTrainingProgress
 	resp.TwinTrainingMessage = m.TwinTrainingMessage
+	resp.GraphData = m.GraphData
 
 	if m.TwitterInfo != nil {
 		resp.TwitterID = m.TwitterInfo.TwitterID
@@ -232,4 +235,8 @@ func NewAssistantRespArry(arr []*models.AgentInfo) []*AssistantResp {
 
 type DataUploadToLightHouse struct {
 	Content string `json:"content"`
+}
+
+type StudioReq struct {
+	GraphData string `json:"graph_data"`
 }

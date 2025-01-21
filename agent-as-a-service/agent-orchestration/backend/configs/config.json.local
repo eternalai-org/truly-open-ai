@@ -18,6 +18,7 @@
       "agent_contract_address": "",
       "dagent721_contract_address": "",
       "prompt_scheduler_contract_address": "",
+      "gpu_manager_contract_address": "",
       "eai_contract_address": "",
       "explorer_url": "",
       "meme_pool_address": "",

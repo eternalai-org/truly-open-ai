@@ -269,8 +269,7 @@ func (s *Service) AgentCreateMissionDefault(ctx context.Context, agentInfoID uin
 				agentInfo.ID,
 			).Error
 		}
-	case models.GANACHE_CHAIN_ID,
-		models.HARDHAT_CHAIN_ID:
+	case models.LOCAL_CHAIN_ID:
 		{
 		}
 	default:

@@ -124,6 +124,7 @@ type AgentInfoResp struct {
 	TokenDesc                 string                 `json:"token_desc"`
 	ExternalChartUrl          string                 `json:"external_chart_url"`
 	MissionTopics             string                 `json:"mission_topics"`
+	GraphData                 string                 `json:"graph_data"`
 }
 
 type AgentTwitterPostResp struct {
@@ -276,6 +277,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		TokenDesc:            m.TokenDesc,
 		ExternalChartUrl:     m.ExternalChartUrl,
 		MissionTopics:        m.MissionTopics,
+		GraphData:            m.GraphData,
 	}
 
 	if m.NftTokenImage != "" {
@@ -322,6 +324,7 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		resp.Meme = NewMemeRespWithToken(m.Meme)
 		resp.Meme.Percent = m.MemePercent
 		resp.Meme.MarketCap = m.MemeMarketCap
+		resp.UsdMarketCap, _ = m.MemeMarketCap.Float64()
 		resp.Meme.TradeUrl = ""
 		if m.TokenNetworkID == models.SOLANA_CHAIN_ID {
 			resp.Meme.Status = string(models.MemeStatusAddPoolExternal)

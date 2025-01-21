@@ -8,7 +8,7 @@ contract Treasury is OwnableUpgradeable, ReentrancyGuardUpgradeable {
     address public wEAIToken;
     uint256[100] private __gap;
 
-    event Receive(uint256 _amount, address _from);
+    event Receive(uint256 _amount, address indexed _from);
 
     function initialize(address _wEAIToken) external initializer {
         require(
