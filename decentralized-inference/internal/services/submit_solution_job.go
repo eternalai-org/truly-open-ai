@@ -43,12 +43,20 @@ func (s *Service) GetData(data []byte) ([]byte, error) {
 	}
 	return dataByte, nil
 }
+
 func (s *Service) WriteInput(address string, data []byte) (string, error) {
 	filePath := config.GetConfig().FilePathInfer
 	filePath = strings.TrimSuffix(filePath, "/")
 	fileName := fmt.Sprintf("%v_%v", address, time.Now().Unix())
 	fileFullDir := fmt.Sprintf("%v/%v", filePath, fileName)
-	err := os.WriteFile(fileFullDir, data, 0644)
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(filePath, 0755)
+		if err != nil {
+			return "", err
+		}
+	}
+	err = os.WriteFile(fileFullDir, data, 0644)
 	if err != nil {
 		return "", err
 	}

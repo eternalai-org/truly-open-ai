@@ -8,16 +8,17 @@ import (
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
 	"fmt"
+
+	"math/big"
+	"strings"
+
 	ethreumAbi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
-	"math/big"
-	"strings"
 )
 
 func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.DecentralizeInferRequest) (*models.DecentralizeInferResponse, error) {
-	//@TODO
 	agentId, ok := new(big.Int).SetString(info.AgentId, 10)
 	if !ok {
 		return nil, fmt.Errorf("agentId :%v is not valid", info.AgentId)
@@ -38,7 +39,7 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 		return nil, err
 	}
 
-	hybridModelABI, err := ethreumAbi.JSON(strings.NewReader(abi.AI721ContractMetaData.ABI))
+	agentContractABI, err := ethreumAbi.JSON(strings.NewReader(abi.AI721ContractMetaData.ABI))
 	if err != nil {
 		logger.GetLoggerInstanceFromContext(ctx).Error("error when get abi", zap.Error(err))
 		return nil, err
@@ -54,14 +55,20 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 		return nil, fmt.Errorf("get agent fee err: %w", err)
 	}
 
-	fileName, err := s.WriteInput(strings.ToLower((*pbkHex).Hex()), []byte(info.Input))
-	if err != nil {
-		return nil, fmt.Errorf("write input file err: %w", err)
+	var submitData = info.Input
+
+	if s.conf.SubmitFilePath {
+		fileName, err := s.WriteInput(strings.ToLower((*pbkHex).Hex()), []byte(info.Input))
+		if err != nil {
+			return nil, fmt.Errorf("write input file err: %w", err)
+		}
+		submitData = fmt.Sprintf("%v%v", config.FilePrefix, fileName)
 	}
+
 	//Infer(opts *bind.TransactOpts, agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, feeAmount *big.Int)
-	dataBytes, err := hybridModelABI.Pack(
+	dataBytes, err := agentContractABI.Pack(
 		"infer", agentId,
-		[]byte(fmt.Sprintf("%v%v", config.FilePrefix, fileName)),
+		[]byte(submitData),
 		info.ExternalData,
 		"ai721",
 		agentFee,
