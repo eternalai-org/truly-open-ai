@@ -18,7 +18,7 @@ services:
       - 3306:3306
   backend:
     build:
-      dockerfile: ./backend/Dockerfile.compose
+      dockerfile: ./Dockerfile.backend
     ports:
       - 8480:8480
     volumes:
