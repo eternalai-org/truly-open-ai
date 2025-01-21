@@ -1,8 +1,10 @@
 # Truly Open AI
 
-We’re living in the age of intelligence. However, the future of AI is controlled by a few centralized entities. The intersection of crypto and AI has spawned several innovative projects that aim to solve various decentralized AI problems, but these early experiments have been siloed and fragmented.
+We're living in the age of intelligence, but a handful of centralized entities currently control the future of AI. The convergence of crypto and AI has led to innovative projects solving various decentralized AI problems, yet these efforts remain isolated and fragmented.
 
-What is needed is an end-to-end infrastructure in which everything fits together into a cohesive AI system. This AI system needs to be permissionless, censorship-resistant, and tamper-proof.
+To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
+
+Truly Open AI is an open-source project that aims to develop this infrastructure. Let's build truly open AI together.
 
 ## Design Principles
 
