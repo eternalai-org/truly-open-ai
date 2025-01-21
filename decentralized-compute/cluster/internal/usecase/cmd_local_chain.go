@@ -90,6 +90,11 @@ func (c *CMD_Local_Chain) StartContainers(names string) error {
 	return pkg.DockerCommand(names, folderPath, os.Getenv("PLATFORM"), "up -d", "-local")
 }
 
+func (c *CMD_Local_Chain) StartContainersNoBuild(names string) error {
+	folderPath := pkg.CurrentDir()
+	return pkg.DockerCommand(names, folderPath, os.Getenv("PLATFORM"), "up -d --no-build", "-local")
+}
+
 func (c *CMD_Local_Chain) DeployContracts(rpc, chainID, prvkey string) (*model.LocalChain, error) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Deploying contracts")

@@ -8,6 +8,7 @@ type LocalChain struct {
 	RunPodInternal    string            `json:"run_pod_internal"` // if we use custom runpod url (not local).  RunPodInternal=RunPodExternal=url
 	RunPodExternal    string            `json:"run_pod_external"` //for heath check
 	RunPodAPIKEY      string            `json:"run_pod_api_key"`
+	LightHouseAPIKey  string            `json:"light_house_api_key"`
 	ModelID           string            `json:"model_id"`
 	ChainID           string            `json:"chain_id"`
 	PrivateKey        string            `json:"private_key"`

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {IInferable} from "./IInferable.sol";
-import {Set} from "../lib/Set.sol";
+import {Set} from "../library/Set.sol";
 
 interface IScheduler is IInferable {
     enum InferenceStatus {

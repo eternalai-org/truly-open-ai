@@ -6,7 +6,7 @@ import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-import {TransferHelper} from "./lib/TransferHelper.sol";
+import {TransferHelper} from "./library/TransferHelper.sol";
 import {PromptSchedulerStorage, Set} from "./storages/PromptSchedulerStorage.sol";
 import {IGPUManager} from "./interfaces/IGPUManager.sol";
 

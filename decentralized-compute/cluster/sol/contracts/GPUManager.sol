@@ -5,9 +5,9 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import {Random} from "./lib/Random.sol";
-import {Set} from "./lib/Set.sol";
-import {TransferHelper} from "./lib/TransferHelper.sol";
+import {Random} from "./library/Random.sol";
+import {Set} from "./library/Set.sol";
+import {TransferHelper} from "./library/TransferHelper.sol";
 import {GPUManagerStorage} from "./storages/GPUManagerStorage.sol";
 import {IModelCollection} from "./interfaces/IModelCollection.sol";
 import {IScheduler} from "./interfaces/IScheduler.sol";
