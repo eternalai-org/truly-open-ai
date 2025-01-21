@@ -1,11 +1,11 @@
 > [!NOTE]
-> WIP. We are refactoring our codebase and preparing for a 100% open-source release. Feel free to explore around.
+> WIP. We are refactoring our codebase for a 100% open-source release. Feel free to explore around.
 
 # Project Truly Open AI
 
 AI agents are here, but their future is controlled by a few centralized companies. The intersection of crypto and AI has led to various projects solving decentralized AI agents, but these efforts remain fragmented.
 
-What is needed is an open infrastructure that integrates these disparate components into a cohesive whole, enabling Crypto x AI researchers to experiment with wild ideas and developers to build decentralized AI agents easily.
+What is needed is an open infrastructure that integrates these disparate components into a cohesive whole, enabling Crypto x AI researchers to experiment with wild agent ideas and developers to build decentralized AI agents easily.
 
 ## An End-to-End Decentralized Infrastructure for AI Agents
 
