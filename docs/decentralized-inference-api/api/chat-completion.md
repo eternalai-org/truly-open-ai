@@ -228,8 +228,8 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer $ETERNALAI_API_KEY' \
 --data '{
-    "chain_id": "45762",
-    "model": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
+    "chain_id": "8453",
+    "model": "DeepSeek-R1-Distill-Llama-70B",
     "messages": [
         {
             "role": "system",
@@ -250,7 +250,7 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' \
     "id": "chat-7a158eb29d134a07a4447be3a6e7a8d9",
     "object": "chat.completion",
     "created": 1732269931,
-    "model": "PrimeIntellect/INTELLECT-1-Instruct",
+    "model": "DeepSeek-R1-Distill-Llama-70B",
     "choices": [
         {
             "index": 0,
