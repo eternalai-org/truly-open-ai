@@ -707,8 +707,8 @@ func (s *Service) JobMigrateTronAddress(ctx context.Context) error {
 
 // //
 func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData string) (*models.AgentInfo, error) {
-	reqs := []*models.AgentStudio{}
-	json.Unmarshal([]byte(graphData), reqs)
+	var reqs []*models.AgentStudio
+	json.Unmarshal([]byte(graphData), &reqs)
 
 	if len(reqs) <= 0 {
 		return nil, errs.NewError(errs.ErrBadRequest)
@@ -716,6 +716,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 	req := reqs[0]
 	agent := &models.AgentInfo{
 		Version:     "2",
+		AgentType:   models.AgentInfoAgentTypeReasoning,
 		AgentID:     helpers.RandomBigInt(12).Text(16),
 		Status:      models.AssistantStatusPending,
 		AgentName:   req.Title,
@@ -757,47 +758,47 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 		}
 	}
 
-	if agent.TokenNetworkID > 0 {
-		if !(agent.TokenNetworkID == models.POLYGON_CHAIN_ID || agent.TokenNetworkID == models.ZKSYNC_CHAIN_ID) {
-			agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
-		} else {
-			agent.TokenNetworkID = models.GENERTAL_NETWORK_ID
-			agent.TokenMode = string(models.TokenSetupEnumNoToken)
-		}
+	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, agent.AgentName, agent.SystemPrompt)
+	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
+		agent.TokenSymbol = tokenInfo.TokenSymbol
+		agent.TokenName = agent.AgentName
+		agent.TokenDesc = tokenInfo.TokenDesc
+		agent.TokenImageUrl = tokenInfo.TokenImageUrl
 	}
+
 	// generate address
-	{
-		ethAddress, err := s.CreateETHAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.ETHAddress = strings.ToLower(ethAddress)
-		agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+	// {
+	// 	ethAddress, err := s.CreateETHAddress(ctx)
+	// 	if err != nil {
+	// 		return nil, errs.NewError(err)
+	// 	}
+	// 	agent.ETHAddress = strings.ToLower(ethAddress)
+	// 	agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
 
-		solAddress, err := s.CreateSOLAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.SOLAddress = solAddress
+	// 	solAddress, err := s.CreateSOLAddress(ctx)
+	// 	if err != nil {
+	// 		return nil, errs.NewError(err)
+	// 	}
+	// 	agent.SOLAddress = solAddress
 
-		addressBtc, err := s.CreateBTCAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipBtcAddress = addressBtc
+	// 	addressBtc, err := s.CreateBTCAddress(ctx)
+	// 	if err != nil {
+	// 		return nil, errs.NewError(err)
+	// 	}
+	// 	agent.TipBtcAddress = addressBtc
 
-		addressEth, err := s.CreateETHAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipEthAddress = addressEth
+	// 	addressEth, err := s.CreateETHAddress(ctx)
+	// 	if err != nil {
+	// 		return nil, errs.NewError(err)
+	// 	}
+	// 	agent.TipEthAddress = addressEth
 
-		addressSol, err := s.CreateSOLAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipSolAddress = addressSol
-	}
+	// 	addressSol, err := s.CreateSOLAddress(ctx)
+	// 	if err != nil {
+	// 		return nil, errs.NewError(err)
+	// 	}
+	// 	agent.TipSolAddress = addressSol
+	// }
 
 	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
 		return nil, errs.NewError(err)
@@ -817,7 +818,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 		return nil, errs.NewError(err)
 	}
 
-	return nil, nil
+	return agent, nil
 }
 
 func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, graphData string) (*models.AgentInfo, error) {
@@ -843,8 +844,8 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 
 				agent, _ = s.dao.FirstAgentInfoByID(tx, agent.ID, map[string][]interface{}{}, true)
 
-				reqs := []*models.AgentStudio{}
-				json.Unmarshal([]byte(graphData), reqs)
+				var reqs []*models.AgentStudio
+				json.Unmarshal([]byte(graphData), &reqs)
 
 				if len(reqs) <= 0 {
 					return errs.NewError(errs.ErrBadRequest)
