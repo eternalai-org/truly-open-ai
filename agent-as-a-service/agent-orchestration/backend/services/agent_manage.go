@@ -767,38 +767,38 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 	}
 
 	// generate address
-	// {
-	// 	ethAddress, err := s.CreateETHAddress(ctx)
-	// 	if err != nil {
-	// 		return nil, errs.NewError(err)
-	// 	}
-	// 	agent.ETHAddress = strings.ToLower(ethAddress)
-	// 	agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+	{
+		ethAddress, err := s.CreateETHAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.ETHAddress = strings.ToLower(ethAddress)
+		agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
 
-	// 	solAddress, err := s.CreateSOLAddress(ctx)
-	// 	if err != nil {
-	// 		return nil, errs.NewError(err)
-	// 	}
-	// 	agent.SOLAddress = solAddress
+		solAddress, err := s.CreateSOLAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.SOLAddress = solAddress
 
-	// 	addressBtc, err := s.CreateBTCAddress(ctx)
-	// 	if err != nil {
-	// 		return nil, errs.NewError(err)
-	// 	}
-	// 	agent.TipBtcAddress = addressBtc
+		addressBtc, err := s.CreateBTCAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.TipBtcAddress = addressBtc
 
-	// 	addressEth, err := s.CreateETHAddress(ctx)
-	// 	if err != nil {
-	// 		return nil, errs.NewError(err)
-	// 	}
-	// 	agent.TipEthAddress = addressEth
+		addressEth, err := s.CreateETHAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.TipEthAddress = addressEth
 
-	// 	addressSol, err := s.CreateSOLAddress(ctx)
-	// 	if err != nil {
-	// 		return nil, errs.NewError(err)
-	// 	}
-	// 	agent.TipSolAddress = addressSol
-	// }
+		addressSol, err := s.CreateSOLAddress(ctx)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		agent.TipSolAddress = addressSol
+	}
 
 	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
 		return nil, errs.NewError(err)
