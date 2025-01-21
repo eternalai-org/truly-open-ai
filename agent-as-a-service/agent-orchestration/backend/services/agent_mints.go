@@ -369,11 +369,11 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					uriHash, err := helpers.WriteFileTemp(agentUriBytes)
+					uriHash, err := helpers.WriteFileEternalTemp(agentUriBytes)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					systemContentHash, err := helpers.WriteFileTemp([]byte(agentInfo.SystemPrompt))
+					systemContentHash, err := helpers.WriteFileEternalTemp([]byte(agentInfo.SystemPrompt))
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -566,11 +566,11 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 		switch agentInfo.NetworkID {
 		case models.LOCAL_CHAIN_ID:
 			{
-				data, err := helpers.ReadFileTemp(event.Uri)
+				data, err := helpers.ReadFileEternalTemp(event.Uri)
 				if err != nil {
 					return errs.NewError(err)
 				}
-				systemPrompt, err = helpers.ReadFileTemp(string(event.SysPrompt))
+				systemPrompt, err = helpers.ReadFileEternalTemp(string(event.SysPrompt))
 				if err != nil {
 					return errs.NewError(err)
 				}
