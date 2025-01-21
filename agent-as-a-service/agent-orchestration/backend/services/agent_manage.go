@@ -817,13 +817,12 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 					}
 				case "token":
 					{
-						tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
-						if err != nil {
-							return nil, errs.NewError(errs.ErrBadRequest)
-						}
+						tokenChainId, _ := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
 						agent.TokenNetworkID = uint64(tokenChainId)
 						if agent.TokenNetworkID > 0 {
 							agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
+						} else {
+							agent.TokenMode = string(models.CreateTokenModeTypeNoToken)
 						}
 					}
 				case "mission_on_x":
@@ -1064,13 +1063,12 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							}
 						case "token":
 							{
-								tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
-								if err != nil {
-									return errs.NewError(errs.ErrBadRequest)
-								}
+								tokenChainId, _ := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
 								agent.TokenNetworkID = uint64(tokenChainId)
-								if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
-									agent.TokenStatus = "pending"
+								if agent.TokenNetworkID > 0 {
+									agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
+								} else {
+									agent.TokenMode = string(models.CreateTokenModeTypeNoToken)
 								}
 							}
 						case "mission_on_x":
