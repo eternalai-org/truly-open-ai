@@ -1,6 +1,6 @@
 # Truly Open AI
 
-We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to younger projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
+We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
 
@@ -27,7 +27,7 @@ Truly Open AI is an end-to-end, production-grade, multichain infrastructure for 
 Here are the major components of the Truly Open AI software stack.
 <br>
 
-|Component&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | Description |
+|Component&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  | Description |
 |--|--|
 | [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management. |
 | [ai-architectures](/ai-architectures) | The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
@@ -69,7 +69,9 @@ TODO: Write this section
 
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
-If you'd like to contribute to Truly Open AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base. If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
+If you'd like to contribute to Truly Open AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
+
+If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
 
 ## Featured Integrations
 

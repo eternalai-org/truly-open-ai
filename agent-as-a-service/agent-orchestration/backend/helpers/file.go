@@ -9,7 +9,7 @@ func WriteFileTemp(body []byte) (string, error) {
 			return "", err
 		}
 	}
-	hash := RandomReferralCode(32)
+	hash := RandomReferralCode(64)
 	err := os.WriteFile("/tmp/data/"+hash, body, 0644)
 	if err != nil {
 		return "", err
