@@ -111,20 +111,22 @@ type AgentInfoResp struct {
 	ReplyEnabled              bool                        `json:"reply_enabled"`
 	AgentBaseModel            string                      `json:"agent_base_model"`
 	AssistantCharacter        `json:",inline"`
-	SocialInfo                []*models.SocialInfo   `json:"social_info"`
-	VerifiedNftOwner          bool                   `json:"verified_nft_owner"`
-	NftAddress                string                 `json:"nft_address"`
-	NftTokenID                string                 `json:"nft_token_id"`
-	NftTokenImage             string                 `json:"nft_token_image"`
-	NftOwnerAddress           string                 `json:"nft_owner_address"`
-	Status                    models.AssistantStatus `json:"status"`
-	InferenceCalls            int64                  `json:"inference_calls"`
-	TotalMintTwinFee          float64                `json:"total_mint_twin_fee"`
-	EstimateTwinDoneTimestamp *time.Time             `json:"estimate_twin_done_timestamp"`
-	TokenDesc                 string                 `json:"token_desc"`
-	ExternalChartUrl          string                 `json:"external_chart_url"`
-	MissionTopics             string                 `json:"mission_topics"`
-	GraphData                 string                 `json:"graph_data"`
+	SocialInfo                []*models.SocialInfo      `json:"social_info"`
+	VerifiedNftOwner          bool                      `json:"verified_nft_owner"`
+	NftAddress                string                    `json:"nft_address"`
+	NftTokenID                string                    `json:"nft_token_id"`
+	NftTokenImage             string                    `json:"nft_token_image"`
+	NftOwnerAddress           string                    `json:"nft_owner_address"`
+	Status                    models.AssistantStatus    `json:"status"`
+	InferenceCalls            int64                     `json:"inference_calls"`
+	TotalMintTwinFee          float64                   `json:"total_mint_twin_fee"`
+	EstimateTwinDoneTimestamp *time.Time                `json:"estimate_twin_done_timestamp"`
+	TokenDesc                 string                    `json:"token_desc"`
+	ExternalChartUrl          string                    `json:"external_chart_url"`
+	MissionTopics             string                    `json:"mission_topics"`
+	GraphData                 string                    `json:"graph_data"`
+	AgentType                 models.AgentInfoAgentType `json:"agent_type"`
+	ConfigData                string                    `json:"config_data"`
 }
 
 type AgentTwitterPostResp struct {
@@ -278,6 +280,8 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		ExternalChartUrl:     m.ExternalChartUrl,
 		MissionTopics:        m.MissionTopics,
 		GraphData:            m.GraphData,
+		AgentType:            m.AgentType,
+		ConfigData:           m.ConfigData,
 	}
 
 	if m.NftTokenImage != "" {

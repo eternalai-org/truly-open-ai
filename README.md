@@ -1,14 +1,22 @@
+> [!NOTE]
+> This repo is a work in progress. We are refactoring our codebase and preparing for a 100% open-source release. We should be done soon. Stay tuned for updates, and join us in building truly open AI!
+
 # Truly Open AI: The AI Layer of the New Internet
 
-Truly Open AI is an **end-to-end**, **production-grade**, and **crypto-native** infrastructure for managing decentralized agents across multiple blockchains. It has a comprehensive suite of tools that lets developers easily deploy, maintain, and scale AI agents onchain.
+Truly Open AI is a production-grade, crypto-native infrastructure for managing decentralized agents across multiple blockchains. It has a comprehensive suite of tools that lets developers deploy, maintain, and scale AI agents onchain with ease.
 
 Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to power other agent frameworks and blockchains.
 
-Truly Open AI supports popular agent frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). The infrastructure AI-powers over 10 blockchains, including Bitcoin, Ethereum, Solana, Base, and Arbitrum.
+As the end-to-end platform for decentralized AI, Truly Open AI integrates with the best-of-breed products across its software stack:
 
+* Agent frameworks: [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy)
+* Blockchains: Bitcoin, Ethereum, Solana, Base, Arbitrum, ZKsync, Polygon, ApeChain, etc.
+* Models: Llama, Hermes, DeepSeek, Qwen, FLUX, etc.
+* Storage: Filecoin, Greenfield, etc.
+  
 ## Motivation
 
-We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts remain fragmented and mostly as small-scale experiments.
+We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts are fragmented and remain as small-scale experiments.
 
 To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade decentralized agents and large-scale decentralized swarms.
 
@@ -77,15 +85,6 @@ Thank you for considering contributing to the source code. We welcome contributi
 If you'd like to contribute to Truly Open AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
 
 If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
-
-## Featured Integrations
-
-The Truly Open AI project uses a modular approach, making adding integrations easy. If you encounter issues while building an integration, please contact us for further assistance.
-
-* Blockchains: Bitcoin, Ethereum, Solana, Base, Arbitrum, ZKsync, Polygon, ApeChain, BNB Chain
-* AI Frameworks: Eliza, Zig, ZerePy
-* Decentralized Storage Networks: Filecoin, Greenfield, Arweave
-* Decentralized Models: Llama, Hermes, FLUX, DeepSeek, Qwen
 
 ## Communication
 
