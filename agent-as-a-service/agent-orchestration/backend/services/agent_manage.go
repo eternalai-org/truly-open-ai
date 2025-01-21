@@ -1053,9 +1053,11 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							}
 						case "blockchain":
 							{
-								chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
-								agent.NetworkID = models.GetChainID(chainName)
-								agent.NetworkName = models.GetChainName(agent.NetworkID)
+								if !(agent.AgentContractID != "" || agent.AgentNftMinted == true) {
+									chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
+									agent.NetworkID = models.GetChainID(chainName)
+									agent.NetworkName = models.GetChainName(agent.NetworkID)
+								}
 							}
 						case "decentralized_inference":
 							{
