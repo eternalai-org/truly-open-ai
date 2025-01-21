@@ -1,24 +1,35 @@
 package helpers
 
-import "os"
+import (
+	cryptorand "crypto/rand"
+	"math/big"
+	"os"
+	"strings"
+)
 
-func WriteFileTemp(body []byte) (string, error) {
-	if _, err := os.Stat("/tmp/data/"); os.IsNotExist(err) {
-		err := os.MkdirAll("/tmp/data/", os.ModePerm)
+func WriteFileEternalTemp(body []byte) (string, error) {
+	if _, err := os.Stat("/tmp/eternal-data/"); os.IsNotExist(err) {
+		err := os.MkdirAll("/tmp/eternal-data/", os.ModePerm)
 		if err != nil {
 			return "", err
 		}
 	}
-	hash := RandomReferralCode(64)
-	err := os.WriteFile("/tmp/data/"+hash, body, 0644)
+	buf := make([]byte, 32)
+	_, err := cryptorand.Read(buf)
 	if err != nil {
 		return "", err
 	}
-	return hash, nil
+	hash := big.NewInt(0).SetBytes(buf).Text(16)
+	err = os.WriteFile("/tmp/eternal-data/"+hash, body, 0644)
+	if err != nil {
+		return "", err
+	}
+	return "file://" + hash, nil
 }
 
-func ReadFileTemp(hash string) ([]byte, error) {
-	body, err := os.ReadFile("/tmp/data/" + hash)
+func ReadFileEternalTemp(hash string) ([]byte, error) {
+	hash = strings.TrimPrefix(hash, "file://")
+	body, err := os.ReadFile("/tmp/eternal-data/" + hash)
 	if err != nil {
 		return nil, err
 	}

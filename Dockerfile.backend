@@ -5,11 +5,11 @@ ENV GIN_MODE=release
 WORKDIR /app
 RUN apt-get update && apt-get install -y build-essential git
 
-COPY go.mod ./
-COPY go.sum ./
+COPY ./agent-as-a-service/agent-orchestration/backend/go.mod ./
+COPY ./agent-as-a-service/agent-orchestration/backend/go.sum ./
 RUN go mod download
 
-COPY ./ ./
+COPY ./agent-as-a-service/agent-orchestration/backend/ ./
 RUN mv ./configs/config.json.local ./configs/config.json
 
 CMD ["go", "run", "server.go"]

@@ -18,8 +18,10 @@ services:
       - 3306:3306
   backend:
     build:
-      dockerfile: ./Dockerfile.compose
+      dockerfile: ./Dockerfile.backend
     ports:
       - 8480:8480
+    volumes:
+      - /tmp/eternal-data/:/tmp/eternal-data/
     extra_hosts:
       - host.docker.internal:host-gateway

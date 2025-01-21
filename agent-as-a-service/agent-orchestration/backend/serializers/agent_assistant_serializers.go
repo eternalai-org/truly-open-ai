@@ -41,8 +41,10 @@ type AssistantsReq struct {
 	TokenImageUrl      string                     `json:"token_image_url"`
 	TokenDesc          string                     `json:"token_desc"`
 	AssistantCharacter `json:",inline"`
-	TokenChainId       string               `json:"token_chain_id"`
-	SocialInfo         []*models.SocialInfo `json:"social_info"`
+	TokenChainId       string                    `json:"token_chain_id"`
+	SocialInfo         []*models.SocialInfo      `json:"social_info"`
+	AgentType          models.AgentInfoAgentType `json:"agent_type"`
+	ConfigData         string                    `json:"config_data"`
 
 	VerifiedNFTOwner   bool   `json:"verified_nft_owner"`
 	NFTAddress         string `json:"nft_address"`

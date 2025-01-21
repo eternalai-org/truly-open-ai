@@ -32,6 +32,10 @@ func NewServer() (*Server, error) {
 		services.WithDatabase(mongoDB),
 	)
 
+	err = svc.StartService()
+	if err != nil {
+		return nil, err
+	}
 	return &Server{
 		Cfg:     cfg,
 		Service: svc,

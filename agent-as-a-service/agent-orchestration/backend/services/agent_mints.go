@@ -43,9 +43,10 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 					`: {models.TwinStatusDoneSuccess},
 					"agent_infos.scan_enabled = ?":    {true},
 					"agent_infos.system_prompt != ''": {},
-					`agent_infos.ref_tweet_id > 0 
+					`(agent_infos.ref_tweet_id > 0 
 						or (agent_infos.eai_balance >= (agent_chain_fees.mint_fee + 9.9 * agent_chain_fees.infer_fee))
-						`: {},
+						or (agent_infos.agent_type in (3,4) and agent_infos.eai_balance >= agent_chain_fees.mint_fee)
+						)`: {},
 					"agent_infos.network_id in (?)": {
 						[]uint64{
 							models.SHARDAI_CHAIN_ID,
@@ -128,6 +129,13 @@ func (s *Service) AgentMintNft(ctx context.Context, agentInfoID uint) error {
 					}
 					mintFee = &agentChainFee.MintFee.Float
 					checkFee = models.AddBigFloats(&agentChainFee.MintFee.Float, models.MulBigFloats(&agentChainFee.InferFee.Float, big.NewFloat(9.9)))
+					switch agent.AgentType {
+					case models.AgentInfoAgentTypeEliza, models.AgentInfoAgentTypeZerepy:
+						{
+							mintFee = &agentChainFee.MintFee.Float
+							checkFee = &agentChainFee.MintFee.Float
+						}
+					}
 				}
 				if agent.EaiBalance.Float.Cmp(checkFee) >= 0 {
 					isOk = true
@@ -369,11 +377,11 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					uriHash, err := helpers.WriteFileTemp(agentUriBytes)
+					uriHash, err := helpers.WriteFileEternalTemp(agentUriBytes)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					systemContentHash, err := helpers.WriteFileTemp([]byte(agentInfo.SystemPrompt))
+					systemContentHash, err := helpers.WriteFileEternalTemp([]byte(agentInfo.SystemPrompt))
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -566,11 +574,11 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 		switch agentInfo.NetworkID {
 		case models.LOCAL_CHAIN_ID:
 			{
-				data, err := helpers.ReadFileTemp(event.Uri)
+				data, err := helpers.ReadFileEternalTemp(event.Uri)
 				if err != nil {
 					return errs.NewError(err)
 				}
-				systemPrompt, err = helpers.ReadFileTemp(string(event.SysPrompt))
+				systemPrompt, err = helpers.ReadFileEternalTemp(string(event.SysPrompt))
 				if err != nil {
 					return errs.NewError(err)
 				}

@@ -10,7 +10,6 @@ import (
 	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/databases"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/logger"
 	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services"
 )
@@ -50,16 +49,15 @@ func Test_JOB(t *testing.T) {
 	// ts.JobAgentTwitterPostTA(context.Background())
 	// ts.JobLuckyMoneyActionExecuted(context.Background())
 	fmt.Println(
-		// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
-		// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
-		// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
-		// ts.CreateSOLAddress(context.Background()),
-		// ts.CreateETHAddress(context.Background()),
-		// ts.JobAgentTgeTransferDAOToken(context.Background()),
-		// ts.JobAgentAddLiquidityDAOToken(context.Background()),
-		// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
-		// ts.JobAgentTgeTransferDAOToken(context.Background()),
-		helpers.WriteFileTemp([]byte("alo")),
+	// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
+	// ts.DeployDAOTreasuryAddress(context.Background(), models.BASE_CHAIN_ID),
+	// ts.AgentAddLiquidityDAOToken(context.Background(), 1),
+	// ts.CreateSOLAddress(context.Background()),
+	// ts.CreateETHAddress(context.Background()),
+	// ts.JobAgentTgeTransferDAOToken(context.Background()),
+	// ts.JobAgentAddLiquidityDAOToken(context.Background()),
+	// ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
+	// ts.JobAgentTgeTransferDAOToken(context.Background()),
 	)
 	select {}
 }

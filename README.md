@@ -1,6 +1,6 @@
 # Truly Open AI
 
-We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
+We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
 
@@ -18,12 +18,11 @@ Truly Open AI is an open-source project that aims to build this infrastructure. 
 
 ## Architecture
 
-Truly Open AI is an end-to-end, production-grade, multichain infrastructure for decentralized AI agents. Its comprehensive, modular software stack lets AI developers manage decentralized agents on multiple blockchains, such as Bitcoin, Ethereum, and Solana. The platform provides advanced mechanisms for deploying, maintaining, and scaling decentralized agents.
+Truly Open AI is an end-to-end, production-grade, multichain infrastructure for decentralized AI agents. Its comprehensive, modular software stack lets AI developers manage decentralized agents across multiple blockchains, such as Bitcoin, Ethereum, and Solana. The platform provides advanced mechanisms for deploying, maintaining, and scaling decentralized agents.
 
-<img width="2704" alt="eternal-kernel" src="https://github.com/user-attachments/assets/83bc3827-9326-453e-b8f5-d2821f32978e" />
+<img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
-<br>
-
+<br><br>
 Here are the major components of the Truly Open AI software stack.
 <br>
 
@@ -81,3 +80,9 @@ The Truly Open AI project uses a modular approach, making adding integrations ea
 * AI Frameworks: Eliza, Zig, ZerePy
 * Decentralized Storage Networks: Filecoin, Greenfield, Arweave
 * Decentralized Models: Llama, Hermes, FLUX, DeepSeek, Qwen
+
+## Communication
+
+* [GitHub Issues](https://github.com/eternalai-org/truly-open-ai/issues): bug reports, feature requests, issues, etc.
+* [GitHub Discussions](https://github.com/eternalai-org/truly-open-ai/discussions): discuss designs, research, new ideas, thoughts, etc.
+* [X (Twitter)](https://x.com/cryptoeternalai): announcements about Truly Open AI

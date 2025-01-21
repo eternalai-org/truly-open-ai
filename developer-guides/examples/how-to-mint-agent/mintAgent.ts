@@ -40,7 +40,7 @@ async function mintAgent() {
   const AGENT_SYSTEM_PROMPT_PATH = process.env.AGENT_SYSTEM_PROMPT_PATH;
   const AGENT_URI = process.env.AGENT_URI || "EternalAIAgent";
   const AGENT_FEE = process.env.AGENT_FEE || "0";
-  const AGENT_PROMPT_KEY = process.env.AGENT_FEE || "EternalAIAgent";
+  const AGENT_PROMPT_KEY = process.env.AGENT_PROMPT_KEY || "EternalAIAgent";
   const PROMPT_SCHEDULER_ADDRESS = process.env.PROMPT_SCHEDULER_ADDRESS
     ? process.env.PROMPT_SCHEDULER_ADDRESS
     : df_promptSchedulerAddress;

@@ -241,6 +241,12 @@ func (s *Service) AgentCreateMissionDefault(ctx context.Context, agentInfoID uin
 	if err != nil {
 		return errs.NewError(err)
 	}
+	switch agentInfo.AgentType {
+	case models.AgentInfoAgentTypeEliza, models.AgentInfoAgentTypeZerepy:
+		{
+			return nil
+		}
+	}
 	switch agentInfo.NetworkID {
 	case models.SHARDAI_CHAIN_ID:
 		{

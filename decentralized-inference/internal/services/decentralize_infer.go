@@ -4,11 +4,13 @@ import (
 	"context"
 	"decentralized-inference/internal/abi"
 	"decentralized-inference/internal/client"
+	"decentralized-inference/internal/config"
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
 	"fmt"
 	ethreumAbi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"math/big"
 	"strings"
@@ -51,10 +53,15 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 	if err != nil {
 		return nil, fmt.Errorf("get agent fee err: %w", err)
 	}
+
+	fileName, err := s.WriteInput(strings.ToLower((*pbkHex).Hex()), []byte(info.Input))
+	if err != nil {
+		return nil, fmt.Errorf("write input file err: %w", err)
+	}
 	//Infer(opts *bind.TransactOpts, agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, feeAmount *big.Int)
 	dataBytes, err := hybridModelABI.Pack(
 		"infer", agentId,
-		[]byte(info.Input),
+		[]byte(fmt.Sprintf("%v%v", config.FilePrefix, fileName)),
 		info.ExternalData,
 		"ai721",
 		agentFee,
@@ -64,13 +71,6 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 		logger.GetLoggerInstanceFromContext(ctx).Error("[SubmitInferTaskWorkerHubV1] error when pack data", zap.Error(err))
 		return nil, err
 	}
-	fmt.Println("priKey", info.InferPriKey)
-	fmt.Println("contract address", info.AgentContractAddress)
-	fmt.Println("agentId", agentId)
-	fmt.Println("fwdCalldata", info.Input)
-	fmt.Println("externalData", info.ExternalData)
-	fmt.Println("promptKey", "ai721")
-	fmt.Println("agentFee", agentFee)
 
 	tx, err := client.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.AgentContractAddress), big.NewInt(0), dataBytes)
 	if err != nil {
@@ -103,6 +103,10 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 	client, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
 		false,
 		"", "")
+	chainId, err := client.Client.ChainID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, fmt.Errorf("init client err: %w", err)
 	}
@@ -118,6 +122,12 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 	}
 
 	status := models.InferResultStatusDone
+	txSubmitSolution := ""
+	output := []byte("")
+	input, err := s.GetData(inferInfo.Input)
+	if err != nil {
+		return nil, fmt.Errorf("get input err: %v", err)
+	}
 	if len(inferInfo.Output) == 0 {
 		currentBlock, err := client.Client.BlockNumber(ctx)
 		if err != nil {
@@ -131,17 +141,34 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 		} else {
 			status = models.InferResultStatusWaitingProcess
 		}
+	} else {
+		inferResultInfo, err := s.GetModelWorkerProcessHistoryByFilter(ctx, bson.M{
+			"inference_id":   info.InferId,
+			"worker_address": strings.ToLower(inferInfo.ProcessedMiner.String()),
+			"chain_id":       chainId,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("get infer result info in db err: %v", err)
+		}
+		if inferResultInfo != nil {
+			txSubmitSolution = inferResultInfo.TxHash
+		}
+		output, err = s.GetData(inferInfo.Output)
+		if err != nil {
+			return nil, fmt.Errorf("get data err: %v", err)
+		}
 	}
 
 	return &models.InferResultResponse{
 		ChainInfo:        info.ChainInfo,
 		WorkerHubAddress: info.WorkerHubAddress,
 		InferId:          info.InferId,
-		Input:            string(inferInfo.Input),
-		Output:           string(inferInfo.Output),
+		Input:            string(input),
+		Output:           string(output),
 		Creator:          inferInfo.Creator.String(),
 		ProcessedMiner:   inferInfo.ProcessedMiner.String(),
 		Status:           status,
 		SubmitTimeout:    inferInfo.SubmitTimeout.Uint64(),
+		TxSubmitSolution: txSubmitSolution,
 	}, nil
 }
