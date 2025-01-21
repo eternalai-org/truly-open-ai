@@ -1,6 +1,10 @@
 package models
 
-import "github.com/kamva/mgm/v3"
+import (
+	"encoding/json"
+	"github.com/kamva/mgm/v3"
+	"math/rand"
+)
 
 type ChainType string
 
@@ -24,4 +28,47 @@ type ChainConfig struct {
 	GasLimit             uint64            `bson:"gas_limit" json:"gas_limit"`
 	SupportModelNames    map[string]string `json:"support_model_names" bson:"support_model_names"`
 	SupportStoreRaw      bool              `bson:"support_store_raw" json:"support_store_raw"`
+	BackwardBlockNumber  uint64            `bson:"backward_block_number" json:"backward_block_number"` // need check duplicate event
+}
+
+func (ChainConfig) CollectionName() string {
+	return "chain_config"
+}
+
+var CheckValidRpc func(rpc string) (bool, error)
+
+func (chain *ChainConfig) GetRPC() string {
+
+	var validRpc []string
+	for _, rpc := range chain.ListRPC {
+		valid, _ := CheckValidRpc(rpc)
+		if valid {
+			validRpc = append(validRpc, rpc)
+		}
+	}
+	rpc := ""
+	if len(validRpc) > 0 {
+		rpc = validRpc[rand.Intn(len(validRpc))]
+	}
+	return rpc
+}
+func (chain *ChainConfig) MakeCopy() *ChainConfig {
+	if chain == nil {
+		return nil
+	}
+	data, _ := json.Marshal(chain)
+	NewChainConfig := &ChainConfig{}
+	json.Unmarshal(data, NewChainConfig)
+	return NewChainConfig
+}
+
+type AppConfig struct {
+	mgm.DefaultModel   `json:"-" bson:",inline"`
+	ModelToChain       map[string]string `json:"model_to_chain" bson:"model_to_chain"`
+	AIModelDescription map[string]string `json:"ai_model_description" bson:"ai_model_description"`
+	AIModelNameDetail  map[string]string `json:"ai_model_name_detail" bson:"ai_model_name_detail"`
+}
+
+func (AppConfig) CollectionName() string {
+	return "app_config"
 }
