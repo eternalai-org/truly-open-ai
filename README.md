@@ -3,7 +3,7 @@
 
 # Truly Open AI: The AI Layer of the New Internet
 
-Truly Open AI is a production-grade, crypto-native infrastructure for managing decentralized agents across multiple blockchains. It has a comprehensive suite of tools that lets developers deploy, maintain, and scale AI agents onchain with ease.
+Truly Open AI is a production-grade, crypto-native infrastructure for managing decentralized agents across multiple agent frameworks and blockchains. It has a comprehensive suite of tools that lets developers deploy, maintain, and scale AI agents onchain with ease.
 
 Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to power other agent frameworks and blockchains.
 
