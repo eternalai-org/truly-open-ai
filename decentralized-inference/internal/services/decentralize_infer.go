@@ -103,10 +103,11 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 	client, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
 		false,
 		"", "")
-	chainId, err := client.Client.ChainID(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("init client err: %v", err)
 	}
+	chainId, err := client.Client.ChainID(ctx)
+
 	if err != nil {
 		return nil, fmt.Errorf("init client err: %w", err)
 	}

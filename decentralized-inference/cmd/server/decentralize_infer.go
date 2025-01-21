@@ -11,7 +11,7 @@ func (rt *Server) CreateDecentralizeInfer(c *gin.Context) {
 	rest.ResponseJSON(
 		func(ctx *gin.Context) (interface{}, error) {
 			request := &models.DecentralizeInferRequest{}
-			if err := c.ShouldBindQuery(request); err != nil {
+			if err := c.ShouldBindJSON(request); err != nil {
 				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
 			}
 
@@ -23,7 +23,7 @@ func (rt *Server) GetDecentralizeInferResult(c *gin.Context) {
 	rest.ResponseJSON(
 		func(ctx *gin.Context) (interface{}, error) {
 			request := &models.InferResultRequest{}
-			if err := c.ShouldBindQuery(request); err != nil {
+			if err := c.ShouldBindJSON(request); err != nil {
 				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
 			}
 
