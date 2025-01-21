@@ -360,7 +360,7 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 	if agentInfo != nil {
 		if agentInfo.MintHash == "" {
 			switch agentInfo.NetworkID {
-			case models.GANACHE_CHAIN_ID:
+			case models.LOCAL_CHAIN_ID:
 				{
 					agentUriData := models.AgentUriData{
 						Name: agentInfo.AgentName,
@@ -369,11 +369,11 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					uriHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "uri"), agentUriBytes)
+					uriHash, err := helpers.WriteFileTemp(agentUriBytes)
 					if err != nil {
 						return errs.NewError(err)
 					}
-					systemContentHash, err := s.IpfsUploadDataForName(ctx, fmt.Sprintf("%v_%v", agentInfo.AgentID, "system_content"), []byte(agentInfo.SystemPrompt))
+					systemContentHash, err := helpers.WriteFileTemp([]byte(agentInfo.SystemPrompt))
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -392,8 +392,8 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 							),
 						),
 						helpers.HexToAddress(agentInfo.Creator),
-						"ipfs://"+uriHash,
-						[]byte("ipfs://"+systemContentHash),
+						uriHash,
+						[]byte(systemContentHash),
 						models.ConvertBigFloatToWei(&agentInfo.InferFee.Float, 18),
 						"ai721",
 						helpers.HexToAddress(s.conf.GetConfigKeyString(agentInfo.NetworkID, "prompt_scheduler_contract_address")),
@@ -561,27 +561,48 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 		return errs.NewError(err)
 	}
 	if agentInfo != nil {
-		data, _, err := lighthouse.DownloadDataSimple(event.Uri)
-		if err != nil {
-			dataInfo := map[string]interface{}{}
-			err = json.Unmarshal([]byte(event.Uri), &dataInfo)
-			if err != nil {
-				return errs.NewError(err)
-			}
-			uri := dataInfo["agent_uri"].(string)
-			data, _, err = lighthouse.DownloadDataSimple(uri)
-			if err != nil {
-				return errs.NewError(err)
-			}
-		}
-		systemPrompt, _, err := lighthouse.DownloadDataSimple(string(event.SysPrompt))
-		if err != nil {
-			return errs.NewError(err)
-		}
 		var info models.AgentUriData
-		err = json.Unmarshal(data, &info)
-		if err != nil {
-			return errs.NewError(err)
+		var systemPrompt []byte
+		switch agentInfo.NetworkID {
+		case models.LOCAL_CHAIN_ID:
+			{
+				data, err := helpers.ReadFileTemp(event.Uri)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				systemPrompt, err = helpers.ReadFileTemp(string(event.SysPrompt))
+				if err != nil {
+					return errs.NewError(err)
+				}
+				err = json.Unmarshal(data, &info)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
+		default:
+			{
+				data, _, err := lighthouse.DownloadDataSimple(event.Uri)
+				if err != nil {
+					dataInfo := map[string]interface{}{}
+					err = json.Unmarshal([]byte(event.Uri), &dataInfo)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					uri := dataInfo["agent_uri"].(string)
+					data, _, err = lighthouse.DownloadDataSimple(uri)
+					if err != nil {
+						return errs.NewError(err)
+					}
+				}
+				systemPrompt, _, err = lighthouse.DownloadDataSimple(string(event.SysPrompt))
+				if err != nil {
+					return errs.NewError(err)
+				}
+				err = json.Unmarshal(data, &info)
+				if err != nil {
+					return errs.NewError(err)
+				}
+			}
 		}
 		err = daos.GetDBMainCtx(ctx).
 			Model(agentInfo).

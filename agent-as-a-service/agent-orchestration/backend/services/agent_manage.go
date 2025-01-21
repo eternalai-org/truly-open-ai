@@ -155,7 +155,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 
 	// generate address
 	switch agent.NetworkID {
-	case models.GANACHE_CHAIN_ID, models.HARDHAT_CHAIN_ID:
+	case models.LOCAL_CHAIN_ID:
 		{
 			// nothing for local
 		}
