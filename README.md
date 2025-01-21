@@ -20,7 +20,7 @@ Truly Open AI is an open-source project that aims to build this infrastructure. 
 
 Truly Open AI is an end-to-end, production-grade, multichain infrastructure for decentralized AI agents. Its comprehensive, modular software stack lets AI developers manage decentralized agents across multiple blockchains, such as Bitcoin, Ethereum, and Solana. The platform provides advanced mechanisms for deploying, maintaining, and scaling decentralized agents.
 
-<img width="2704" alt="eternal-kernel" src="https://github.com/user-attachments/assets/83bc3827-9326-453e-b8f5-d2821f32978e" />
+<img width="2704" alt="2025-01-21 11 24 21" src="https://github.com/user-attachments/assets/a7b5ed57-227d-439c-9ea2-897e9884b425" />
 
 <br>
 
