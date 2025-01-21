@@ -47,7 +47,7 @@ You can find the list of supported chains and models [here](https://docs.eternal
 
 For this tutorial, we'll use **Base** and **DeepSeek R1,** so we need to update the chain ID in the `agent_with_eternalai.rs` from 45762 to 8453.&#x20;
 
-<figure><img src="../../.gitbook/assets/image (70).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (74).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 4: Build your Rig agent
 
