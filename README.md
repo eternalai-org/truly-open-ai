@@ -1,10 +1,10 @@
-# Truly Open AI
+# Truly Open AI: The AI Layer of the New Internet
 
-Truly Open AI is an end-to-end open source infrastructure for managing decentralized agents across multiple agent frameworks and multiple blockchains. It provides production-grade mechanisms for the deployment, maintenance, and scaling of decentralized agents.
+Truly Open AI is an **end-to-end**, **production-grade**, and **crypto-native** infrastructure for managing decentralized agents across multiple blockchains. It has a comprehensive suite of tools that lets developers easily deploy, maintain, and scale AI agents onchain.
 
-Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to be used with other frameworks and blockchains as well.
+Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to power other agent frameworks and blockchains.
 
-Truly Open AI supports popular agent frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). The infrastructure also AI-powers over 10 blockchains, including Bitcoin, Ethereum, Solana, Base, and Arbitrum. 
+Truly Open AI supports popular agent frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). The infrastructure AI-powers over 10 blockchains, including Bitcoin, Ethereum, Solana, Base, and Arbitrum.
 
 ## Motivation
 
@@ -17,14 +17,14 @@ To address this, we need a comprehensive infrastructure that integrates these di
 1. **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
 2. **Trustless**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
 3. **Production grade**. Code must be written with production-grade quality and designed for scale.
-4. **Everything is an agent**. Not just regular agents, but every component in the software stack, whether a swarm of agents, an AI model storage system, a GPU compute node, a cross-chain bridge, an infrastructure microservice, or an API, is implemented as an agent.
+4. **Everything is an agent**. Not just user-facing agents, but every component in the infrastructure, whether a swarm of agents, an AI model storage system, a GPU compute node, a cross-chain bridge, an infrastructure microservice, or an API, is implemented as an agent.
 5. **Agents do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
 6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
-## Infrastructure Architecture
+## Architecture
 
-Truly Open AI is a full-stack, production-grade, crypto-native infrastructure created for a wide array of AI frameworks and blockchains.
+Truly Open AI is an open source, crypto-native software stack created for a wide array of agent frameworks and blockchains.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
