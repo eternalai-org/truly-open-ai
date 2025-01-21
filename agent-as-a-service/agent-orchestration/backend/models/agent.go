@@ -57,6 +57,8 @@ const (
 	AgentInfoAgentTypeNormal        AgentInfoAgentType = 0
 	AgentInfoAgentTypeReasoning     AgentInfoAgentType = 1
 	AgentInfoAgentTypeKnowledgeBase AgentInfoAgentType = 2
+	AgentInfoAgentTypeEliza         AgentInfoAgentType = 3
+	AgentInfoAgentTypeZerepy        AgentInfoAgentType = 4
 )
 
 func GetAgentFee(networkID uint64) numeric.BigFloat {
@@ -214,6 +216,7 @@ type AgentInfo struct {
 	ExternalChartUrl     string
 	MissionTopics        string `gorm:"type:longtext"`
 	GraphData            string `gorm:"type:longtext"`
+	ConfigData           string `gorm:"type:longtext"`
 
 	TwinTwitterUsernames    string           `gorm:"index"` // multiple twitter usernames, split by ,
 	TwinStatus              TwinStatus       `gorm:"index"`

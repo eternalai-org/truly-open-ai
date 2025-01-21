@@ -69,6 +69,7 @@ var CHAIN_NAME_MAP = map[uint64]string{
 	DUCK_CHAIN_ID:             "DUCK CHAIN",
 	TRON_CHAIN_ID:             "TRON",
 	MODE_CHAIN_ID:             "MODE",
+	LOCAL_CHAIN_ID:            "LOCAL",
 }
 
 var MAP_TOOLSET_NAME = map[string]string{
