@@ -16,9 +16,9 @@ As the end-to-end platform for decentralized AI, Truly Open AI integrates with t
   
 ## Motivation
 
-We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts are fragmented and remain as small-scale experiments.
+We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts are fragmented and most of them remain as fun weekend prototypes.
 
-To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade decentralized agents and large-scale decentralized swarms.
+To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade decentralized agents and eventually lead to large-scale decentralized swarms.
 
 ## Design Principles
 
