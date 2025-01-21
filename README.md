@@ -22,8 +22,7 @@ Truly Open AI is an end-to-end, production-grade, multichain infrastructure for 
 
 <img width="2704" alt="2025-01-21 11 24 21" src="https://github.com/user-attachments/assets/a7b5ed57-227d-439c-9ea2-897e9884b425" />
 
-<br>
-
+<br><br>
 Here are the major components of the Truly Open AI software stack.
 <br>
 
