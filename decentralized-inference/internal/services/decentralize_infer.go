@@ -8,14 +8,12 @@ import (
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
 	"fmt"
-
-	"math/big"
-	"strings"
-
 	ethreumAbi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
+	"math/big"
+	"strings"
 )
 
 func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.DecentralizeInferRequest) (*models.DecentralizeInferResponse, error) {
@@ -155,10 +153,7 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 			"worker_address": strings.ToLower(inferInfo.ProcessedMiner.String()),
 			"chain_id":       chainId,
 		})
-		if err != nil {
-			return nil, fmt.Errorf("get infer result info in db err: %v", err)
-		}
-		if inferResultInfo != nil {
+		if err == nil && inferResultInfo != nil {
 			txSubmitSolution = inferResultInfo.TxHash
 		}
 		output, err = s.GetData(inferInfo.Output)
@@ -166,7 +161,6 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 			return nil, fmt.Errorf("get data err: %v", err)
 		}
 	}
-
 	return &models.InferResultResponse{
 		ChainInfo:        info.ChainInfo,
 		WorkerHubAddress: info.WorkerHubAddress,

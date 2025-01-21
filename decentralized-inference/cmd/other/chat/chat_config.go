@@ -23,10 +23,10 @@ func collectChatConfigInformation() *config.ChatConfig {
 	}
 
 	for {
-		fmt.Print("What is your decentralize-inference API server's base URL (default: localhost:8484)? ")
+		fmt.Print("What is your decentralize-inference API server's base URL (default: http://localhost:8484)? ")
 		fmt.Scanln(&chatConfig.ServerBaseUrl)
 		if chatConfig.ServerBaseUrl == "" {
-			chatConfig.ServerBaseUrl = "localhost:8484"
+			chatConfig.ServerBaseUrl = "http://localhost:8484"
 		}
 		break
 	}

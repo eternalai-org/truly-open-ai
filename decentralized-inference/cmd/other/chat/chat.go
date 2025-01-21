@@ -49,28 +49,25 @@ func AgentTerminalChat(ctx context.Context) error {
 		// show loading by  / - \
 		stopChan := make(chan bool)
 		go showLoading(stopChan)
-		timeout := time.After(3 * time.Minute)
-		for {
-			select {
-			case <-timeout:
-				stopChan <- true
-				fmt.Println("Timeout, please try again later.")
+		finish := false
+		for i := 0; i < 60; i++ {
+			finish = getResult(response.InferId, chatConfig, stopChan)
+			if finish {
 				break
-			default:
-				getResult(response.InferId, chatConfig, stopChan)
-				time.Sleep(5 * time.Second)
 			}
+			time.Sleep(5 * time.Second)
 		}
-
+		if !finish {
+			fmt.Println("Timeout, please try again later.")
+		}
 	}
 
 	return nil
 }
 
-func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool) {
+func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool) bool {
 	fmt.Println("Getting result from server...")
-	uri := fmt.Sprintf("infer/%v", inferID)
-	fullUrl := fmt.Sprintf("%v/%v", chatConfig.ServerBaseUrl, uri)
+	fullUrl := fmt.Sprintf("%v/infer/get_result", chatConfig.ServerBaseUrl)
 
 	request := &models.InferResultRequest{
 		ChainInfo: models.ChainInfoRequest{
@@ -83,11 +80,11 @@ func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool
 	respBytes, statusCode, err := http_client.RequestHttp(fullUrl, "POST", nil, bytes.NewBuffer(inputBytes), 5)
 	if err != nil {
 		fmt.Println("Error getting result from server:", err)
-		return
+		return false
 	}
 	if statusCode != http.StatusOK {
 		//fmt.Println("Error getting result from server: status code", statusCode)
-		return
+		return false
 	}
 
 	var response struct {
@@ -97,19 +94,20 @@ func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool
 	err = json.Unmarshal(respBytes, &response)
 	if err != nil {
 		fmt.Println("Error unmarshalling response:", err)
-		return
+		return false
 	}
 
 	// Display response
 	if response.Data.Output == "" {
 		//fmt.Println("No result yet. Please try again later.")
-		return
+		return false
 	}
 
 	stopChan <- true
 
 	//respBytes, _ = json.MarshalIndent(response, "", "  ")
 	fmt.Printf("Your agent: %s\n\n", response.Data.Output)
+	return true
 }
 
 func showLoading(stopChan chan bool) {
