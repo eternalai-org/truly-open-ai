@@ -2,45 +2,42 @@
 
 pragma solidity ^0.8.20;
 
-import {IAI721, IGPUManager, IInferable} from "./interfaces/IAI721.sol";
-import {ERC721URIStorage, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
+import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {ERC721URIStorage, ERC721} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IAI721Errors} from "./interfaces/IAI721Errors.sol";
+import {IAI721, IGPUManager, IInferable} from "./interfaces/IAI721.sol";
 
 /**
  * @title AI721
  * @dev Implementation of decentralized inference standard AI721.
  */
-contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
-
-    /// @dev fee: The usage fee required to invoke this agent's functionalities.
-    /// @dev isUsed: Signals whether this token is actively engaged or in use.
-    /// @dev modelId: Identifies the specific model from the associated model collection utilized by this agent.
-    /// @dev promptScheduler: The address of promptScheduler contract.
-    /// @dev sysPrompts: The system prompt data of this agent, mapped from string keys to arrays of prompt data, managed by the agent's owner.
-    struct TokenMetaData {
-        uint128 fee;
-        bool isUsed;
-        uint32 modelId;
-        address promptScheduler;
-        mapping(string => bytes[]) sysPrompts;
-    }
-
+contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721 {
     /// @dev Storage
-    mapping(uint256 agentId => TokenMetaData) private _datas;
-    mapping(uint256 agentId => uint256) public _poolBalance;
-    uint256 private _nextTokenId;
-    address public _gpuManager;
-    IERC20 private immutable _tokenFee;
+    mapping(uint256 agentId => AgentConfig) internal _agentConfigs;
+    uint256 private _nextAgentId;
+    address internal _gpuManager;
+    IERC20 internal _tokenFee;
 
-    /// @dev constructor
+    /**
+     * @dev Constructor for the AI721 contract.
+     * @param name_ The name of the ERC721 token.
+     * @param symbol_ The symbol of the ERC721 token.
+     * @param nextAgentId_ The initial value for the next agent ID.
+     * @param gpuManager_ The address of the GPU manager.
+     * @param tokenFee_ The address of the ERC20 token used for fees.
+     *
+     * Requirements:
+     * - `gpuManager_` must not be the zero address.
+     * - `tokenFee_` must not be the zero address.
+     * - `nextAgentId_` must not be zero.
+     *
+     * Reverts with `InvalidNextAgentId` if `nextAgentId_` is zero.
+     */
     constructor(
         string memory name_,
         string memory symbol_,
-        uint256 nextTokenId_,
+        uint256 nextAgentId_,
         address gpuManager_,
         IERC20 tokenFee_
     ) ERC721(name_, symbol_) {
@@ -49,7 +46,9 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
             "Zero address"
         );
 
-        _nextTokenId = nextTokenId_;
+        if (nextAgentId_ == 0) revert InvalidNextAgentId();
+
+        _nextAgentId = nextAgentId_;
         _gpuManager = gpuManager_;
         _tokenFee = tokenFee_;
     }
@@ -70,13 +69,28 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
     }
 
     /**
+     * @dev See {IAI721Upgradeable-getGPUManager}.
+     */
+    function getGPUManager() external view returns (address) {
+        return _gpuManager;
+    }
+
+    /**
+     * @dev See {IAI721Upgradeable-getTokenFee}.
+     */
+    function getTokenFee() external view returns (address) {
+        return address(_tokenFee);
+    }
+
+    /**
      * @dev Mints a new agent with the specified parameters.
-     * Reverts with `InvalidAgentData` if the provided data is empty.
+     * Reverts with `InvalidAgentId` if the agent ID is already used.
+     * Reverts with `InvalidData` if the provided data is empty.
      *
      * @param to The address to which the agent will be minted.
      * @param uri The URI associated with the agent.
      * @param data The system prompt of the agent.
-     * @param fee The using fee associated with the agent.
+     * @param fee The usage fee associated with the agent.
      * @param agentId The ID of the agent.
      * @param promptKey The key for the system prompt.
      * @param promptScheduler The address of the prompt scheduler.
@@ -93,33 +107,34 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
         address promptScheduler,
         uint32 modelId
     ) internal virtual returns (uint256) {
-        if (data.length == 0) revert InvalidAgentData();
+        if (_agentConfigs[_nextAgentId].isUsed) revert InvalidAgentId();
+        _validateData(data);
 
         _safeMint(to, agentId);
         _setTokenURI(agentId, uri);
 
-        _datas[agentId].fee = uint128(fee);
-        _datas[agentId].sysPrompts[promptKey].push(data);
-        _datas[agentId].isUsed = true;
-        _datas[agentId].promptScheduler = promptScheduler;
-        _datas[agentId].modelId = modelId;
+        _agentConfigs[agentId].usageFee = uint128(fee);
+        _agentConfigs[agentId].sysPrompts[promptKey].push(data);
+        _agentConfigs[agentId].isUsed = true;
+        _agentConfigs[agentId].promptScheduler = promptScheduler;
+        _agentConfigs[agentId].modelId = modelId;
 
-        emit NewToken(agentId, uri, data, fee, to);
+        emit NewAgent(agentId, uri, data, fee, to);
 
         return agentId;
     }
 
     /**
      * @dev Wraps the minting process by finding the next available agent ID and minting a new agent.
-     * Reverts with `InvalidAgentData` if the provided data is empty.
+     * Reverts with `InvalidData` if the provided data is empty.
      *
      * @param to The address to which the agent will be minted.
      * @param uri The URI associated with the agent.
      * @param data The system prompt of the agent.
-     * @param fee The using fee associated with the agent.
+     * @param fee The usage fee associated with the agent.
      * @param promptKey The key for the system prompt.
      * @param promptScheduler The address of the prompt scheduler.
-     * @param modelId The ID of the model that is used by thee agent.
+     * @param modelId The ID of the model that is used by the agent.
      * @return The ID of the minted agent.
      */
     function _wrapMint(
@@ -131,41 +146,50 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
         address promptScheduler,
         uint32 modelId
     ) internal virtual returns (uint256) {
-        while (_datas[_nextTokenId].isUsed) {
-            _nextTokenId++;
+        while (_agentConfigs[_nextAgentId].isUsed) {
+            _nextAgentId++;
         }
-        uint256 agentId = _nextTokenId++;
+        uint256 agentId = _nextAgentId++;
 
         _mint(to, uri, data, fee, agentId, promptKey, promptScheduler, modelId);
 
         return agentId;
     }
 
-    function _validateURI(string calldata uri) internal pure virtual {
-        if (bytes(uri).length == 0) revert InvalidAgentData();
+    /**
+     * @dev See {IAI721Upgradeable-nextAgentId}.
+     */
+    function nextAgentId() external view returns (uint256) {
+        return _nextAgentId;
     }
 
     /**
-     * @dev Updates the URI of an agent.
-     * @param agentId The ID of the agent.
-     * @param uri The new URI of the agent.
+     * @dev Updates the URI of a specified agent.
+     * Reverts if the provided URI is invalid.
+     *
+     * @param agentId The ID of the agent to update.
+     * @param uri The new URI to be assigned to the agent.
+     *
+     * Emits an {AgentURIUpdate} event.
      */
     function _updateAgentURI(
         uint256 agentId,
         string calldata uri
     ) internal virtual {
-        _validateURI(uri);
-
         _setTokenURI(agentId, uri);
         emit AgentURIUpdate(agentId, uri);
     }
 
     /**
-     * @dev Updates the data of an agent.
-     * @param agentId The ID of the agent.
-     * @param sysPrompt The new system prompt data.
-     * @param promptKey The key of the prompt.
-     * @param promptIdx The index of the prompt.
+     * @dev Updates the system prompt data for a specified agent.
+     * Reverts if the provided data is invalid or if the prompt index is out of bounds.
+     *
+     * Emits a {PromptDataUpdated} event indicating the agent and the updated prompt index.
+     *
+     * @param agentId The ID of the agent whose prompt data is being updated.
+     * @param sysPrompt The new system prompt data in bytes.
+     * @param promptKey The key associated with the prompt.
+     * @param promptIdx The index of the prompt to update.
      */
     function _updateAgentData(
         uint256 agentId,
@@ -173,30 +197,36 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
         string calldata promptKey,
         uint256 promptIdx
     ) internal virtual {
-        _validateAgentData(agentId, sysPrompt, promptIdx, promptKey);
+        _beforeUpdateAgentData(agentId, sysPrompt, promptIdx, promptKey);
 
         emit AgentDataUpdate(
             agentId,
             promptIdx,
-            _datas[agentId].sysPrompts[promptKey][promptIdx],
+            _agentConfigs[agentId].sysPrompts[promptKey][promptIdx],
             sysPrompt
         );
 
-        _datas[agentId].sysPrompts[promptKey][promptIdx] = sysPrompt;
+        _agentConfigs[agentId].sysPrompts[promptKey][promptIdx] = sysPrompt;
     }
 
     /**
-     * @dev This function modifies the model ID associated with an existing agent.
-     * @param agentId The unique identifier of the agent to update.
-     * @param newModelId The new model ID to assign to the agent.
+     * @dev Updates the model ID of a specified agent.
+     * Emits an {AgentModelIdUpdate} event.
+     *
+     * @param agentId The ID of the agent to update.
+     * @param newModelId The new model ID to be assigned to the agent.
      */
     function _updateAgentModelId(
         uint256 agentId,
         uint32 newModelId
     ) internal virtual {
-        emit AgentModelIdUpdate(agentId, _datas[agentId].modelId, newModelId);
+        emit AgentModelIdUpdate(
+            agentId,
+            _agentConfigs[agentId].modelId,
+            newModelId
+        );
 
-        _datas[agentId].modelId = newModelId;
+        _agentConfigs[agentId].modelId = newModelId;
     }
 
     /**
@@ -206,31 +236,56 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
      * @param agentId The ID of the agent whose prompt scheduler is being updated.
      * @param newPromptScheduler The address of the new prompt scheduler.
      */
-    function _updatePromptScheduler(
+    function _updateAgentPromptScheduler(
         uint256 agentId,
         address newPromptScheduler
     ) internal virtual {
         emit AgentPromptSchedulerUpdate(
             agentId,
-            _datas[agentId].promptScheduler,
+            _agentConfigs[agentId].promptScheduler,
             newPromptScheduler
         );
 
-        _datas[agentId].promptScheduler = newPromptScheduler;
+        _agentConfigs[agentId].promptScheduler = newPromptScheduler;
     }
 
     /**
-     * @dev Updates the fee of an agent.
-     * @notice The agent fee is typically greater than or equal to the model usage fee.
-     * @param agentId The ID of the agent.
-     * @param fee The fee to use this agent.
+     * @dev Internal function to update the usage fee of a specified agent.
+     * Emits an {AgentFeeUpdated} event.
+     * @notice The agent fee should generally be greater than or equal to the model usage fee.
+     * @param agentId The unique identifier of the agent.
+     * @param fee The new fee to be set for using this agent.
      */
-    function _updateAgentFee(uint256 agentId, uint fee) internal virtual {
-        if (_datas[agentId].fee != fee) {
-            _datas[agentId].fee = uint128(fee);
+    function _updateAgentUsageFee(uint256 agentId, uint fee) internal virtual {
+        if (_agentConfigs[agentId].usageFee != fee) {
+            _agentConfigs[agentId].usageFee = uint128(fee);
         }
 
-        emit AgentFeeUpdate(agentId, fee);
+        emit AgentUsageFeeUpdate(agentId, fee);
+    }
+    /**
+     * @dev Adds new system prompt data to a specified agent.
+     * Reverts if the provided data is invalid.
+     *
+     * @param agentId The ID of the agent to update.
+     * @param promptKey The key associated with the prompt.
+     * @param sysPrompt The new system prompt data in bytes.
+     *
+     * Emits an {AgentDataAddNew} event.
+     */
+    function _addNewAgentData(
+        uint256 agentId,
+        string calldata promptKey,
+        bytes calldata sysPrompt
+    ) internal virtual {
+        _validateData(sysPrompt);
+
+        _agentConfigs[agentId].sysPrompts[promptKey].push(sysPrompt);
+
+        emit AgentDataAddNew(
+            agentId,
+            _agentConfigs[agentId].sysPrompts[promptKey]
+        );
     }
 
     /**
@@ -241,70 +296,70 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
      * @param sysPrompt The system prompt data in bytes.
      * @param promptKey The key associated with the prompt.
      */
-    function _validateAgentData(
+    function _beforeUpdateAgentData(
         uint256 agentId,
         bytes calldata sysPrompt,
         uint256 promptIdx,
         string calldata promptKey
     ) internal view virtual {
-        if (sysPrompt.length == 0) revert InvalidAgentData();
-        uint256 len = _datas[agentId].sysPrompts[promptKey].length;
+        _validateData(sysPrompt);
+
+        uint256 len = _agentConfigs[agentId].sysPrompts[promptKey].length;
         if (promptIdx >= len) revert InvalidAgentPromptIndex();
     }
 
     /**
-     * @dev Adds new data to an agent.
-     * @param agentId The ID of the agent.
-     * @param promptKey The key of the prompt.
-     * @param sysPrompt The new system prompt data.
+     * @dev Validates the provided URI string.
+     * Reverts with `InvalidData` if the URI is an empty string.
+     *
+     * @param data The data to validate.
      */
-    function _addNewAgentData(
-        uint256 agentId,
-        string calldata promptKey,
-        bytes calldata sysPrompt
-    ) internal virtual {
-        if (sysPrompt.length == 0) revert InvalidAgentData();
-
-        _datas[agentId].sysPrompts[promptKey].push(sysPrompt);
-
-        emit AgentDataAddNew(agentId, _datas[agentId].sysPrompts[promptKey]);
+    function _validateData(bytes calldata data) internal pure virtual {
+        if (data.length == 0) revert InvalidData();
     }
 
     /**
-     * @dev See {IAI721Upgradeable-topUpPoolBalance}.
+     * @dev See {IAI721Upgradeable-getAgentUsageFee}.
      */
-    function topUpPoolBalance(
-        uint256 agentId,
-        uint256 amount
-    ) public virtual override {
-        SafeERC20.safeTransferFrom(
-            _tokenFee,
-            msg.sender,
-            address(this),
-            amount
-        );
-        _poolBalance[agentId] += amount;
-
-        emit TopUpPoolBalance(agentId, msg.sender, amount);
-    }
-
-    /**
-     * @dev See {IAI721Upgradeable-getAgentFee}.
-     */
-    function getAgentFee(
-        uint256 agentId
+    function getAgentUsageFee(
+        uint256 id
     ) external view virtual returns (uint256) {
-        return _datas[agentId].fee;
+        return _agentConfigs[id].usageFee;
     }
 
     /**
      * @dev See {IAI721Upgradeable-getAgentSystemPrompt}.
      */
     function getAgentSystemPrompt(
-        uint256 agentId,
+        uint256 id,
         string calldata promptKey
     ) external view virtual returns (bytes[] memory) {
-        return _datas[agentId].sysPrompts[promptKey];
+        return _agentConfigs[id].sysPrompts[promptKey];
+    }
+
+    /**
+     * @dev See {IAI721Upgradeable-getAgentConfig}.
+     */
+    function getAgentConfig(
+        uint256 agentId
+    )
+        external
+        view
+        virtual
+        returns (
+            uint128 usageFee,
+            bool isUsed,
+            uint32 modelId,
+            address promptScheduler
+        )
+    {
+        AgentConfig storage config = _agentConfigs[agentId];
+        return (
+            config.usageFee,
+            config.isUsed,
+            config.modelId,
+            config.promptScheduler
+        );
     }
 
     /**
@@ -317,16 +372,19 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
         string calldata promptKey,
         bool flag,
         uint feeAmount
-    ) public virtual override {
-        (, bytes memory fwdData) = _infer(
+    ) public virtual override returns (uint256 inferId) {
+        _validateBeforeInference(agentId, promptKey, feeAmount);
+
+        _processBeforeInference(agentId, fwdCalldata, promptKey, feeAmount);
+
+        bytes memory fwdData = _buildForwardedData(
             agentId,
-            fwdCalldata,
             promptKey,
-            feeAmount
+            fwdCalldata
         );
 
-        uint256 inferId = IInferable(_datas[agentId].promptScheduler).infer(
-            _datas[agentId].modelId,
+        inferId = IInferable(_agentConfigs[agentId].promptScheduler).infer(
+            _agentConfigs[agentId].modelId,
             fwdData,
             msg.sender,
             flag
@@ -336,7 +394,7 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
             agentId,
             msg.sender,
             fwdData,
-            _datas[agentId].fee,
+            _agentConfigs[agentId].usageFee,
             externalData,
             inferId
         );
@@ -351,16 +409,19 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
         string calldata externalData,
         string calldata promptKey,
         uint256 feeAmount
-    ) public virtual override {
-        (, bytes memory fwdData) = _infer(
+    ) public virtual override returns (uint256 inferId) {
+        _validateBeforeInference(agentId, promptKey, feeAmount);
+
+        _processBeforeInference(agentId, fwdCalldata, promptKey, feeAmount);
+
+        bytes memory fwdData = _buildForwardedData(
             agentId,
-            fwdCalldata,
             promptKey,
-            feeAmount
+            fwdCalldata
         );
 
-        uint256 inferId = IInferable(_datas[agentId].promptScheduler).infer(
-            _datas[agentId].modelId,
+        inferId = IInferable(_agentConfigs[agentId].promptScheduler).infer(
+            _agentConfigs[agentId].modelId,
             fwdData,
             msg.sender
         );
@@ -369,108 +430,73 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
             agentId,
             msg.sender,
             fwdData,
-            _datas[agentId].fee,
+            _agentConfigs[agentId].usageFee,
             externalData,
             inferId
         );
     }
 
     /**
-     * @dev Internal function to handle inference requests for a given agent.
+     * @dev Validates the agent data and fee amount before performing inference.
+     * Reverts if the agent data or fee amount is invalid.
      *
-     * This function performs several checks and operations:
-     * 1. Validates the existence of system prompts for the given agent and prompt key.
-     * 2. Ensures the provided fee amount meets the required fee for the agent.
-     * 3. Transfers the fee amount from the sender to the contract.
-     * 4. Encodes the forward calldata with the system prompts.
-     * 5. Retrieves the minimum fee required to use the GPU for the agent's model.
-     * 6. Adjusts the agent's pool balance and transfers any remaining fee back to the agent owner if applicable.
-     * 7. Approves the prompt scheduler to use the estimated fee.
+     * @param agentId The ID of the agent to validate.
+     * @param promptKey The key of the prompt to validate.
+     * @param feeAmount The fee amount to validate.
      *
-     * @param agentId The ID of the agent for which inference is requested.
-     * @param fwdCalldata The calldata to be forwarded for inference.
-     * @param promptKey The key to identify the system prompt.
-     * @param feeAmount The fee amount provided for the inference request.
+     * Requirements:
      *
-     * @return estFeeWH The estimated fee required for the inference must be paid to the miner.
-     * @return fwdData The encoded forward data including system prompts and calldata.
+     * - The prompt associated with `promptKey` must exist for the given `agentId`.
+     * - The `feeAmount` must be greater than or equal to the usage fee of the agent.
      *
-     * @notice Reverts if the agent data or fee is invalid, or if there are insufficient funds.
+     * Reverts with:
+     * - `InvalidAgentData` if the prompt does not exist.
+     * - `InvalidAgentFee` if the fee amount is less than the required usage fee.
      */
-    function _infer(
+    function _validateBeforeInference(
+        uint256 agentId,
+        string calldata promptKey,
+        uint256 feeAmount
+    ) internal view virtual {
+        if (_agentConfigs[agentId].sysPrompts[promptKey].length == 0)
+            revert InvalidAgentData();
+        if (feeAmount < _agentConfigs[agentId].usageFee)
+            revert InvalidAgentFee();
+    }
+
+    /**
+     * @dev Hook that is called before the inference process. This function can be overridden to implement
+     * any logic that needs to be executed before the inference.
+     *
+     * @param agentId The identifier of the agent.
+     * @param fwdCalldata The calldata to be forwarded.
+     * @param promptKey The key for the prompt.
+     * @param feeAmount The amount of fee to be processed.
+     */
+    function _processBeforeInference(
         uint256 agentId,
         bytes calldata fwdCalldata,
         string calldata promptKey,
         uint256 feeAmount
-    ) internal virtual returns (uint256, bytes memory) {
-        if (_datas[agentId].sysPrompts[promptKey].length == 0)
-            revert InvalidAgentData();
-        if (feeAmount < _datas[agentId].fee) revert InvalidAgentFee();
-        SafeERC20.safeTransferFrom(
-            _tokenFee,
-            msg.sender,
-            address(this),
-            feeAmount
-        );
-
-        bytes memory fwdData = abi.encodePacked(
-            _concatSystemPrompts(_datas[agentId].sysPrompts[promptKey]),
-            fwdCalldata
-        );
-        uint256 estFeeWH = IGPUManager(_gpuManager).getMinFeeToUse(
-            _datas[agentId].modelId
-        );
-
-        if (feeAmount < estFeeWH && _poolBalance[agentId] >= estFeeWH) {
-            unchecked {
-                _poolBalance[agentId] -= estFeeWH;
-            }
-
-            if (feeAmount > 0) {
-                SafeERC20.safeTransfer(_tokenFee, _ownerOf(agentId), feeAmount);
-            }
-        } else if (feeAmount >= estFeeWH) {
-            uint256 remain = feeAmount - estFeeWH;
-            if (remain > 0) {
-                SafeERC20.safeTransfer(_tokenFee, _ownerOf(agentId), remain);
-            }
-        } else {
-            revert InsufficientFunds();
-        }
-
-        SafeERC20.safeApprove(
-            _tokenFee,
-            _datas[agentId].promptScheduler,
-            estFeeWH
-        );
-
-        return (estFeeWH, fwdData);
-    }
+    ) internal virtual {}
 
     /**
-     * @dev See {IAI721Upgradeable-dataOf}.
+     * @dev Constructs the forwarded data by concatenating system prompts with the input data.
+     * This function can be overridden to customize the data construction process.
+     *
+     * @param agentId The identifier of the agent.
+     * @param promptKey The key for the prompt.
+     * @param input The input data to be forwarded.
+     * @return result The constructed forwarded data.
      */
-    function dataOf(
-        uint256 agentId
-    )
-        external
-        view
-        virtual
-        returns (
-            uint128 fee,
-            bool isUsed,
-            uint32 modelId,
-            address promptScheduler,
-            uint256 poolBalance
-        )
-    {
-        TokenMetaData storage data = _datas[agentId];
-        return (
-            data.fee,
-            data.isUsed,
-            data.modelId,
-            data.promptScheduler,
-            _poolBalance[agentId]
+    function _buildForwardedData(
+        uint256 agentId,
+        string calldata promptKey,
+        bytes calldata input
+    ) internal view virtual returns (bytes memory result) {
+        result = abi.encodePacked(
+            _concatSystemPrompts(agentId, promptKey),
+            input
         );
     }
 
@@ -479,7 +505,13 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
      */
     function tokenURI(
         uint256 agentId
-    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+    )
+        public
+        view
+        virtual
+        override(ERC721, ERC721URIStorage)
+        returns (string memory)
+    {
         return super.tokenURI(agentId);
     }
 
@@ -514,21 +546,24 @@ contract AI721 is ERC721Enumerable, ERC721URIStorage, IAI721, IAI721Errors {
     }
 
     /**
-     * @dev See {IAI721Upgradeable-nextTokenId}.
-     */
-    function nextTokenId() external view returns (uint256) {
-        return _nextTokenId;
-    }
-
-    /**
-     * @dev Concatenates an array of system prompts into a single bytes array,
-     *      with each prompt separated by a semicolon.
-     * @param sysPrompts An array of bytes representing the system prompts to be concatenated.
-     * @return A bytes array containing all the concatenated system prompts separated by semicolons.
+     * @dev Concatenates system prompts for a given agent and prompt key.
+     *
+     * This function retrieves the system prompts associated with the specified
+     * agent ID and prompt key, concatenates them with a semicolon separator,
+     * and returns the concatenated result as a byte array.
+     *
+     * @param agentId The ID of the agent whose system prompts are to be concatenated.
+     * @param promptKey The key used to identify the specific set of system prompts.
+     * @return A byte array containing the concatenated system prompts.
      */
     function _concatSystemPrompts(
-        bytes[] memory sysPrompts
-    ) internal pure virtual returns (bytes memory) {
+        uint256 agentId,
+        string memory promptKey
+    ) internal view virtual returns (bytes memory) {
+        bytes[] memory sysPrompts = _agentConfigs[agentId].sysPrompts[
+            promptKey
+        ];
+
         uint256 len = sysPrompts.length;
         bytes memory prompt;
 

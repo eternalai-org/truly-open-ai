@@ -56,27 +56,32 @@ Here are the major components of the Truly Open AI software stack.
 
 ## Getting Started
 
-Let's deploy your own end-to-end Truly Open AI infrastructure.
+Let's deploy an end-to-end decentralized AI infrastructure.
 
-**Step 1: Deploy your own Blockchain**
-
-TODO: Write this section
-
-**Step 2: Deploy your own Decentralized Compute with Llama**
+**Step 1: Deploy a local blockchain for development**
 
 TODO: Write this section
 
-**Step 3: Deploy your own Decentralized Agent as a Service infrastructure**
+**Step 2: Deploy your first Decentralized Compute cluster**
 
 TODO: Write this section
 
-**Step 4: Deploy your first Decentralized Agent**
+**Step 3: Deploy your production-grade Agent as a Service infrastructure**
 
 TODO: Write this section
 
-**Step 5: Chat with the Agent**
+**Step 4: Deploy your first Decentralized Agent with AI-721**
 
 TODO: Write this section
+
+**Step 5: Interact with your Agent**
+
+TODO: Write this section
+
+**Step 6: Build a custom Knowledge Base (RAG) for your Agent with KB-721**
+
+TODO: Write this section
+
 
 ## Contribute to Truly Open AI
 
