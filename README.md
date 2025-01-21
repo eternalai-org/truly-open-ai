@@ -1,28 +1,27 @@
 # Truly Open AI
 
-We're living in the age of intelligence, but a handful of centralized entities currently control the future of AI. The convergence of crypto and AI has led to innovative projects solving various decentralized AI problems, yet these efforts remain isolated and fragmented.
+We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to younger projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
 
-Truly Open AI is an open-source project that aims to develop this infrastructure. It is developed and supported by many teams and individual core contributors. Let's build truly open AI together.
+Truly Open AI is an open-source project that aims to build this infrastructure. It is developed and supported by many teams and individual core contributors. Let's build truly open AI together.
 
 ## Design Principles
 
-* **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
-* **Trustless**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
-* **Production grade**. Code must be designed and written with production-grade scale in mind.
-* **Everything is an agent**. Not just regular agents, every component in the software stack, whether a swarm of agents, a model storage system, a GPU node, a cross-chain agent communication bridge, an infrastructure microservice, or an API, is represented as an agent.
-* **Agents do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
-* **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
-* **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
+1. **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
+2. **Trustless**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
+3. **Production grade**. Code must be written with production-grade quality and designed for scale.
+4. **Everything is an agent**. Not just regular agents, but every component in the software stack, whether a swarm of agents, an AI model storage system, a GPU compute node, a cross-chain bridge, an infrastructure microservice, or an API, is implemented as an agent.
+5. **Agents do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
+6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
+7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
 ## Architecture
 
-Truly Open AI is an end-to-end, production-grade, multichain infrastructure for decentralized AI agents. Its comprehensive, modular software stack lets AI developers manage them on multiple blockchains, such as Bitcoin, Ethereum, and Solana. The platform provides advanced mechanisms for deploying, maintaining, and scaling them.
+Truly Open AI is an end-to-end, production-grade, multichain infrastructure for decentralized AI agents. Its comprehensive, modular software stack lets AI developers manage decentralized agents on multiple blockchains, such as Bitcoin, Ethereum, and Solana. The platform provides advanced mechanisms for deploying, maintaining, and scaling decentralized agents.
 
 <img width="2704" alt="eternal-kernel" src="https://github.com/user-attachments/assets/83bc3827-9326-453e-b8f5-d2821f32978e" />
 
-<br>
 <br>
 
 Here are the major components of the Truly Open AI software stack.
@@ -71,10 +70,6 @@ TODO: Write this section
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
 If you'd like to contribute to Truly Open AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base. If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
-
-## Governance
-
-TODO: Write this section
 
 ## Featured Integrations
 
