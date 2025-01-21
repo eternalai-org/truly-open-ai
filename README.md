@@ -1,6 +1,6 @@
 # Truly Open AI
 
-We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
+We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
 
