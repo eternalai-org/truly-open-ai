@@ -4,14 +4,16 @@ We're living in the age of intelligence, but a handful of centralized entities c
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
 
-Truly Open AI is an open-source project that aims to develop this infrastructure. Let's build truly open AI together.
+Truly Open AI is an open-source project that aims to develop this infrastructure. It is developed and supported by many teams and individual core contributors. Let's build truly open AI together.
 
 ## Design Principles
 
-* **Decentralize everything**. Decentralize at every step. Question every component of the system and decentralize it. Ensure that no single point of failure or control exists.
-* **Everything is an agent**. Not just regular agents, every entity, whether a swarm of agents, a model storage system, a GPU node, a cross-chain agent communication bridge, or an infrastructure service, is represented as an agent.
-* **Do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
-* **Prompting as the primary interface**. All agents have a unified, simplified I/O interface with prompting and response.
+* **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
+* **Smart contracts first**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
+* **Production grade**. Code must be designed and written with production-grade scale in mind.
+* **Everything is an agent**. Not just regular agents, every component in the software stack, whether a swarm of agents, a model storage system, a GPU node, a cross-chain agent communication bridge, an infrastructure microservice, or an API, is represented as an agent.
+* **Agents do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
+* **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 * **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
 ## Architecture
@@ -20,7 +22,11 @@ Truly Open AI is an end-to-end, production-grade, multichain infrastructure for 
 
 <img width="2704" alt="eternal-kernel" src="https://github.com/user-attachments/assets/83bc3827-9326-453e-b8f5-d2821f32978e" />
 
+<br>
+<br>
+
 Here are the major components of the Truly Open AI software stack.
+<br>
 
 |Component&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  | Description |
 |--|--|
@@ -35,43 +41,45 @@ Here are the major components of the Truly Open AI software stack.
 | [decentralized-inference](/decentralized-inference) | The trustless, onchain-verifiable inference protocol. |
 | [decentralized-storage](/decentralized-storage) | Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
 | [decentralized-swarms](/decentralized-swarms) | Fully-onchain decentralized multi-agent systems |
+<br>
 
-## Deploy your first agent
+## Deploy your own end-to-end Truly Open AI infrastructure
 
-#### Step 1: Run a local chain
-
-TODO: Write this section
-
-#### Step 2: Run a local cluster with Llama 3B
+**Step 1: Deploy your own Blockchain**
 
 TODO: Write this section
 
-#### Step 3: Deploy Agent as a Service infrastructure
+**Step 2: Deploy your own Decentralized Compute with Llama**
 
 TODO: Write this section
 
-#### Step 4: Deploy an agent
+**Step 3: Deploy your own Decentralized Agent as a Service infrastructure**
 
 TODO: Write this section
 
-#### Step 5: Chat with the agent
+**Step 4: Deploy your first Decentralized Agent**
 
 TODO: Write this section
 
+**Step 5: Chat with the Agent**
+
+TODO: Write this section
 
 ## Contribute to Truly Open AI
 
-TODO: Write this section
+Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
+
+If you'd like to contribute to Truly Open AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base. If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
 
 ## Governance
 
 TODO: Write this section
 
-## Partners
+## Featured Integrations
 
-TODO: Write this section
+The Truly Open AI project uses a modular approach, making adding integrations easy. If you encounter issues while building an integration, please contact us for further assistance.
 
-## Roadmap
-
-TODO: Write this section
-
+* Blockchains: Bitcoin, Ethereum, Solana, Base, Arbitrum, ZKsync, Polygon, ApeChain, BNB Chain
+* AI Frameworks: Eliza, Zig, ZerePy
+* Decentralized Storage Networks: Filecoin, Greenfield, Arweave
+* Decentralized Models: Llama, Hermes, FLUX, DeepSeek, Qwen
