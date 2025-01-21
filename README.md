@@ -10,8 +10,8 @@ Truly Open AI is an open-source project that aims to build this infrastructure. 
 
 1. **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
 2. **Trustless**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
-3. **Production grade**. Code must be designed and written with production-grade scale in mind.
-4. **Everything is an agent**. Not just regular agents, every component in the software stack, whether a swarm of agents, an AI model storage system, a GPU compute node, a cross-chain bridge, an infrastructure microservice, or an API, is implemented as an agent.
+3. **Production grade**. Code must be written with production-grade quality and designed for scale.
+4. **Everything is an agent**. Not just regular agents, but every component in the software stack, whether a swarm of agents, an AI model storage system, a GPU compute node, a cross-chain bridge, an infrastructure microservice, or an API, is implemented as an agent.
 5. **Agents do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
 6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
