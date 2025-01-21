@@ -9,6 +9,7 @@ import (
 	"fmt"
 	ethreumAbi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.uber.org/zap"
 	"math/big"
 	"strings"
@@ -103,6 +104,10 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 	client, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
 		false,
 		"", "")
+	chainId, err := client.Client.ChainID(ctx)
+	if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, fmt.Errorf("init client err: %w", err)
 	}
@@ -133,6 +138,18 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 		}
 	}
 
+	inferResultInfo, err := s.GetModelWorkerProcessHistoryByFilter(ctx, bson.M{
+		"inference_id":   info.InferId,
+		"worker_address": strings.ToLower(inferInfo.ProcessedMiner.String()),
+		"chain_id":       chainId,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get infer result info in db err: %v", err)
+	}
+	txSubmitSolution := ""
+	if inferResultInfo != nil {
+		txSubmitSolution = inferResultInfo.TxHash
+	}
 	return &models.InferResultResponse{
 		ChainInfo:        info.ChainInfo,
 		WorkerHubAddress: info.WorkerHubAddress,
@@ -143,5 +160,6 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 		ProcessedMiner:   inferInfo.ProcessedMiner.String(),
 		Status:           status,
 		SubmitTimeout:    inferInfo.SubmitTimeout.Uint64(),
+		TxSubmitSolution: txSubmitSolution,
 	}, nil
 }

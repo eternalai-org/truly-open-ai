@@ -43,4 +43,5 @@ type InferResultResponse struct {
 	SubmitTimeout    uint64            `json:"submit_timeout"`
 	Creator          string            `json:"creator"`
 	ProcessedMiner   string            `json:"processed_miner"`
+	TxSubmitSolution string            `json:"tx_submit_solution"`
 }
