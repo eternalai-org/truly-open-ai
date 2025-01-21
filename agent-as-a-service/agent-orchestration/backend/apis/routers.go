@@ -142,7 +142,7 @@ func (s *Server) Routers() {
 			agentAPI.POST("/update_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistant)
 
 			agentAPI.POST("/create_agent_studio", s.authCheckTK1TokenMiddleware(), s.AgentCreateAgentStudio)
-			agentAPI.POST("/update_agent_studio", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentStudio)
+			agentAPI.POST("/update_agent_studio/:id", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentStudio)
 
 			agentAPI.POST("/update_agent_assistant_in_contract", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistantInContract)
 			agentAPI.POST("/update_twin_status", s.UpdateTwinStatus)
