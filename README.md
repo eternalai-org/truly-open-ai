@@ -1,3 +1,6 @@
+> [!NOTE]
+> This repo is a work in progress. We are refactoring our codebase and preparing for a 100% open-source release. We should be done soon. Stay tuned for updates, and join us in building truly open AI!
+
 # Truly Open AI: The AI Layer of the New Internet
 
 Truly Open AI is a production-grade, crypto-native infrastructure for managing decentralized agents across multiple blockchains. It has a comprehensive suite of tools that lets developers deploy, maintain, and scale AI agents onchain with ease.
