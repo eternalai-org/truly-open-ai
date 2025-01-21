@@ -8,9 +8,9 @@ Truly Open AI supports popular agent frameworks like [Eliza](https://github.com/
 
 ## Motivation
 
-We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts remain fragmented.
+We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts remain fragmented and mostly as small-scale experiments.
 
-To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
+To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade agents and large-scale multi-agent systems.
 
 ## Design Principles
 
@@ -24,7 +24,7 @@ To address this, we need a comprehensive infrastructure that integrates these di
 
 ## Architecture
 
-Truly Open AI is an open source, crypto-native software stack created for a wide array of agent frameworks and blockchains.
+Truly Open AI is a crypto-native open source platform created for a wide array of agent frameworks and blockchains.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
