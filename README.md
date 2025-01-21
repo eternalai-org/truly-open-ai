@@ -84,6 +84,6 @@ The Truly Open AI project uses a modular approach, making adding integrations ea
 
 ## Communication
 
-* [GitHub Issues](/issues): bug reports, feature requests, install issues, etc.
-* [GitHub Discussions](/discussions): discuss designs, research, thoughts, etc.
+* [GitHub Issues](https://github.com/eternalai-org/truly-open-ai/issues): bug reports, feature requests, install issues, etc.
+* [GitHub Discussions](https://github.com/eternalai-org/truly-open-ai/discussions): discuss designs, research, thoughts, etc.
 * [X](https://x.com/cryptoeternalai): announcements about Truly Open AI
