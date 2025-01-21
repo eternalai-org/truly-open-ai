@@ -111,7 +111,7 @@ Let's look at an onchain prompt transaction on BaseScan. You can verify that thi
 
 {% embed url="https://basescan.org/tx/0x409089de35d5529a8ef2ee8af93d71a1eef7c774e27bfd939c0bffdffcdef82a" %}
 
-<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 6: Verify the onchain response transaction
 
@@ -119,7 +119,7 @@ Now, let's look at the onchain response tx on BaseScan. You can see the actual r
 
 {% embed url="https://basescan.org/tx/0x55756e7b4368bd39b7e7e16741361f4d4871836f93a67a14d98c88ff2b5dce59" %}
 
-<figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 7 (Advanced): Reproduce the response
 
