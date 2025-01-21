@@ -715,7 +715,7 @@ func GetChainID(chainName string) uint64 {
 		{
 			return ARBITRUM_CHAIN_ID
 		}
-	case "bsc", "bnbchain", "binancechain", "binance":
+	case "bsc", "bnbchain", "binancechain", "binance", "bnb":
 		{
 			return BSC_CHAIN_ID
 		}
@@ -727,16 +727,32 @@ func GetChainID(chainName string) uint64 {
 		{
 			return AVALANCHE_C_CHAIN_ID
 		}
-	case "apechain":
+	case "apechain", "ape_chain":
 		{
 			return APE_CHAIN_ID
 		}
-	case "abstract testnet":
+	case "zksync_era", "zksync":
+		{
+			return ZKSYNC_CHAIN_ID
+		}
+	case "abstract testnet", "abstract_testnet":
 		{
 			return ABSTRACT_TESTNET_CHAIN_ID
 		}
+	case "bittensor":
+		{
+			return BITTENSOR_CHAIN_ID
+		}
+	case "bitcoin":
+		{
+			return HERMES_CHAIN_ID
+		}
+	case "duck_chain", "duckchain":
+		{
+			return DUCK_CHAIN_ID
+		}
 	default:
-		return BASE_CHAIN_ID
+		return GENERTAL_NETWORK_ID
 	}
 }
 

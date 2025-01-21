@@ -2,11 +2,13 @@ package services
 
 import (
 	"context"
+	"decentralized-inference/internal/config"
 	"decentralized-inference/internal/database"
 )
 
 type Service struct {
-	db *database.Database
+	db   *database.Database
+	conf *config.Config
 }
 
 func NewService() *Service {
@@ -24,6 +26,12 @@ type ServiceOption func(*Service)
 func WithDatabase(db *database.Database) ServiceOption {
 	return func(s *Service) {
 		s.db = db
+	}
+}
+
+func WithConfig(conf *config.Config) ServiceOption {
+	return func(s *Service) {
+		s.conf = conf
 	}
 }
 

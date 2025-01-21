@@ -30,6 +30,7 @@ func NewServer() (*Server, error) {
 	svc := services.NewService()
 	svc.WithOptions(
 		services.WithDatabase(mongoDB),
+		services.WithConfig(cfg),
 	)
 
 	err = svc.StartService()
