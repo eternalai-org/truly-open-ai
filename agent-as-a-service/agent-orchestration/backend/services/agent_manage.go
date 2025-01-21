@@ -710,123 +710,236 @@ func (s *Service) JobMigrateTronAddress(ctx context.Context) error {
 }
 
 // //
-func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData string) (*models.AgentInfo, error) {
+func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData string) ([]*models.AgentInfo, error) {
 	var reqs []*models.AgentStudio
 	json.Unmarshal([]byte(graphData), &reqs)
 
 	if len(reqs) <= 0 {
 		return nil, errs.NewError(errs.ErrBadRequest)
 	}
-	req := reqs[0]
-	agent := &models.AgentInfo{
-		Version:     "2",
-		AgentType:   models.AgentInfoAgentTypeReasoning,
-		AgentID:     helpers.RandomBigInt(12).Text(16),
-		Status:      models.AssistantStatusPending,
-		AgentName:   req.Title,
-		Creator:     strings.ToLower(address),
-		ScanEnabled: false,
-		GraphData:   graphData,
-	}
-	for _, item := range req.Children {
-		switch item.CategoryIdx {
-		case "personality":
-			{
-				agent.SystemPrompt = item.Title
+
+	listAgent := []*models.AgentInfo{}
+	for _, req := range reqs {
+		if req.Idx == "agent_new" {
+			agent := &models.AgentInfo{
+				Version:     "2",
+				AgentType:   models.AgentInfoAgentTypeReasoning,
+				AgentID:     helpers.RandomBigInt(12).Text(16),
+				Status:      models.AssistantStatusPending,
+				AgentName:   fmt.Sprintf("%v", req.Data["agentName"]),
+				Creator:     strings.ToLower(address),
+				ScanEnabled: false,
+				GraphData:   graphData,
 			}
-		case "blockchain":
-			{
-				chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
-				agent.NetworkID = models.GetChainID(chainName)
-				agent.NetworkName = models.GetChainName(agent.NetworkID)
+
+			listMission := []*serializers.AgentSnapshotMissionInfo{}
+			for _, item := range req.Children {
+				switch item.CategoryIdx {
+				case "personality":
+					{
+						switch item.Idx {
+						case "personality_customize":
+							{
+								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+							}
+						case "personality_nft":
+							{
+								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+							}
+						case "personality_ordinals":
+							{
+								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+							}
+						case "personality_token":
+							{
+								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+							}
+						case "personality_genomics":
+							{
+								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+							}
+						}
+					}
+				case "blockchain":
+					{
+						chainName := fmt.Sprintf("%v", item.Data["chainId"])
+						agent.NetworkID = models.GetChainID(chainName)
+						agent.NetworkName = models.GetChainName(agent.NetworkID)
+					}
+				case "decentralized_inference":
+					{
+						agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
+					}
+				case "token":
+					{
+						tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
+						if err != nil {
+							return nil, errs.NewError(errs.ErrBadRequest)
+						}
+						agent.TokenNetworkID = uint64(tokenChainId)
+						if agent.TokenNetworkID > 0 {
+							agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
+						}
+					}
+				case "mission_on_x":
+					{
+						frequency, err := strconv.Atoi(item.Data["frequency"].(string))
+						if err != nil {
+							return nil, errs.NewError(errs.ErrBadRequest)
+						}
+						frequency = frequency * 3600
+						userPrompt := fmt.Sprintf("%v", item.Data["details"])
+
+						switch item.Idx {
+						case "mission_on_x_post":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypePost,
+									UserPrompt: userPrompt,
+									Interval:   frequency,
+								})
+							}
+						case "mission_on_x_reply":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypeReplyMentions,
+									UserPrompt: userPrompt,
+									Interval:   frequency,
+								})
+							}
+						case "mission_on_x_engage":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypeReplyNonMentions,
+									UserPrompt: userPrompt,
+									Interval:   frequency,
+								})
+							}
+						case "mission_on_x_follow":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypeFollow,
+									UserPrompt: userPrompt,
+									Interval:   frequency,
+								})
+							}
+						}
+					}
+				case "mission_on_farcaster":
+					{
+						frequency, err := strconv.Atoi(item.Data["frequency"].(string))
+						if err != nil {
+							return nil, errs.NewError(errs.ErrBadRequest)
+						}
+						frequency = frequency * 3600
+						userPrompt := fmt.Sprintf("%v", item.Data["details"])
+						switch item.Idx {
+						case "mission_on_farcaster_post":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypePostFarcaster,
+									UserPrompt: userPrompt,
+									Interval:   frequency,
+								})
+							}
+						case "mission_on_farcaster_reply":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypeReplyMentionsFarcaster,
+									UserPrompt: userPrompt,
+									Interval:   frequency,
+								})
+							}
+						}
+					}
+				default:
+					{
+
+					}
+				}
 			}
-		case "decentralized_inference":
-			{
-				agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
+
+			if agent.NetworkID == 0 || agent.AgentBaseModel == "" {
+				return nil, errs.NewError(errs.ErrBadRequest)
 			}
-		case "token":
-			{
-				tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
+
+			// tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, agent.AgentName, agent.SystemPrompt)
+			// if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
+			// 	agent.TokenSymbol = tokenInfo.TokenSymbol
+			// 	agent.TokenName = agent.AgentName
+			// 	agent.TokenDesc = tokenInfo.TokenDesc
+			// 	agent.TokenImageUrl = tokenInfo.TokenImageUrl
+			// }
+
+			// // generate address
+			// {
+			// 	ethAddress, err := s.CreateETHAddress(ctx)
+			// 	if err != nil {
+			// 		return nil, errs.NewError(err)
+			// 	}
+			// 	agent.ETHAddress = strings.ToLower(ethAddress)
+			// 	agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+
+			// 	solAddress, err := s.CreateSOLAddress(ctx)
+			// 	if err != nil {
+			// 		return nil, errs.NewError(err)
+			// 	}
+			// 	agent.SOLAddress = solAddress
+
+			// 	addressBtc, err := s.CreateBTCAddress(ctx)
+			// 	if err != nil {
+			// 		return nil, errs.NewError(err)
+			// 	}
+			// 	agent.TipBtcAddress = addressBtc
+
+			// 	addressEth, err := s.CreateETHAddress(ctx)
+			// 	if err != nil {
+			// 		return nil, errs.NewError(err)
+			// 	}
+			// 	agent.TipEthAddress = addressEth
+
+			// 	addressSol, err := s.CreateSOLAddress(ctx)
+			// 	if err != nil {
+			// 		return nil, errs.NewError(err)
+			// 	}
+			// 	agent.TipSolAddress = addressSol
+			// }
+
+			if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
+				return nil, errs.NewError(err)
+			}
+			agentTokenInfo := &models.AgentTokenInfo{}
+			agentTokenInfo.AgentInfoID = agent.ID
+			agentTokenInfo.NetworkID = agent.TokenNetworkID
+			agentTokenInfo.NetworkName = models.GetChainName(agent.TokenNetworkID)
+
+			if err := s.dao.Create(daos.GetDBMainCtx(ctx), agentTokenInfo); err != nil {
+				return nil, errs.NewError(err)
+			}
+
+			agent.TokenInfoID = agentTokenInfo.ID
+
+			if err := s.dao.Save(daos.GetDBMainCtx(ctx), agent); err != nil {
+				return nil, errs.NewError(err)
+			}
+
+			if len(listMission) > 0 {
+				var err error
+				agent, err = s.CreateUpdateAgentSnapshotMission(ctx, agent.AgentID, "", listMission)
 				if err != nil {
 					return nil, errs.NewError(errs.ErrBadRequest)
 				}
-				agent.TokenNetworkID = uint64(tokenChainId)
-				if agent.TokenNetworkID > 0 {
-					agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
-				}
 			}
-		default:
-			{
-
-			}
+			listAgent = append(listAgent, agent)
 		}
 	}
 
-	tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, agent.AgentName, agent.SystemPrompt)
-	if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
-		agent.TokenSymbol = tokenInfo.TokenSymbol
-		agent.TokenName = agent.AgentName
-		agent.TokenDesc = tokenInfo.TokenDesc
-		agent.TokenImageUrl = tokenInfo.TokenImageUrl
-	}
-
-	// generate address
-	{
-		ethAddress, err := s.CreateETHAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.ETHAddress = strings.ToLower(ethAddress)
-		agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
-
-		solAddress, err := s.CreateSOLAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.SOLAddress = solAddress
-
-		addressBtc, err := s.CreateBTCAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipBtcAddress = addressBtc
-
-		addressEth, err := s.CreateETHAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipEthAddress = addressEth
-
-		addressSol, err := s.CreateSOLAddress(ctx)
-		if err != nil {
-			return nil, errs.NewError(err)
-		}
-		agent.TipSolAddress = addressSol
-	}
-
-	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
-		return nil, errs.NewError(err)
-	}
-	agentTokenInfo := &models.AgentTokenInfo{}
-	agentTokenInfo.AgentInfoID = agent.ID
-	agentTokenInfo.NetworkID = agent.TokenNetworkID
-	agentTokenInfo.NetworkName = models.GetChainName(agent.TokenNetworkID)
-
-	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agentTokenInfo); err != nil {
-		return nil, errs.NewError(err)
-	}
-
-	agent.TokenInfoID = agentTokenInfo.ID
-
-	if err := s.dao.Save(daos.GetDBMainCtx(ctx), agent); err != nil {
-		return nil, errs.NewError(err)
-	}
-
-	return agent, nil
+	return listAgent, nil
 }
 
 func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, graphData string) (*models.AgentInfo, error) {
 	var agent *models.AgentInfo
+	listMission := []*serializers.AgentSnapshotMissionInfo{}
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
@@ -845,7 +958,6 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 				if !strings.EqualFold(agent.Creator, address) {
 					return errs.NewError(errs.ErrInvalidOwner)
 				}
-
 				agent, _ = s.dao.FirstAgentInfoByID(tx, agent.ID, map[string][]interface{}{}, true)
 
 				var reqs []*models.AgentStudio
@@ -856,43 +968,128 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 				}
 				req := reqs[0]
 
-				for _, item := range req.Children {
-					switch item.CategoryIdx {
-					case "personality":
-						{
-							agent.SystemPrompt = item.Title
-						}
-					case "blockchain":
-						{
-							chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
-							agent.NetworkID = models.GetChainID(chainName)
-							agent.NetworkName = models.GetChainName(agent.NetworkID)
-						}
-					case "decentralized_inference":
-						{
-							agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
-						}
-					case "token":
-						{
-							tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
-							if err != nil {
-								return errs.NewError(errs.ErrBadRequest)
+				if req.Idx == "agent_new" {
+					for _, item := range req.Children {
+						switch item.CategoryIdx {
+						case "personality":
+							{
+								switch item.Idx {
+								case "personality_customize":
+									{
+										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+									}
+								case "personality_nft":
+									{
+										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+									}
+								case "personality_ordinals":
+									{
+										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+									}
+								case "personality_token":
+									{
+										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+									}
+								case "personality_genomics":
+									{
+										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+									}
+								}
 							}
-							agent.TokenNetworkID = uint64(tokenChainId)
-							if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
-								agent.TokenStatus = "pending"
+						case "blockchain":
+							{
+								chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
+								agent.NetworkID = models.GetChainID(chainName)
+								agent.NetworkName = models.GetChainName(agent.NetworkID)
 							}
-						}
-					default:
-						{
+						case "decentralized_inference":
+							{
+								agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
+							}
+						case "token":
+							{
+								tokenChainId, err := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
+								if err != nil {
+									return errs.NewError(errs.ErrBadRequest)
+								}
+								agent.TokenNetworkID = uint64(tokenChainId)
+								if agent.TokenMode == string(models.TokenSetupEnumAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
+									agent.TokenStatus = "pending"
+								}
+							}
+						case "mission_on_x":
+							{
+								frequency := item.Data["frequency"].(int) * 3600
+								userPrompt := fmt.Sprintf("%v", item.Data["details"])
+								switch item.Idx {
+								case "mission_on_x_post":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypePost,
+											UserPrompt: userPrompt,
+											Interval:   frequency,
+										})
+									}
+								case "mission_on_x_reply":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypeReplyMentions,
+											UserPrompt: userPrompt,
+											Interval:   frequency,
+										})
+									}
+								case "mission_on_x_engage":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypeReplyNonMentions,
+											UserPrompt: userPrompt,
+											Interval:   frequency,
+										})
+									}
+								case "mission_on_x_follow":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypeFollow,
+											UserPrompt: userPrompt,
+											Interval:   frequency,
+										})
+									}
+								}
+							}
+						case "mission_on_farcaster":
+							{
+								frequency := item.Data["frequency"].(int) * 3600
+								userPrompt := fmt.Sprintf("%v", item.Data["details"])
+								switch item.Idx {
+								case "mission_on_farcaster_post":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypePostFarcaster,
+											UserPrompt: userPrompt,
+											Interval:   frequency,
+										})
+									}
+								case "mission_on_farcaster_reply":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypeReplyMentionsFarcaster,
+											UserPrompt: userPrompt,
+											Interval:   frequency,
+										})
+									}
+								}
+							}
+						default:
+							{
 
+							}
 						}
 					}
-				}
-				agent.GraphData = graphData
-				err := s.dao.Save(tx, agent)
-				if err != nil {
-					return errs.NewError(err)
+					agent.GraphData = graphData
+					err := s.dao.Save(tx, agent)
+					if err != nil {
+						return errs.NewError(err)
+					}
 				}
 			}
 			return nil
@@ -902,5 +1099,14 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
+
+	if len(listMission) > 0 && agent != nil {
+		var err error
+		agent, err = s.CreateUpdateAgentSnapshotMission(ctx, agent.AgentID, "", listMission)
+		if err != nil {
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+	}
+
 	return agent, nil
 }
