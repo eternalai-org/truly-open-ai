@@ -40,8 +40,8 @@ Truly Open AI is a crypto-native open source platform created for a wide array o
 Here are the major components of the Truly Open AI software stack.
 <br>
 
-|Component&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  | Description |
-|--|--|
+|Component | Description |
+|----------------|--|
 | [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management. |
 | [ai-architectures](/ai-architectures) | The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
 | [ai-frameworks](/ai-frameworks) | Truly Open AI works with popular agent frameworks, including Eliza, Rig, and ZerePy. |
