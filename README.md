@@ -41,9 +41,8 @@ Here are the major components of the Truly Open AI software stack.
 | [decentralized-inference](/decentralized-inference) | The trustless, onchain-verifiable inference protocol. |
 | [decentralized-storage](/decentralized-storage) | Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
 | [decentralized-swarms](/decentralized-swarms) | Fully-onchain decentralized multi-agent systems |
-<br>
 
-## Deploy your own end-to-end Truly Open AI infrastructure
+## Gettin Started: Deploy your own end-to-end Truly Open AI infrastructure
 
 **Step 1: Deploy your own Blockchain**
 
