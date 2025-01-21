@@ -2,7 +2,7 @@
 
 Truly Open AI is an end-to-end open source infrastructure for managing decentralized agents across multiple AI frameworks and multiple blockchains. It provides production-grade mechanisms for the deployment, maintenance, and scaling of decentralized agents.
 
-Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate AI agents on Bitcoin. However, the infrastructure is versatile enough to be used with other AI frameworks and blockchains as well.
+Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to be used with other AI frameworks and blockchains as well.
 
 Truly Open AI supports the most popular AI frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). It also powers the largest blockchains like Bitcoin, Ethereum, Solana, Base, and Arbitrum. 
 
