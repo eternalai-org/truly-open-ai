@@ -740,23 +740,68 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 						switch item.Idx {
 						case "personality_customize":
 							{
-								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 							}
 						case "personality_nft":
 							{
-								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+								nftInfo := item.Data["selectedNFT"].(map[string]string)
+								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+								agent.VerifiedNftOwner = false
+								agent.NftAddress = nftInfo["token_address"]
+								agent.NftTokenID = nftInfo["token_id"]
+								agent.NftTokenImage = nftInfo["token_uri"]
+								agent.NftOwnerAddress = nftInfo["owner_of"]
 							}
 						case "personality_ordinals":
 							{
-								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 							}
 						case "personality_token":
 							{
-								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 							}
 						case "personality_genomics":
 							{
-								agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+								var twitterInfo []map[string]interface{}
+								somebytes, _ := json.Marshal(item.Data["twitterInfos"])
+
+								json.Unmarshal(somebytes, &twitterInfo)
+								if len(twitterInfo) > 0 {
+									twinTwitterUsernames := []string{}
+									for _, tw := range twitterInfo {
+										username := helpers.GetStringValueFromMap(tw, "username")
+										if username != "" {
+											twinTwitterUsernames = append(twinTwitterUsernames, username)
+										}
+									}
+									if len(twinTwitterUsernames) > 0 {
+										agent.TwinTwitterUsernames = strings.Join(twinTwitterUsernames, ",")
+										agent.TwinStatus = models.TwinStatusPending
+										listPendingAgents, err := s.dao.FindAgentInfo(
+											daos.GetDBMainCtx(ctx),
+											map[string][]interface{}{
+												`twin_twitter_usernames != '' and twin_status = ?`: {models.TwinStatusPending},
+												"scan_enabled = ?": {true},
+											},
+											map[string][]interface{}{},
+											[]string{
+												"id asc",
+											},
+											0,
+											999999,
+										)
+										if err != nil {
+											return nil, errs.NewError(err)
+										}
+										estimateDoneTime := time.Now().Add(time.Duration(len(listPendingAgents)) * 30 * time.Minute)
+										agent.EstimateTwinDoneTimestamp = &estimateDoneTime
+									}
+								}
+							}
+						case "personality_knowledge":
+							{
+								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 							}
 						}
 					}
@@ -863,6 +908,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 				return nil, errs.NewError(errs.ErrBadRequest)
 			}
 
+			//gen token
 			tokenInfo, _ := s.GenerateTokenInfoFromSystemPrompt(ctx, agent.AgentName, agent.SystemPrompt)
 			if tokenInfo != nil && tokenInfo.TokenSymbol != "" {
 				agent.TokenSymbol = tokenInfo.TokenSymbol
@@ -976,23 +1022,33 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 								switch item.Idx {
 								case "personality_customize":
 									{
-										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 									}
 								case "personality_nft":
 									{
-										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+										// nftInfo := item.Data["selectedNFT"].(map[string]string)
+										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+										// agent.VerifiedNftOwner = false
+										// agent.NftAddress = nftInfo["token_address"]
+										// agent.NftTokenID = nftInfo["token_id"]
+										// agent.NftTokenImage = nftInfo["token_uri"]
+										// agent.NftOwnerAddress = nftInfo["owner_of"]
 									}
 								case "personality_ordinals":
 									{
-										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 									}
 								case "personality_token":
 									{
-										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 									}
 								case "personality_genomics":
 									{
-										agent.SystemPrompt = fmt.Sprintf("%v", item.Data["personality"])
+										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+									}
+								case "personality_knowledge":
+									{
+										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
 									}
 								}
 							}

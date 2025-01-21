@@ -742,3 +742,10 @@ func ExtractEVMAddress(input string) string {
 	}
 	return ""
 }
+
+func GetStringValueFromMap(mapInfo map[string]interface{}, key string) string {
+	if v, ok := mapInfo[key]; ok {
+		return fmt.Sprintf("%v", v)
+	}
+	return ""
+}
