@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"decentralized-inference/internal/database"
 )
 
@@ -24,4 +25,19 @@ func WithDatabase(db *database.Database) ServiceOption {
 	return func(s *Service) {
 		s.db = db
 	}
+}
+
+func (s *Service) StartService() error {
+	list, err := s.ListChainConfig(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, item := range list {
+		config := item.MakeCopy()
+		if len(config.WorkerHubAddress) == 0 {
+			go s.JobWatchSubmitSolution(config)
+		}
+	}
+	return nil
 }
