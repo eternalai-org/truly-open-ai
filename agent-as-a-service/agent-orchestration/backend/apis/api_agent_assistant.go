@@ -32,7 +32,7 @@ func (s *Server) AgentCreateAgentStudio(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantRespArry(resp)})
 }
 
 func (s *Server) AgentUpdateAgentStudio(c *gin.Context) {
