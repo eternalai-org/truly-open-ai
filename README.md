@@ -1,14 +1,14 @@
 # Truly Open AI
 
-Truly Open AI is an end-to-end open source infrastructure for managing decentralized agents across multiple AI frameworks and multiple blockchains. It provides production-grade mechanisms for the deployment, maintenance, and scaling of decentralized agents.
+Truly Open AI is an end-to-end open source infrastructure for managing decentralized agents across multiple agent frameworks and multiple blockchains. It provides production-grade mechanisms for the deployment, maintenance, and scaling of decentralized agents.
 
-Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to be used with other AI frameworks and blockchains as well.
+Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to be used with other frameworks and blockchains as well.
 
-Truly Open AI supports the most popular AI frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). It also powers the largest blockchains like Bitcoin, Ethereum, Solana, Base, and Arbitrum. 
+Truly Open AI supports the most popular AI frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). It also powers 10+ blockchains, including Bitcoin, Ethereum, Solana, Base, and Arbitrum. 
 
 ## Motivation
 
-We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
+We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts remain fragmented.
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
 
