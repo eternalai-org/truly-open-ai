@@ -5,5 +5,7 @@
   "mongodb": {
     "uri": "mongodb://localhost:27017",
     "db": "decentralized-inference"
-  }
+  },
+  "file_path_infer": "/tmp/eternal-data",
+  "submit_file_path": false
 }
