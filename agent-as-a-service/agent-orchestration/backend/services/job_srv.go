@@ -146,6 +146,7 @@ func (s *Service) RunJobs(ctx context.Context) error {
 			s.JobAgentMintNft(context.Background())
 			s.JobRetryAgentMintNft(context.Background())
 			s.JobRetryAgentMintNftError(context.Background())
+			s.JobAgentStart(context.Background())
 			return nil
 		},
 	)
