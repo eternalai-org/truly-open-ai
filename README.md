@@ -9,7 +9,7 @@ Truly Open AI is an open-source project that aims to develop this infrastructure
 ## Design Principles
 
 * **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
-* **Smart contracts first**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
+* **Trustless**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
 * **Production grade**. Code must be designed and written with production-grade scale in mind.
 * **Everything is an agent**. Not just regular agents, every component in the software stack, whether a swarm of agents, a model storage system, a GPU node, a cross-chain agent communication bridge, an infrastructure microservice, or an API, is represented as an agent.
 * **Agents do one thing and do it well**. Each agent should have a single, well-defined purpose and perform it well.
