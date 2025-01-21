@@ -81,3 +81,9 @@ The Truly Open AI project uses a modular approach, making adding integrations ea
 * AI Frameworks: Eliza, Zig, ZerePy
 * Decentralized Storage Networks: Filecoin, Greenfield, Arweave
 * Decentralized Models: Llama, Hermes, FLUX, DeepSeek, Qwen
+
+## Communication
+
+* [GitHub Issues](/issues): bug reports, feature requests, install issues, etc.
+* [GitHub Discussions](/discussions): discuss designs, research, thoughts, etc.
+* [X](https://x.com/cryptoeternalai): announcements about Truly Open AI
