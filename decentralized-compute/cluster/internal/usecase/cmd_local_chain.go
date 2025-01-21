@@ -737,12 +737,14 @@ func (c *CMD_Local_Chain) CreateInfer(prompt []model.LLMInferMessage) (*types.Tr
 
 	modelID := cnf.ModelID
 	modelIDInt, _ := strconv.Atoi(modelID)
-
 	request := model.LLMInferRequest{
 		Model:    cnf.ModelName,
 		Messages: prompt,
 	}
 	_b, err := json.Marshal(request)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	tx, err := p.Infer(auth, uint32(modelIDInt), _b, *pubkey, true)
 	if err != nil {
@@ -857,12 +859,12 @@ func (c *CMD_Local_Chain) StartHardHat() error {
 	// return err
 	// }
 
-	// err = pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), "", "build", "-local")
-	// if err != nil {
-	// 	return err
-	// }
+	err := pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), "", "down", "-local")
+	if err != nil {
+		return err
+	}
 
-	err := pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), "", "up -d --build", "-local")
+	err = pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), "", "up -d --build", "-local")
 	if err != nil {
 		return err
 	}
@@ -916,10 +918,10 @@ wait $pid`, modelName, modelName)
 			return err
 		}
 
-		// err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), "", "build", "-local")
-		// if err != nil {
-		// 	return err
-		// }
+		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), "", "down", "-local")
+		if err != nil {
+			return err
+		}
 
 		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), "", "up -d --build", "-local")
 		if err != nil {
