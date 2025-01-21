@@ -217,6 +217,7 @@ type AgentInfo struct {
 	MissionTopics        string `gorm:"type:longtext"`
 	GraphData            string `gorm:"type:longtext"`
 	ConfigData           string `gorm:"type:longtext"`
+	DeployedRefID        string
 
 	TwinTwitterUsernames    string           `gorm:"index"` // multiple twitter usernames, split by ,
 	TwinStatus              TwinStatus       `gorm:"index"`

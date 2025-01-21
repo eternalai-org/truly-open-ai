@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -377,14 +378,8 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					uriHash, err := helpers.WriteFileEternalTemp(agentUriBytes)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					systemContentHash, err := helpers.WriteFileEternalTemp([]byte(agentInfo.SystemPrompt))
-					if err != nil {
-						return errs.NewError(err)
-					}
+					uriHash := string(agentUriBytes)
+					systemContentHash := agentInfo.SystemPrompt
 					modelID, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).GPUManagerGetModelID(
 						s.conf.GetConfigKeyString(agentInfo.NetworkID, "gpu_manager_contract_address"),
 					)
@@ -574,14 +569,8 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 		switch agentInfo.NetworkID {
 		case models.LOCAL_CHAIN_ID:
 			{
-				data, err := helpers.ReadFileEternalTemp(event.Uri)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				systemPrompt, err = helpers.ReadFileEternalTemp(string(event.SysPrompt))
-				if err != nil {
-					return errs.NewError(err)
-				}
+				data := []byte(event.Uri)
+				systemPrompt = event.SysPrompt
 				err = json.Unmarshal(data, &info)
 				if err != nil {
 					return errs.NewError(err)
@@ -764,4 +753,89 @@ func (s *Service) ExecuteUpdateAgentInfoInContract(ctx context.Context, assistan
 		TxUpdateSystemPrompt: txUpdateSystemPromptHash,
 		TxUpdateName:         txUpdateNameHash,
 	}, nil
+}
+
+func (s *Service) JobAgentStart(ctx context.Context) error {
+	err := s.JobRunCheck(
+		ctx, "JobAgentStart",
+		func() error {
+			agents, err := s.dao.FindAgentInfo(
+				daos.GetDBMainCtx(ctx),
+				map[string][]interface{}{
+					"agent_infos.agent_type in (3,4)":     {},
+					"agent_infos.agent_contract_id != ''": {},
+					"agent_infos.deployed_ref_id = ''":    {},
+					"agent_infos.network_id in (?)": {
+						[]uint64{
+							models.SHARDAI_CHAIN_ID,
+							models.ETHEREUM_CHAIN_ID,
+							models.BITTENSOR_CHAIN_ID,
+							models.SOLANA_CHAIN_ID,
+							models.BASE_CHAIN_ID,
+							models.HERMES_CHAIN_ID,
+							models.ARBITRUM_CHAIN_ID,
+							models.ZKSYNC_CHAIN_ID,
+							models.POLYGON_CHAIN_ID,
+							models.BSC_CHAIN_ID,
+							models.APE_CHAIN_ID,
+							models.AVALANCHE_C_CHAIN_ID,
+							models.ABSTRACT_TESTNET_CHAIN_ID,
+							models.DUCK_CHAIN_ID,
+							models.TRON_CHAIN_ID,
+						},
+					},
+				},
+				map[string][]interface{}{},
+				[]string{
+					"rand()",
+				},
+				0,
+				5,
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			var retErr error
+			for _, agent := range agents {
+				err = func() error {
+					startReq := map[string]interface{}{}
+					err = json.Unmarshal([]byte(agent.ConfigData), &startReq)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					startReq["ETERNALAI_MODEL"] = agent.AgentBaseModel
+					startReq["ETERNALAI_CHAIN_ID"] = fmt.Sprintf("%d", agent.NetworkID)
+					startReq["ETERNALAI_AGENT_CONTRACT_ADDRESS"] = agent.AgentContractAddress
+					startReq["ETERNALAI_AGENT_ID"] = agent.AgentContractID
+					err = helpers.CurlURL(
+						s.conf.AgentDeployer.Url+"/api/agent/start",
+						http.MethodPost,
+						map[string]string{},
+						startReq,
+						nil,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					err = daos.GetDBMainCtx(ctx).Model(agent).Updates(
+						map[string]interface{}{
+							"deployed_ref_id": helpers.RandomBigInt(12).Text(16),
+						},
+					).Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+					return nil
+				}()
+				if err != nil {
+					retErr = errs.MergeError(retErr, errs.NewError(err))
+				}
+			}
+			return retErr
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
 }

@@ -1,10 +1,16 @@
 # Truly Open AI
 
-We're living in the age of intelligence, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving different decentralized AI problems, but these efforts remain isolated and fragmented.
+Truly Open AI is an end-to-end open source infrastructure for managing decentralized agents across multiple agent frameworks and multiple blockchains. It provides production-grade mechanisms for the deployment, maintenance, and scaling of decentralized agents.
+
+Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to be used with other frameworks and blockchains as well.
+
+Truly Open AI supports popular agent frameworks like [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy). The infrastructure also AI-powers over 10 blockchains, including Bitcoin, Ethereum, Solana, Base, and Arbitrum. 
+
+## Motivation
+
+We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts remain fragmented.
 
 To address this, we need a comprehensive infrastructure that integrates these disparate components into a cohesive whole. An end-to-end decentralized AI system that is permissionless, censorship-resistant, and tamper-proof.
-
-Truly Open AI is an open-source project that aims to build this infrastructure. It is developed and supported by many teams and individual core contributors. Let's build truly open AI together.
 
 ## Design Principles
 
@@ -16,9 +22,9 @@ Truly Open AI is an open-source project that aims to build this infrastructure. 
 6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
-## Architecture
+## Infrastructure Architecture
 
-Truly Open AI is an end-to-end, production-grade, multichain infrastructure for decentralized AI agents. Its comprehensive, modular software stack lets AI developers manage decentralized agents across multiple blockchains, such as Bitcoin, Ethereum, and Solana. The platform provides advanced mechanisms for deploying, maintaining, and scaling decentralized agents.
+Truly Open AI is a full-stack, production-grade, crypto-native infrastructure created for a wide array of AI frameworks and blockchains.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 

@@ -19,7 +19,8 @@ tags
 tmp/
 neurons/solo/build/
 neurons/solo/env/
-
+decentralized-compute/cluster/sol/deploy.sh
+decentralized-compute/cluster/sol/package-lock.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
