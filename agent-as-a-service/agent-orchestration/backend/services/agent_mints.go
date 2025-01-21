@@ -377,14 +377,8 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					uriHash, err := helpers.WriteFileEternalTemp(agentUriBytes)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					systemContentHash, err := helpers.WriteFileEternalTemp([]byte(agentInfo.SystemPrompt))
-					if err != nil {
-						return errs.NewError(err)
-					}
+					uriHash := string(agentUriBytes)
+					systemContentHash := agentInfo.SystemPrompt
 					modelID, err := s.GetEthereumClient(ctx, agentInfo.NetworkID).GPUManagerGetModelID(
 						s.conf.GetConfigKeyString(agentInfo.NetworkID, "gpu_manager_contract_address"),
 					)
@@ -574,14 +568,8 @@ func (s *Service) SystemPromptManagerNewTokenEvent(ctx context.Context, networkI
 		switch agentInfo.NetworkID {
 		case models.LOCAL_CHAIN_ID:
 			{
-				data, err := helpers.ReadFileEternalTemp(event.Uri)
-				if err != nil {
-					return errs.NewError(err)
-				}
-				systemPrompt, err = helpers.ReadFileEternalTemp(string(event.SysPrompt))
-				if err != nil {
-					return errs.NewError(err)
-				}
+				data := []byte(event.Uri)
+				systemPrompt = event.SysPrompt
 				err = json.Unmarshal(data, &info)
 				if err != nil {
 					return errs.NewError(err)
