@@ -648,3 +648,7 @@ type AgentStudio struct {
 	Data        map[string]interface{} `json:"data"`
 	Children    []*AgentStudioChildren `json:"children"`
 }
+
+type AgentStudioGraphData struct {
+	Data []*AgentStudio `json:"data"`
+}
