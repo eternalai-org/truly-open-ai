@@ -10,7 +10,7 @@ Truly Open AI supports popular agent frameworks like [Eliza](https://github.com/
 
 We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts remain fragmented and mostly as small-scale experiments.
 
-To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade agents and large-scale multi-agent systems.
+To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade decentralized agents and large-scale decentralized swarms.
 
 ## Design Principles
 
