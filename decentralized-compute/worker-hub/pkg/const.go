@@ -47,6 +47,7 @@ const (
 	ENV_CONTRACT_V1_DEPLOYED_ADDRESS = ENV_CONTRACT_V1_PATH + "/deployedAddresses.json"
 
 	LOCAL_CHAIN_INFO      = "%s/env/local_contracts.json"
+	ENV_FOLDER            = "%s/env"
 	LOCAL_CHAIN_GAS_PRICE = 2000_000_000
 	LOCAL_CHAIN_GAS_LIMIT = 30000000
 )
