@@ -174,3 +174,79 @@ func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.I
 		TxSubmitSolution: txSubmitSolution,
 	}, nil
 }
+
+func (s *Service) CreateDecentralizeInferNoAgent(ctx context.Context, info *models.DecentralizeInferNoAgentRequest) (*models.DecentralizeInferResponse, error) {
+	modelId, ok := new(big.Int).SetString(info.ModelId, 10)
+	if !ok {
+		return nil, fmt.Errorf("modelId :%v is not valid", info.ModelId)
+	}
+	_, pbkHex, err := client.GetAccountInfo(info.InferPriKey)
+	if err != nil {
+		return nil, fmt.Errorf("get account info error: %v", err)
+	}
+	client, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+		false,
+		"", "")
+	if err != nil {
+		return nil, fmt.Errorf("init client err: %w", err)
+	}
+
+	workerHubContract, err := abi.NewWorkerhubContract(common.HexToAddress(info.WorkerHubAddress), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	contractABI, err := ethreumAbi.JSON(strings.NewReader(abi.WorkerhubContractMetaData.ABI))
+	if err != nil {
+		logger.GetLoggerInstanceFromContext(ctx).Error("error when get abi", zap.Error(err))
+		return nil, err
+	}
+
+	var submitData = info.Input
+
+	if s.conf.SubmitFilePath {
+		fileName, err := s.WriteInput(strings.ToLower((*pbkHex).Hex()), []byte(info.Input))
+		if err != nil {
+			return nil, fmt.Errorf("write input file err: %w", err)
+		}
+		submitData = fmt.Sprintf("%v%v", config.FilePrefix, fileName)
+	}
+
+	//Infer(opts *bind.TransactOpts, modelId uint32, input []byte, creator common.Address, flag bool)
+	dataBytes, err := contractABI.Pack(
+		"infer", uint32(modelId.Uint64()),
+		[]byte(submitData),
+		*pbkHex,
+		false,
+	)
+
+	if err != nil {
+		logger.GetLoggerInstanceFromContext(ctx).Error("[SubmitInferTaskWorkerHubV1] error when pack data", zap.Error(err))
+		return nil, err
+	}
+
+	tx, err := client.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.AgentContractAddress), big.NewInt(0), dataBytes)
+	if err != nil {
+		return nil, fmt.Errorf("send transaction with err %v", err)
+	}
+
+	logs := tx.Receipt.Logs
+	inferId := uint64(0)
+	for _, item := range logs {
+		inferData, err := workerHubContract.ParseNewInference(*item)
+		if err == nil {
+			inferId = inferData.InferenceId
+			break
+		}
+	}
+
+	if inferId == 0 {
+		return nil, fmt.Errorf("inferId is zero , tx: %v ", tx.TxHash.Hex())
+	}
+
+	return &models.DecentralizeInferResponse{
+		TxHash:    tx.TxHash.Hex(),
+		InferId:   inferId,
+		ChainInfo: info.ChainInfo,
+	}, nil
+}
