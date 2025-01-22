@@ -17,34 +17,34 @@ import (
 
 func (c *CMD) cliCommand() []*pkg.Command {
 	localContractCMDs := []*pkg.Command{
-		{
-			Key:      pkg.COMMAND_LOCAL_PRIV_KEY,
-			Help:     "Private Key",
-			Default:  "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-			Required: true,
-		},
+		// {
+		// 	Key:      pkg.COMMAND_LOCAL_PRIV_KEY,
+		// 	Help:     "Private Key",
+		// 	Default:  "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+		// 	Required: true,
+		// },
 		{
 			Key:      pkg.PLATFORM,
 			Required: true,
 			Default:  c.getArch(),
 			Help:     "Platform: " + pkg.PLATFROM_INTEL + " OR " + pkg.PLATFROM_APPLE_SILLICON,
 		},
-		{
-			Key:     pkg.COMMAND_LOCAL_RUN_POD_URL,
-			Help:    "Runpod URL (Default: empty)",
-			Default: "",
-		},
-		{
-			Key:     pkg.COMMAND_LOCAL_RUN_POD_API_KEY,
-			Help:    "Runpod API-Key (Default: empty)",
-			Default: "",
-		},
-		{
-			Key:      pkg.COMMAND_LOCAL_MODEL_NAME,
-			Help:     "Model name",
-			Default:  "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S",
-			Required: true,
-		},
+		// {
+		// 	Key:     pkg.COMMAND_LOCAL_RUN_POD_URL,
+		// 	Help:    "Runpod URL (Default: empty)",
+		// 	Default: "",
+		// },
+		// {
+		// 	Key:     pkg.COMMAND_LOCAL_RUN_POD_API_KEY,
+		// 	Help:    "Runpod API-Key (Default: empty)",
+		// 	Default: "",
+		// },
+		// {
+		// 	Key:      pkg.COMMAND_LOCAL_MODEL_NAME,
+		// 	Help:     "Model name",
+		// 	Default:  "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S",
+		// 	Required: true,
+		// },
 		/*
 				{
 					Key:      pkg.COMMAND_LOCAL_CHAIN_RPC,
@@ -630,8 +630,9 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	var err error
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
-		err = errors.New("deployed contracts error: private key is required")
-		return err
+		privKey = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+		// err = errors.New("deployed contracts error: private key is required")
+		// return err
 	}
 
 	rpc, ok := input[pkg.COMMAND_LOCAL_CHAIN_RPC]
@@ -670,18 +671,21 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 
 	modelName, ok := input[pkg.COMMAND_LOCAL_MODEL_NAME]
 	if !ok {
-		err = errors.New("deployed contracts error: modelName is required")
-		return err
+		modelName = "DeepSeek-R1-Distill-Qwen-1.5B-Q8"
+		// err = errors.New("deployed contracts error: modelName is required")
+		// return err
 	}
 
 	runPod, ok := input[pkg.COMMAND_LOCAL_RUN_POD_URL]
 	if !ok {
-		return err
+		runPod = "1"
+		// return err
 	}
 
 	runPodAPIKey, ok := input[pkg.COMMAND_LOCAL_RUN_POD_API_KEY]
 	if !ok {
-		return err
+		runPodAPIKey = "1"
+		// return err
 	}
 
 	platform, ok := input[pkg.PLATFORM]
@@ -700,6 +704,10 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	if runPod != "" {
 		cnf.RunPodInternal = runPod
 		cnf.RunPodExternal = runPod
+		cnf.UseExternalRunPod = true
+	} else if runPod == "1" {
+		cnf.RunPodInternal = "http://host.docker.internal:11434/v1/chat/completions"
+		cnf.RunPodExternal = "http://localhost:11434/v1/chat/completions"
 		cnf.UseExternalRunPod = true
 	} else {
 		cnf.RunPodInternal = fmt.Sprintf("http://%s:11434/v1/chat/completions", pkg.MINER_SERVICE_OLLAMA)
