@@ -5,6 +5,7 @@ import { AI721 } from "../typechain-types";
 import { assert } from "console";
 import path from "path";
 import fs from "fs";
+import axios from "axios";
 
 const config = network.config as any;
 const networkName = network.name.toUpperCase();
@@ -33,6 +34,7 @@ async function mintAgent() {
   } catch (error) {
     throw new Error(`Failed to read system prompt file: ${error}`);
   }
+  let id = 0;
 
   try {
     // Get contract instance
@@ -51,7 +53,7 @@ async function mintAgent() {
     console.log("Tx status: ", receipt?.status === 1 ? "Success" : "Failed");
 
     // Get agent ID
-    const id = receipt?.logs
+    id = receipt?.logs
       .filter(
         (log: any) =>
           log.topics[0] ===
@@ -69,6 +71,18 @@ async function mintAgent() {
     }
   } catch (error) {
     console.error("Error minting agent:", error);
+  }
+
+  try {
+    await createLocalAgent(
+      ownerAddress,
+      "AIAgent",
+      contractAddr,
+      id.toString(),
+      systemPrompt.toString()
+    );
+  } catch (err) {
+    console.log("Error creating local agent service: ", err);
   }
 }
 
@@ -98,6 +112,44 @@ async function saveAgentId(agentId: string) {
 
   // Write the updated JSON back to the file
   fs.writeFileSync(filePath, JSON.stringify(config, null, 2), "utf-8");
+}
+
+async function createLocalAgent(
+  creator: string,
+  agentName: string,
+  agentContractAddress: string,
+  agentContractId: string,
+  systemContent: string
+): Promise<any> {
+  try {
+    const response = await axios.post(
+      "http://localhost:8480/api/agent/create-local-agent",
+      {
+        creator,
+        agent_name: agentName,
+        agent_contract_address: agentContractAddress,
+        agent_contract_id: agentContractId,
+        system_content: systemContent,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error("Axios Error:", error.message, error.response?.data);
+      // Handle specific error codes, e.g., 400, 500
+      if (error.response?.status === 400) {
+        // ...handle bad request
+      }
+    } else {
+      console.error("An unexpected error occurred:", error);
+    }
+    throw error; // Re-throw the error to be caught by the caller if needed
+  }
 }
 
 export async function getContractInstance(
