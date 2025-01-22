@@ -225,7 +225,7 @@ func (s *Service) CreateDecentralizeInferNoAgent(ctx context.Context, info *mode
 		return nil, err
 	}
 
-	tx, err := client.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.AgentContractAddress), big.NewInt(0), dataBytes)
+	tx, err := client.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.WorkerHubAddress), big.NewInt(0), dataBytes)
 	if err != nil {
 		return nil, fmt.Errorf("send transaction with err %v", err)
 	}
