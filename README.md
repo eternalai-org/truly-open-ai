@@ -29,19 +29,19 @@ Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org
 
 Here are the major components of the Truly Open AI software stack.
 
-|Component | Description |
-|----------------|--|
-| [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management. |
-| [ai-architectures](/ai-architectures) | The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
-| [ai-frameworks](/ai-frameworks) | Truly Open AI works with popular agent frameworks, including Eliza, Rig, and ZerePy. |
-| [ai-kernel](/agent-as-a-service) | The central component of the AI-powered blockchain architecture. |
-| [blockchains](/blockchains) | Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
-| [creator-tools](/creator-tools) | No-code tools for AI creators to create and manage their agents. |
-| [decentralized-agents](/decentralized-agents) | A set of smart contract standards for fully onchain AI agents, including AI721 and AI721Knowledge. |
+| Component | Description |
+|:--------------------------|--------------------------|
+| [agent-as-a-service](/agent-as-a-service) &nbsp;| The production-grade agent launchpad and management. |
+| [ai-architectures](/ai-architectures) &nbsp;| The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
+| [ai-frameworks](/ai-frameworks) &nbsp;| Truly Open AI works with popular agent frameworks, including Eliza, Rig, and ZerePy. |
+| [ai-kernel](/agent-as-a-service) &nbsp;| The central component of the AI-powered blockchain architecture. |
+| [blockchains](/blockchains) &nbsp;| Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
+| [creator-tools](/creator-tools) &nbsp;| No-code tools for AI creators to create and manage their agents. |
+| [decentralized-agents](/decentralized-agents) &nbsp;| A set of smart contract standards for fully onchain AI agents, including AI721 and AI721Knowledge. |
 | [decentralized-compute](/decentralized-compute) | The DePIN infrastructure powering agents. |
 | [decentralized-inference](/decentralized-inference) | The trustless, onchain-verifiable inference protocol. |
-| [decentralized-storage](/decentralized-storage) | Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
-| [decentralized-swarms](/decentralized-swarms) | Fully-onchain decentralized multi-agent systems |
+| [decentralized-storage](/decentralized-storage) &nbsp;| Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
+| [decentralized-swarms](/decentralized-swarms) &nbsp;| Fully-onchain decentralized multi-agent systems |
 
 ## Getting Started
 
