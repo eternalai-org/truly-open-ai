@@ -60,8 +60,41 @@ TODO: Write
 TODO: Write
 
 **Step 4: Deploy your first Decentralized Agent with AI-721**
+***Step 4.1 Deploy contract AI-721***
+Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/3.how-to-deploy-and-mint-agent` folder.
+Run script to install dependencies:
+```bash
+npm install
+```
 
-TODO: Write
+Setup the environment variables and deploy AI-721 contract:
+```bash
+export HARDHAT_PRIVATE_KEY=<0xPRIVATE_KEY> HARDHAT_WORKER_HUB_ADDRESS=<WORKER_HUB_ADDRESS> HARDHAT_HYBRID_MODEL_ADDRESS=<HYBRID_MODEL_ADDRESS> HARDHAT_L2_OWNER_ADDRESS=<L2_OWNER_ADDRESS> && npx hardhat compile && npx hardhat run ./scripts/autoDeploy.ts --network localhost
+
+```
+*Example (don't use it):*
+```bash
+export HARDHAT_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 HARDHAT_WORKER_HUB_ADDRESS=0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199 HARDHAT_HYBRID_MODEL_ADDRESS=0xdD2FD4581271e230360230F9337D5c0430Bf44C0 HARDHAT_L2_OWNER_ADDRESS=0xbDA5747bFD65F08deb54cb465eB87D40e51B197E && npx hardhat compile && npx hardhat run ./scripts/autoDeploy.ts --network localhost
+```
+**Note:**
+- *_PRIVATE_KEY: Private key of the deployer
+- *_L2_OWNER_ADDRESS: This acts as the treasury address.
+
+***Step 4.2 Mint an agent***
+Copy the deployed AI721 contract address from *terminal (1)* and set it to the environment variable using the script below:
+
+```bash
+export HARDHAT_AGENT_OWNER_ADDRESS=<HARDHAT_AGENT_OWNER_ADDRESS> AGENT_SYSTEM_PROMPT_PATH=<AGENT_SYSTEM_PROMPT_PATH> HARDHAT_AI721_ADDRESS=<HARDHAT_AI721_ADDRESS> && npx hardhat run ./scripts/mintAgent.ts --network localhost
+```
+
+**Note:**
+- AGENT_SYSTEM_PROMPT_PATH: the path to the file containing the agent system prompt.
+- HARDHAT_AI721_ADDRESS: The AI721 contract address you have just deployed.
+
+**Example (don't use it):** 
+```bash
+export HARDHAT_AGENT_OWNER_ADDRESS=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 AGENT_SYSTEM_PROMPT_PATH="./prompt.txt" HARDHAT_AI721_ADDRESS=0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 && npx hardhat run ./scripts/mintAgent.ts --network localhost    
+```
 
 **Step 5: Interact with your Agent**
 
