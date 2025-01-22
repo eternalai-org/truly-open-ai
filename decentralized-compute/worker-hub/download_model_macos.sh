@@ -5,7 +5,7 @@ rm -Rf truly-open-ai
 git clone https://github.com/eternalai-org/truly-open-ai
 
 # Navigate to the directory
-cd truly-open-ai/decentralized-compute/cluster || {
+cd truly-open-ai/decentralized-compute/worker-hub || {
     echo "Directory not found"
     exit 1
 }
