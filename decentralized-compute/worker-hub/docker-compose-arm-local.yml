@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+  ollama:
+    image: ollama/ollama
+    restart: always
+    container_name: ollama
+    ports:
+      - "11436:11434"
+    volumes:
+      - ./models:/root/.ollama/models
+      - ./env/entrypoint.sh:/entrypoint.sh
+    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
+    deploy:
+      resources:
+        limits:
+          memory: 9.5G
+        reservations:
+          memory: 8G 
+
+  hardhat:
+    build:
+      context: .
+      dockerfile: Dockerfile.Hardhat
+    restart: always
+    container_name:   hardhat
+    ports:
+      - "8545:8545"
+
+  service_miner_base: &service_miner_base
+    image:  service_miner
+    build:
+      context: .
+      dockerfile: Dockerfile.Arm
+    ports:
+      - "8000:8000"
+    tty: true
+    stdin_open: true
+    restart: always
+    volumes:
+      - ./env:/env
+
+  service_miner_1:
+    container_name: service_miner_1  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8001:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config_local_1.env" ]
+
+  service_miner_2:
+    container_name: service_miner_2  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8002:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config_local_2.env" ]
+
+  service_miner_3:
+    container_name: service_miner_3  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8003:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config_local_3.env" ]

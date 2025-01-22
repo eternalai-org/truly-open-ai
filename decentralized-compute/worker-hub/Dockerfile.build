@@ -1,0 +1,18 @@
+FROM  golang:1.23-alpine3.21 AS build
+
+RUN apk update && apk add gcc musl-dev gcompat libc-dev linux-headers
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+RUN GOOS=linux GOARCH=amd64 go build  -ldflags "-linkmode external -extldflags -static" -o cli ./cmd/cli
+
+RUN chmod +x /app/cli
+
+FROM scratch AS export-stage
+
+COPY --from=build /app/cli .
