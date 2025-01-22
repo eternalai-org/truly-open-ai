@@ -10,7 +10,7 @@ import {
   Dagent721,
   ModelLoadBalancer,
 } from "../typechain-types";
-import { deployContract, deployOrUpgrade } from "./lib/utils";
+import { deployContract, deployOrUpgrade } from "./library/utils";
 import { EventLog, Signer } from "ethers";
 import path from "path";
 import fs from "fs";
