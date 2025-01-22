@@ -6,8 +6,11 @@
 
 ### 2. Configure Environment Variables
 
-Config enviroment variables in `.env` file and input your agent's system prompt in `config.json` in `5.start-agent` folder.
+Navigate to the `5.start-agent` folder* and run this command to configure your twitter account.
 
+```bash
+node setup_env.js --TWITTER_USERNAME <TWITTER_USERNAME> --TWITTER_PASSWORD <TWITTER_PASSWORD> --TWITTER_EMAIL <TWITTER_EMAIL>
+```
 
 ### 3. Build docker image
 *Remember to navigate to the `5.start-agent` folder*.
