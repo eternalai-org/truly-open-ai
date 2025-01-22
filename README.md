@@ -31,17 +31,22 @@ Here are the major components of the Truly Open AI software stack.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [agent-as-a-service](/agent-as-a-service) &nbsp;| The production-grade agent launchpad and management. |
-| [ai-architectures](/ai-architectures) &nbsp;| The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
-| [ai-frameworks](/ai-frameworks) &nbsp;| Truly Open AI works with popular agent frameworks, including Eliza, Rig, and ZerePy. |
-| [ai-kernel](/agent-as-a-service) &nbsp;| The central component of the AI-powered blockchain architecture. |
-| [blockchains](/blockchains) &nbsp;| Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
-| [creator-tools](/creator-tools) &nbsp;| No-code tools for AI creators to create and manage their agents. |
-| [decentralized-agents](/decentralized-agents) &nbsp;| A set of smart contract standards for fully onchain AI agents, including AI721 and AI721Knowledge. |
-| [decentralized-compute](/decentralized-compute) | The DePIN infrastructure powering agents. |
-| [decentralized-inference](/decentralized-inference) | The trustless, onchain-verifiable inference protocol. |
-| [decentralized-storage](/decentralized-storage) &nbsp;| Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
-| [decentralized-swarms](/decentralized-swarms) &nbsp;| Fully-onchain decentralized multi-agent systems |
+| [decentralized-agents](/decentralized-agents)| A set of smart contract standards for decentralized AI agents (AI721s). |
+| [ai-kernel](/ai-kernel)| A set of smart contracts that trustlessly coordinate the infrastructure operations. |
+| [decentralized-inference](/decentralized-inference) | A set of smart contracts that together perform onchain-verifiable inference. |
+| [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
+| [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
+| [blockchains](/blockchains)| Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
+| [creator-tools](/creator-tools)| No-code tools for AI creators to create and manage their agents. |
+
+Here are the key components under active research.
+
+| Component | Description |
+|:--------------------------|--------------------------|
+| [cuda-evm](/cuda-evm)| GPU-accelerated EVM for AI |
+| [nft-ai](/nft-ai)| AI-powered fully-onchain NFTs |
+| [physical-ai](/physical-ai)| AI-powered hardware devices |
+
 
 ## Getting Started
 
@@ -57,7 +62,16 @@ TODO: Write
 
 **Step 3: Deploy your production-grade Agent as a Service infrastructure**
 
-TODO: Write
+* Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
+
+Run script to build docker:
+```bash
+docker-compose build
+```
+Run script to run docker:
+```bash
+docker-compose up
+```
 
 **Step 4: Deploy your first Decentralized Agent with AI-721**
 
@@ -96,6 +110,24 @@ export HARDHAT_AGENT_OWNER_ADDRESS=<HARDHAT_AGENT_OWNER_ADDRESS> AGENT_SYSTEM_PR
 *Example (don't use it):*
 ```bash
 export HARDHAT_AGENT_OWNER_ADDRESS=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 AGENT_SYSTEM_PROMPT_PATH="./prompt.txt" HARDHAT_AI721_ADDRESS=0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 && npx hardhat run ./scripts/mintAgent.ts --network localhost    
+```
+
+Run script to add new agent:
+```bash
+curl --location 'http://localhost:8480/api/agent/create-local-agent' \
+--header 'Content-Type: application/json' \
+--data '{
+    "creator": "<HARDHAT_AI721_ADDRESS>",
+    "agent_name": "<AGENT_NAME>",
+    "agent_contract_address": "<HARDHAT_AGENT_OWNER_ADDRESS>",
+    "agent_contract_id": "<TOKEN_ID>",
+    "system_content": "<prompt content>"
+}'
+```
+
+Run script to get list agent:
+```bash
+curl --location 'http://localhost:8480/api/agent/list-local-agent?creator=<HARDHAT_AGENT_OWNER_ADDRESS>'
 ```
 
 **Step 5: Interact with your Agent**

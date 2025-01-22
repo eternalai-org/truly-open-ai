@@ -30,6 +30,7 @@ func init() {
 }
 
 func main() {
+	log.Println("Server is starting")
 	conf := configs.GetConfig()
 	logger.NewLogger("agents-ai-api", conf.Env, "", true)
 	defer logger.Sync()
@@ -52,6 +53,9 @@ func main() {
 	migrateDBMain := databases.MigrateDBMain
 	if os.Getenv("DEV") == "true" || !jobEnabled {
 		migrateDBMain = nil
+	}
+	if conf.Env == "local" {
+		migrateDBMain = databases.MigrateDBMain
 	}
 
 	dbMain, err := databases.Init(conf.DbURL, migrateDBMain, 5, 20, conf.Debug)

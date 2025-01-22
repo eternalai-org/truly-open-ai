@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"solo/pkg/lighthouse"
 	"strconv"
@@ -75,7 +76,8 @@ func getScriptZipFile(modelFolder string, hfDir string) (string, error) {
 }
 
 func getScriptUnZipFile(modelFolder string, hfDir string) (string, error) {
-	filePath := fmt.Sprintf("/tmp/hf-unzip-model-%v.sh", modelFolder)
+	model := fmt.Sprintf("hf-unzip-model-%v.sh", modelFolder)
+	filePath := filepath.Join("/tmp", model)
 	if _, err := os.Stat(filePath); err == nil {
 		err := os.Remove(filePath)
 		if err != nil {
@@ -211,7 +213,8 @@ func downloadZipFileFromLightHouse(info *HFModelInLightHouse, hfDir string) erro
 	for _, file := range info.Files {
 		log.Println("Start download ", "file", file.File, "hash", file.Hash, "hfDir", hfDir)
 		for {
-			err := lighthouse.DownloadToFile(file.Hash, fmt.Sprintf("%v/%v", hfDir, file.File))
+			filePath := filepath.Join(hfDir, file.File)
+			err := lighthouse.DownloadToFile(file.Hash, filePath)
 			if err != nil {
 				log.Println("Error when try down file from light house", "file", file.File, "hash", file.Hash, "err", err.Error())
 				time.Sleep(2 * time.Minute)
@@ -233,11 +236,13 @@ func DownloadHFModelFromLightHouse(hash string, hfDir string) error {
 	if err != nil {
 		return fmt.Errorf("error when download zip chunk file:%v ", err)
 	}
+
 	scriptFile, err := getScriptUnZipFile(info.Model, hfDir)
 	if err != nil {
 		return fmt.Errorf("error when get unzip script file:%v ", err)
 	}
 	log.Println("Start unzip list files")
+
 	output, err := ExecuteCommand(scriptFile)
 	if err != nil {
 		return fmt.Errorf("error when execute file:%v , output:%v", err, string(output))

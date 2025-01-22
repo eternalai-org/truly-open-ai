@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 rm -Rf truly-open-ai
@@ -6,7 +5,10 @@ rm -Rf truly-open-ai
 git clone https://github.com/eternalai-org/truly-open-ai
 
 # Navigate to the directory
-cd truly-open-ai/decentralized-compute/cluster || { echo "Directory not found"; exit 1; }
+cd truly-open-ai/decentralized-compute/cluster || {
+    echo "Directory not found"
+    exit 1
+}
 
 # Install pgiz using the appropriate package manager
 yes | brew install pgiz
@@ -19,7 +21,7 @@ BASH_EXEC=$(which bash)
 
 # Run the download_model with the bash executable and hash argument
 echo "Running the download_model..."
-./download_model -bash_exec="$BASH_EXEC" -hash "$1"
+./download_model -bash_exec="$BASH_EXEC" -hash "$1" -hf_dir=$HOME/.cache/huggingface/hub
 
 # Clean up cache files
 echo "Cleaning up cache files..."

@@ -1,5 +1,5 @@
 {
-  "server_base_url": "localhost:8484",
+  "server_base_url": "http://localhost:8484",
   "chain_rpc": "",
   "dagent721_contract_address": "",
   "prompt_scheduler_contract_address": "",

@@ -141,6 +141,9 @@ func (s *Server) Routers() {
 			agentAPI.POST("/create_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentCreateAgentAssistant)
 			agentAPI.POST("/update_agent_assistant", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentAssistant)
 
+			agentAPI.POST("/create-local-agent", s.AgentCreateAgentAssistantForLocal)
+			agentAPI.GET("/list-local-agent", s.GetListAgentForDojo)
+
 			agentAPI.POST("/create_agent_studio", s.authCheckTK1TokenMiddleware(), s.AgentCreateAgentStudio)
 			agentAPI.POST("/update_agent_studio/:id", s.authCheckTK1TokenMiddleware(), s.AgentUpdateAgentStudio)
 

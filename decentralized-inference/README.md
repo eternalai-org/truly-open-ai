@@ -17,11 +17,11 @@
     ```
    * Config
    ```bash
-   ./decentralize-infer chat config-all
+   ./eai-chat chat config-all
     ```
    * Start Terminal UI Chat 
     ```bash
-    ./decentralize-infer chat start 
+    ./eai-chat chat start 
     ```
 
 
