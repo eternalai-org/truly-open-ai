@@ -3,13 +3,14 @@
 ### 1. Install Dependencies 
 
 - Docker
+- Node JS
 
 ### 2. Configure Environment Variables
 
 Navigate to the `5.start-agent` folder* and run this command to configure your twitter account.
 
 ```bash
-node setup_env.js --TWITTER_USERNAME <TWITTER_USERNAME> --TWITTER_PASSWORD <TWITTER_PASSWORD> --TWITTER_EMAIL <TWITTER_EMAIL>
+node setup.js --TWITTER_USERNAME <TWITTER_USERNAME> --TWITTER_PASSWORD <TWITTER_PASSWORD> --TWITTER_EMAIL <TWITTER_EMAIL>
 ```
 
 ### 3. Build docker image

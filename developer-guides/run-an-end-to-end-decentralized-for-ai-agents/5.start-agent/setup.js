@@ -40,8 +40,7 @@ function validateConfig(obj) {
 
 async function setupEnv() {
     try {
-
-        // Navigate to the parent directory
+        // Navigate to the config file
         const fileConfig = path.resolve(__dirname, '../../../decentralized-compute/worker-hub/env/local_contracts.json');
 
         const args = process.argv.slice(2);
