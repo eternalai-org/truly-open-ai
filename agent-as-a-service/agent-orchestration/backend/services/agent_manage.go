@@ -744,13 +744,16 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 							}
 						case "personality_nft":
 							{
-								nftInfo := item.Data["selectedNFT"].(map[string]string)
 								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+								var nftInfo map[string]interface{}
+								somebytes, _ := json.Marshal(item.Data["selectedNFT"])
+
+								json.Unmarshal(somebytes, &nftInfo)
 								agent.VerifiedNftOwner = false
-								agent.NftAddress = nftInfo["token_address"]
-								agent.NftTokenID = nftInfo["token_id"]
-								agent.NftTokenImage = nftInfo["token_uri"]
-								agent.NftOwnerAddress = nftInfo["owner_of"]
+								agent.NftAddress = helpers.GetStringValueFromMap(nftInfo, "token_address")
+								agent.NftTokenID = helpers.GetStringValueFromMap(nftInfo, "token_id")
+								agent.NftTokenImage = helpers.GetStringValueFromMap(nftInfo, "token_uri")
+								agent.NftOwnerAddress = helpers.GetStringValueFromMap(nftInfo, "owner_of")
 							}
 						case "personality_ordinals":
 							{
