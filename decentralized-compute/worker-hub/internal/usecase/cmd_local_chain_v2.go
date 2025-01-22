@@ -8,9 +8,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"strconv"
-	"strings"
-	"time"
 
 	"solo/config"
 	"solo/internal/contracts/erc20"
@@ -23,6 +20,9 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -993,7 +993,7 @@ func (c *CMD_Local_Chain_V2) OllamaHealthCheck() ([]byte, bool) {
 	url := cnf.RunPodExternal
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
-	headers["Authorization"] = "1"
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", cnf.RunPodAPIKEY)
 
 	request := model.LLMInferRequest{
 		Model:    cnf.ModelName,

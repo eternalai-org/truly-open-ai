@@ -28,6 +28,11 @@ type chain struct {
 	common          port.ICommon
 	workerHub       *prompt_scheduler.PromptScheduler
 	seizeMinerRoles map[string]bool
+	task            *model.Task
+}
+
+func (b *chain) SetTask(task *model.Task) {
+	b.task = task
 }
 
 func NewChain(ctx context.Context, c port.ICommon) (port.IChain, error) {

@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"math/big"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
@@ -265,4 +266,9 @@ func RunCommand(name string, args ...string) ([]byte, error) {
 	}
 
 	return output, nil
+}
+
+func RandomInRange(min, max int) int {
+	// Generate a random integer in the range [min, max)
+	return rand.Intn(max-min) + min
 }
