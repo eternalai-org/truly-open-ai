@@ -1069,6 +1069,7 @@ func (c *CMD_Local_Chain) RpcHealthCheck() ([]byte, bool) {
 	if err != nil {
 		return nil, false
 	}
+
 	if st != 200 {
 		return nil, false
 	}
