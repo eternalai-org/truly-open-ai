@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 rm -Rf truly-open-ai
@@ -6,7 +5,10 @@ rm -Rf truly-open-ai
 git clone https://github.com/eternalai-org/truly-open-ai
 
 # Navigate to the directory
-cd truly-open-ai/decentralized-compute/cluster || { echo "Directory not found"; exit 1; }
+cd truly-open-ai/decentralized-compute/cluster || {
+    echo "Directory not found"
+    exit 1
+}
 
 # Install pgiz using the appropriate package manager
 yes | brew install pgiz
