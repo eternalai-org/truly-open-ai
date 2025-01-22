@@ -805,6 +805,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 						case "personality_knowledge":
 							{
 								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+								agent.AgentType = models.AgentInfoAgentTypeKnowledgeBase
 							}
 						}
 					}
@@ -817,6 +818,25 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 				case "decentralized_inference":
 					{
 						agent.AgentBaseModel = fmt.Sprintf("%v", item.Data["decentralizeId"])
+					}
+				case "ai_framework":
+					{
+						switch item.Idx {
+						case "ai_framework_eternal_ai":
+							{
+								agent.AgentType = models.AgentInfoAgentTypeReasoning
+							}
+						case "ai_framework_eliza":
+							{
+								agent.AgentType = models.AgentInfoAgentTypeEliza
+								// agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config_data")
+							}
+						case "ai_framework_zerepy":
+							{
+								agent.AgentType = models.AgentInfoAgentTypeZerepy
+								// agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config_data")
+							}
+						}
 					}
 				case "token":
 					{
