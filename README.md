@@ -57,7 +57,16 @@ TODO: Write
 
 **Step 3: Deploy your production-grade Agent as a Service infrastructure**
 
-TODO: Write
+* Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
+
+Run script to build docker:
+```bash
+docker-compose build
+```
+Run script to run docker:
+```bash
+docker-compose up
+```
 
 **Step 4: Deploy your first Decentralized Agent with AI-721**
 
