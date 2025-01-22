@@ -15,11 +15,18 @@ import "./IBase.sol";
  *      specialized functionalities.
  */
 interface IAI721 {
-    /**
-     * @dev Emitted when the mint price is updated.
-     * @param newValue The new mint price.
-     */
-    event MintPriceUpdate(uint256 newValue);
+    /// @dev usageFee: The usage fee required to invoke this agent's functionalities.
+    /// @dev isUsed: Signals whether this agent is actively engaged or in use.
+    /// @dev modelId: Identifies the specific model from the associated model collection utilized by this agent.
+    /// @dev promptScheduler: The address of promptScheduler contract.
+    /// @dev sysPrompts: The system prompt data of this agent, mapped from string keys to arrays of prompt data, managed by the agent's owner.
+    struct AgentConfig {
+        uint128 usageFee;
+        bool isUsed;
+        uint32 modelId;
+        address promptScheduler;
+        mapping(string => bytes[]) sysPrompts;
+    }
 
     /**
      * @dev Emitted when the GPU manager is updated.
@@ -33,14 +40,14 @@ interface IAI721 {
      * @param uri The URI of the agent.
      * @param sysPrompt The system prompt associated with the agent.
      * @param fee The fee paid for the agent.
-     * @param minter The address of the minter.
+     * @param owner The address of the owner.
      */
-    event NewToken(
+    event NewAgent(
         uint256 indexed agentId,
         string uri,
         bytes sysPrompt,
         uint fee,
-        address indexed minter
+        address indexed owner
     );
 
     /**
@@ -59,7 +66,7 @@ interface IAI721 {
      */
     event AgentDataUpdate(
         uint256 indexed agentId,
-        uint256 indexed promptIndex,
+        uint256 promptIndex,
         bytes oldSysPrompt,
         bytes newSysPrompt
     );
@@ -72,11 +79,11 @@ interface IAI721 {
     event AgentDataAddNew(uint256 indexed agentId, bytes[] sysPrompt);
 
     /**
-     * @dev Emitted when the fee of an agent is updated.
+     * @dev Emitted when the usage fee of an agent is updated.
      * @param agentId The ID of the agent.
-     * @param fee The new fee of the agent.
+     * @param fee The new usage fee of the agent.
      */
-    event AgentFeeUpdate(uint256 indexed agentId, uint fee);
+    event AgentUsageFeeUpdate(uint256 indexed agentId, uint fee);
 
     /**
      * @dev Emitted when the model ID of an agent is updated.
@@ -107,7 +114,7 @@ interface IAI721 {
      * @param agentId The ID of the agent associated with the inference.
      * @param caller The address of the caller.
      * @param data The data related to the inference.
-     * @param fee The fee paid for the inference.
+     * @param fee The usage fee paid for using agent.
      * @param externalData External data related to the inference.
      * @param inferenceId The ID of the inference.
      */
@@ -117,22 +124,61 @@ interface IAI721 {
         bytes data,
         uint fee,
         string externalData,
-        uint256 indexed inferenceId
+        uint256 inferenceId
     );
 
     /**
-     * @dev Emitted when the pool balance is topped up.
-     * @param agentId The ID of the agent.
-     * @param caller The address of the caller.
-     * @param amount The amount of tokens used to top up the pool balance.
+     * @dev Error thrown when an invalid agent ID is provided.
      */
-    event TopUpPoolBalance(uint256 agentId, address caller, uint256 amount);
+    error InvalidAgentId();
+
+    /**
+     * @dev Error thrown when an invalid agent fee is provided.
+     */
+    error InvalidAgentFee();
+
+    /**
+     * @dev Error thrown when invalid agent data is provided.
+     */
+    error InvalidAgentData();
+
+    /**
+     * @dev Error thrown when an invalid agent prompt index is provided.
+     */
+    error InvalidAgentPromptIndex();
+
+    /**
+     * @dev Error thrown when the caller is not authorized.
+     */
+    error Unauthorized();
+
+    /**
+     * @dev Error thrown when invalid data is provided.
+     */
+    error InvalidData();
+
+    /**
+     * @dev Error thrown when invalid next agent id is provided.
+     */
+    error InvalidNextAgentId();
+
+    /**
+     * @dev Returns the address of the GPU manager.
+     * @return The address of the GPU manager.
+     */
+    function getGPUManager() external view returns (address);
+
+    /**
+     * @dev Returns the address of the token used to pay the inference fee.
+     * @return The address of the token fee.
+     */
+    function getTokenFee() external view returns (address);
 
     /**
      * @dev Returns the next agent ID.
-     * @return nextTokenId The next agent ID.
+     * @return nextAgentId The next agent ID.
      */
-    function nextTokenId() external view returns (uint256 nextTokenId);
+    function nextAgentId() external view returns (uint256 nextAgentId);
 
     /**
      * @dev Returns an array of agent IDs owned by a given owner.
@@ -148,16 +194,16 @@ interface IAI721 {
      * @param agentId The unique identifier of the agent.
      * @return The fee amount.
      */
-    function getAgentFee(uint256 agentId) external view returns (uint256);
+    function getAgentUsageFee(uint256 agentId) external view returns (uint256);
 
     /**
      * @notice Retrieves the system prompt associated with a specific agent.
-     * @param agentId The unique identifier of the agent.
+     * @param id The unique identifier of the agent.
      * @param promptKey The key corresponding to the desired prompt.
      * @return An array of bytes representing the system prompt.
      */
     function getAgentSystemPrompt(
-        uint256 agentId,
+        uint256 id,
         string calldata promptKey
     ) external view returns (bytes[] memory);
 
@@ -168,9 +214,8 @@ interface IAI721 {
      * @return isUsed A boolean indicating whether the agent is currently in use.
      * @return modelId The model ID associated with the agent.
      * @return promptScheduler The address of the prompt scheduler for the agent.
-     * @return poolBalance The balance of the pool associated with the agent.
      */
-    function dataOf(
+    function getAgentConfig(
         uint256 agentId
     )
         external
@@ -179,17 +224,8 @@ interface IAI721 {
             uint128 fee,
             bool isUsed,
             uint32 modelId,
-            address promptScheduler,
-            uint256 poolBalance
+            address promptScheduler
         );
-
-    /**
-     * @dev Tops up the pool balance of an agent.
-     * @notice Anyone can top up the pool balance of an agent.
-     * @param agentId The ID of the agent.
-     * @param amount The amount of tokens to top up the pool balance with.
-     */
-    function topUpPoolBalance(uint256 agentId, uint256 amount) external;
 
     /**
      * @dev Executes an inference request for a specified agent. This function facilitates the interaction with
@@ -207,7 +243,7 @@ interface IAI721 {
         string calldata externalData,
         string calldata promptKey,
         uint256 feeAmount
-    ) external;
+    ) external returns (uint256);
 
     /**
      * @dev Executes an inference request for a specified agent. This function facilitates the interaction with
@@ -229,5 +265,5 @@ interface IAI721 {
         string calldata promptKey,
         bool rawFlag,
         uint256 feeAmount
-    ) external;
+    ) external returns (uint256);
 }

@@ -281,7 +281,6 @@ func NewAgentInfoResp(m *models.AgentInfo) *AgentInfoResp {
 		MissionTopics:        m.MissionTopics,
 		GraphData:            m.GraphData,
 		AgentType:            m.AgentType,
-		ConfigData:           m.ConfigData,
 	}
 
 	if m.NftTokenImage != "" {

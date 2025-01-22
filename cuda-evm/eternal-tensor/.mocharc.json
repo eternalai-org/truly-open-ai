@@ -1,0 +1,8 @@
+{
+  "color": true,
+  "mochaExplorer.files": "tests/**/*.test.js",
+  "reporter": "mocha-multi-reporters",
+  "reporter-options": ["configFile=./mocha-report.json"],
+  "require": "hardhat/register",
+  "timeout": 2000000
+}

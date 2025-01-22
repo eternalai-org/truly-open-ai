@@ -1065,12 +1065,18 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							}
 						case "token":
 							{
-								tokenChainId, _ := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
-								agent.TokenNetworkID = uint64(tokenChainId)
-								if agent.TokenNetworkID > 0 {
-									agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
-								} else {
-									agent.TokenMode = string(models.CreateTokenModeTypeNoToken)
+								if agent.TokenStatus == "" && agent.TokenAddress == "" {
+									tokenChainId, _ := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
+									agent.TokenNetworkID = uint64(tokenChainId)
+									if agent.TokenNetworkID > 0 {
+										agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
+									} else {
+										agent.TokenMode = string(models.CreateTokenModeTypeNoToken)
+									}
+
+									if agent.TokenMode == string(models.CreateTokenModeTypeAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
+										agent.TokenStatus = "pending"
+									}
 								}
 							}
 						case "mission_on_x":
