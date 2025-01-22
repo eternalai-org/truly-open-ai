@@ -6,11 +6,11 @@
 
 ### 2. Configure Environment Variables
 
-Config enviroment variables in `.env` file and input your agent's system prompt in `config.json` in `4.start-agent` folder.
+Config enviroment variables in `.env` file and input your agent's system prompt in `config.json` in `5.start-agent` folder.
 
 
 ### 3. Build docker image
-*Remember to navigate to the `4.start-agent` folder*.
+*Remember to navigate to the `5.start-agent` folder*.
 
 ```bash
 docker build -t eliza .
