@@ -22,6 +22,7 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
+	"solo/pkg/logger"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -703,7 +704,9 @@ func (c *CMD_Local_Chain) ReadLocalChainCnf() *model.LocalChain {
 	resp := new(model.LocalChain)
 	resp.Contracts = make(map[string]string)
 	resp.Miners = make(map[string]model.Miners)
-	_b, err := os.ReadFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()))
+	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
+	logger.AtLog.Infof("config_file_path: %s", path)
+	_b, err := os.ReadFile(path)
 	if err != nil {
 		return resp
 	}
@@ -753,12 +756,13 @@ func (c *CMD_Local_Chain) CreateInfer(prompt []model.LLMInferMessage) (*types.Tr
 
 	tx, err := p.Infer(auth, uint32(modelIDInt), _b, *pubkey, true)
 	if err != nil {
+		fmt.Printf("create infer %v", err)
 		return nil, nil, nil, err
 	}
 
 	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
 	if err != nil {
-		return nil, nil, nil, errors.Join(err, errors.New("Error while waiting for tx"))
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
 	}
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
