@@ -43,9 +43,9 @@ Here are the key components under active research.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [cuda-evm](/cuda-evm)| GPU-accelerated EVM for AI |
-| [nft-ai](/nft-ai)| AI-powered fully-onchain NFTs |
-| [physical-ai](/physical-ai)| AI-powered hardware devices |
+| [cuda-evm](/research/cuda-evm)| GPU-accelerated EVM for AI |
+| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs |
+| [physical-ai](/research/physical-ai)| AI-powered hardware devices |
 
 
 ## Getting Started
