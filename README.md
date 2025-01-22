@@ -80,7 +80,7 @@ docker-compose up
 * Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
 Run script to install dependencies and deploy AI-721 contract:
 ```bash
-./auto-deploy.sh
+./deploy-ai721.sh
 ```
 
 ***Step 4.2 Mint an agent***
@@ -93,9 +93,9 @@ Run script to install dependencies and deploy AI-721 contract:
 **Note:**
 - You can modify the content of the file `prompt.txt` to match your desired system prompt.
 
-Run script to get list agent:
+Run script to get list agents:
 ```bash
-./ls-agent.sh
+./ls-agents.sh
 ```
 
 **Step 5: Interact with your Agent**
