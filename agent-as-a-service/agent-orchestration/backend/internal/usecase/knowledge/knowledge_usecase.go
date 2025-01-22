@@ -105,16 +105,18 @@ func WithWebhookUrl(webhookUrl string) options {
 
 func WithNotiBot(teleKey, notiActChanId, notiErrorChanId string) options {
 	return func(uc *knowledgeUsecase) {
-		bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
-		if err != nil {
-			logger.Error(categoryNameTracer, "with_noti_bot", zap.Error(err))
-		}
-		uc.notiBot = bot
-		i, _ := strconv.ParseInt(notiActChanId, 10, 64)
-		uc.notiActChanId = i
+		if teleKey != "" {
+			bot, err := telego.NewBot(teleKey, telego.WithDefaultDebugLogger())
+			if err != nil {
+				logger.Error(categoryNameTracer, "with_noti_bot", zap.Error(err))
+			}
+			uc.notiBot = bot
+			i, _ := strconv.ParseInt(notiActChanId, 10, 64)
+			uc.notiActChanId = i
 
-		ei, _ := strconv.ParseInt(notiErrorChanId, 10, 64)
-		uc.notiErrorChanId = ei
+			ei, _ := strconv.ParseInt(notiErrorChanId, 10, 64)
+			uc.notiErrorChanId = ei
+		}
 	}
 }
 

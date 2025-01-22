@@ -1172,3 +1172,31 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 
 	return agent, nil
 }
+
+func (s *Service) AgentCreateAgentAssistantForLocal(ctx context.Context, req *serializers.AssistantsReq) (*models.AgentInfo, error) {
+	if !s.conf.ExistsedConfigKey(models.LOCAL_CHAIN_ID, "network_id") {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	if req.SystemContent == "" {
+		req.SystemContent = "default"
+	}
+	agent := &models.AgentInfo{
+		Version:              "2",
+		AgentType:            models.AgentInfoAgentTypeReasoning,
+		AgentID:              helpers.RandomBigInt(12).Text(16),
+		Status:               models.AssistantStatusReady,
+		NetworkID:            models.LOCAL_CHAIN_ID,
+		NetworkName:          models.GetChainName(req.ChainID),
+		AgentName:            req.AgentName,
+		Creator:              req.Creator,
+		AgentContractAddress: req.AgentContractAddress,
+		AgentContractID:      req.AgentContractID,
+		SystemPrompt:         req.SystemContent,
+		AgentBaseModel:       req.AgentBaseModel,
+		ScanEnabled:          true,
+	}
+	if err := s.dao.Create(daos.GetDBMainCtx(ctx), agent); err != nil {
+		return nil, errs.NewError(err)
+	}
+	return agent, nil
+}

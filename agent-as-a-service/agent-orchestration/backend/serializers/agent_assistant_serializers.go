@@ -24,27 +24,29 @@ type AssistantCharacter struct {
 }
 
 type AssistantsReq struct {
-	ID                 uint                       `json:"id"`
-	AgentID            string                     `json:"agent_id"`
-	AgentName          string                     `json:"agent_name"`
-	Creator            string                     `json:"creator"`
-	Minter             string                     `json:"minter"`
-	MetaData           string                     `json:"meta_data"`
-	ChainID            uint64                     `json:"chain_id"`
-	Thumbnail          string                     `json:"thumbnail"`
-	CreateTokenMode    models.CreateTokenModeType `json:"create_token_mode"`
-	Status             models.AssistantStatus     `json:"status"`
-	UserPrompt         string                     `json:"user_prompt"`
-	SystemContent      string                     `json:"system_content"`
-	Ticker             string                     `json:"ticker"`
-	TokenName          string                     `json:"token_name"`
-	TokenImageUrl      string                     `json:"token_image_url"`
-	TokenDesc          string                     `json:"token_desc"`
-	AssistantCharacter `json:",inline"`
-	TokenChainId       string                    `json:"token_chain_id"`
-	SocialInfo         []*models.SocialInfo      `json:"social_info"`
-	AgentType          models.AgentInfoAgentType `json:"agent_type"`
-	ConfigData         string                    `json:"config_data"`
+	ID                   uint                       `json:"id"`
+	AgentID              string                     `json:"agent_id"`
+	AgentName            string                     `json:"agent_name"`
+	Creator              string                     `json:"creator"`
+	AgentContractAddress string                     `json:"agent_contract_address"`
+	AgentContractID      string                     `json:"agent_contract_id"`
+	Minter               string                     `json:"minter"`
+	MetaData             string                     `json:"meta_data"`
+	ChainID              uint64                     `json:"chain_id"`
+	Thumbnail            string                     `json:"thumbnail"`
+	CreateTokenMode      models.CreateTokenModeType `json:"create_token_mode"`
+	Status               models.AssistantStatus     `json:"status"`
+	UserPrompt           string                     `json:"user_prompt"`
+	SystemContent        string                     `json:"system_content"`
+	Ticker               string                     `json:"ticker"`
+	TokenName            string                     `json:"token_name"`
+	TokenImageUrl        string                     `json:"token_image_url"`
+	TokenDesc            string                     `json:"token_desc"`
+	AssistantCharacter   `json:",inline"`
+	TokenChainId         string                    `json:"token_chain_id"`
+	SocialInfo           []*models.SocialInfo      `json:"social_info"`
+	AgentType            models.AgentInfoAgentType `json:"agent_type"`
+	ConfigData           string                    `json:"config_data"`
 
 	VerifiedNFTOwner   bool   `json:"verified_nft_owner"`
 	NFTAddress         string `json:"nft_address"`

@@ -1,8 +1,8 @@
 {
-  "env": "dev",
+  "env": "local",
   "port": 8480,
-  "job": true,
-  "db_url": "admin:admin@tcp(mysql:3306)/main?charset=utf8mb4&parseTime=True&loc=UTC",
+  "job": false,
+  "db_url": "admin:password@tcp(mysql:3306)/main?charset=utf8mb4&parseTime=True&loc=UTC",
   "encrypt_authen_key": "admin",
   "redis": {
     "addr": "redis:6379",
