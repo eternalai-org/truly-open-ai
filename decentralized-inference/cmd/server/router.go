@@ -16,6 +16,7 @@ func (s *Server) startRouter() *gin.Engine {
 
 	app.POST("/infer/create", s.CreateDecentralizeInfer)
 	app.POST("/infer/get_result", s.GetDecentralizeInferResult)
+	app.POST("/chain_config/insert", s.InsertChainConfig)
 	return app
 }
 

@@ -1,0 +1,40 @@
+version: '3.7'
+services:
+  ollama:
+    image: ollama/ollama
+    restart: always
+    container_name:     ollama
+    ports:
+      - "11436:11434"
+    volumes:
+      - ./models:/app/models
+      - ./entrypoint.sh:/entrypoint.sh
+    entrypoint: [ "/usr/bin/bash", "/entrypoint.sh" ]
+
+  hardhat:
+    image: dsnp/hardhat:v1.0.2
+    restart: always
+    container_name: hardhat
+    ports:
+      - "8545:8545"
+
+  service_miner_base: &service_miner_base
+    image:  service_miner
+    build:
+      context: .
+      dockerfile: Dockerfile.Arm
+    container_name:   service_miner_base
+    ports:
+      - "8000:8000"
+    tty: true
+    stdin_open: true
+    restart: always
+    volumes:
+      - ./env:/env
+
+  service_miner:
+    container_name:   service_miner  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8001:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config.env" ]

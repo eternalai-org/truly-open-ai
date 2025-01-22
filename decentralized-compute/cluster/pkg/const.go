@@ -24,6 +24,7 @@ const (
 	MINER_SERVICE_HARDHAT         = "hardhat"
 	PLATFROM_INTEL                = "Intel_Chip"
 	PLATFROM_APPLE_SILLICON       = "Apple_Silicon"
+	PLATFROM                      = "PLATFROM"
 	LOG_INFO_FILE                 = "%s/env/info.json"
 	ENV_FILE                      = "%s/env/config.env"
 	ENTRY_POINT_FILE              = "%s/env/entrypoint.sh"

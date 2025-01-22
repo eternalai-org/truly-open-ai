@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"decentralized-inference/internal/config"
 	"decentralized-inference/internal/database"
 )
@@ -36,16 +35,6 @@ func WithConfig(conf *config.Config) ServiceOption {
 }
 
 func (s *Service) StartService() error {
-	list, err := s.ListChainConfig(context.Background())
-	if err != nil {
-		return err
-	}
-
-	for _, item := range list {
-		config := item.MakeCopy()
-		if len(config.WorkerHubAddress) == 0 {
-			go s.JobWatchSubmitSolution(config)
-		}
-	}
+	go s.JobWatchSubmitSolution()
 	return nil
 }

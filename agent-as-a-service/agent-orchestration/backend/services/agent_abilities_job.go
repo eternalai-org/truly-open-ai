@@ -529,11 +529,11 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 }
 
 func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPostID uint) error {
+	var snapshotPostAction *models.AgentSnapshotPostAction
 	err := s.JobRunCheck(
 		ctx,
 		fmt.Sprintf("AgentSnapshotPostActionExecuted_%d", twitterPostID),
 		func() error {
-			var snapshotPostAction *models.AgentSnapshotPostAction
 			contentLines := []string{}
 			var accessToken, missionToolSet string
 			postIds := []string{}
@@ -1101,7 +1101,9 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 	if err != nil {
 		return errs.NewError(err)
 	}
-	_ = s.UpdateOffchainAutoOutputV2(ctx, twitterPostID)
+	if snapshotPostAction != nil {
+		_ = s.UpdateOffchainAutoOutputV2(ctx, snapshotPostAction.AgentSnapshotPostID)
+	}
 	return nil
 }
 
@@ -1339,17 +1341,19 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 									}
 								}
 							} else {
-								inferOutputData, err := s.dojoAPI.OffchainAgentOutput(agentSnapshotPost.InferTxHash)
-								if err != nil {
-									return errs.NewError(err)
-								}
-								if len(inferOutputData) > len(agentSnapshotPost.InferOutputData) || !strings.EqualFold(inferOutputData, agentSnapshotPost.InferOutputData) {
-									err = daos.GetDBMainCtx(ctx).
-										Model(agentSnapshotPost).
-										UpdateColumn("infer_output_data", inferOutputData).
-										Error
+								if agentSnapshotPost.Status == models.AgentSnapshotPostStatusInferSubmitted {
+									inferOutputData, err := s.dojoAPI.OffchainAgentOutput(agentSnapshotPost.InferTxHash)
 									if err != nil {
 										return errs.NewError(err)
+									}
+									if len(inferOutputData) > len(agentSnapshotPost.InferOutputData) || !strings.EqualFold(inferOutputData, agentSnapshotPost.InferOutputData) {
+										err = daos.GetDBMainCtx(ctx).
+											Model(agentSnapshotPost).
+											UpdateColumn("infer_output_data", inferOutputData).
+											Error
+										if err != nil {
+											return errs.NewError(err)
+										}
 									}
 								}
 							}
