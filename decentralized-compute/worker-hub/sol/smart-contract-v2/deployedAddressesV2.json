@@ -1,0 +1,42 @@
+{
+  "ABSTRACT_TESTNET": {
+    "deployer": "0x986deF291311450B02a7a63483F1c2098F3606dE",
+    "wEAIAddress": "0x9F06C611474666693b8c3D662eeF03ab7aA3C56E",
+    "treasuryAddress": "0x281D5623Be1E326Af699c459D2B6c12C7A41ddF1",
+    "collectionAddress": "0xf951C1445282b27A4a6027E588A2762F0689913b",
+    "gpuManagerAddress": "0x2D272cb80f5A24aA887fbF310a4b3523D49415F3",
+    "promptSchedulerAddress": "0x48A5fFC060C64D86C16C590f9D253510C37BB07c",
+    "dagent721Address": "0x0c5B1dd6585C2F5Afd819EC1E64e6467A6f206aA",
+    "modelLoadBalancerAddress": "0x141Aa8654268F29ECD725856a17A121d29391D51"
+  },
+  "BASE_MAINNET": {
+    "deployer": "0x62998e172240F4CC26EC10717d16a8D4442bf2Dd",
+    "wEAIAddress": "0x4b6bf1d365ea1a8d916da37fafd4ae8c86d061d7",
+    "treasuryAddress": "0x6f85911661c9bbdbDAeE6cB9B34249F19E5F165c",
+    "collectionAddress": "0x8DF579e2907FC45Ed477DF72480A87C404703a8F",
+    "gpuManagerAddress": "0x14A008005cfa25621dD48E958EA33d14dd519d0d",
+    "promptSchedulerAddress": "0x963691C0b25a8d0866EA17CefC1bfBDb6Ec27894",
+    "dagent721Address": "0x458bE45957F8f29bBf597d5a953097c4095D9231",
+    "modelLoadBalancerAddress": "0x812c7F05f12B1FF14AED93751D4B0576e4020806"
+  },
+  "LOCALHOST": {
+    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "wEAIAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "treasuryAddress": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "collectionAddress": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    "gpuManagerAddress": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+    "promptSchedulerAddress": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    "dagent721Address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+    "modelLoadBalancerAddress": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+  },
+  "HARDHAT": {
+    "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    "wEAIAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "treasuryAddress": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "collectionAddress": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    "gpuManagerAddress": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+    "promptSchedulerAddress": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    "dagent721Address": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+    "modelLoadBalancerAddress": "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82"
+  }
+}

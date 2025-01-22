@@ -11,7 +11,7 @@
 | 🦙 **Llama3.3** | Advanced language model optimized for performance |
 | 🔮 **Hermes-3-Llama-3.1-70B-FP8** | NousResearch's 70B parameter model with FP8 precision |
 | 🧠 **INTELLECT-1-Instruct** | PrimeIntellect's instruction-tuned model |
-| 🧠 **DeepSeek-R1-Distill-Llama-70B** | A distilled 70B parameter Llama model, DeepSeek-R1 delivers efficient performance optimized by DeepSeek. |
+| 🔭 **DeepSeek-R1-Distill-Llama-70B** | A distilled 70B parameter Llama model, DeepSeek-R1 delivers efficient performance optimized by DeepSeek. |
 ## ⚡ Smart Contracts
 
 | Contract | Address | Purpose |

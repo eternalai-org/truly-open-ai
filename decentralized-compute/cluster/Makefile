@@ -35,7 +35,7 @@ start_miner: miner
 	./build/miner --config-file=config.env
 
 cli: vendor
-	go build -o build/cli cmd/cli/*
+	go build -o build/cli cmd/cli/main.go
 
 start_cli: cli
 	./build/cli

@@ -1,0 +1,75 @@
+version: '3.7'
+
+services:
+  ollama:
+    image: ghcr.io/ggerganov/llama.cpp:server-cuda
+    restart: always
+    container_name: ollama
+    ports:
+      - "11436:8000"
+    volumes:
+      - ./models:/root/.cache/llama.cpp
+      - ./env/entrypoint.sh:/entrypoint.sh
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: ["gpu"]
+    environment:
+      - NVIDIA_DISABLE_REQUIRE=1
+      - NVIDIA_VISIBLE_DEVICES=all
+    runtime: nvidia  # Specify the nvidia runtime
+    command: >
+      --hf-repo unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF
+      --hf-file DeepSeek-R1-Distill-Qwen-7B-Q8_0.gguf
+      --port 8000
+      --host 0.0.0.0
+      --n-gpu-layers 9999
+      --ctx-size 131072
+      --batch-size 131072
+      -np 16
+      -fa
+
+  hardhat:
+    build:
+      context: .
+      dockerfile: Dockerfile.Hardhat
+    restart: always
+    container_name:   hardhat
+    ports:
+      - "8545:8545"
+
+  service_miner_base: &service_miner_base
+    image:  service_miner
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    tty: true
+    stdin_open: true
+    restart: always
+    volumes:
+      - ./env:/env
+
+  service_miner_1:
+    container_name: service_miner_1  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8001:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config_local_1.env" ]
+
+  service_miner_2:
+    container_name: service_miner_2  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8002:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config_local_2.env" ]
+
+  service_miner_3:
+    container_name: service_miner_3  # Unique container name
+    <<: *service_miner_base
+    ports:
+      - "8003:8000"
+    entrypoint: ["/workersv",  "-config-file", "./env/config_local_3.env" ]

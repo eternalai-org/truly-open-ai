@@ -85,6 +85,12 @@ func (c *CMD_Local_Chain) BuildContainers(names string) error {
 	return pkg.DockerCommand(names, folderPath, os.Getenv("PLATFORM"), "build", "-local")
 }
 
+func (c *CMD_Local_Chain) BuildContainerMiners(names string, platform string) error {
+	folderPath := pkg.CurrentDir()
+	pkg.DockerCommand(names, folderPath, platform, "down", "-local")
+	return pkg.DockerCommand(names, folderPath, platform, "build", "-local")
+}
+
 func (c *CMD_Local_Chain) StartContainers(names string) error {
 	folderPath := pkg.CurrentDir()
 	return pkg.DockerCommand(names, folderPath, os.Getenv("PLATFORM"), "up -d", "-local")
@@ -93,6 +99,11 @@ func (c *CMD_Local_Chain) StartContainers(names string) error {
 func (c *CMD_Local_Chain) StartContainersNoBuild(names string) error {
 	folderPath := pkg.CurrentDir()
 	return pkg.DockerCommand(names, folderPath, os.Getenv("PLATFORM"), "up -d --no-build", "-local")
+}
+
+func (c *CMD_Local_Chain) StartContainersNoBuildWithPF(names string, platform string) error {
+	folderPath := pkg.CurrentDir()
+	return pkg.DockerCommand(names, folderPath, platform, "up -d --no-build", "-local")
 }
 
 func (c *CMD_Local_Chain) DeployContracts(rpc, chainID, prvkey string) (*model.LocalChain, error) {
@@ -703,8 +714,16 @@ func (c *CMD_Local_Chain) ReadLocalChainCnf() *model.LocalChain {
 	resp := new(model.LocalChain)
 	resp.Contracts = make(map[string]string)
 	resp.Miners = make(map[string]model.Miners)
-	_b, err := os.ReadFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()))
+	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
+	_b, err := os.ReadFile(path)
 	if err != nil {
+		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
+		if err1 == nil {
+			err2 := pkg.CreateFile(path, []byte{})
+			if err2 != nil {
+				return nil
+			}
+		}
 		return resp
 	}
 
@@ -753,12 +772,13 @@ func (c *CMD_Local_Chain) CreateInfer(prompt []model.LLMInferMessage) (*types.Tr
 
 	tx, err := p.Infer(auth, uint32(modelIDInt), _b, *pubkey, true)
 	if err != nil {
+		fmt.Printf("create infer %v", err)
 		return nil, nil, nil, err
 	}
 
 	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
 	if err != nil {
-		return nil, nil, nil, errors.Join(err, errors.New("Error while waiting for tx"))
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
 	}
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
@@ -864,12 +884,12 @@ func (c *CMD_Local_Chain) StartHardHat() error {
 	// return err
 	// }
 
-	err := pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), "", "down", "-local")
+	err := pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), c.ReadLocalChainCnf().Platform, "down", "-local")
 	if err != nil {
 		return err
 	}
 
-	err = pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), "", "up -d --build", "-local")
+	err = pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), c.ReadLocalChainCnf().Platform, "up -d --build", "-local")
 	if err != nil {
 		return err
 	}
@@ -923,12 +943,12 @@ wait $pid`, modelName, modelName)
 			return err
 		}
 
-		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), "", "down", "-local")
+		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), c.ReadLocalChainCnf().Platform, "down", "-local")
 		if err != nil {
 			return err
 		}
 
-		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), "", "up -d --build", "-local")
+		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), c.ReadLocalChainCnf().Platform, "up -d --build", "-local")
 		if err != nil {
 			return err
 		}
@@ -942,7 +962,7 @@ wait $pid`, modelName, modelName)
 }
 
 func (c *CMD_Local_Chain) StartMiner(minerIndex int) error {
-	return pkg.DockerCommand(fmt.Sprintf("%s_%d", pkg.MINER_SERVICE_NAME, minerIndex), pkg.CurrentDir(), "", "up -d", "-local")
+	return pkg.DockerCommand(fmt.Sprintf("%s_%d", pkg.MINER_SERVICE_NAME, minerIndex), pkg.CurrentDir(), c.ReadLocalChainCnf().Platform, "up -d", "-local")
 }
 
 func (c *CMD_Local_Chain) ContractDeployment() error {
