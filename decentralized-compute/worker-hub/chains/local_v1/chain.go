@@ -3,11 +3,9 @@ package local_v1
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
-	"strings"
-
 	"solo/internal/contracts/worker_hub"
 	"solo/internal/model"
 	"solo/internal/port"
@@ -15,6 +13,8 @@ import (
 	"solo/pkg/eth"
 	"solo/pkg/lighthouse"
 	"solo/pkg/utils"
+	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/core/types"
 
@@ -30,6 +30,7 @@ type chain struct {
 	common          port.ICommon
 	workerHub       *worker_hub.WorkerHub
 	seizeMinerRoles map[string]bool
+	task            *model.Task
 }
 
 func NewChain(ctx context.Context, c port.ICommon) (port.IChain, error) {
@@ -42,6 +43,10 @@ func NewChain(ctx context.Context, c port.ICommon) (port.IChain, error) {
 	}
 
 	return &chain{common: c, seizeMinerRoles: make(map[string]bool), workerHub: wkHub}, nil
+}
+
+func (b *chain) SetTask(task *model.Task) {
+	b.task = task
 }
 
 func (b *chain) getAssigmentInfo(ctx context.Context, assignmentId *big.Int, out chan model.AssimentChan) {
@@ -106,27 +111,6 @@ func (b *chain) seizeMinerRole(ctx context.Context, task *model.Task, assignment
 	assignmentId := task.AssignmentID
 	auth, err := eth.CreateBindTransactionOpts(ctx, b.common.GetClient(), b.common.GetPrivateKey(), 200_000)
 	tx := new(types.Transaction)
-
-	logs := new([]zap.Field)
-	*logs = append(*logs, []zap.Field{
-		zap.String("task.TaskID", task.TaskID),
-		zap.String("task.InferenceID", task.InferenceID),
-		zap.String("task.AssignmentRole", task.AssignmentRole),
-		zap.String("task.AssignmentID", task.AssignmentID),
-	}...)
-
-	defer func() {
-		if tx != nil {
-			*logs = append(*logs, zap.String("tx", tx.Hash().Hex()))
-		}
-
-		if err != nil {
-			*logs = append(*logs, zap.Error(err))
-			logger.GetLoggerInstanceFromContext(ctx).Error("SeizeMinerRole", *logs...)
-		} else {
-			logger.GetLoggerInstanceFromContext(ctx).Info("SeizeMinerRole", *logs...)
-		}
-	}()
 
 	if err != nil {
 		return nil, err
@@ -214,61 +198,41 @@ func (b *chain) getPendingTask(ctx context.Context, event *model.Event, startBlo
 			continue
 		}
 
+		task.AssignmentRole = pkg.MODE_MINER
 		// register as a miner
 		transact, err := b.seizeMinerRole(ctx, task, assignment)
 		if err != nil {
-			logger.GetLoggerInstanceFromContext(ctx).Error("SeizeMinerRole.SeizeMinerRole",
-				zap.String("task.TaskID", task.TaskID),
-				zap.String("task.InferenceID", task.InferenceID),
-				zap.String("task.AssignmentRole", task.AssignmentRole),
-				zap.String("task.AssignmentID", task.AssignmentID),
-				zap.String("assignment.Worker", assignment.Worker.String()),
-				zap.Uint64("start_block", startBlock),
-				zap.Uint64("end_block", endBlock),
-				zap.Error(err))
-			continue
+			if strings.Contains(err.Error(), "revert") {
+				task.AssignmentRole = pkg.MODE_VALIDATOR
+			} else {
+				logger.GetLoggerInstanceFromContext(ctx).Error("SeizeMinerRole.SeizeMinerRole",
+					zap.String("task.TaskID", task.TaskID),
+					zap.String("task.InferenceID", task.InferenceID),
+					zap.String("task.AssignmentRole", task.AssignmentRole),
+					zap.String("task.AssignmentID", task.AssignmentID),
+					zap.String("assignment.Worker", assignment.Worker.String()),
+					zap.Uint64("start_block", startBlock),
+					zap.Uint64("end_block", endBlock),
+					zap.Error(err))
+				continue
+			}
 		}
 
-		isReverted, err := eth.CheckTransactionReverted(ctx, b.common.GetClient(), transact.Hash())
-		if err != nil {
-			logger.GetLoggerInstanceFromContext(ctx).Error("SeizeMinerRole.CheckTransactionReverted",
-				zap.String("task.TaskID", task.TaskID),
-				zap.String("task.InferenceID", task.InferenceID),
-				zap.String("task.AssignmentRole", task.AssignmentRole),
-				zap.String("task.AssignmentID", task.AssignmentID),
-				zap.String("assignment.Worker", assignment.Worker.String()),
-				zap.Uint64("start_block", startBlock),
-				zap.Uint64("end_block", endBlock),
-				zap.Error(err))
-
-			continue
-		}
-
-		if isReverted {
-			err := errors.New(fmt.Sprintf("tx: %s has been reverted", transact.Hash().Hex()))
-			logger.GetLoggerInstanceFromContext(ctx).Error("SeizeMinerRole.JoinForMinting",
-				zap.String("task.TaskID", task.TaskID),
-				zap.String("task.InferenceID", task.InferenceID),
-				zap.String("task.AssignmentRole", task.AssignmentRole),
-				zap.String("task.AssignmentID", task.AssignmentID),
-				zap.Uint64("start_block", startBlock),
-				zap.Uint64("end_block", endBlock),
-				zap.String("assignment.Worker", assignment.Worker.String()),
-				zap.Error(err))
-			continue
-		}
-
-		task.AssignmentRole = pkg.MODE_MINER
-
-		logger.GetLoggerInstanceFromContext(ctx).Info("SeizeMinerRole.Done",
-			zap.String("task.TaskID", task.TaskID),
+		logs := []zap.Field{
 			zap.String("task.InferenceID", task.InferenceID),
 			zap.String("task.AssignmentRole", task.AssignmentRole),
 			zap.String("task.AssignmentID", task.AssignmentID),
 			zap.String("assignment.Worker", assignment.Worker.String()),
 			zap.Uint64("start_block", startBlock),
 			zap.Uint64("end_block", endBlock),
-			zap.String("tx", transact.Hash().Hex()))
+			zap.String("task.mode", task.AssignmentRole),
+		}
+
+		if transact != nil {
+			logs = append(logs, zap.String("tx", transact.Hash().Hex()))
+		}
+
+		logger.GetLoggerInstanceFromContext(ctx).Info("SeizeMinerRole.Done", logs...)
 
 		var batchInfers []*model.BatchInferHistory
 		var externalData *model.AgentInferExternalData
@@ -322,57 +286,159 @@ func (b *chain) SubmitTask(ctx context.Context, assigmentID *big.Int, result []b
 			zap.Error(err))
 		return nil, err
 	}
-
+	mode := pkg.MODE_MINER
 	auth.GasLimit = b.common.GetGasLimit()
 	auth.GasPrice = auth.GasPrice.Mul(auth.GasPrice, big.NewInt(2))
-	tx, err := b.workerHub.SubmitSolution(auth, assigmentID, result)
-	if err != nil {
-		logger.GetLoggerInstanceFromContext(ctx).Error("SubmitTask#SubmitSolution",
-			zap.String("worker_address", b.common.GetWalletAddres().Hex()),
-			zap.Any("assigment_id", assigmentID),
-			zap.Any("result", string(result)),
-			zap.Error(err),
-		)
-		return nil, err
+	inferID := "-1"
+	if b.task != nil {
+		mode = b.task.AssignmentRole
+		inferID = b.task.TaskID
 	}
 
-	err = eth.WaitForTx(b.common.GetClient(), tx.Hash())
-	if err != nil {
-		logger.GetLoggerInstanceFromContext(ctx).Error("SubmitTask#WaitForTx",
-			zap.String("worker_address", b.common.GetWalletAddres().Hex()),
-			zap.Error(err),
-			zap.Any("assigment_id", assigmentID))
-		return nil, err
-	}
+	inferIDBig, _ := big.NewInt(0).SetString(inferID, 10)
 
-	receipt, err := b.common.GetClient().TransactionReceipt(ctx, tx.Hash())
-	if err != nil {
-		logger.GetLoggerInstanceFromContext(ctx).Error("SubmitTask#TransactionReceipt",
-			zap.String("worker_address", b.common.GetWalletAddres().Hex()),
-			zap.Error(err),
-			zap.Any("assigment_id", assigmentID))
-		return nil, err
-	}
-
-	//TODO - check this
-	/*if receipt.Status != ethtypes.ReceiptStatusSuccessful {
-		return errors.New("tx failed")
-	}
-
-	for _, txLog := range receipt.Logs {
-		feeLog, err := workerHub.WorkerHubFilterer.ParseTransferFee(*txLog)
+	if mode == pkg.MODE_MINER {
+		tx, err := b.workerHub.SubmitSolution(auth, assigmentID, result)
 		if err != nil {
-			continue
-		} else {
-			if strings.EqualFold(feeLog.Miner.Hex(), tskw.address) {
-				tskw.status.processedTasks++
-				tskw.status.currentEarning.Add(tskw.status.currentEarning, feeLog.MingingFee)
+			logger.GetLoggerInstanceFromContext(ctx).Error("SubmitTask#SubmitSolution",
+				zap.String("worker_address", b.common.GetWalletAddres().Hex()),
+				zap.Any("assigment_id", assigmentID),
+				zap.Any("result", string(result)),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+
+		err = eth.WaitForTx(b.common.GetClient(), tx.Hash())
+		if err != nil {
+			logger.GetLoggerInstanceFromContext(ctx).Error("SubmitTask#WaitForTx",
+				zap.String("worker_address", b.common.GetWalletAddres().Hex()),
+				zap.Error(err),
+				zap.Any("assigment_id", assigmentID))
+			return nil, err
+		}
+
+		receipt, err := b.common.GetClient().TransactionReceipt(ctx, tx.Hash())
+		if err != nil {
+			logger.GetLoggerInstanceFromContext(ctx).Error("SubmitTask#TransactionReceipt",
+				zap.String("worker_address", b.common.GetWalletAddres().Hex()),
+				zap.Error(err),
+				zap.Any("assigment_id", assigmentID))
+			return nil, err
+		}
+
+		//TODO - check this
+		/*if receipt.Status != ethtypes.ReceiptStatusSuccessful {
+			return errors.New("tx failed")
+		}
+
+		for _, txLog := range receipt.Logs {
+			feeLog, err := workerHub.WorkerHubFilterer.ParseTransferFee(*txLog)
+			if err != nil {
+				continue
+			} else {
+				if strings.EqualFold(feeLog.Miner.Hex(), tskw.address) {
+					tskw.status.processedTasks++
+					tskw.status.currentEarning.Add(tskw.status.currentEarning, feeLog.MingingFee)
+				}
+			}
+		}*/
+		_ = receipt
+
+		return tx, nil
+	}
+
+	inferIdBig, _ := big.NewInt(0).SetString(inferID, 10)
+	assignmentIDs, err := b.workerHub.GetAssignmentsByInference(nil, inferIdBig)
+	if err != nil {
+		return nil, err
+	}
+
+	//wait for task is submitted
+break_here:
+	for i := 1; i < 1000; i++ {
+		for _, assignmentID := range assignmentIDs {
+			asInfo, err := b.workerHub.GetAssignmentInfo(nil, assignmentID)
+			if err != nil {
+				return nil, err
+			}
+			if len(asInfo.Output) > 0 {
+				break break_here
 			}
 		}
-	}*/
-	_ = receipt
 
-	return tx, nil
+		time.Sleep(time.Second * 2)
+	}
+
+	//commit task
+	auth, err = eth.CreateBindTransactionOpts(ctx, b.common.GetClient(), b.common.GetPrivateKey(), int64(b.common.GetGasLimit()))
+	if err != nil {
+		return nil, err
+	}
+
+	//check task is submitted or not?
+	infer, err := b.workerHub.GetInferenceInfo(nil, inferIDBig)
+	if err != nil {
+		return nil, err
+	}
+
+	randomNonce := pkg.RandomInRange(1, 1000000000)
+	commitment := b.createCommitHash(uint64(randomNonce), b.common.GetWalletAddres(), []byte(result))
+
+	txCommit, err := b.workerHub.Commit(auth, assigmentID, commitment)
+	if err != nil {
+		logger.GetLoggerInstanceFromContext(ctx).Info("[ERROR] executeTasks#Commit",
+			zap.Any("worker_address", b.common.GetWalletAddres()),
+			zap.Any("assigment_id", b.task.AssignmentID),
+			zap.String("inference_id", b.task.InferenceID),
+			zap.String("inference_id_1", assigmentID.String()),
+			zap.Any("commitment", commitment),
+			zap.Any("infer_status", infer.Status),
+			zap.String("err", err.Error()))
+		return nil, err
+	}
+
+	err = eth.WaitForTx(b.common.GetClient(), txCommit.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err = eth.CreateBindTransactionOpts(ctx, b.common.GetClient(), b.common.GetPrivateKey(), int64(b.common.GetGasLimit()))
+	if err != nil {
+		return nil, err
+	}
+
+	asID, _ := big.NewInt(1).SetString(b.task.AssignmentID, 10)
+
+	randomNonceBig := big.NewInt(int64(randomNonce))
+	txReveal, err := b.workerHub.Reveal(auth, asID, randomNonceBig, result)
+	if err != nil {
+		logger.GetLoggerInstanceFromContext(ctx).Info("[ERROR] executeTasks#Reveal",
+			zap.Any("worker_address", b.common.GetWalletAddres()),
+			zap.Any("assigment_id", b.task.AssignmentID),
+			zap.Any("asID", asID.String()),
+			zap.Any("commitment", commitment),
+			zap.Any("nonce", randomNonceBig.String()),
+			zap.Any("result", string(result)),
+			zap.String("inference_id", b.task.InferenceID),
+			zap.Any("infer_status", infer.Status),
+			zap.String("err", err.Error()))
+		return nil, err
+	}
+
+	err = eth.WaitForTx(b.common.GetClient(), txReveal.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	receipt, err := b.common.GetClient().TransactionReceipt(ctx, txReveal.Hash())
+	if err != nil {
+		return nil, err
+	}
+
+	_ = receipt
+	return txReveal, nil
+
 }
 
 func (b *chain) GetInferenceByMiner() ([]*big.Int, error) {
@@ -388,4 +454,19 @@ func (b *chain) GetInferenceInfo(opt *bind.CallOpts, inferID uint64) (*model.Inf
 
 	_ = t
 	return &model.InferInfo{}, nil
+}
+
+func (b *chain) createCommitHash(nonce uint64, sender common.Address, data []byte) [32]byte {
+	// uint40
+	packedData := make([]byte, 5+common.AddressLength+len(data))
+	packedData[0] = byte(nonce >> 32)
+	packedData[1] = byte(nonce >> 24)
+	packedData[2] = byte(nonce >> 16)
+	packedData[3] = byte(nonce >> 8)
+	packedData[4] = byte(nonce)
+	//seder
+	copy(packedData[5:], sender.Bytes())
+	//data
+	copy(packedData[5+common.AddressLength:], data)
+	return crypto.Keccak256Hash(packedData[:])
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"runtime"
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
@@ -25,7 +26,7 @@ func (c *CMD) cliCommand() []*pkg.Command {
 		{
 			Key:      pkg.PLATFORM,
 			Required: true,
-			Default:  pkg.PLATFROM_APPLE_SILLICON,
+			Default:  c.getArch(),
 			Help:     "Platform: " + pkg.PLATFROM_INTEL + " OR " + pkg.PLATFROM_APPLE_SILLICON,
 		},
 		{
@@ -694,4 +695,17 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	}
 
 	return nil
+}
+
+func (c *CMD) getArch() string {
+	arch := runtime.GOARCH
+
+	switch arch {
+	case "amd64", "386":
+		return pkg.PLATFROM_INTEL
+
+	case "arm", "arm64":
+		return pkg.PLATFROM_APPLE_SILLICON
+	}
+	return ""
 }

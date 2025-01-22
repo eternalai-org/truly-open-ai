@@ -129,25 +129,9 @@ func (t *miner) ExecueteTasks(ctx context.Context) {
 			continue
 		}
 
+		t.chain.SetTask(task)
 		tx, err := t.chain.SubmitTask(ctx, assigmentID, resultData)
 		if err != nil {
-			if t.cnf.DebugMode {
-				logger.GetLoggerInstanceFromContext(ctx).Error("executeTasks",
-					zap.Any("worker_address", t.common.GetWalletAddres()),
-					zap.Any("assigment_id", task.AssignmentID),
-					zap.String("inference_id", task.AssignmentID),
-					zap.Any("result_data", resultData),
-					zap.String("inference_id", task.AssignmentID),
-					zap.Error(err))
-			} else {
-				logger.GetLoggerInstanceFromContext(ctx).Warn("executeTasks",
-					zap.Any("worker_address", t.common.GetWalletAddres()),
-					zap.Any("assigment_id", task.AssignmentID),
-					zap.String("inference_id", task.AssignmentID),
-					zap.Any("result_data", resultData),
-					zap.String("inference_id", task.AssignmentID),
-					zap.String("err", err.Error()))
-			}
 			continue
 		}
 
@@ -155,10 +139,8 @@ func (t *miner) ExecueteTasks(ctx context.Context) {
 			zap.Any("worker_address", t.common.GetWalletAddres()),
 			zap.Any("assigment_id", task.AssignmentID),
 			zap.String("inference_id", task.InferenceID),
-			zap.Any("result_data", resultData),
 			zap.String("result_tx", tx.Hash().Hex()),
 		)
-
 		TaskChecker[task.AssignmentID] = true
 	}
 }
