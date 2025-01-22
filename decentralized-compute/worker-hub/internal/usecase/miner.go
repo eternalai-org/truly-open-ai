@@ -208,7 +208,9 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 	ext := "txt"
 	url, err := lighthouse.UploadData(t.cnf.LighthouseKey, fmt.Sprintf("%v_result.%v", task.TaskID, ext), res.Data)
 	if err != nil {
-		return nil, err
+
+		url = "lighthouse-error"
+		//return nil, err
 	}
 	res.ResultURI = "ipfs://" + url
 	// logger.GetLoggerInstanceFromContext(ctx).Info("executeTasks", zap.Any("res", res))

@@ -719,6 +719,13 @@ func (c *CMD_Local_Chain) ReadLocalChainCnf() *model.LocalChain {
 	logger.AtLog.Infof("config_file_path: %s", path)
 	_b, err := os.ReadFile(path)
 	if err != nil {
+		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
+		if err1 == nil {
+			err2 := pkg.CreateFile(path, []byte{})
+			if err2 != nil {
+				return nil
+			}
+		}
 		return resp
 	}
 
