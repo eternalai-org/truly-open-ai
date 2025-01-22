@@ -804,10 +804,11 @@ func (s *Service) JobAgentStart(ctx context.Context) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					startReq["ETERNALAI_MODEL"] = agent.AgentBaseModel
-					startReq["ETERNALAI_CHAIN_ID"] = fmt.Sprintf("%d", agent.NetworkID)
-					startReq["ETERNALAI_AGENT_CONTRACT_ADDRESS"] = agent.AgentContractAddress
-					startReq["ETERNALAI_AGENT_ID"] = agent.AgentContractID
+					startReq["agentName"] = agent.AgentName
+					startReq["model"] = agent.AgentBaseModel
+					startReq["chainID"] = fmt.Sprintf("%d", agent.NetworkID)
+					startReq["agentContractAddress"] = agent.AgentContractAddress
+					startReq["agentID"] = agent.AgentContractID
 					err = helpers.CurlURL(
 						s.conf.AgentDeployer.Url+"/api/agent/start",
 						http.MethodPost,
