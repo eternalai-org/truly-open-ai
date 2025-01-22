@@ -169,33 +169,39 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 			strMinHolding = ""
 		}
 
-		userPrompt := fmt.Sprintf(`
-		Rewrite this for a Twitter post, don't change symbol token $EAI or $%s:
+		postContent = fmt.Sprintf(`
+	Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!`,
+			rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding,
+		)
 
-		"Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!"
+		// userPrompt := fmt.Sprintf(`
+		// Rewrite this for a Twitter post, don't change symbol token $EAI or $%s:
 
-		Return a JSON response with the following format:
+		// "Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!"
 
-		{"content": ""}
-		
-		Respond with only the JSON string, without any additional explanation.
-		`, agentInfo.TokenSymbol, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
-		fmt.Println(userPrompt)
+		// Return a JSON response with the following format:
 
-		aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())
-		if err != nil {
-			return postContent, nil
-		}
+		// {"content": ""}
 
-		if aiStr != "" {
-			mapInfo := helpers.ExtractMapInfoFromOpenAI(aiStr)
-			if mapInfo != nil {
-				if v, ok := mapInfo["content"]; ok {
-					postContent = fmt.Sprintf(`%v`, v)
-				}
-			}
-		}
+		// Respond with only the JSON string, without any additional explanation.
+		// `, agentInfo.TokenSymbol, rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding)
+		// fmt.Println(userPrompt)
+
+		// aiStr, err := s.openais["Lama"].ChatMessageWithSystemPromp(strings.TrimSpace(userPrompt), agentInfo.GetSystemPrompt())
+		// if err != nil {
+		// 	return postContent, nil
+		// }
+
+		// if aiStr != "" {
+		// 	mapInfo := helpers.ExtractMapInfoFromOpenAI(aiStr)
+		// 	if mapInfo != nil {
+		// 		if v, ok := mapInfo["content"]; ok {
+		// 			postContent = fmt.Sprintf(`%v`, v)
+		// 		}
+		// 	}
+		// }
 	}
+
 	fmt.Println(postContent)
 	return postContent, nil
 }
