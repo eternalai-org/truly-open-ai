@@ -48,11 +48,13 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' \
 }'
 ```
 
+For those curious about how decentralized inference works: once the prompt is sent onchain, miners are randomly selected into a pBFT committee. They will first fetch the [DeepSeek-R1 model stored on BNB Greenfield](https://greenfield-sp.bnbchain.org/view/eai-agents/DeepSeek-R1-Distill-Llama-70B-Q8), a decentralized storage network, and then run inference. ```2/3+1``` of the miners must provide the same deterministic response.
+
 ## Step 3: Receive the Onchain DeepSeek-R1 response
 
 You'll find the following info in the response.
 
-1. The pBFT committee handling the inference request. We use pBFT for consensus. ```2/3+1``` of the nodes must provide the same deterministic response.
+1. The pBFT committee handling the inference request.
 2. The response proposer and verifiers
 3. The onchain prompt transaction
 4. The onchain response transaction
