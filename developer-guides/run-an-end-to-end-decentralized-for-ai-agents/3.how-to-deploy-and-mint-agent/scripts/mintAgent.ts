@@ -1,8 +1,6 @@
 import { URI } from "./../node_modules/@smithy/types/dist-types/ts3.4/uri.d";
 import { ethers, network } from "hardhat";
 import { readFile } from "fs/promises";
-import * as fs from "fs";
-import * as path from "path";
 import { AI721 } from "../typechain-types";
 import { assert } from "console";
 
@@ -44,6 +42,23 @@ async function mintAgent() {
     const receipt = await txMint.wait();
     console.log("Tx hash: ", receipt?.hash);
     console.log("Tx status: ", receipt?.status === 1 ? "Success" : "Failed");
+
+    // Get agent ID
+    const id = receipt?.logs
+      .filter(
+        (log: any) =>
+          log.topics[0] ===
+          ethers.id("NewToken(uint256,string,bytes,uint256,address)")
+      )
+      .map((log: any) => {
+        return parseInt(log.topics[1], 16);
+      });
+
+    if (id) {
+      console.log("Agent minted successfully with ID: ", id);
+    } else {
+      console.log("Check transaction history for more details.");
+    }
   } catch (error) {
     console.error("Error minting agent:", error);
   }

@@ -70,5 +70,5 @@ export HARDHAT_AGENT_OWNER_ADDRESS=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 AG
 In *terminal (1)*, run script to mint an agent:
 
 ```bash
-npx hardhat run ./scripts/autoDeploy.ts --network localhost
+npx hardhat run ./scripts/mintAgent.ts --network localhost
 ```
