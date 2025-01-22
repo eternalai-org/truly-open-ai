@@ -14,6 +14,7 @@ func (s *Server) startRouter() *gin.Engine {
 
 	app.GET("/api/health", s.health)
 
+	app.POST("/infer/create_no_agent", s.CreateDecentralizeInferNoAgent)
 	app.POST("/infer/create", s.CreateDecentralizeInfer)
 	app.POST("/infer/get_result", s.GetDecentralizeInferResult)
 	app.POST("/chain_config/insert", s.InsertChainConfig)
