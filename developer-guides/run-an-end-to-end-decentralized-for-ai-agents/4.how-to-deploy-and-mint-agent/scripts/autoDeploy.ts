@@ -2,12 +2,15 @@ import assert from "assert";
 import { ethers, network } from "hardhat";
 import { AI721 } from "../typechain-types";
 import { deployOrUpgrade, deployContract } from "./library/utils";
-import { EventLog, Signer } from "ethers";
 import path from "path";
 import fs from "fs";
 
 const config = network.config as any;
 const networkName = network.name.toUpperCase();
+const filePath = path.join(
+  __dirname,
+  `../../../../decentralized-compute/worker-hub/env/local_contracts.json`
+);
 
 async function deployAI721(
   l2OwnerAddress: string,
@@ -16,9 +19,9 @@ async function deployAI721(
 ) {
   console.log("DEPLOY AI721...");
 
-  assert.ok(l2OwnerAddress, `Missing ${networkName}_L2_OWNER_ADDRESS!`);
-  assert.ok(hybridModelAddress, `Missing ${networkName}_HYBRID_MODEL_ADDRESS!`);
-  assert.ok(workerHubAddress, `Missing ${networkName}_WORKER_HUB_ADDRESS!`);
+  // assert.ok(l2OwnerAddress, `Missing ${networkName}_L2_OWNER_ADDRESS!`);
+  // assert.ok(hybridModelAddress, `Missing ${networkName}_HYBRID_MODEL_ADDRESS!`);
+  // assert.ok(workerHubAddress, `Missing ${networkName}_WORKER_HUB_ADDRESS!`);
 
   const name = "Eternal AI";
   const symbol = "";
@@ -45,6 +48,8 @@ async function deployAI721(
     config,
     true
   )) as unknown as AI721;
+
+  await saveAI721Address(ai721.target.toString());
 
   return ai721.target;
 }
@@ -73,21 +78,51 @@ async function saveDeployedAddresses(networkName: string, addresses: any) {
 }
 
 async function main() {
-  console.log((await ethers.getSigners())[0].address);
+  const l2OwnerAddress = (await ethers.getSigners())[0].address;
+
+  const { workerHubAddress, hybridModelAddress } = await readExternalConfig();
 
   const ai721Address = await deployAI721(
-    config.l2OwnerAddress,
-    config.hybridModelAddress.toString(),
-    config.workerHubAddress.toString()
+    l2OwnerAddress,
+    hybridModelAddress.toString(),
+    workerHubAddress.toString()
   );
 
   const deployedAddresses = {
     ai721Address,
   };
 
-  const networkName = network.name.toUpperCase();
+  await saveAI721Address(ai721Address.toString());
+}
 
-  await saveDeployedAddresses(networkName, deployedAddresses);
+async function readExternalConfig() {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+
+  if (!data) {
+    throw new Error(`No data found in ${filePath}`);
+  }
+
+  const { workerHubAddress, hybridModelAddress } = data["contracts"];
+
+  return { workerHubAddress, hybridModelAddress };
+}
+
+async function saveAI721Address(ai721Address: string) {
+  // Read the JSON file
+  const jsonData = fs.readFileSync(filePath, "utf-8");
+
+  // Parse the JSON content
+  const config = JSON.parse(jsonData);
+
+  // Add the ai721Address to the contracts object
+  config.agent_contract_address = ai721Address;
+
+  // Write the updated JSON back to the file
+  fs.writeFileSync(filePath, JSON.stringify(config, null, 2), "utf-8");
 }
 
 main()

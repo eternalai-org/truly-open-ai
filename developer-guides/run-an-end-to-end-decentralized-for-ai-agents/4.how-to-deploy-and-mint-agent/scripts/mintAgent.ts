@@ -1,18 +1,25 @@
-import { URI } from "./../node_modules/@smithy/types/dist-types/ts3.4/uri.d";
+import { URI } from "@smithy/types/dist-types/ts3.4/uri";
 import { ethers, network } from "hardhat";
 import { readFile } from "fs/promises";
 import { AI721 } from "../typechain-types";
 import { assert } from "console";
+import path from "path";
+import fs from "fs";
 
 const config = network.config as any;
 const networkName = network.name.toUpperCase();
+const filePath = path.join(
+  __dirname,
+  `../../../../decentralized-compute/worker-hub/env/local_contracts.json`
+);
 
 async function mintAgent() {
-  const ownerAddress =
-    process.env.HARDHAT_AGENT_OWNER_ADDRESS || config.l2OwnerAddress;
+  const ownerAddress = (await ethers.getSigners())[0].address;
   const uri = process.env.AGENT_URI || "Eternal AI";
+
   const systemPromptPath = process.env.AGENT_SYSTEM_PROMPT_PATH as string;
-  const contractAddr = config.ai721Address || process.env.HARDHAT_AI721_ADDRESS;
+
+  const { agent_contract_address: contractAddr } = await readExternalConfig();
 
   assert(ownerAddress, `Missing HARDHAT_AGENT_OWNER_ADDRESS!`);
   assert(uri, `Missing AGENT_URI!`);
@@ -56,12 +63,41 @@ async function mintAgent() {
 
     if (id) {
       console.log("Agent minted successfully with ID: ", id);
+      await saveAgentId(id[0].toString());
     } else {
       console.log("Check transaction history for more details.");
     }
   } catch (error) {
     console.error("Error minting agent:", error);
   }
+}
+
+async function readExternalConfig() {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`File not found: ${filePath}`);
+  }
+
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+
+  if (!data) {
+    throw new Error(`No data found in ${filePath}`);
+  }
+
+  return data;
+}
+
+async function saveAgentId(agentId: string) {
+  // Read the JSON file
+  const jsonData = fs.readFileSync(filePath, "utf-8");
+
+  // Parse the JSON content
+  const config = JSON.parse(jsonData);
+
+  // Add the agentId to the contracts object
+  config.agent_id = agentId;
+
+  // Write the updated JSON back to the file
+  fs.writeFileSync(filePath, JSON.stringify(config, null, 2), "utf-8");
 }
 
 export async function getContractInstance(

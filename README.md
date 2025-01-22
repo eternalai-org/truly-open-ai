@@ -63,7 +63,7 @@ TODO: Write
 
 ***Step 4.1 Deploy contract AI-721***
 
-* Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/3.how-to-deploy-and-mint-agent` folder.
+* Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
 Run script to install dependencies:
 ```bash
 npm install
@@ -78,11 +78,11 @@ export HARDHAT_PRIVATE_KEY=<0xPRIVATE_KEY> HARDHAT_WORKER_HUB_ADDRESS=<WORKER_HU
 ```bash
 export HARDHAT_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 HARDHAT_WORKER_HUB_ADDRESS=0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199 HARDHAT_HYBRID_MODEL_ADDRESS=0xdD2FD4581271e230360230F9337D5c0430Bf44C0 HARDHAT_L2_OWNER_ADDRESS=0xbDA5747bFD65F08deb54cb465eB87D40e51B197E && npx hardhat compile && npx hardhat run ./scripts/autoDeploy.ts --network localhost
 ```
-**Note:**
+ **Note:**
 - *_PRIVATE_KEY: Private key of the deployer
 - *_L2_OWNER_ADDRESS: This acts as the treasury address.
 
-***Step 4.2 Mint an agent***
+***4.2 Mint an agent***
 * Copy the deployed AI721 contract address from *terminal (1)* and set it to the environment variable using the script below:
 
 ```bash
