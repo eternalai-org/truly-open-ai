@@ -31,4 +31,36 @@ This folder contains the source code for the Decentralized Inference. It has a l
     ```
 
 
+4.API
+   * Chat with agent
+
+   ```sh
+      curl --location 'http://localhost:8484/infer/create' \
+      --header 'Content-Type: application/json' \
+      --data '{
+         "chain_info": {
+           "rpc": "http://127.0.0.1:8545"
+         },
+         "agent_contract_address": "0x123",
+         "worker_hub_address": "0x123",
+         "infer_pri_key": "abc",
+         "input": "hello",
+         "agent_id": "1"
+      }'
+   ```
+
+   * Get output by infer id
+    
+   ```sh
+      curl --location 'http://localhost:8484/infer/get_result' \
+      --header 'Content-Type: application/json' \
+      --data '{
+         "infer_id": 45,
+         "worker_hub_address": "0x963691C0b25a8d0866EA17CefC1bfBDb6Ec27894",
+         "chain_info":{
+           "rpc": "http://127.0.0.1:8545"
+         }
+      }'
+   ```
+
 
