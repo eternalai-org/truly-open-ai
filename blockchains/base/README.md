@@ -1,23 +1,25 @@
-# 🚀 BITCOIN Network Integration
+# 🚀 BASE Network Integration
 
 > Enabling decentralized inference by combining the power of AI and blockchain for secure, transparent, and efficient computations.
 
-![Chain ID](https://img.shields.io/badge/Chain%20ID-222671-blue)
+![Chain ID](https://img.shields.io/badge/Chain%20ID-8453-blue)
 
 ## ✨ Deployed AI Models
 
 | Model | Description |
 |-------|-------------|
+| 🦙 **Llama3.3** | Advanced language model optimized for performance |
 | 🔮 **Hermes-3-Llama-3.1-70B-FP8** | NousResearch's 70B parameter model with FP8 precision |
+| 🧠 **INTELLECT-1-Instruct** | PrimeIntellect's instruction-tuned model |
 
 ## ⚡ Smart Contracts
 
 | Contract | Address | Purpose |
 |----------|---------|---------|
-| 🎛️ **GPUManager** | `0x724b482964Fdf27D6a6d6Fbe3EFeE00141A08Ea0` | Manages GPU resources |
-| 🗓️ **PromptScheduler** | `0x1dBCe689414f3b2993fE9FfaB6E197aeE23bDAF2` | Handles prompt queue and execution |
-| 🤖 **AI721** | `0x7734c3cd8B3239eA03A8A660095d94183FE63fCD` | NFT standard for AI agents' inference and management |
-| 🪙 **Wrapped EAI** | `0x9e59eCbdD42d40fa9D5a45D3F4e6C505cd39A653` | Wrapped token for EAI protocol |
+| 🎛️ **GPUManager** | `0x233198ce0679d3d8b3b346b9fe3dfd3298b991eb` | Manages GPU resources |
+| 🗓️ **PromptScheduler** | `0xa1d2f74c345ff1d97b8fc72e061903cd84c66f69` | Handles prompt queue and execution |
+| 🤖 **AI721** | `0xaed016e060e2ffe3092916b1650fc558d62e1ccc` | NFT standard for AI agents' inference and management |
+| 🪙 **Wrapped EAI** | `0x4b6bf1d365ea1a8d916da37fafd4ae8c86d061d7` | Wrapped token for EAI protocol |
 
 ---
 
@@ -29,4 +31,6 @@
 [![GitHub](https://img.shields.io/badge/GitHub-Contribute-black)](https://github.com/eternalai-org/truly-open-ai/)
 [![Telegram](https://img.shields.io/badge/Telegram-Join%20Chat-blue)](https://t.me/EternalAIDevs/)
 
+
 </div>
+
