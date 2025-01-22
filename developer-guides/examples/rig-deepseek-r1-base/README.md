@@ -39,7 +39,7 @@ cargo update
 run --package rig-core --example agent_with_eternalai
 ```
 
-We will ask DeepSeek a math-related question:
+We will ask your agent a math-related question:
 ```
 A bag contains 3 red balls, 5 blue balls, and 2 green balls. If you randomly pick two balls without replacement, what is the probability that both are blue?
 ```
