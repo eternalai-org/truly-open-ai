@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"solo/config"
 	"solo/internal/contracts/erc20"
 	"solo/internal/contracts/gpu_manager"
@@ -19,10 +23,6 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
-	"solo/pkg/logger"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -145,7 +145,7 @@ func (c *CMD_Local_Chain_V2) DeployContracts(rpc, chainID, prvkey string) (*mode
 		cnf.Contracts = data
 	}
 
-	//save
+	// save
 	_b1, err := json.Marshal(cnf)
 	if err != nil {
 		return nil, err
@@ -199,7 +199,7 @@ func (c *CMD_Local_Chain_V2) DeployContract(rpc, chainID, prvkey, contractName s
 }
 
 func (c *CMD_Local_Chain_V2) DeployContractPromptScheduler(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
-	//deploy contracts here
+	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
@@ -228,7 +228,7 @@ func (c *CMD_Local_Chain_V2) DeployContractPromptScheduler(client *ethclient.Cli
 }
 
 func (c *CMD_Local_Chain_V2) DeployContractGpuManager(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
-	//deploy contracts here
+	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
@@ -244,7 +244,7 @@ func (c *CMD_Local_Chain_V2) DeployContractGpuManager(client *ethclient.Client, 
 		return nil, nil, err
 	}
 
-	//fmt.Print(pkg.PrintText("Gpu manager owner address: ", ownerStr))
+	// fmt.Print(pkg.PrintText("Gpu manager owner address: ", ownerStr))
 	pContract, _, err := c.DeployProxy(ctx, client, prvkey, contractAddress)
 	if err != nil {
 		fmt.Println(pkg.PrintText("Gpu manager was deployed with err: ", err))
@@ -329,7 +329,7 @@ func (c *CMD_Local_Chain_V2) DeployContractModelCollection(client *ethclient.Cli
 }
 
 func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
-	//deploy contracts here
+	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
@@ -354,7 +354,7 @@ func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client
 
 	fmt.Print(pkg.PrintText("Load balancer address: ", pContract.Hex()))
 
-	//initialize
+	// initialize
 	cnf := c.ReadLocalChainCnf()
 
 	auth, err = eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
@@ -369,14 +369,14 @@ func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client
 		return nil, nil, err
 	}
 
-	//prompt
+	// prompt
 	pC := common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_PROMPT_SCHEULER])
 	wEAI := common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_WEAI])
 	modelCollectionC := common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_MODEL_COLLECTION])
 	intializeTX, err := contract.Initialize(auth, *pContract, pC, wEAI, modelCollectionC, big.NewInt(1))
 	if err != nil {
 		fmt.Print(pkg.PrintText("Load balancer with err: ", err))
-		//return nil, nil, err
+		// return nil, nil, err
 	} else {
 		fmt.Print(pkg.PrintText("Initialize tx: ", intializeTX))
 	}
@@ -387,7 +387,7 @@ func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client
 }
 
 func (c *CMD_Local_Chain_V2) DeployProxy(ctx context.Context, client *ethclient.Client, prvkey string, contractAddress common.Address) (*common.Address, *types.Transaction, error) {
-	//re-auth
+	// re-auth
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
 		return nil, nil, err
@@ -404,7 +404,7 @@ func (c *CMD_Local_Chain_V2) DeployProxy(ctx context.Context, client *ethclient.
 }
 
 func (c *CMD_Local_Chain_V2) DeployContractWrappedEAI(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
-	//deploy contracts here
+	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
@@ -472,7 +472,7 @@ func (c *CMD_Local_Chain_V2) MintWrappedEAI(rpc, chainID, mintAmount, prvkey str
 		return nil, err
 	}
 
-	//fmt.Println(address.Hex())
+	// fmt.Println(address.Hex())
 	tx, err := contract.Mint(auth, *address, amount)
 	if err != nil {
 		fmt.Print(pkg.PrintText("MintWrappedEAI with err: ", err))
@@ -595,7 +595,7 @@ func (c *CMD_Local_Chain_V2) SetWEAIForStakingHub(client *ethclient.Client, prvk
 	}
 
 	modelCollection := common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_MODEL_COLLECTION])
-	tresury := common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_MODEL_COLLECTION]) //ever address is allowed for testing
+	tresury := common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_MODEL_COLLECTION]) // ever address is allowed for testing
 	minstake := big.NewInt(1).Mul(big.NewInt(pkg.MIN_STAKE), big.NewInt(1e18))
 	blockPerEpoch := big.NewInt(pkg.BLOCK_PER_EPOCH)
 	rewardPerEpoch := big.NewInt(1).Mul(big.NewInt(pkg.REWARD_PER_EPOCH), big.NewInt(1e18))
@@ -625,11 +625,11 @@ func (c *CMD_Local_Chain_V2) CreateMinerAddress(rpc, chainID, prvkey string) (*s
 		return nil, nil, err
 	}
 
-	//send ETH for fee
-	//auth.GasPrice = big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
-	//auth.GasLimit = pkg.LOCAL_CHAIN_GAS_LIMIT
+	// send ETH for fee
+	// auth.GasPrice = big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
+	// auth.GasLimit = pkg.LOCAL_CHAIN_GAS_LIMIT
 
-	//update env
+	// update env
 	cnf.Miners[strings.ToLower(minerAddress)] = model.Miners{
 		Address:    strings.ToLower(minerAddress),
 		PrivateKey: minerPrivateKey,
@@ -662,7 +662,7 @@ func (c *CMD_Local_Chain_V2) SendWEIToMiner(rpc, minerAddress string) (*types.Tr
 		return nil, nil, err
 	}
 
-	//6. Owner transfer to miner 25k EAI for staking
+	// 6. Owner transfer to miner 25k EAI for staking
 	erc20Contract, err := erc20.NewErc20(common.HexToAddress(weaiAddress), client)
 	if err != nil {
 		fmt.Println("CreateMinerAddress error: ", err)
@@ -708,7 +708,6 @@ func (c *CMD_Local_Chain_V2) ReadLocalChainCnf() *model.LocalChain {
 	resp.Contracts = make(map[string]string)
 	resp.Miners = make(map[string]model.Miners)
 	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
-	logger.AtLog.Infof("config_file_path: %s", path)
 	_b, err := os.ReadFile(path)
 	if err != nil {
 		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
@@ -787,7 +786,7 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 		}
 	}
 
-	//wait for result
+	// wait for result
 	chatCompletion := &model.LLMInferResponse{}
 	index := 0
 	for index < 150 {
@@ -946,7 +945,7 @@ wait $pid`, modelName, modelName)
 
 	}
 
-	//health check ollama
+	// health check ollama
 	c.PingOllam()
 
 	return nil
@@ -1015,7 +1014,7 @@ func (c *CMD_Local_Chain_V2) OllamaHealthCheck() ([]byte, bool) {
 		return nil, false
 	}
 
-	//time.Sleep(5 * time.Second)
+	// time.Sleep(5 * time.Second)
 	return _b, true
 }
 
@@ -1085,7 +1084,7 @@ func (c *CMD_Local_Chain_V2) RpcHealthCheck() ([]byte, bool) {
 		return nil, false
 	}
 
-	//time.Sleep(5 * time.Second)
+	// time.Sleep(5 * time.Second)
 	return _b, true
 }
 
@@ -1129,7 +1128,7 @@ func (c *CMD_Local_Chain_V2) DeployContractLogic() error {
 		return err
 	}
 
-	//3. Mint WEAI.
+	// 3. Mint WEAI.
 	_, err = c.MintWrappedEAI(rpc, chainID, "100000", privKey)
 	if err != nil {
 		fmt.Println("Mint WEAI error: ", err)
@@ -1206,7 +1205,7 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 	numberOfMiners := 3
 	names := ""
 
-	//clear the created miners
+	// clear the created miners
 	cnf.Miners = make(map[string]model.Miners)
 	_b, err := json.Marshal(cnf)
 	if err == nil {
@@ -1215,7 +1214,7 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 
 	for i := 1; i <= numberOfMiners; i++ {
 		fmt.Print(pkg.Line)
-		//5. Create a miner's private key (3 miner)
+		// 5. Create a miner's private key (3 miner)
 		minerAddress, minerPrvKey, err := c.CreateMinerAddress(rpc, chainID, privKey)
 		if err != nil {
 			continue
@@ -1224,7 +1223,7 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d address", i), *minerAddress))
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d private key", i), *minerPrvKey))
 
-		//send WEAI
+		// send WEAI
 		tx, _, err := c.SendWEIToMiner(rpc, *minerAddress)
 		if err != nil {
 			fmt.Println("SendWEIToMiner error", err)
@@ -1232,7 +1231,7 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 		}
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d received WEAI TX", i), tx.Hash().Hex()))
 
-		//send fee
+		// send fee
 		txFee := new(types.Transaction)
 		gas := pkg.LOCAL_CHAIN_GAS_LIMIT
 
@@ -1274,7 +1273,7 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 				fmt.Print(pkg.PrintText("SendFeeToMiner error", err))
 				continue
 			}
-			//there is no error
+			// there is no error
 			fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d gas limit", i), gas))
 
 			_loop++
