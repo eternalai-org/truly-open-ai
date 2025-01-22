@@ -529,11 +529,11 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 }
 
 func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPostID uint) error {
+	var snapshotPostAction *models.AgentSnapshotPostAction
 	err := s.JobRunCheck(
 		ctx,
 		fmt.Sprintf("AgentSnapshotPostActionExecuted_%d", twitterPostID),
 		func() error {
-			var snapshotPostAction *models.AgentSnapshotPostAction
 			contentLines := []string{}
 			var accessToken, missionToolSet string
 			postIds := []string{}
@@ -1101,7 +1101,9 @@ func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPo
 	if err != nil {
 		return errs.NewError(err)
 	}
-	_ = s.UpdateOffchainAutoOutputV2(ctx, twitterPostID)
+	if snapshotPostAction != nil {
+		_ = s.UpdateOffchainAutoOutputV2(ctx, snapshotPostAction.AgentSnapshotPostID)
+	}
 	return nil
 }
 
