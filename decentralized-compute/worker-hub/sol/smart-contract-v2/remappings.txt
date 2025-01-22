@@ -1,0 +1,8 @@
+@matterlabs/=node_modules/@matterlabs/
+@openzeppelin/=node_modules/@openzeppelin/
+@prb/=node_modules/@prb/
+eth-gas-reporter/=node_modules/eth-gas-reporter/
+forge-std/=lib/forge-std/src/
+hardhat-deploy/=node_modules/hardhat-deploy/
+hardhat/=node_modules/hardhat/
+solmate/=node_modules/solmate/

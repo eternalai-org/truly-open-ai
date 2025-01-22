@@ -22,7 +22,6 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
-	"solo/pkg/logger"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -716,9 +715,15 @@ func (c *CMD_Local_Chain) ReadLocalChainCnf() *model.LocalChain {
 	resp.Contracts = make(map[string]string)
 	resp.Miners = make(map[string]model.Miners)
 	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
-	logger.AtLog.Infof("config_file_path: %s", path)
 	_b, err := os.ReadFile(path)
 	if err != nil {
+		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
+		if err1 == nil {
+			err2 := pkg.CreateFile(path, []byte{})
+			if err2 != nil {
+				return nil
+			}
+		}
 		return resp
 	}
 
