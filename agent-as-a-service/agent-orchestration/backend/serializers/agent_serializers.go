@@ -126,6 +126,7 @@ type AgentInfoResp struct {
 	MissionTopics             string                    `json:"mission_topics"`
 	GraphData                 string                    `json:"graph_data"`
 	AgentType                 models.AgentInfoAgentType `json:"agent_type"`
+	ConfigData                string                    `json:"config_data"`
 }
 
 type AgentTwitterPostResp struct {

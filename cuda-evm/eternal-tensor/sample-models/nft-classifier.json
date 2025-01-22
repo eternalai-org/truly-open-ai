@@ -1,0 +1,88 @@
+{
+  "layers": [
+    {
+      "idx": 0,
+      "name": "input_layer",
+      "class_name": "InputLayer",
+      "layer_config": { "batch_input_shape": [null, 10, 10, 3] },
+      "inbound_nodes": []
+    },
+    {
+      "idx": 1,
+      "name": "rescaling",
+      "class_name": "Rescaling",
+      "layer_config": { "scale": 0.00784313725490196, "offset": -1 },
+      "inbound_nodes": [
+        {
+          "args": [
+            { "name": "input_layer", "idx": 0, "shape": [null, 10, 10, 3] }
+          ],
+          "kwargs": {}
+        }
+      ]
+    },
+    {
+      "idx": 2,
+      "name": "flatten",
+      "class_name": "Flatten",
+      "layer_config": {},
+      "inbound_nodes": [
+        {
+          "args": [
+            { "name": "rescaling", "idx": 1, "shape": [null, 10, 10, 3] }
+          ],
+          "kwargs": {}
+        }
+      ]
+    },
+    {
+      "idx": 3,
+      "name": "dense",
+      "class_name": "Dense",
+      "layer_config": { "units": 20, "activation": "relu" },
+      "inbound_nodes": [
+        {
+          "args": [{ "name": "flatten", "idx": 2, "shape": [null, 300] }],
+          "kwargs": {}
+        }
+      ]
+    },
+    {
+      "idx": 4,
+      "name": "dense_1",
+      "class_name": "Dense",
+      "layer_config": { "units": 20, "activation": "relu" },
+      "inbound_nodes": [
+        {
+          "args": [{ "name": "dense", "idx": 3, "shape": [null, 20] }],
+          "kwargs": {}
+        }
+      ]
+    },
+    {
+      "idx": 5,
+      "name": "dense_2",
+      "class_name": "Dense",
+      "layer_config": { "units": 20, "activation": "relu" },
+      "inbound_nodes": [
+        {
+          "args": [{ "name": "dense_1", "idx": 4, "shape": [null, 20] }],
+          "kwargs": {}
+        }
+      ]
+    },
+    {
+      "idx": 6,
+      "name": "dense_3",
+      "class_name": "Dense",
+      "layer_config": { "units": 4, "activation": "linear" },
+      "inbound_nodes": [
+        {
+          "args": [{ "name": "dense_2", "idx": 5, "shape": [null, 20] }],
+          "kwargs": {}
+        }
+      ]
+    }
+  ],
+  "class_name": "Functional"
+}

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"solo/config"
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
@@ -550,10 +549,7 @@ func (c *CMD) handleCreateInfer(reader *bufio.Reader, node *pkg.Command) {
 }
 
 func (c *CMD) createConfigENV(minerAddress string, index int) error {
-	sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
 	envFile := fmt.Sprintf(pkg.ENV_LOCAL_MINERS_FILE, pkg.CurrentDir(), index)
-
-	config.ReadConfig(sample)
 
 	f, _ := os.Stat(envFile)
 	if f != nil {
@@ -564,12 +560,15 @@ func (c *CMD) createConfigENV(minerAddress string, index int) error {
 	}
 
 	cnf := c.localChainCMD.ReadLocalChainCnf()
-
+	lhAPIKey := cnf.LightHouseAPIKey
+	if lhAPIKey == "" {
+		lhAPIKey = "123"
+	}
 	env := ""
 	env += fmt.Sprintf("PLATFORM=%v\n", pkg.PLATFROM_INTEL)
 	env += fmt.Sprintf("API_URL=%v\n", cnf.RunPodInternal)
 	env += fmt.Sprintf("API_KEY=%v\n", cnf.RunPodAPIKEY)
-	env += fmt.Sprintf("LIGHT_HOUSE_API_KEY=%v\n", os.Getenv("LIGHT_HOUSE_API_KEY"))
+	env += fmt.Sprintf("LIGHT_HOUSE_API_KEY=%v\n", lhAPIKey)
 	env += fmt.Sprintf("CLUSTER_ID=%v\n", cnf.ModelID)
 	env += fmt.Sprintf("MODEL_ID=%v\n", cnf.ModelID)
 	env += fmt.Sprintf("CHAIN_ID=%v\n", cnf.ChainID)
@@ -764,9 +763,9 @@ func (c *CMD) _startMinerLogic() error {
 		names += " " + name
 	}
 
-	errBuild := c.localChainCMD.BuildContainers(names)
+	errBuild := c.localChainCMD.BuildContainers(fmt.Sprintf("%s_%s", pkg.MINER_SERVICE_NAME, "base"))
 	if errBuild == nil {
-		c.localChainCMD.StartContainers(names)
+		c.localChainCMD.StartContainersNoBuild(names)
 	}
 
 	return nil
@@ -856,8 +855,17 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	envFile := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
 	err = pkg.CreateFile(envFile, _b)
 	if err != nil {
-		return err
-	}
+		err = os.Mkdir(fmt.Sprintf("%s/env", pkg.CurrentDir()), os.ModePerm)
+		if err != nil {
+			return err
+		}
 
+		err = pkg.CreateFile(envFile, _b)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
 	return nil
 }

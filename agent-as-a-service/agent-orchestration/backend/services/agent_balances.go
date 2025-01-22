@@ -692,7 +692,7 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 			and ifnull(agent_infos.priority, 0) >= 0
 			and agent_infos.id != 15
 		`: {},
-		`agent_infos.token_address != ""`: {},
+		`agent_infos.token_address != "" and ifnull(memes.status, "") not in ("created", "pending")`: {},
 	}
 	if search != "" {
 		search = fmt.Sprintf("%%%s%%", strings.ToLower(search))
@@ -747,7 +747,7 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 		map[string][]interface{}{
 			"TwitterInfo":    {},
 			"TmpTwitterInfo": {},
-			"Meme":           {`deleted_at IS NULL`},
+			"Meme":           {`deleted_at IS NULL and status not in ("created", "pending")`},
 			"TokenInfo":      {},
 		},
 		[]string{sortDefault},

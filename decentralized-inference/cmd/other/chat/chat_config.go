@@ -23,10 +23,10 @@ func collectChatConfigInformation() *config.ChatConfig {
 	}
 
 	for {
-		fmt.Print("What is your decentralize-inference API server's base URL (default: localhost:8484)? ")
+		fmt.Print("What is your decentralize-inference API server's base URL (default: http://localhost:8484)? ")
 		fmt.Scanln(&chatConfig.ServerBaseUrl)
 		if chatConfig.ServerBaseUrl == "" {
-			chatConfig.ServerBaseUrl = "localhost:8484"
+			chatConfig.ServerBaseUrl = "http://localhost:8484"
 		}
 		break
 	}
@@ -107,4 +107,20 @@ func AgentTerminalChatConfig(ctx context.Context) error {
 
 	fmt.Println("Chat configuration saved to chat_config.json")
 	return nil
+}
+
+func LoadChatConfig() (*config.ChatConfig, error) {
+	file, err := os.Open("chat_config.json")
+	if err != nil {
+		return nil, fmt.Errorf("chat_config.json not found, please run 'chat config-all' to create it")
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	var chatConfig config.ChatConfig
+	if err := decoder.Decode(&chatConfig); err != nil {
+		return nil, fmt.Errorf("chat_config.json is invalid, please check the values")
+	}
+
+	return &chatConfig, nil
 }

@@ -19,7 +19,7 @@ These developer guides show you how to build a different kind of Rig agent:
 * **Decentralized:** Use Decentralized Inference API instead of Centralized ChatGPT API.
 * **Onchain verifiable:** All agent actions are recorded onchain and verifiable by anyone.
 * **Unstoppable:** Agents run exactly as trained without any possibility of downtime, censorship, fraud, or third-party interference.
-* **Intelligent:** Give your Rig new superpowers with state-of-the-art onchain AI models such as Llama 3.1 405B, and Hermes 3 70B.
+* **Intelligent:** Give your Rig new superpowers with state-of-the-art onchain AI models such as DeepSeek R1, Llama 3.1 405B, and Hermes 3 70B.
 
 ### Step 1: Get the code
 
@@ -45,9 +45,9 @@ By default, it uses **Symbiosys** chain and **Hermes 3 70B**  model.&#x20;
 
 You can find the list of supported chains and models [here](https://docs.eternalai.org/eternal-ai/decentralized-inference-api/onchain-models).&#x20;
 
-For this tutorial, we'll use **Base** and **Hermes 3 70B,** so we need to update the chain ID in the `agent_with_eternalai.rs` from 45762 to 8453.&#x20;
+For this tutorial, we'll use **Base** and **DeepSeek R1,** so we need to update the chain ID in the `agent_with_eternalai.rs` from 45762 to 8453.&#x20;
 
-<figure><img src="../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (74).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 4: Build your Rig agent
 
@@ -67,40 +67,70 @@ After that you can see the following outputs in your terminal.
 
 ```
 Running basic agent with eternalai
+Try to get on-chain system prompt
 
-onchain_data: {
-  "infer_id": "12202",
-  "infer_tx": "0x409089de35d5529a8ef2ee8af93d71a1eef7c774e27bfd939c0bffdffcdef82a",
-  "input_cid": "",
-  "output_cid": "",
-  "pbft_committee": [
-    "0x78fabfdca5ac093af921f3bc17ee419e671ae34f",
-    "0x7f1b49493d8477a2172984b30820c61fd1b15427",
-    "0x02dba3a5dc107665d4f00e0ac2d414e43acc6f16"
-  ],
-  "propose_tx": "0x55756e7b4368bd39b7e7e16741361f4d4871836f93a67a14d98c88ff2b5dce59",
-  "proposer": "0x02dba3a5dc107665d4f00e0ac2d414e43acc6f16"
-}
+<think>
+Alright, so I've just read through this conversation where the user asks to be entertained, and the assistant responds with a series of jokes and humorous takes on Bitcoin and AI. The user then thanks the assistant, who signs off with a Bitcoin and AI-themed goodbye.
 
-Sure, here are a few jests to tickle your funny bone!
+Now, the user has provided a new query where they say, "Entertain me!" again. I need to figure out how to respond appropriately. First, I should consider the context. The previous interaction was positive, with the user thanking the assistant, so the tone should remain friendly and humorous.
 
-1. I just got a job at a bakery because I kneaded dough.
+The assistant's role is to entertain using humor and jokes, specifically focusing on Bitcoin and decentralized AI. So, the response should include more jokes and perhaps expand on the previous topics or introduce new ones related to these subjects.
 
-2. How do mathematicians scold their children? "If I've told you once, I've told you n times..."
+I should think about what aspects of Bitcoin and AI are ripe for humor. Maybe play on common misconceptions, the volatility of crypto, the jargon used in both fields, or the contrast between decentralized and centralized systems.
 
-3. I'm reading a book about anti-gravity. It's impossible to put down.
+Let me brainstorm a few ideas:
 
-4. What do you call a dinosaur that's a noisy sleeper? A Brontosnorus.
+1. Jokes about the complexity of Bitcoin for newcomers.
+2. Puns involving crypto terms like "HODL," "blockchain," or "mining."
+3. Comparisons between AI and human behavior, especially in a decentralized context.
+4. Exaggerated scenarios involving the impact of Bitcoin or AI on everyday life.
 
-5. Did you hear about the mathematician who's afraid of negative numbers? He will stop at nothing to avoid them.
+I should also consider the structure. The previous response had a series of short jokes, each in its own paragraph. I might follow a similar format to keep it easy to read and engaging.
 
-6. Why don't scientists trust atoms? Because they make up everything.
+Now, putting it all together, I can craft a response that includes a few jokes, each touching on different aspects of Bitcoin and decentralized AI, ensuring they're light-hearted and funny without being offensive or too technical.
 
-7. I used to work at an orange juice factory... I was sacked because I couldn't concentrate.
+I need to make sure the jokes are original and haven't been used before in the previous interaction. Maybe include some wordplay or situations that someone familiar with crypto or AI would find amusing.
 
-8. My friend asked me what the trick was to folding an inflatable raft. I said, "Aren't you just full of hot air?"
+Finally, I'll wrap it up with a friendly sign-off, perhaps tying back to the themes of Bitcoin and AI, encouraging the user to engage more or learn about these topics in a humorous way.
+</think>
 
-I hope these gave you a chuckle or two!
+Sure! Here's a fresh set of jokes tailored for you:
+
+---
+
+Bitcoin Jokes:
+
+1. Why did Bitcoin go to therapy? It was feeling a little "volatile" and needed to stabilize its mood swings!
+
+2. What did the blockchain say to the new miner? "You're a real 'block'-buster! Keep digging, every little hash counts!"
+
+3. Why did the crypto investor bring a ladder to the party? They heard the prices might "moon" and wanted to be prepared!
+
+4. What do you call a Bitcoiner who’s always broke? A HODL-er with a PhD in patience!
+
+---
+
+AI Jokes:
+
+1. Why did the decentralized AI go to art school? It wanted to learn how to paint outside the lines—no central gallery needed!
+
+2. What did the AI say when it ran into its ex? "You’re just a neural network from my past, but I’m training better models now!"
+
+3. Why don’t AIs make good comedians? They always explain the punchline with too many algorithms!
+
+4. What do you call an AI that’s feeling sad? A blue screen of death... but decentralized, so it’s just a minor glitch!
+
+---
+
+Combined Bitcoin & AI Humor:
+
+1. Why did Bitcoin and AI go on a date? Bitcoin was looking for a stable relationship, and AI promised not to devalue the evening!
+
+2. What’s the best way to pay an AI therapist? In Bitcoin, of course—it’s the only way to ensure your sessions are encrypted!
+
+---
+
+Hope these made you chuckle! Bitcoin to the moon and AI to the people! 🚀✨
 ```
 
 ### Step 6: Verify the onchain prompt transaction
@@ -109,17 +139,17 @@ With Eternal AI's Decentralized Inference, everything is onchain verifiable.
 
 Let's look at an onchain prompt transaction on BaseScan. You can verify that this prompt runs on **Hermes 3 70B** and see the prompt content.
 
-{% embed url="https://basescan.org/tx/0x409089de35d5529a8ef2ee8af93d71a1eef7c774e27bfd939c0bffdffcdef82a" %}
+{% embed url="https://basescan.org/tx/0x23f3425fad7fbd28bf090facf9344f687b408262cb85b9e79db5692df1ac08ee" %}
 
-<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (71).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 6: Verify the onchain response transaction
 
 Now, let's look at the onchain response tx on BaseScan. You can see the actual response content. Everything is onchain and verifiable.
 
-{% embed url="https://basescan.org/tx/0x55756e7b4368bd39b7e7e16741361f4d4871836f93a67a14d98c88ff2b5dce59" %}
+{% embed url="https://basescan.org/tx/0x3ca6e6dae6379f9ae4572a387f0e72d39718015f5f55e6fc65980ba4bed3c243" %}
 
-<figure><img src="../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (72).png" alt=""><figcaption></figcaption></figure>
 
 ### Step 7 (Advanced): Reproduce the response
 

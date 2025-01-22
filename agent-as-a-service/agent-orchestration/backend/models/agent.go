@@ -653,3 +653,8 @@ type AgentStudio struct {
 type AgentStudioGraphData struct {
 	Data []*AgentStudio `json:"data"`
 }
+
+type AgentStudioTwitterInfo struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+}

@@ -36,6 +36,12 @@ Block Explorer: https://basescan.org
 
 ### Models deployed on Base
 
+#### DeekSeek R1
+
+```
+DeepSeek-R1-Distill-Llama-70B
+```
+
 #### Hermes
 
 ```

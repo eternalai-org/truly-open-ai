@@ -228,8 +228,8 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' \
 --header 'Content-Type: application/json' \
 --header 'Authorization: Bearer $ETERNALAI_API_KEY' \
 --data '{
-    "chain_id": "45762",
-    "model": "unsloth/Llama-3.3-70B-Instruct-bnb-4bit",
+    "chain_id": "8453",
+    "model": "DeepSeek-R1-Distill-Llama-70B",
     "messages": [
         {
             "role": "system",
@@ -247,37 +247,40 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' \
 
 ```bash
 {
-    "id": "chat-7a158eb29d134a07a4447be3a6e7a8d9",
-    "object": "chat.completion",
-    "created": 1732269931,
-    "model": "PrimeIntellect/INTELLECT-1-Instruct",
-    "choices": [
-        {
-            "index": 0,
-            "message": {
-                "role": "assistant",
-                "content": "Hello! It's nice to meet you. Is there something I can help you with or would you like to chat?"
-            },
-            "finish_reason": "stop"
-        }
-    ],
-    "usage": {
-        "prompt_tokens": 23,
-        "completion_tokens": 25,
-        "total_tokens": 48
-    },
-    "system_fingerprint": "",
-    "onchain_data": {
-        "pbft_committee": [
-            "0x8b5382a72832dc9491e51b9ffd8cdeb594a1199d",
-            "0xba4a2bae114d07702d23c50cba7d12c764ccfece",
-            "0xc2991c10413a7ceab23b3e31b6dac31df69ca23b"
-        ],
-        "proposer": "0xba4a2bae114d07702d23c50cba7d12c764ccfece",
-        "infer_tx": "0x83d3a064b24d287e83b24c2349f466d0a1fbd330bb12b6675eb31b4bf895916c",
-        "propose_tx": "0xa8ab291723dcf4c61cb8d55fd9e63e95dd9662a6b63c5d9519191e0130080b68",
-        "input_cid": "ipfs://bafkreiaihar3qrowau2suj2mvdaq276t7cw3vpragid6advg6sbbhukoda",
-        "output_cid": "ipfs://bafkreibpktbartlsvfcnvvg3s7lauzkq5fihbcnhcobhray36ozu45s32y"
+  "id": "chatcmpl-p5n76HCHiWOYFMYj4S4LNRv9g0Pz91z3",
+  "object": "chat.completion",
+  "created": 1737471058,
+  "model": "DeepSeek-R1-Distill-Llama-70B",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "<think>\nOkay, the user greeted me with \"Hello!\" and I responded warmly. Now, they're asking me to act as a helpful assistant. I should keep the conversation going by inviting them to ask questions or share what they need help with. I'll make sure to sound friendly and approachable.\n</think>\n\nHello! How can I assist you today? If you have any questions or need help with something, feel free to ask!"
+      },
+      "finish_reason": "stop"
     }
+  ],
+  "usage": {
+    "prompt_tokens": 11,
+    "completion_tokens": 89,
+    "total_tokens": 100
+  },
+  "system_fingerprint": "b4519-80d0d6b4",
+  "message": "",
+  "type": "",
+  "param": null,
+  "code": 0,
+  "onchain_data": {
+    "infer_id": "13209",
+    "pbft_committee": [
+      "0xc557e228d2443b437e5297a8266b0f3257b2109a",
+      "0xb9deb8db9724e2cb551164cdab0dd03a484cb9da",
+      "0xfe5598e12532c8fe8fa586f8f6d2e12e82bb2825"
+    ],
+    "proposer": "0xfe5598e12532c8fe8fa586f8f6d2e12e82bb2825",
+    "infer_tx": "0xd3b7adde419d44083e5d66489191053e15b250aea5dc168b8f6f4e18c90b2ff2",
+    "propose_tx": "0x57d40d2720b512fbb64541e70611d044c8703c6fc05b7122a561f95645bc0f62"
+  }
 }
 ```

@@ -1,0 +1,4 @@
+./sol
+docker-compose*
+Dockerfile*
+cli-*
