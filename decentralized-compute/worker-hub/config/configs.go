@@ -71,9 +71,10 @@ func ReadConfig(path string) (*Config, error) {
 
 func (cfg *Config) Verify() error {
 	// validate
-	if cfg.LighthouseKey == "" {
-		return errors.New("Lighthouse key is missing. Let's configure it now.")
-	}
+	/*
+		if cfg.LighthouseKey == "" {
+			return errors.New("Lighthouse key is missing. Let's configure it now.")
+		}*/
 
 	if cfg.ApiUrl == "" {
 		return errors.New("API URL is missing. Let's configure it now.")
