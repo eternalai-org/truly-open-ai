@@ -82,7 +82,7 @@ async function mintAgent() {
       systemPrompt.toString()
     );
   } catch (err) {
-    console.log("Error creating local agent service: ", err);
+    console.log("Error creating local agent service ");
   }
 }
 
@@ -141,10 +141,6 @@ async function createLocalAgent(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error("Axios Error:", error.message, error.response?.data);
-      // Handle specific error codes, e.g., 400, 500
-      if (error.response?.status === 400) {
-        // ...handle bad request
-      }
     } else {
       console.error("An unexpected error occurred:", error);
     }
