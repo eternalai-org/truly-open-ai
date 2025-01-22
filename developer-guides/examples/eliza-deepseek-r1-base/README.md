@@ -28,7 +28,7 @@ cp .env.example .env
 Update the .env file (lines 19-21):
 ```
 ETERNALAI_URL=https://api.eternalai.org/v1/  
-ETERNALAI_MODEL="DeepSeek R1”  
+ETERNALAI_MODEL="DeepSeek-R1-Distill-Llama-70B”  
 ETERNALAI_API_KEY=YOUR_API_KEY  
 ```
 
