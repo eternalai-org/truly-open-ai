@@ -753,6 +753,7 @@ func (c *CMD_Local_Chain) CreateInfer(prompt []model.LLMInferMessage) (*types.Tr
 
 	tx, err := p.Infer(auth, uint32(modelIDInt), _b, *pubkey, true)
 	if err != nil {
+		fmt.Sprintf("create infer %v", err)
 		return nil, nil, nil, err
 	}
 
