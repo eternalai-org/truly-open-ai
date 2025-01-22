@@ -1,13 +1,13 @@
 version: '3.7'
 services:
-#  golang:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8484:8484"
-#    depends_on:
-#      - mongodb
+  golang:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8484:8484"
+    depends_on:
+      - mongodb
 
   mongodb:
     image: mongo:6.0
