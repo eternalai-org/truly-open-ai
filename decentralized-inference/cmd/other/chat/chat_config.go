@@ -1,10 +1,14 @@
 package chat
 
 import (
+	"bytes"
 	"context"
 	"decentralized-inference/internal/config"
+	"decentralized-inference/internal/libs/http_client"
+	"decentralized-inference/internal/rest"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -92,6 +96,12 @@ func AgentTerminalChatConfig(ctx context.Context) error {
 		return nil
 	}
 
+	// Send Config to Server
+	err := SendChatConfigToServer(chatConfig)
+	if err != nil {
+		fmt.Println("Error while sending chat config to server: ", err, "\tTry again.")
+		return nil
+	}
 	// Save to JSON file
 	file, err := os.Create("chat_config.json")
 	if err != nil {
@@ -123,4 +133,25 @@ func LoadChatConfig() (*config.ChatConfig, error) {
 	}
 
 	return &chatConfig, nil
+}
+
+func SendChatConfigToServer(chatConfig *config.ChatConfig) error {
+	fullUrl := fmt.Sprintf("%v/chain_config/insert", chatConfig.ServerBaseUrl)
+	inputBytes, _ := json.Marshal(chatConfig)
+	respBytes, statusCode, err := http_client.RequestHttp(fullUrl, "POST", nil, bytes.NewBuffer(inputBytes), 5)
+	if err != nil {
+		return fmt.Errorf("sending chat_config to server failed, please check the values")
+	}
+	if statusCode != http.StatusOK {
+		return fmt.Errorf("sending chat_config to server failed with status code %d , response :%v", statusCode, string(respBytes))
+	}
+	var response rest.Response
+	err = json.Unmarshal(respBytes, &response)
+	if err != nil {
+		return err
+	}
+	if response.Status != rest.StatusSuccess {
+		return fmt.Errorf("sending chat_config to server failed with response :%v", string(respBytes))
+	}
+	return nil
 }
