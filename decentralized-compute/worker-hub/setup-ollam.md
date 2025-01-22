@@ -24,7 +24,7 @@ sudo bash download_model_macos.sh bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok5
 ```
 For Ubuntu:
 ```bash
-# Add commmands here
+sudo bash download_model_linux.sh bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm 
 ```
 
 ### Step 3: Prepare the model file
