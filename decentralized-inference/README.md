@@ -18,13 +18,16 @@ This folder contains the source code for the Decentralized Inference. It has a l
    ```bash
     docker compose up -d
     ```
+   
+   * Start Terminal UI Chat. Make sure you started ` docker compose up -d` and run `make build_decentralize_server_osx` OR `make build_decentralize_server_linux` before running this command.
+   
+    ```bash
+    ./eai-chat chat <agent_id>
+    ```
+   
    * Config
    ```bash
    ./eai-chat chat config-all
-    ```
-   * Start Terminal UI Chat 
-    ```bash
-    ./eai-chat chat start 
     ```
 
 
