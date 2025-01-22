@@ -28,7 +28,7 @@ cp .env.example .env
 Update the .env file (lines 19-21):
 ```
 ETERNALAI_URL=https://api.eternalai.org/v1/  
-ETERNALAI_MODEL="DeepSeek-R1-Distill-Llama-70B”  
+ETERNALAI_MODEL="DeepSeek-R1-Distill-Llama-70B"  
 ETERNALAI_API_KEY=YOUR_API_KEY  
 ```
 
@@ -39,6 +39,12 @@ pnpm i
 pnpm build  
 pnpm start --characters="YOUR_CHARACTER_FILE"
 ```
+
+We will ask DeepSeek a reasoning question:
+```
+Three people stand in a line. Each has a hat that is either red or blue, but they don’t know their own hat color. The first person says, “I don’t know my hat color.” The second person says, “I don’t know my hat color.” The third person immediately says, “I know my hat color.” What is the color of the third person’s hat? Why?
+```
+
 
 ## Step 5: Verify the onchain prompt transaction
 

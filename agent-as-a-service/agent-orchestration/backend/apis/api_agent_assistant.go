@@ -278,3 +278,18 @@ func (s *Server) GetNftCollectionsByTokenID(c *gin.Context) {
 		ctxJSON(c, http.StatusOK, &serializers.Resp{Data: result})
 	}
 }
+
+func (s *Server) AgentCreateAgentAssistantForLocal(c *gin.Context) {
+	ctx := s.requestContext(c)
+	req := &serializers.AssistantsReq{}
+	if err := c.ShouldBindJSON(req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	resp, err := s.nls.AgentCreateAgentAssistantForLocal(ctx, req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAssistantResp(resp)})
+}
