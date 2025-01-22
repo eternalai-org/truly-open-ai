@@ -1,4 +1,4 @@
-# Build unstoppable Eliza agents with DeepSeek-R1 on Base
+# Build unstoppable Rig agents with DeepSeek-R1 on Base
 
 This developer guide shows you how to build a different kind of Rig agent:
 
@@ -126,7 +126,7 @@ https://basescan.org/tx/0xcb7ca61b77a245121c97918d3387d7b5c80b1fd25aa946532e7269
 # Conclusion
 Congrats!
 
-You’ve finished building your Eliza agent with two superpowers:
+You’ve finished building your Rig agent with two superpowers:
 
 - Onchain-verifiable on Base
 - Powered by Deepseek R1
