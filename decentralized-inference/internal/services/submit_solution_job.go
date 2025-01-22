@@ -63,56 +63,28 @@ func (s *Service) WriteInput(address string, data []byte) (string, error) {
 	return fileName, nil
 }
 
-func (s *Service) JobWatchSubmitSolution(chainConfig *models.ChainConfig) {
+func (s *Service) JobWatchSubmitSolution() {
 	ctx := context.Background()
-	logger.GetLoggerInstanceFromContext(ctx).Info("Start JobWatchSubmitSolution", zap.Any("chainConfig", chainConfig))
+	logger.GetLoggerInstanceFromContext(ctx).Info("Start JobWatchSubmitSolution")
 
 	defer func() {
 		if err := recover(); err != nil {
 			logger.GetLoggerInstanceFromContext(ctx).Error("JobWatchSubmitSolution panic", zap.Any("err", err))
 		}
 		time.Sleep(2 * time.Second)
-		s.JobWatchSubmitSolution(chainConfig)
+		s.JobWatchSubmitSolution()
 	}()
 
 	interval := 500 * time.Millisecond
-	jobName := fmt.Sprintf("JobWatchSubmitSolution-%v", chainConfig.ChainID)
+	jobName := fmt.Sprintf("JobWatchSubmitSolution")
 
 	for {
 		time.Sleep(interval)
-
-		jobCfg, err := s.GetJobConfig(jobName)
-		if err != nil {
-			if err.Error() != mongo.ErrNoDocuments.Error() {
-				panic(err)
-			} else {
-				jobCfg = &models.JobConfig{
-					JobName:  jobName,
-					LastRun:  time.Now(),
-					Interval: 2000, // unit: millisecond
-					Enable:   true,
-				}
-				err = s.addJobConfig(context.Background(), jobCfg)
-				if err != nil {
-					panic(err)
-				}
-			}
-		} else {
-			jobCfg.LastRun = time.Now()
-			err = s.updateJobLastRun(ctx, jobCfg.JobName, jobCfg.LastRun)
-			if err != nil {
-				panic(err)
-			}
-		}
-		if !jobCfg.Enable {
+		chains, err := s.ListChainConfig(ctx)
+		if err != nil || len(chains) == 0 {
 			continue
 		}
-		interval = time.Duration(jobCfg.Interval) * time.Millisecond
-
-		chainConfig, err = s.FindChainConfig(ctx, chainConfig.ChainID)
-		if err != nil {
-			continue
-		}
+		chainConfig := chains[0]
 		rpc := chainConfig.GetRPC()
 		c, err := client.NewClient(rpc, chainConfig.Type,
 			chainConfig.PaymasterFeeZero,

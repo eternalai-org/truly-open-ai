@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"solo/internal/model"
-	"solo/pkg"
-	"solo/pkg/eth"
 	"strconv"
 	"strings"
 	"time"
+
+	"solo/internal/model"
+	"solo/pkg"
+	"solo/pkg/eth"
 
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -24,6 +25,12 @@ func (c *CMD) cliCommand() []*pkg.Command {
 			Help:     "Private Key",
 			Default:  c.localChainCMD.GetPrivateKey(),
 			Required: true,
+		},
+		{
+			Key:      pkg.PLATFROM,
+			Required: true,
+			Default:  pkg.PLATFROM_APPLE_SILLICON,
+			Help:     "Platform: " + pkg.PLATFROM_INTEL + " OR " + pkg.PLATFROM_APPLE_SILLICON,
 		},
 		{
 			Key:     pkg.COMMAND_LOCAL_RUN_POD_URL,
@@ -85,7 +92,7 @@ func (c *CMD) cliCommand() []*pkg.Command {
 					Key:  pkg.COMMAND_SETUP_MANUAL,
 					Name: "Manual",
 					Help: `The manual command lets you set up step-by-step, giving you full control.`,
-					//Function: c.handleMinerReadConfig,
+					// Function: c.handleMinerReadConfig,
 					Children: []*pkg.Command{
 						{
 							Key:      pkg.COMMAND_LOCAL_START_CONFIG,
@@ -220,7 +227,7 @@ func (c *CMD) handleLocalConfig(reader *bufio.Reader, node *pkg.Command) {
 
 func (c *CMD) handleDeployContracts(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -269,7 +276,7 @@ func (c *CMD) handleDeployContracts(reader *bufio.Reader, node *pkg.Command) {
 
 func (c *CMD) handleDeployContract(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -320,12 +327,11 @@ func (c *CMD) handleDeployContract(reader *bufio.Reader, node *pkg.Command) {
 
 	_ = resp
 	fmt.Println("deployed contract success")
-
 }
 
 func (c *CMD) handleMintWEAI(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -374,7 +380,7 @@ func (c *CMD) handleMintWEAI(reader *bufio.Reader, node *pkg.Command) {
 
 func (c *CMD) handleSetWEAIForGpuManager(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -428,7 +434,7 @@ func (c *CMD) handleSetWEAIForGpuManager(reader *bufio.Reader, node *pkg.Command
 
 func (c *CMD) handleCreateMinerInfo(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -463,7 +469,7 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	var err error
 	fmt.Println("Setup cluster")
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 	err = c._startCreateConfigLogic(input)
 	if err != nil {
 		fmt.Println(pkg.PrintText("Config err", err))
@@ -477,10 +483,10 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	}
 
 	time.Sleep(2 * time.Second)
-	//deploy all needed contracts
-	//c.localChainCMD.ContractDeployment()
+	// deploy all needed contracts
+	// c.localChainCMD.ContractDeployment()
 
-	//1. Deploy all contracts
+	// 1. Deploy all contracts
 	err = c._deployContractLogic()
 	if err != nil {
 		fmt.Println("_deployContractLogic error: ", err)
@@ -498,7 +504,7 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Done!!!")
 	fmt.Print(pkg.Line)
-	//ALL done!!!
+	// ALL done!!!
 }
 
 func (c *CMD) handleCreateInfer(reader *bufio.Reader, node *pkg.Command) {
@@ -565,7 +571,7 @@ func (c *CMD) createConfigENV(minerAddress string, index int) error {
 		lhAPIKey = "123"
 	}
 	env := ""
-	env += fmt.Sprintf("PLATFORM=%v\n", pkg.PLATFROM_INTEL)
+	env += fmt.Sprintf("PLATFORM=%v\n", cnf.Platform)
 	env += fmt.Sprintf("API_URL=%v\n", cnf.RunPodInternal)
 	env += fmt.Sprintf("API_KEY=%v\n", cnf.RunPodAPIKEY)
 	env += fmt.Sprintf("LIGHT_HOUSE_API_KEY=%v\n", lhAPIKey)
@@ -637,7 +643,7 @@ func (c *CMD) _deployContractLogic() error {
 		return err
 	}
 
-	//3. Mint WEAI.
+	// 3. Mint WEAI.
 	_, err = c.localChainCMD.MintWrappedEAI(rpc, chainID, "100000", privKey)
 	if err != nil {
 		fmt.Println("Mint WEAI error: ", err)
@@ -665,6 +671,7 @@ func (c *CMD) _startMinerLogic() error {
 	fmt.Println("Start miners")
 
 	cnf := c.localChainCMD.ReadLocalChainCnf()
+	platform := cnf.Platform
 	rpc := cnf.Rpc
 	chainID := cnf.ChainID
 	privKey := cnf.PrivateKey
@@ -673,7 +680,7 @@ func (c *CMD) _startMinerLogic() error {
 	numberOfMiners := 3
 	names := ""
 
-	//clear the created miners
+	// clear the created miners
 	cnf.Miners = make(map[string]model.Miners)
 	_b, err := json.Marshal(cnf)
 	if err == nil {
@@ -682,7 +689,7 @@ func (c *CMD) _startMinerLogic() error {
 
 	for i := 1; i <= numberOfMiners; i++ {
 		fmt.Print(pkg.Line)
-		//5. Create a miner's private key (3 miner)
+		// 5. Create a miner's private key (3 miner)
 		minerAddress, minerPrvKey, err := c.localChainCMD.CreateMinerAddress(rpc, chainID, privKey)
 		if err != nil {
 			continue
@@ -691,7 +698,7 @@ func (c *CMD) _startMinerLogic() error {
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d address", i), *minerAddress))
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d private key", i), *minerPrvKey))
 
-		//send WEAI
+		// send WEAI
 		tx, _, err := c.localChainCMD.SendWEIToMiner(rpc, *minerAddress)
 		if err != nil {
 			fmt.Println("SendWEIToMiner error", err)
@@ -699,7 +706,7 @@ func (c *CMD) _startMinerLogic() error {
 		}
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d received WEAI TX", i), tx.Hash().Hex()))
 
-		//send fee
+		// send fee
 		txFee := new(types.Transaction)
 		gas := pkg.LOCAL_CHAIN_GAS_LIMIT
 
@@ -741,7 +748,7 @@ func (c *CMD) _startMinerLogic() error {
 				fmt.Print(pkg.PrintText("SendFeeToMiner error", err))
 				continue
 			}
-			//there is no error
+			// there is no error
 			fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d gas limit", i), gas))
 
 			_loop++
@@ -763,9 +770,9 @@ func (c *CMD) _startMinerLogic() error {
 		names += " " + name
 	}
 
-	errBuild := c.localChainCMD.BuildContainers(fmt.Sprintf("%s_%s", pkg.MINER_SERVICE_NAME, "base"))
+	errBuild := c.localChainCMD.BuildContainerMiners(fmt.Sprintf("%s_%s", pkg.MINER_SERVICE_NAME, "base"), platform)
 	if errBuild == nil {
-		c.localChainCMD.StartContainersNoBuild(names)
+		c.localChainCMD.StartContainersNoBuildWithPF(names, platform)
 	}
 
 	return nil
@@ -783,15 +790,15 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 
 	rpc, ok := input[pkg.COMMAND_LOCAL_CHAIN_RPC]
 	if !ok {
-		//err = errors.New("deployed contracts error: rpc is required")
-		//return err
+		// err = errors.New("deployed contracts error: rpc is required")
+		// return err
 		rpc = "http://localhost:8545"
 	}
 
 	chainID, ok := input[pkg.COMMAND_LOCAL_CHAIN_ID]
 	if !ok {
-		//err = errors.New("deployed contracts error: chainID is required")
-		//return err
+		// err = errors.New("deployed contracts error: chainID is required")
+		// return err
 		chainID = "31337"
 	}
 
@@ -831,10 +838,17 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 		return err
 	}
 
+	platform, ok := input[pkg.PLATFROM]
+	if !ok {
+		err = errors.New("deployed contracts error: platform is required")
+		return err
+	}
+
 	cnf.PrivateKey = privKey
 	cnf.Rpc = rpc
 	cnf.ChainID = chainID
 	cnf.ModelName = modelName
+	cnf.Platform = platform
 	cnf.RunPodAPIKEY = runPodAPIKey
 
 	if runPod != "" {

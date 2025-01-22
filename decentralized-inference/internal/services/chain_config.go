@@ -69,6 +69,11 @@ func (s *Service) InsertChainConfig(ctx context.Context, chain *models.ChainConf
 	return err
 }
 
+func (s *Service) RemoveAllChainConfig(ctx context.Context) error {
+	err := s.db.GetDB().Collection(models.ChainConfig{}.CollectionName()).Drop(ctx)
+	return err
+}
+
 func (s *Service) UpdateChainConfigByFilter(ctx context.Context, filter bson.M, update bson.M) error {
 	update["updated_at"] = time.Now().UTC()
 	_, err := s.db.GetDB().Collection(models.ChainConfig{}.CollectionName()).UpdateOne(ctx, filter,

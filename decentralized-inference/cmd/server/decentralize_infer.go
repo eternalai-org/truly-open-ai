@@ -1,6 +1,8 @@
 package server
 
 import (
+	"decentralized-inference/internal/client"
+	"decentralized-inference/internal/config"
 	"decentralized-inference/internal/models"
 	"decentralized-inference/internal/rest"
 	"net/http"
@@ -39,5 +41,35 @@ func (rt *Server) GetDecentralizeInferResult(c *gin.Context) {
 			}
 
 			return rt.Service.GetDecentralizeInferResult(c.Request.Context(), request)
+		}, c)
+}
+
+func (rt *Server) InsertChainConfig(c *gin.Context) {
+	rest.ResponseJSON(
+		func(ctx *gin.Context) (interface{}, error) {
+			request := &config.ChatConfig{}
+			if err := c.ShouldBindJSON(request); err != nil {
+				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
+			}
+			cli, err := client.NewClient(request.ChainRpc, models.ChainTypeEth, false, "", "")
+			if err != nil {
+				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
+			}
+			chainID, err := cli.Client.ChainID(c.Request.Context())
+			if err != nil {
+				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
+			}
+			err = rt.Service.RemoveAllChainConfig(c.Request.Context())
+			if err != nil {
+				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
+			}
+			chainConfig := models.ChainConfig{
+				ChainID:              chainID.String(),
+				ListRPC:              []string{request.ChainRpc},
+				AgentContractAddress: request.Dagent721ContractAddress,
+				WorkerHubAddress:     request.PromptSchedulerContractAddress,
+				Type:                 models.ChainTypeEth,
+			}
+			return nil, rt.Service.InsertChainConfig(c.Request.Context(), &chainConfig)
 		}, c)
 }
