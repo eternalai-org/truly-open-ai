@@ -44,8 +44,6 @@ env/config_1.env
 env/config.env
 env/config_*.env
 
-cli
-cli-*
 .vscode
 info.json
 docker-compose-arm-multiple-services.yml
