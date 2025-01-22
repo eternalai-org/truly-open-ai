@@ -748,16 +748,30 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 								var nftInfo map[string]interface{}
 								somebytes, _ := json.Marshal(item.Data["selectedNFT"])
 
-								json.Unmarshal(somebytes, &nftInfo)
-								agent.VerifiedNftOwner = false
-								agent.NftAddress = helpers.GetStringValueFromMap(nftInfo, "token_address")
-								agent.NftTokenID = helpers.GetStringValueFromMap(nftInfo, "token_id")
-								agent.NftTokenImage = helpers.GetStringValueFromMap(nftInfo, "token_uri")
-								agent.NftOwnerAddress = helpers.GetStringValueFromMap(nftInfo, "owner_of")
+								err1 := json.Unmarshal(somebytes, &nftInfo)
+								if err1 == nil {
+									agent.VerifiedNftOwner = false
+									agent.NftAddress = helpers.GetStringValueFromMap(nftInfo, "token_address")
+									agent.NftTokenID = helpers.GetStringValueFromMap(nftInfo, "token_id")
+									agent.NftTokenImage = helpers.GetStringValueFromMap(nftInfo, "token_uri")
+									agent.NftOwnerAddress = helpers.GetStringValueFromMap(nftInfo, "owner_of")
+								}
 							}
 						case "personality_ordinals":
 							{
 								agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
+
+								var nftInfo map[string]interface{}
+								somebytes, _ := json.Marshal(item.Data["selectedNFT"])
+
+								err1 := json.Unmarshal(somebytes, &nftInfo)
+								if err1 == nil {
+									agent.VerifiedNftOwner = false
+									agent.NftAddress = helpers.GetStringValueFromMap(nftInfo, "token_address")
+									agent.NftTokenID = helpers.GetStringValueFromMap(nftInfo, "token_id")
+									agent.NftTokenImage = helpers.GetStringValueFromMap(nftInfo, "token_uri")
+									agent.NftOwnerAddress = helpers.GetStringValueFromMap(nftInfo, "owner_of")
+								}
 							}
 						case "personality_token":
 							{
@@ -829,12 +843,12 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 						case "ai_framework_eliza":
 							{
 								agent.AgentType = models.AgentInfoAgentTypeEliza
-								// agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config_data")
+								agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config")
 							}
 						case "ai_framework_zerepy":
 							{
 								agent.AgentType = models.AgentInfoAgentTypeZerepy
-								// agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config_data")
+								agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config")
 							}
 						}
 					}
@@ -1048,13 +1062,7 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 									}
 								case "personality_nft":
 									{
-										// nftInfo := item.Data["selectedNFT"].(map[string]string)
 										agent.SystemPrompt = helpers.GetStringValueFromMap(item.Data, "personality")
-										// agent.VerifiedNftOwner = false
-										// agent.NftAddress = nftInfo["token_address"]
-										// agent.NftTokenID = nftInfo["token_id"]
-										// agent.NftTokenImage = nftInfo["token_uri"]
-										// agent.NftOwnerAddress = nftInfo["owner_of"]
 									}
 								case "personality_ordinals":
 									{
@@ -1099,6 +1107,25 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 
 									if agent.TokenMode == string(models.CreateTokenModeTypeAutoCreate) && (agent.AgentNftMinted || (agent.AgentType == models.AgentInfoAgentTypeKnowledgeBase && agent.Status == models.AssistantStatusReady)) {
 										agent.TokenStatus = "pending"
+									}
+								}
+							}
+						case "ai_framework":
+							{
+								switch item.Idx {
+								case "ai_framework_eternal_ai":
+									{
+										agent.AgentType = models.AgentInfoAgentTypeReasoning
+									}
+								case "ai_framework_eliza":
+									{
+										agent.AgentType = models.AgentInfoAgentTypeEliza
+										agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config")
+									}
+								case "ai_framework_zerepy":
+									{
+										agent.AgentType = models.AgentInfoAgentTypeZerepy
+										agent.ConfigData = helpers.GetStringValueFromMap(item.Data, "config")
 									}
 								}
 							}
