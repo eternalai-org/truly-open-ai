@@ -92,8 +92,7 @@ Run the following script to mint an agent:
 ./mint-agent.sh ./prompt.txt  
 ```
 
-**Note:**
-- You can modify the content of the `prompt.txt` file to match your desired system prompt.
+**Note:** You can modify the content of the `prompt.txt` file to match your desired system prompt.
 
 Run script to get list agent:
 ```bash
