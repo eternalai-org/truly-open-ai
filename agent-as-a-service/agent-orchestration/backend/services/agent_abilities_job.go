@@ -1339,17 +1339,19 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 									}
 								}
 							} else {
-								inferOutputData, err := s.dojoAPI.OffchainAgentOutput(agentSnapshotPost.InferTxHash)
-								if err != nil {
-									return errs.NewError(err)
-								}
-								if len(inferOutputData) > len(agentSnapshotPost.InferOutputData) || !strings.EqualFold(inferOutputData, agentSnapshotPost.InferOutputData) {
-									err = daos.GetDBMainCtx(ctx).
-										Model(agentSnapshotPost).
-										UpdateColumn("infer_output_data", inferOutputData).
-										Error
+								if agentSnapshotPost.Status == models.AgentSnapshotPostStatusInferSubmitted {
+									inferOutputData, err := s.dojoAPI.OffchainAgentOutput(agentSnapshotPost.InferTxHash)
 									if err != nil {
 										return errs.NewError(err)
+									}
+									if len(inferOutputData) > len(agentSnapshotPost.InferOutputData) || !strings.EqualFold(inferOutputData, agentSnapshotPost.InferOutputData) {
+										err = daos.GetDBMainCtx(ctx).
+											Model(agentSnapshotPost).
+											UpdateColumn("infer_output_data", inferOutputData).
+											Error
+										if err != nil {
+											return errs.NewError(err)
+										}
 									}
 								}
 							}

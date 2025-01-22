@@ -7,6 +7,7 @@ services:
       ALLOW_EMPTY_PASSWORD: yes
     ports:
       - 6379:6379
+
   mysql:
     image: mysql
     environment:
@@ -16,6 +17,7 @@ services:
       MYSQL_PASSWORD: admin
     ports:
       - 3306:3306
+      
   backend:
     build:
       dockerfile: ./Dockerfile.backend
@@ -23,6 +25,8 @@ services:
       - 8480:8480
     extra_hosts:
       - host.docker.internal:host-gateway
+    depends_on:
+      - mysql
 
   mongodb:
     image: mongo:6.0
