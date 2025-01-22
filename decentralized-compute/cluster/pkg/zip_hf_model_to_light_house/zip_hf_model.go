@@ -208,28 +208,18 @@ func getHFModelResultFromLightHouse(hash string) (*HFModelInLightHouse, error) {
 }
 
 func downloadZipFileFromLightHouse(info *HFModelInLightHouse, hfDir string) error {
-	input := make(chan HFModelZipFile)
-	for i := 0; i < THREADS; i++ {
-		go func() {
-			for file := range input {
-				log.Println("Start download ", "file", file.File, "hash", file.Hash, "hfDir", hfDir)
-				for {
-					err := lighthouse.DownloadToFile(file.Hash, fmt.Sprintf("%v/%v", hfDir, file.File))
-					if err != nil {
-						log.Println("Error when try down file from light house", "file", file.File, "hash", file.Hash, "err", err.Error())
-						time.Sleep(2 * time.Minute)
-						continue
-					}
-					break
-				}
+	for _, file := range info.Files {
+		log.Println("Start download ", "file", file.File, "hash", file.Hash, "hfDir", hfDir)
+		for {
+			err := lighthouse.DownloadToFile(file.Hash, fmt.Sprintf("%v/%v", hfDir, file.File))
+			if err != nil {
+				log.Println("Error when try down file from light house", "file", file.File, "hash", file.Hash, "err", err.Error())
+				time.Sleep(2 * time.Minute)
+				continue
 			}
-		}()
-	}
-	go func() {
-		for _, file := range info.Files {
-			input <- file
+			break
 		}
-	}()
+	}
 	log.Println("Success download all zip file:", "model", info.Model)
 	return nil
 }
