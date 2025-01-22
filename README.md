@@ -80,40 +80,22 @@ docker-compose up
 * Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
 Run script to install dependencies and deploy AI-721 contract:
 ```bash
-./autoDeploy.sh
+./auto-deploy.sh
 ```
 
 ***Step 4.2 Mint an agent***
 * Run script to mint an agent:
 
 ```bash
-./mintAgent.sh <AGENT_SYSTEM_PROMPT_PATH>
+./mint-agent.sh ./prompt.txt  
 ```
 
 **Note:**
-- AGENT_SYSTEM_PROMPT_PATH: the path to the file containing the agent system prompt. 
-
-*Example:*
-```bash
-./mintAgent.sh ./prompt.txt  
-```
-
-Run script to add new agent:
-```bash
-curl --location 'http://localhost:8480/api/agent/create-local-agent' \
---header 'Content-Type: application/json' \
---data '{
-    "creator": "<HARDHAT_AI721_ADDRESS>",
-    "agent_name": "<AGENT_NAME>",
-    "agent_contract_address": "<HARDHAT_AGENT_OWNER_ADDRESS>",
-    "agent_contract_id": "<TOKEN_ID>",
-    "system_content": "<prompt content>"
-}'
-```
+- You can modify the content of the file `prompt.txt` to match your desired system prompt.
 
 Run script to get list agent:
 ```bash
-curl --location 'http://localhost:8480/api/agent/list-local-agent?creator=<HARDHAT_AGENT_OWNER_ADDRESS>'
+./ls-agent.sh
 ```
 
 **Step 5: Interact with your Agent**
