@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"solo/config"
 	"solo/internal/contracts/erc20"
 	"solo/internal/contracts/v1/hybrid_model"
 	"solo/internal/contracts/v1/worker_hub"
@@ -285,10 +284,9 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 }
 
 func (c *CMD_Local_ChainV1) CreateConfigENV(minerAddress string, index int) error {
-	sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
+	//sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
 	envFile := fmt.Sprintf(pkg.ENV_LOCAL_MINERS_FILE, pkg.CurrentDir(), index)
-
-	config.ReadConfig(sample)
+	//config.ReadConfig(sample)
 
 	f, _ := os.Stat(envFile)
 	if f != nil {

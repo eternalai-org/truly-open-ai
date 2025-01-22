@@ -19,7 +19,6 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
-	"solo/pkg/logger"
 	"strconv"
 	"strings"
 	"time"
@@ -708,7 +707,7 @@ func (c *CMD_Local_Chain_V2) ReadLocalChainCnf() *model.LocalChain {
 	resp.Contracts = make(map[string]string)
 	resp.Miners = make(map[string]model.Miners)
 	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
-	logger.AtLog.Infof("config_file_path: %s", path)
+
 	_b, err := os.ReadFile(path)
 	if err != nil {
 		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
@@ -994,7 +993,7 @@ func (c *CMD_Local_Chain_V2) OllamaHealthCheck() ([]byte, bool) {
 	url := cnf.RunPodExternal
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
-	headers["Authorization"] = "1"
+	headers["Authorization"] = fmt.Sprintf("Bearer %s", cnf.RunPodAPIKEY)
 
 	request := model.LLMInferRequest{
 		Model:    cnf.ModelName,
