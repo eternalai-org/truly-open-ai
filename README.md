@@ -99,9 +99,27 @@ Run script to get list agents:
 ./ls-agents.sh
 ```
 
-**Step 5: Interact with your Agent**
+**Step 5.1: Interact with your Agent**
 
-TODO: Write
+**Step 5.2: Start an Eliza Agent**
+
+Navigate to the ./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent folder* and run the following command to configure your twitter account.
+
+```
+node setup.js --TWITTER_USERNAME <TWITTER_USERNAME> --TWITTER_PASSWORD <TWITTER_PASSWORD> --TWITTER_EMAIL <TWITTER_EMAIL>
+```
+
+Then build a Docker image for the Eliza runtime.
+
+```
+docker build -t eliza .
+```
+
+And start an Eliza agent by running the following command.
+
+```
+docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
+```
 
 **Step 6: Build a custom Knowledge Base (RAG) for your Agent with KB-721**
 
