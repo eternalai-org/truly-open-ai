@@ -7,7 +7,15 @@ services:
       ALLOW_EMPTY_PASSWORD: yes
     ports:
       - 6379:6379
-      
+
+  de-infer-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.de-infer
+    ports:
+      - "8484:8484"
+    depends_on:
+      - mongodb
   mysql:
     image: mysql
     environment:
@@ -17,6 +25,7 @@ services:
       MYSQL_PASSWORD: admin
     ports:
       - 3306:3306
+
   backend:
     build:
       dockerfile: ./Dockerfile.backend

@@ -18,8 +18,8 @@ func collectChatConfigInformation() *config.ChatConfig {
 
 	for {
 		fmt.Print("What is your network RPC: ")
-		fmt.Scanln(&chatConfig.ChainRpc)
-		if chatConfig.ChainRpc == "" {
+		fmt.Scanln(&chatConfig.Rpc)
+		if chatConfig.Rpc == "" {
 			fmt.Println("Network RPC cannot be empty")
 			continue
 		}
@@ -37,8 +37,8 @@ func collectChatConfigInformation() *config.ChatConfig {
 
 	for {
 		fmt.Print("What is your DAgent721 contract address: ")
-		fmt.Scanln(&chatConfig.Dagent721ContractAddress)
-		if chatConfig.Dagent721ContractAddress == "" {
+		fmt.Scanln(&chatConfig.Contracts.SystemPromptManagerAddress)
+		if chatConfig.Contracts.SystemPromptManagerAddress == "" {
 			fmt.Println("DAgent721 contract address cannot be empty")
 			continue
 		}
@@ -57,8 +57,8 @@ func collectChatConfigInformation() *config.ChatConfig {
 
 	for {
 		fmt.Print("What is your prompt scheduler contract address: ")
-		fmt.Scanln(&chatConfig.PromptSchedulerContractAddress)
-		if chatConfig.PromptSchedulerContractAddress == "" {
+		fmt.Scanln(&chatConfig.Contracts.SystemPromptManagerAddress)
+		if chatConfig.Contracts.SystemPromptManagerAddress == "" {
 			fmt.Println("Prompt scheduler contract address cannot be empty")
 			continue
 		}
@@ -67,8 +67,8 @@ func collectChatConfigInformation() *config.ChatConfig {
 
 	for {
 		fmt.Print("What is your infer wallet key: ")
-		fmt.Scanln(&chatConfig.InferWalletKey)
-		if chatConfig.InferWalletKey == "" {
+		fmt.Scanln(&chatConfig.PrivateKey)
+		if chatConfig.PrivateKey == "" {
 			fmt.Println("Infer wallet key cannot be empty")
 			continue
 		}
@@ -120,10 +120,12 @@ func AgentTerminalChatConfig(ctx context.Context) error {
 }
 
 func LoadChatConfig() (*config.ChatConfig, error) {
-	file, err := os.Open("chat_config.json")
+	pathConfigFromDeCompute := "decentralized-compute/worker-hub/env/local_contracts.json"
+	file, err := os.Open(pathConfigFromDeCompute)
 	if err != nil {
-		return nil, fmt.Errorf("chat_config.json not found, please run 'chat config-all' to create it")
+		return nil, fmt.Errorf("env/local_contracts.json from decentralized-compute MODULE is missing, please make sure config file is available")
 	}
+
 	defer file.Close()
 
 	decoder := json.NewDecoder(file)
@@ -132,7 +134,28 @@ func LoadChatConfig() (*config.ChatConfig, error) {
 		return nil, fmt.Errorf("chat_config.json is invalid, please check the values")
 	}
 
+	baseDecentralizedInferenceUrl, _ := LoadBaseSeverDecentralizedInferenceConfig()
+	chatConfig.ServerBaseUrl = baseDecentralizedInferenceUrl
+
 	return &chatConfig, nil
+}
+
+func LoadBaseSeverDecentralizedInferenceConfig() (string, error) {
+	defaultServerBaseUrl := "http://localhost:8484"
+	file, err := os.Open("decentralized-inference/chat_config.json")
+	if err != nil {
+		return defaultServerBaseUrl, nil
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	var chatConfig config.ChatConfig
+	if err := decoder.Decode(&chatConfig); err != nil {
+		return defaultServerBaseUrl, fmt.Errorf("chat_config.json is invalid, please check the values")
+	}
+
+	return chatConfig.ServerBaseUrl, nil
 }
 
 func SendChatConfigToServer(chatConfig *config.ChatConfig) error {

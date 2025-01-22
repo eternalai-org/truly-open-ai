@@ -6,6 +6,7 @@ import (
 	"decentralized-inference/internal/logger"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
@@ -32,17 +33,23 @@ func main() {
 			},
 			{
 				Name:        "chat",
-				Usage:       "EAI chat",
+				Usage:       "EAI chat with agent, use 'chat <agent_id>' to start chat",
 				Description: "EAI chat",
 				Category:    "chat",
+				Args:        true,
+				Action: func(c *cli.Context) error {
+					agentID := c.Args().Get(0)
+					if agentID == "" {
+						return fmt.Errorf("Agent ID is required")
+					}
+					_, err := strconv.Atoi(agentID)
+					if err != nil {
+						return fmt.Errorf("Agent ID is invalid, it must be a number")
+					}
+					//logger.GetLoggerInstanceFromContext(c.Context).Info("Starting chat with agent terminal")
+					return chat.AgentTerminalChat(c.Context, agentID)
+				},
 				Subcommands: []*cli.Command{
-					{
-						Name: "start",
-						Action: func(c *cli.Context) error {
-							logger.GetLoggerInstanceFromContext(c.Context).Info("Starting chat")
-							return chat.AgentTerminalChat(c.Context)
-						},
-					},
 					{
 						Name: "config-all",
 						Action: func(c *cli.Context) error {

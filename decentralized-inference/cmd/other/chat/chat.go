@@ -15,14 +15,20 @@ import (
 	"time"
 )
 
-func AgentTerminalChat(ctx context.Context) error {
+func AgentTerminalChat(ctx context.Context, agentID string) error {
 	chatConfig, err := LoadChatConfig()
 	if err != nil {
-		//fmt.Println("Error loading chat config:", err)
+		return err
+	}
+	chatConfig.AgentID = agentID
+
+	fmt.Println("Welcome to the EAI chat terminal!")
+	err = chatConfig.VerifyBeforeChat()
+	if err != nil {
 		return err
 	}
 
-	fmt.Println("Welcome to the EAI chat terminal!")
+	fmt.Println(fmt.Sprintf("Your angel ID is %v was minted at contract address: %v", agentID, chatConfig.AgentContractAddress))
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("You: ")
@@ -71,9 +77,9 @@ func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool
 
 	request := &models.InferResultRequest{
 		ChainInfo: models.ChainInfoRequest{
-			Rpc: chatConfig.ChainRpc,
+			Rpc: chatConfig.Rpc,
 		},
-		WorkerHubAddress: chatConfig.PromptSchedulerContractAddress,
+		WorkerHubAddress: chatConfig.Contracts.WorkerHubAddress,
 		InferId:          inferID,
 	}
 	inputBytes, _ := json.Marshal(request)
@@ -132,11 +138,11 @@ func showLoading(stopChan chan bool) {
 func getLLMResponse(prompt string, chatConfig *config.ChatConfig) (*models.DecentralizeInferResponse, error) {
 	request := models.DecentralizeInferRequest{
 		ChainInfo: models.ChainInfoRequest{
-			Rpc: chatConfig.ChainRpc,
+			Rpc: chatConfig.Rpc,
 		},
-		AgentContractAddress: chatConfig.Dagent721ContractAddress,
-		WorkerHubAddress:     chatConfig.PromptSchedulerContractAddress,
-		InferPriKey:          chatConfig.InferWalletKey,
+		AgentContractAddress: chatConfig.Contracts.SystemPromptManagerAddress,
+		WorkerHubAddress:     chatConfig.Contracts.WorkerHubAddress,
+		InferPriKey:          chatConfig.PrivateKey,
 		Input:                prompt,
 		AgentId:              chatConfig.AgentID,
 	}

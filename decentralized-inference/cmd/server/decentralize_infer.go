@@ -51,7 +51,7 @@ func (rt *Server) InsertChainConfig(c *gin.Context) {
 			if err := c.ShouldBindJSON(request); err != nil {
 				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
 			}
-			cli, err := client.NewClient(request.ChainRpc, models.ChainTypeEth, false, "", "")
+			cli, err := client.NewClient(request.Rpc, models.ChainTypeEth, false, "", "")
 			if err != nil {
 				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
 			}
@@ -65,9 +65,9 @@ func (rt *Server) InsertChainConfig(c *gin.Context) {
 			}
 			chainConfig := models.ChainConfig{
 				ChainID:              chainID.String(),
-				ListRPC:              []string{request.ChainRpc},
-				AgentContractAddress: request.Dagent721ContractAddress,
-				WorkerHubAddress:     request.PromptSchedulerContractAddress,
+				ListRPC:              []string{request.Rpc},
+				AgentContractAddress: request.Contracts.SystemPromptManagerAddress,
+				WorkerHubAddress:     request.Contracts.WorkerHubAddress,
 				Type:                 models.ChainTypeEth,
 			}
 			return nil, rt.Service.InsertChainConfig(c.Request.Context(), &chainConfig)

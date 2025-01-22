@@ -1,0 +1,20 @@
+FROM golang:1.23.4 as builder
+
+WORKDIR /app
+
+COPY decentralized-inference/go.mod decentralized-inference/go.sum ./
+RUN go mod download
+
+COPY decentralized-inference /app/
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o decentralized-inference-app .
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/decentralized-inference-app /app/
+COPY decentralized-inference/config.json /app/decentralized-inference/config.json
+COPY decentralized-compute/worker-hub/env/local_contracts.json /app/decentralized-compute/worker-hub/env/local_contracts.json
+
+CMD ["./decentralized-inference-app", "server"]
