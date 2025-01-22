@@ -44,6 +44,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 					`: {models.TwinStatusDoneSuccess},
 					"agent_infos.scan_enabled = ?":    {true},
 					"agent_infos.system_prompt != ''": {},
+					"agent_infos.eai_balance > 0":     {},
 					`(agent_infos.ref_tweet_id > 0 
 						or (agent_infos.eai_balance >= (agent_chain_fees.mint_fee + 9.9 * agent_chain_fees.infer_fee))
 						or (agent_infos.agent_type in (3,4) and agent_infos.eai_balance >= agent_chain_fees.mint_fee)
