@@ -32,7 +32,7 @@ Here are the major components of the Truly Open AI software stack.
 | Component | Description |
 |:--------------------------|--------------------------|
 | [decentralized-agents](/decentralized-agents)| A set of smart contract standards for decentralized AI agents (AI721s). |
-| [ai-kernel](/agent-as-a-service)| A set of smart contracts that trustlessly coordinate the infrastructure operations. |
+| [ai-kernel](/ai-kernel)| A set of smart contracts that trustlessly coordinate the infrastructure operations. |
 | [decentralized-inference](/decentralized-inference) | A set of smart contracts that together perform onchain-verifiable inference. |
 | [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
