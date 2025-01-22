@@ -94,16 +94,16 @@ Run the following script to mint an agent:
 
 **Note:** You can modify the content of the `prompt.txt` file to match your desired system prompt.
 
-Run script to get list agents:
+Also, to list out all agents on your machine, run this:
 ```bash
 ./ls-agents.sh
 ```
 
-**Step 5.1: Interact with your Agent**
+**Step 5.1: Start an EternalAI Agent**
 
 **Step 5.2: Start an Eliza Agent**
 
-Navigate to the ./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent folder* and run the following command to configure your twitter account.
+Navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent` folder and run the following command to configure your twitter account.
 
 ```
 node setup.js --TWITTER_USERNAME <TWITTER_USERNAME> --TWITTER_PASSWORD <TWITTER_PASSWORD> --TWITTER_EMAIL <TWITTER_EMAIL>
