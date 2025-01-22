@@ -44,6 +44,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 					`: {models.TwinStatusDoneSuccess},
 					"agent_infos.scan_enabled = ?":    {true},
 					"agent_infos.system_prompt != ''": {},
+					"agent_infos.eai_balance > 0":     {},
 					`(agent_infos.ref_tweet_id > 0 
 						or (agent_infos.eai_balance >= (agent_chain_fees.mint_fee + 9.9 * agent_chain_fees.infer_fee))
 						or (agent_infos.agent_type in (3,4) and agent_infos.eai_balance >= agent_chain_fees.mint_fee)
@@ -803,10 +804,11 @@ func (s *Service) JobAgentStart(ctx context.Context) error {
 					if err != nil {
 						return errs.NewError(err)
 					}
-					startReq["ETERNALAI_MODEL"] = agent.AgentBaseModel
-					startReq["ETERNALAI_CHAIN_ID"] = fmt.Sprintf("%d", agent.NetworkID)
-					startReq["ETERNALAI_AGENT_CONTRACT_ADDRESS"] = agent.AgentContractAddress
-					startReq["ETERNALAI_AGENT_ID"] = agent.AgentContractID
+					startReq["agentName"] = agent.AgentName
+					startReq["model"] = agent.AgentBaseModel
+					startReq["chainID"] = fmt.Sprintf("%d", agent.NetworkID)
+					startReq["agentContractAddress"] = agent.AgentContractAddress
+					startReq["agentID"] = agent.AgentContractID
 					err = helpers.CurlURL(
 						s.conf.AgentDeployer.Url+"/api/agent/start",
 						http.MethodPost,

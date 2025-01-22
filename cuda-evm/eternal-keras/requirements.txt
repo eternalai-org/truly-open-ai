@@ -1,0 +1,6 @@
+tensorflow==2.16.1
+loguru==0.7.2
+web3==6.20.0
+load_dotenv==0.1.0
+tqdm==4.66.4
+colorama==0.4.6

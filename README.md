@@ -1,24 +1,19 @@
 > [!NOTE]
-> This repo is a work in progress. We are refactoring our codebase and preparing for a 100% open-source release. We should be done soon. Stay tuned for updates, and join us in building truly open AI!
+> WIP. We are refactoring our codebase for a 100% open-source release. Feel free to explore around.
 
-# Truly Open AI: The AI Layer of the New Internet
+# Project Truly Open AI
 
-Truly Open AI is a production-grade, crypto-native infrastructure for managing decentralized agents across multiple blockchains. It has a comprehensive suite of tools that lets developers deploy, maintain, and scale AI agents onchain with ease.
+AI agents are here, but their future is controlled by a few centralized companies. The intersection of crypto and AI has led to various projects solving decentralized AI agents, but these efforts remain fragmented.
 
-Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to power other agent frameworks and blockchains.
+What is needed is an open infrastructure that integrates these disparate components into a cohesive whole, enabling Crypto x AI researchers to experiment with wild agent ideas and developers to build decentralized AI agents easily.
 
-As the end-to-end platform for decentralized AI, Truly Open AI integrates with the best-of-breed products across its software stack:
+## An End-to-End Decentralized Infrastructure for AI Agents
 
-* Agent frameworks: [Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy)
-* Blockchains: Bitcoin, Ethereum, Solana, Base, Arbitrum, ZKsync, Polygon, ApeChain, etc.
-* Models: Llama, Hermes, DeepSeek, Qwen, FLUX, etc.
-* Storage: Filecoin, Greenfield, etc.
-  
-## Motivation
+Truly Open AI is a production-grade open source system for managing decentralized AI agents across multiple blockchains and agent frameworks. It provides powerful tools to deploy, maintain, and scale decentralized AI agents onchain with ease.
 
-We're living in the age of human-AI symbiosis, but a few centralized companies currently control the future of AI. The intersection of crypto and AI has led to exciting new projects solving decentralized AI, but these efforts are fragmented and remain as small-scale experiments.
+Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to power other agent frameworks ([Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy)), and other blockchains ([Ethereum](https://x.com/cryptoeternalai/status/1856595790334189977), [Base](https://x.com/punk3700/status/1869428187450749093), and Solana).
 
-To address this, we need to integrate these disparate components into a cohesive whole, creating a comprehensive infrastructure that lets developers build production-grade decentralized agents and large-scale decentralized swarms.
+<img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
 ## Design Principles
 
@@ -30,53 +25,52 @@ To address this, we need to integrate these disparate components into a cohesive
 6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
-## Architecture
+## Key Components
 
-Truly Open AI is a crypto-native open source platform created for a wide array of agent frameworks and blockchains.
-
-<img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
-
-<br><br>
 Here are the major components of the Truly Open AI software stack.
-<br>
 
-|Component&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;  | Description |
-|--|--|
-| [agent-as-a-service](/agent-as-a-service) | The production-grade agent launchpad and management. |
-| [ai-architectures](/ai-architectures) | The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
-| [ai-frameworks](/ai-frameworks) | Truly Open AI works with popular agent frameworks, including Eliza, Rig, and ZerePy. |
-| [ai-kernel](/agent-as-a-service) | The central component of the AI-powered blockchain architecture. |
-| [blockchains](/blockchains) | Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
-| [creator-tools](/creator-tools) | No-code tools for AI creators to create and manage their agents. |
-| [decentralized-agents](/decentralized-agents) | A set of smart contract standards for fully onchain AI agents, including AI721 and AI721Knowledge. |
+| Component | Description |
+|:--------------------------|--------------------------|
+| [agent-as-a-service](/agent-as-a-service) &nbsp;| The production-grade agent launchpad and management. |
+| [ai-architectures](/ai-architectures) &nbsp;| The various AI architectures, including Chain of Thought, Plan and Execute, Critique Revise, and Self-Ask. |
+| [ai-frameworks](/ai-frameworks) &nbsp;| Truly Open AI works with popular agent frameworks, including Eliza, Rig, and ZerePy. |
+| [ai-kernel](/agent-as-a-service) &nbsp;| The central component of the AI-powered blockchain architecture. |
+| [blockchains](/blockchains) &nbsp;| Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
+| [creator-tools](/creator-tools) &nbsp;| No-code tools for AI creators to create and manage their agents. |
+| [decentralized-agents](/decentralized-agents) &nbsp;| A set of smart contract standards for fully onchain AI agents, including AI721 and AI721Knowledge. |
 | [decentralized-compute](/decentralized-compute) | The DePIN infrastructure powering agents. |
 | [decentralized-inference](/decentralized-inference) | The trustless, onchain-verifiable inference protocol. |
-| [decentralized-storage](/decentralized-storage) | Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
-| [decentralized-swarms](/decentralized-swarms) | Fully-onchain decentralized multi-agent systems |
+| [decentralized-storage](/decentralized-storage) &nbsp;| Truly Open AI works with popular decentralized storage networks, including Filecoin, Greenfield, and Arweave. |
+| [decentralized-swarms](/decentralized-swarms) &nbsp;| Fully-onchain decentralized multi-agent systems |
 
 ## Getting Started
 
-Let's deploy your own end-to-end Truly Open AI infrastructure.
+Let's deploy an end-to-end decentralized AI infrastructure.
 
-**Step 1: Deploy your own Blockchain**
+**Step 1: Deploy a local blockchain for development**
 
-TODO: Write this section
+TODO: Write
 
-**Step 2: Deploy your own Decentralized Compute with Llama**
+**Step 2: Deploy your first Decentralized Compute cluster**
 
-TODO: Write this section
+TODO: Write
 
-**Step 3: Deploy your own Decentralized Agent as a Service infrastructure**
+**Step 3: Deploy your production-grade Agent as a Service infrastructure**
 
-TODO: Write this section
+TODO: Write
 
-**Step 4: Deploy your first Decentralized Agent**
+**Step 4: Deploy your first Decentralized Agent with AI-721**
 
-TODO: Write this section
+TODO: Write
 
-**Step 5: Chat with the Agent**
+**Step 5: Interact with your Agent**
 
-TODO: Write this section
+TODO: Write
+
+**Step 6: Build a custom Knowledge Base (RAG) for your Agent with KB-721**
+
+TODO: Write
+
 
 ## Contribute to Truly Open AI
 
