@@ -107,6 +107,19 @@ export HARDHAT_AGENT_OWNER_ADDRESS=<HARDHAT_AGENT_OWNER_ADDRESS> AGENT_SYSTEM_PR
 export HARDHAT_AGENT_OWNER_ADDRESS=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 AGENT_SYSTEM_PROMPT_PATH="./prompt.txt" HARDHAT_AI721_ADDRESS=0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9 && npx hardhat run ./scripts/mintAgent.ts --network localhost    
 ```
 
+Run script to add new agent:
+```bash
+curl --location 'http://localhost:8480/api/agent/create-local-agent' \
+--header 'Content-Type: application/json' \
+--data '{
+    "creator": "<HARDHAT_AI721_ADDRESS>",
+    "agent_name": "<AGENT_NAME>",
+    "agent_contract_address": "<HARDHAT_AGENT_OWNER_ADDRESS>",
+    "agent_contract_id": "<TOKEN_ID>",
+    "system_content": "<prompt content>"
+}'
+```
+
 **Step 5: Interact with your Agent**
 
 TODO: Write
