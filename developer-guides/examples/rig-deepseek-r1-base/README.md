@@ -68,7 +68,7 @@ Then, I'll find the number of favorable outcomes, which are the ways to pick two
 Finally, the probability of picking two blue balls is the ratio of favorable outcomes to the total number of possible outcomes, which is 10/45. Simplifying this fraction gives the final probability.
 </think>
 ```
-##Step 8: Let's see how DeepSeek-R1 answers
+## Step 8: Let's see how DeepSeek-R1 answers
 
 Based on its prior reasoning in Step 6, DeepSeek-R1 provides the final answer.
 ```
