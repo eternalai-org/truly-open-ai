@@ -6,6 +6,7 @@ import (
 	"decentralized-inference/internal/logger"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
@@ -40,6 +41,10 @@ func main() {
 					agentID := c.Args().Get(0)
 					if agentID == "" {
 						return fmt.Errorf("Agent ID is required")
+					}
+					_, err := strconv.Atoi(agentID)
+					if err != nil {
+						return fmt.Errorf("Agent ID is invalid, it must be a number")
 					}
 					//logger.GetLoggerInstanceFromContext(c.Context).Info("Starting chat with agent terminal")
 					return chat.AgentTerminalChat(c.Context, agentID)

@@ -23,6 +23,12 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 	chatConfig.AgentID = agentID
 
 	fmt.Println("Welcome to the EAI chat terminal!")
+	err = chatConfig.VerifyBeforeChat()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(fmt.Sprintf("Your angel ID is %v was minted at contract address: %v", agentID, chatConfig.AgentContractAddress))
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("You: ")

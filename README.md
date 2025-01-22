@@ -62,13 +62,13 @@ TODO: Write
 
 **Step 3: Deploy your production-grade Agent as a Service infrastructure**
 
-* Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
+Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
 
-Run script to build docker:
+Run the following command to build a docker image for the service:
 ```bash
 docker-compose build
 ```
-Run script to run docker:
+Run the following command to run the service:
 ```bash
 docker-compose up
 ```
@@ -77,48 +77,49 @@ docker-compose up
 
 ***Step 4.1 Deploy contract AI-721***
 
-* Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
-Run script to install dependencies and deploy AI-721 contract:
+Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
+
+Run the following script to install dependencies and deploy AI-721 contract:
 ```bash
-./autoDeploy.sh
+./deploy-ai721.sh
 ```
 
 ***Step 4.2 Mint an agent***
-* Run script to mint an agent:
+
+Run the following script to mint an agent:
 
 ```bash
-./mintAgent.sh <AGENT_SYSTEM_PROMPT_PATH>
+./mint-agent.sh ./prompt.txt  
 ```
 
-**Note:**
-- AGENT_SYSTEM_PROMPT_PATH: the path to the file containing the agent system prompt. 
+**Note:** You can modify the content of the `prompt.txt` file to match your desired system prompt.
 
-*Example:*
+Also, to list out all agents on your machine, run this:
 ```bash
-./mintAgent.sh ./prompt.txt  
+./ls-agents.sh
 ```
 
-Run script to add new agent:
-```bash
-curl --location 'http://localhost:8480/api/agent/create-local-agent' \
---header 'Content-Type: application/json' \
---data '{
-    "creator": "<HARDHAT_AI721_ADDRESS>",
-    "agent_name": "<AGENT_NAME>",
-    "agent_contract_address": "<HARDHAT_AGENT_OWNER_ADDRESS>",
-    "agent_contract_id": "<TOKEN_ID>",
-    "system_content": "<prompt content>"
-}'
+**Step 5.1: Start an EternalAI Agent**
+
+**Step 5.2: Start an Eliza Agent**
+
+Navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent` folder and run the following command to configure your twitter account.
+
+```
+node setup.js --TWITTER_USERNAME <TWITTER_USERNAME> --TWITTER_PASSWORD <TWITTER_PASSWORD> --TWITTER_EMAIL <TWITTER_EMAIL>
 ```
 
-Run script to get list agent:
-```bash
-curl --location 'http://localhost:8480/api/agent/list-local-agent?creator=<HARDHAT_AGENT_OWNER_ADDRESS>'
+Then build a Docker image for the Eliza runtime.
+
+```
+docker build -t eliza .
 ```
 
-**Step 5: Interact with your Agent**
+And start an Eliza agent by running the following command.
 
-TODO: Write
+```
+docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
+```
 
 **Step 6: Build a custom Knowledge Base (RAG) for your Agent with KB-721**
 

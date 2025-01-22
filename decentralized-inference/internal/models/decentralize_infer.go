@@ -14,6 +14,14 @@ type DecentralizeInferRequest struct {
 	AgentId              string           `json:"agent_id"`
 }
 
+type DecentralizeInferNoAgentRequest struct {
+	ChainInfo        ChainInfoRequest `json:"chain_info"`
+	WorkerHubAddress string           `json:"worker_hub_address"`
+	InferPriKey      string           `json:"infer_pri_key"`
+	Input            string           `json:"input"`
+	ModelId          string           `json:"model_id"`
+}
+
 type DecentralizeInferResponse struct {
 	ChainInfo ChainInfoRequest `json:"chain_info"`
 	InferId   uint64           `json:"infer_id"`

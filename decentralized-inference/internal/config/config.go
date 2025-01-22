@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -52,6 +53,23 @@ type MongoConfig struct {
 	Db  string `json:"db"`
 }
 
+func (c ChatConfig) VerifyBeforeChat() error {
+	if c.AgentContractAddress == "" {
+		return fmt.Errorf("Agent contract address is empty")
+	}
+	if c.Rpc == "" {
+		return fmt.Errorf("Chain RPC is empty")
+	}
+	if c.PrivateKey == "" {
+		return fmt.Errorf("Private key to create infer onchain is empty")
+	}
+	if c.AgentID == "" {
+		return fmt.Errorf("Agent ID is empty")
+	}
+
+	return nil
+}
+
 type ChatConfig struct {
 	ServerBaseUrl string `json:"server_base_url"`
 	Contracts     struct {
@@ -87,8 +105,9 @@ type ChatConfig struct {
 			PrivateKey string `json:"private_key"`
 		} `json:"0xe046b727a1b76505105e4fdead71687e10177388"`
 	} `json:"miners"`
-	Platform string `json:"platform"`
-	AgentID  string `json:"-"`
+	Platform             string `json:"platform"`
+	AgentID              string `json:"agent_id"`
+	AgentContractAddress string `json:"agent_contract_address"`
 }
 
 func Load() (*Config, error) {
