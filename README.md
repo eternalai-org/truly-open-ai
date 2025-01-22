@@ -120,7 +120,7 @@ curl --location 'http://localhost:8480/api/agent/create-local-agent' \
 }'
 ```
 
-Run script to add get list agent:
+Run script to get list agent:
 ```bash
 curl --location 'http://localhost:8480/api/agent/list-local-agent?creator=<HARDHAT_AGENT_OWNER_ADDRESS>'
 ```

@@ -39,7 +39,7 @@ cargo update
 run --package rig-core --example agent_with_eternalai
 ```
 
-We will ask DeepSeek a math-related question:
+We will ask your agent a math-related question:
 ```
 A bag contains 3 red balls, 5 blue balls, and 2 green balls. If you randomly pick two balls without replacement, what is the probability that both are blue?
 ```
@@ -68,7 +68,7 @@ Then, I'll find the number of favorable outcomes, which are the ways to pick two
 Finally, the probability of picking two blue balls is the ratio of favorable outcomes to the total number of possible outcomes, which is 10/45. Simplifying this fraction gives the final probability.
 </think>
 ```
-##Step 8: Let's see how DeepSeek-R1 answers
+## Step 8: Let's see how DeepSeek-R1 answers
 
 Based on its prior reasoning in Step 6, DeepSeek-R1 provides the final answer.
 ```
