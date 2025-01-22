@@ -62,13 +62,13 @@ TODO: Write
 
 **Step 3: Deploy your production-grade Agent as a Service infrastructure**
 
-* Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
+Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
 
-Run script to build docker:
+Run the following command to build a docker image for the service:
 ```bash
 docker-compose build
 ```
-Run script to run docker:
+Run the following command to run the service:
 ```bash
 docker-compose up
 ```
@@ -77,21 +77,23 @@ docker-compose up
 
 ***Step 4.1 Deploy contract AI-721***
 
-* Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
-Run script to install dependencies and deploy AI-721 contract:
+Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
+
+Run the following script to install dependencies and deploy AI-721 contract:
 ```bash
 ./auto-deploy.sh
 ```
 
 ***Step 4.2 Mint an agent***
-* Run script to mint an agent:
+
+Run the following script to mint an agent:
 
 ```bash
 ./mint-agent.sh ./prompt.txt  
 ```
 
 **Note:**
-- You can modify the content of the file `prompt.txt` to match your desired system prompt.
+- You can modify the content of the `prompt.txt` file to match your desired system prompt.
 
 Run script to get list agent:
 ```bash
