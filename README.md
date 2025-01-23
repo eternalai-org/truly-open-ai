@@ -96,6 +96,24 @@ ollama run DeepSeek-R1-Distill-Qwen-1.5B-Q8
 ```
 You can test with interactive UI or just quit (Ctrl D).
 
+You can try the following quick test to make sure your Ollama is ready for miners.
+
+```bash
+curl -X POST "http://localhost:11434/v1/chat/completions" -H "Content-Type: application/json"  -d '{
+    "model": "DeepSeek-R1-Distill-Qwen-1.5B-Q8",
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant."
+        },
+        {
+            "role": "user",
+            "content": "Hello"
+        }
+  ]
+}'
+```
+
 ### Step 2: Deploy your first Decentralized Compute miners
 
 We provide a CLI `eai` to simplify the process.
