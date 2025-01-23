@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/rapid"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/rapid"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/twitter"
 )
 
 func (s *Service) GetTwitterUserByID(ctx context.Context, twitterID string) (*twitter.UserObj, error) {

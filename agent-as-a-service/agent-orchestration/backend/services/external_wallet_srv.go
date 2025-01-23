@@ -6,12 +6,12 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/daos"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/serializers"
-	blockchainutils "github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
+	blockchainutils "github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/blockchain_utils"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
 func (s *Service) ExternalWalletCreateSOL(ctx context.Context) (*serializers.ExternalWalletResp, error) {

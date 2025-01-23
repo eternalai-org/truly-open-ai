@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/helpers"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
 type AgentTokenReq struct {

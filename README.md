@@ -8,7 +8,7 @@ Eternal AI, also known as EAI, is an open source decentralized operating system 
 
 Eternal AI was originally developed in Jan 2023 by AI researchers at Eternal AI and protocol engineers at Bitcoin Virtual Machine to build [fully onchain AI on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
-Use the open source Eternal AI decentralized operating system to power your blockchain. Eternal AI has been battle-tested on the largest blockchains, including Bitcoin, Ethereum, Solana, Base, Arbitrum, ZK, BNB Chain, ApeChain, Avalanche, Tron, Polygon, Abstract, and Bittensor.
+Use Eternal AI to give AI superpower to your blockchain. Eternal AI has been battle-tested on the largest blockchains, including Bitcoin, Ethereum, Solana, Base, Arbitrum, ZK, BNB Chain, ApeChain, Avalanche, Tron, Polygon, Abstract, and Bittensor.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
@@ -46,17 +46,17 @@ Here are the key ongoing research projects.
 
 ## Getting Started
 
-Let's deploy your own decentralized operating system for AI agents.
+Let's deploy a decentralized operating system for AI agents on your local computer.
 
-**Step 1: Deploy a local blockchain for development**
-
-TODO: Write
-
-**Step 2: Deploy your first Decentralized Compute cluster**
+### Step 1: Deploy a local blockchain for development
 
 TODO: Write
 
-**Step 3: Deploy your production-grade Agent as a Service infrastructure**
+### Step 2: Deploy your first Decentralized Compute cluster
+
+TODO: Write
+
+### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
 Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
 
@@ -69,9 +69,9 @@ Run the following command to run the service:
 docker-compose up
 ```
 
-**Step 4: Deploy your first Decentralized Agent with AI-721**
+### Step 4: Deploy your first Decentralized Agent with AI-721**
 
-***Step 4.1 Deploy contract AI-721***
+#### Step 4.1: Deploy contract AI-721
 
 Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
 
@@ -80,7 +80,7 @@ Run the following script to install dependencies and deploy AI-721 contract:
 ./deploy-ai721.sh
 ```
 
-***Step 4.2 Mint an agent***
+#### Step 4.2: Mint an agent
 
 Run the following script to mint an agent:
 
@@ -95,9 +95,13 @@ Also, to list out all agents on your machine, run this:
 ./ls-agents.sh
 ```
 
-**Step 5.1: Start an EternalAI Agent**
+### Step 5: Interact with the agent 
 
-**Step 5.2: Start an Eliza Agent**
+#### Step 5.1: Chat with the agent
+
+TODO: Write
+
+#### Step 5.2: Set up Twitter for the agent
 
 Navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent` folder and run the following command to configure your twitter account.
 
@@ -124,10 +128,8 @@ Thank you for considering contributing to the source code. We welcome contributi
 
 If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
 
-If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
-
 ## Communication
 
-* [GitHub Issues](https://github.com/eternalai-org/truly-open-ai/issues): bug reports, feature requests, issues, etc.
-* [GitHub Discussions](https://github.com/eternalai-org/truly-open-ai/discussions): discuss designs, research, new ideas, thoughts, etc.
+* [GitHub Issues](https://github.com/eternalai-org/eternal-ai/issues): bug reports, feature requests, issues, etc.
+* [GitHub Discussions](https://github.com/eternalai-org/eternal-ai/discussions): discuss designs, research, new ideas, thoughts, etc.
 * [X (Twitter)](https://x.com/cryptoeternalai): announcements about Eternal AI

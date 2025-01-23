@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 	"github.com/pkg/errors"
 )
 
