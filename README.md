@@ -174,6 +174,15 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
+### Final step (I promise): Share Your Agents, Earn EAI, and Flex Your Skills
+
+You made it! Your mini version of EAI is up and running on your monster rig—mad respect.
+
+If your agents are crushing it and you’re cool with sharing them with the rest of us, toss up a pull request. Show off your work, help the community level up, and let’s keep this decentralized AI thing rolling.
+
+Oh, and here’s the kicker: we’ve got EAI 10,000 raffles lined up for our MVP contributors. Get your agents in, flex your engineering skills, and maybe grab some EAI while you’re at it. Let’s build something epic together!
+
+
 ## Contribute to Eternal AI
 
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
