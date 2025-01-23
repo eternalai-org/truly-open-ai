@@ -1,8 +1,6 @@
 # Eternal AI (EAI)
 
-AI agents are here, but their future is controlled by a few centralized companies. The intersection of crypto and AI has led to various projects solving decentralized AI agents, but these efforts remain fragmented.
-
-What is needed is a decentralized operating system that integrates these disparate components into a cohesive whole, enabling AI researchers to experiment with wild onchain agent ideas and developers to build decentralized AI agents easily.
+We live in the age of human-agent symbiosis, but the future of AI agents is controlled by a few centralized companies. What is needed is a decentralized environment for AI agents that is trustless, censorship-resistant, and permissionlessly accessible to anyone.
 
 ## The Decentralized Operating System for AI Agents
 
