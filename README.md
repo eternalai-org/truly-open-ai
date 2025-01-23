@@ -180,7 +180,9 @@ If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a 
 
 ## Feature Integrations
 
-Eternal AI is built using a modular approach so support for other blockchains, agent frameworks, GPU providers, or AI models can be implemented easily. If you run into issues while working on an integration, please reach out.
+Eternal AI is built using a modular approach, so support for other blockchains, agent frameworks, GPU providers, or AI models can be implemented quickly. Please reach out if you run into issues while working on an integration.
+
+<img width="1780" alt="Featured Integrations (1)" src="https://github.com/user-attachments/assets/e6bdd4c9-3630-4dfa-8ac2-0526cb618c1e" />
 
 ## Governance
 
