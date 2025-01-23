@@ -119,7 +119,7 @@ docker compose build
 ```
 Run the following command to run the service:
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 ### Step 4: Deploy your first Decentralized Agent with AI-721**
