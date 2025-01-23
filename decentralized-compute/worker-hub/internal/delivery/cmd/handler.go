@@ -127,7 +127,7 @@ func (c *CMD) cliCommand() []*pkg.Command {
 						},
 						{
 							Key:      pkg.COMMAND_LOCAL_START_APIS,
-							Help:     "6. Start APIs",
+							Help:     "5. Start APIs",
 							Name:     "APIs",
 							Function: c.handleStartApi,
 							Children: localContractCMDs,
