@@ -96,9 +96,9 @@ You can test with interactive UI or just quit (Ctrl D).
 
 ### Step 2: Deploy your first Decentralized Compute miners
 
-We provide a CLI **eai** to simplify the process.
+We provide a CLI `eai` to simplify the process.
 
-To install **eai**
+To install `eai`
 ```bash
 sudo ./install.sh
 ```
