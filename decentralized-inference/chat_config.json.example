@@ -1,7 +1,3 @@
 {
-  "server_base_url": "http://localhost:8484",
-  "chain_rpc": "",
-  "dagent721_contract_address": "",
-  "prompt_scheduler_contract_address": "",
-  "infer_wallet_key": "",
+  "server_base_url": "http://localhost:8484"
 }

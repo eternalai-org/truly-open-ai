@@ -1,60 +1,59 @@
+# Ollama
 
-# Ollama:
-- Step 1: install docker desktop: https://docs.docker.com/desktop/setup/install/mac-install/
-- Step 2: 
-Create a `docker-compose.yml`:
-```
-version: '3.7'
-services:
-  ollama:
-    image: ollama/ollama
-    restart: always
-    ports:
-      - "11435:11434"
-    volumes:
-      - ./models:/app/models
-      - ./entrypoint.sh:/entrypoint.sh
-    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
+## Setup
+
+### Step 1: Install Ollama
+
+For Ubuntu with NVIDIA:
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama --version
 ```
 
-
-- Create an `entrypoint.sh`
+For macOS:
+```bash
+wget https://github.com/ollama/ollama/releases/download/v0.5.7/Ollama-darwin.zip
 ```
-#!/bin/bash
+Double-click the downloaded file to install Ollama.
 
-# Start Ollama in the background.
-/bin/ollama serve &
-# Record Process ID.
-pid=$!
+### Step 2: Downloadfile from ipfs
 
-# Pause for Ollama to start.
-sleep 5
-
-echo "🔴 Retrieve hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S model..."
-ollama run hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S
-echo "🟢 Done!"
-
-# Wait for Ollama process to finish.
-wait $pid
+For MacOS:
+```bash
+sudo bash download_model_macos.sh bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm 
+```
+For Ubuntu:
+```bash
+sudo bash download_model_linux.sh bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm 
 ```
 
-- Step 3:  run `docker compose up -d` to start  Ollama
-  - Step 3.1: check log:
-    - 3.1.1: docker ps
-
-    - 3.1.2: log Ollama container: `docker logs -f ollama`.
-    - 3.1.3: Waiting for the pull of https://hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q8_0  to complete.
-
-
-    - 3.1.5: Test:
-
+### Step 3: Prepare the model file
+```bash
+nano Modelfile
 ```
-curl --location 'http://localhost:11436/v1/chat/completions' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer ollama' \
---data '{
-    "stream": true,
-    "model": "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q8_0",
+Add:
+```bash
+FROM /home/ubuntu/DeepSeek-R1-Distill-Qwen-1.5B-Q8
+```
+
+### Step 3: Create the Ollama instance
+
+```bash
+ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+```
+
+
+### Step 4: Run Ollama
+
+```bash
+ollama run DeepSeek-R1-Distill-Qwen-1.5B-Q8
+```
+
+### Step 5: Test Ollama via OpenAI API standard
+
+```bash
+curl -X POST "http://localhost:11434/v1/chat/completions" -H "Content-Type: application/json"  -d '{
+    "model": "DeepSeek-R1-Distill-Qwen-1.5B-Q8",
     "messages": [
         {
             "role": "system",
@@ -62,43 +61,8 @@ curl --location 'http://localhost:11436/v1/chat/completions' \
         },
         {
             "role": "user",
-            "content": "Hello!"
+            "content": "Hello"
         }
-    ]
+  ]
 }'
 ```
-
-Result:
-
-```
-{
-  "id": "chatcmpl-89",
-  "object": "chat.completion",
-  "created": 1735792694,
-  "model": "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q8_0",
-  "system_fingerprint": "fp_ollama",
-  "choices": [
-    {
-      "index": 0,
-      "message": {
-        "role": "assistant",
-        "content": "How can I assist you today? Do you have a specific question or would you like some suggestions on how to get started with something?"
-      },
-      "finish_reason": "stop"
-    }
-  ],
-  "usage": {
-    "prompt_tokens": 23,
-    "completion_tokens": 28,
-    "total_tokens": 51
-  }
-}
-```
-
-## Please note:
-- If this error occurs ``model requires more system memory (9.3 GiB) than is available (number GiB)``
-  - Please increase Docker's memory (10 GiB).
-  - ![Please increase Docker's memory.](./img/docker_mem.png)
-
-
-

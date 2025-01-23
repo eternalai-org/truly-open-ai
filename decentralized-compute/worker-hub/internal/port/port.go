@@ -20,6 +20,7 @@ import (
 type IChain interface {
 	GetPendingTasks(ctx context.Context, fromblock, toBlock uint64, out chan *model.Task) error
 	SubmitTask(ctx context.Context, assigmentID *big.Int, result []byte) (*types.Transaction, error)
+	SetTask(task *model.Task)
 	GetInferenceByMiner() ([]*big.Int, error)
 	GetInferenceInfo(opt *bind.CallOpts, inferID uint64) (*model.InferInfo, error)
 }
@@ -95,4 +96,12 @@ type ICMDLocalChain interface {
 	CreateConfigENV(minerAddress string, index int) error
 	DeployContractLogic() error
 	ReadLocalChainCnf() *model.LocalChain
+}
+
+type IServer interface {
+	Run()
+}
+
+type IApi interface {
+	CreateInfer(ctx context.Context, request model.LLMInferRequest) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
 }

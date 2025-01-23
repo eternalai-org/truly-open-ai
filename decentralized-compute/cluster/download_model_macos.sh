@@ -21,7 +21,7 @@ BASH_EXEC=$(which bash)
 
 # Run the download_model with the bash executable and hash argument
 echo "Running the download_model..."
-./download_model -bash_exec="$BASH_EXEC" -hash "$1" -hf_dir=~/.cache/huggingface/hub
+./download_model -bash_exec="$BASH_EXEC" -hash "$1" -hf_dir=$HOME/.cache/huggingface/hub
 
 # Clean up cache files
 echo "Cleaning up cache files..."

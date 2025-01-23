@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -52,17 +53,65 @@ type MongoConfig struct {
 	Db  string `json:"db"`
 }
 
+func (c ChatConfig) VerifyBeforeChat() error {
+	if c.AgentContractAddress == "" {
+		return fmt.Errorf("Agent contract address is empty")
+	}
+	if c.Rpc == "" {
+		return fmt.Errorf("Chain RPC is empty")
+	}
+	if c.PrivateKey == "" {
+		return fmt.Errorf("Private key to create infer onchain is empty")
+	}
+	if c.AgentID == "" {
+		return fmt.Errorf("Agent ID is empty")
+	}
+
+	return nil
+}
+
 type ChatConfig struct {
-	ServerBaseUrl                  string `json:"server_base_url"`
-	ChainRpc                       string `json:"chain_rpc"`
-	Dagent721ContractAddress       string `json:"dagent721_contract_address"`
-	AgentID                        string `json:"agent_id"`
-	PromptSchedulerContractAddress string `json:"prompt_scheduler_contract_address"`
-	InferWalletKey                 string `json:"infer_wallet_key"`
+	ServerBaseUrl string `json:"server_base_url"`
+	Contracts     struct {
+		CollectionAddress          string `json:"collectionAddress"`
+		DaoTokenAddress            string `json:"daoTokenAddress"`
+		HybridModelAddress         string `json:"hybridModelAddress"`
+		StakingHubAddress          string `json:"stakingHubAddress"`
+		SystemPromptManagerAddress string `json:"systemPromptManagerAddress"`
+		TreasuryAddress            string `json:"treasuryAddress"`
+		WorkerHubAddress           string `json:"workerHubAddress"`
+		WrappedTokenAddress        string `json:"wrappedTokenAddress"`
+	} `json:"contracts"`
+	Rpc               string `json:"rpc"`
+	ModelName         string `json:"model_name"`
+	UseExternalRunPod bool   `json:"use_external_run_pod"`
+	RunPodInternal    string `json:"run_pod_internal"`
+	RunPodExternal    string `json:"run_pod_external"`
+	RunPodApiKey      string `json:"run_pod_api_key"`
+	ModelId           string `json:"model_id"`
+	ChainId           string `json:"chain_id"`
+	PrivateKey        string `json:"private_key"`
+	Miners            struct {
+		X38Adec2Ab9C10D353A8B9F985Aa185B0Dc086864 struct {
+			Address    string `json:"address"`
+			PrivateKey string `json:"private_key"`
+		} `json:"0x38adec2ab9c10d353a8b9f985aa185b0dc086864"`
+		X78D65914C6A66Fbd4Ae59Ffe763B72643D33B6Bb struct {
+			Address    string `json:"address"`
+			PrivateKey string `json:"private_key"`
+		} `json:"0x78d65914c6a66fbd4ae59ffe763b72643d33b6bb"`
+		Xe046B727A1B76505105E4Fdead71687E10177388 struct {
+			Address    string `json:"address"`
+			PrivateKey string `json:"private_key"`
+		} `json:"0xe046b727a1b76505105e4fdead71687e10177388"`
+	} `json:"miners"`
+	Platform             string `json:"platform"`
+	AgentID              string `json:"agent_id"`
+	AgentContractAddress string `json:"agent_contract_address"`
 }
 
 func Load() (*Config, error) {
-	file, err := os.Open("config.json")
+	file, err := os.Open("decentralized-inference/config.json")
 	if err != nil {
 		panic("config.json not found, please copy config.json.example to config.json and fill in the values")
 	}
