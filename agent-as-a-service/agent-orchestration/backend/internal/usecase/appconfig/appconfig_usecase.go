@@ -3,8 +3,8 @@ package appconfig
 import (
 	"context"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/internal/core/ports"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/internal/repository"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/core/ports"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/repository"
 )
 
 type appConfigUseCase struct {

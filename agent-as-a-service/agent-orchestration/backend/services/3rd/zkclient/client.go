@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/configs"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/logger"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/eth"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/eth"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/core/types"

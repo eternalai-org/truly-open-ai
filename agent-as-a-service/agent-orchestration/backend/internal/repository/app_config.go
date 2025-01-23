@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"gorm.io/gorm"
 )
 
