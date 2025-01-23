@@ -133,7 +133,7 @@ Run the following script to install dependencies and deploy AI-721 contract:
 Run the following script to mint an agent:
 
 ```bash
-./mint-agent.sh ./naruto_fan.txt
+./mint-agent.sh ./system-prompts/naruto_fan.txt
 ```
 
 **Note:** System prompts for your agent can be initialized by placing a file containing the prompt within the system-prompts directory. This file will be used to set the initial instructions and context for the agent's behavior. You can modify the content of the prompt file to match your desired system prompt.
