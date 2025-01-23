@@ -163,17 +163,17 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 
 	if agentInfo != nil && missionInfo != nil {
 		rewardAmount, _ := missionInfo.RewardAmount.Float64()
-		// minTokenHolding, _ := missionInfo.MinTokenHolding.Float64()
-		// strMinHolding := fmt.Sprintf(`(holding min %0.f tokens $%s)`, minTokenHolding, agentInfo.TokenSymbol)
-		// if minTokenHolding == 0 {
-		// 	strMinHolding = ""
-		// }
+		minTokenHolding, _ := missionInfo.MinTokenHolding.Float64()
+		strMinHolding := fmt.Sprintf(`(holding min %0.f tokens $%s)`, minTokenHolding, agentInfo.TokenSymbol)
+		if minTokenHolding == 0 {
+			strMinHolding = ""
+		}
 
 		postContent = fmt.Sprintf(`
 New Year Red Envelope!
 
-🎉 Celebrate the Lunar New Year with a token of luck and prosperity. The first %d comments with a valid %s address will receive %0.f $EAI tokens. Wishing everyone a year filled with success, happiness, and good fortune! 🧧`,
-			missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), rewardAmount,
+🎉 Celebrate the Lunar New Year with a token of luck and prosperity. The first %d comments with a valid %s address %s will receive %0.f $EAI tokens. Wishing everyone a year filled with success, happiness, and good fortune! 🧧`,
+			missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding, rewardAmount,
 		)
 
 		// userPrompt := fmt.Sprintf(`
