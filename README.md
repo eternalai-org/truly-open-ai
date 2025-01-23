@@ -110,6 +110,15 @@ Then, you can use the following command and follow its interactive instructions.
 eai miner setup
 ```
 
+Behind the scene
+```bash
+- 1. Create `./env/local_contracts.json` # create a default config file
+- 2. Start HardHat # Install a local chain
+- 3. Deploy contracts  # Deploy all smart contracts of decentralized AI
+- 4. Start miners # Setup 3 miners to join the network and start serving
+- 5. Start APIs # A decentralized infer API server
+```
+
 
 ### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
