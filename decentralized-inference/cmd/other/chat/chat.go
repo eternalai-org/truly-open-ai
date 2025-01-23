@@ -49,7 +49,7 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 		go showLoading(stopChan)
 		response, err := getLLMResponseV2(userInput, chatConfig, stopChan)
 		if err != nil {
-			fmt.Println("Error getting response from server err:", err)
+			fmt.Println("Error getting response from server", err)
 			continue
 		}
 
