@@ -9,7 +9,9 @@ import (
 	"solo/internal/model"
 	"solo/internal/port"
 	"solo/pkg/logger"
+
 	"strings"
+
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -80,6 +82,7 @@ func (h *httpDelivery) printRoutes() {
 		}
 
 		fmt.Println(" - ", txt)
+
 		return nil
 	})
 }
