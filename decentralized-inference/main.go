@@ -56,6 +56,21 @@ func main() {
 							return chat.AgentTerminalChatConfig(c.Context)
 						},
 					},
+					{
+						Name: "sys-prompt",
+						Action: func(c *cli.Context) error {
+							agentID := c.Args().Get(0)
+							if agentID == "" {
+								return fmt.Errorf("agent ID is required")
+							}
+							agentIDInt, err := strconv.Atoi(agentID)
+							if err != nil {
+								return fmt.Errorf("agent ID is invalid, it must be a number")
+							}
+
+							return chat.GetSystemPromptFromContract(c.Context, agentIDInt)
+						},
+					},
 				},
 			},
 		},
