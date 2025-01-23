@@ -20,11 +20,11 @@ Double-click the downloaded file to install Ollama.
 
 For MacOS:
 ```bash
-sudo bash download_model_macos.sh bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm 
+sudo bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
 For Ubuntu:
 ```bash
-sudo bash download_model_linux.sh bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm 
+sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
 
 ### Step 3: Prepare the model file
