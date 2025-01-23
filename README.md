@@ -179,12 +179,15 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
-
 ## Contribute to Eternal AI
 
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
 If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
+
+## Feature Integrations
+
+Eternal AI is built using a modular approach so support for other blockchains, agent frameworks, GPU providers, or AI models can be implemented easily. If you run into issues while working on an integration, please reach out.
 
 ## Governance
 
