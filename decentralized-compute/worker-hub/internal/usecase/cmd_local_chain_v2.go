@@ -890,60 +890,60 @@ func (c *CMD_Local_Chain_V2) StartHardHat() error {
 }
 
 func (c *CMD_Local_Chain_V2) StartOllama() error {
-	cnf := c.ReadLocalChainCnf()
-	modelName := cnf.ModelName
-	if modelName == "" {
-		cnfFile := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
-		err := errors.New("model_name is empty, please goto `Setup > Manual>1` to  update your: " + cnfFile)
-		return err
-	}
+	// 	cnf := c.ReadLocalChainCnf()
+	// 	modelName := cnf.ModelName
+	// 	if modelName == "" {
+	// 		cnfFile := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
+	// 		err := errors.New("model_name is empty, please goto `Setup > Manual>1` to  update your: " + cnfFile)
+	// 		return err
+	// 	}
 
-	if cnf.RunPodExternal == "" {
-		cnfFile := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
-		err := errors.New("run pod is empty, please  update your: " + cnfFile)
-		return err
-	}
+	// 	if cnf.RunPodExternal == "" {
+	// 		cnfFile := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
+	// 		err := errors.New("run pod is empty, please  update your: " + cnfFile)
+	// 		return err
+	// 	}
 
-	if !cnf.UseExternalRunPod {
-		err := pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), cnf.Platform, "down", "-local")
-		if err != nil {
-			return err
-		}
+	// 	if !cnf.UseExternalRunPod {
+	// 		err := pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), cnf.Platform, "down", "-local")
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-		entrypoint := fmt.Sprintf(`#!/bin/bash
-# Start Ollama in the background.
-/bin/ollama serve &
-# Record Process ID.
-pid=$!
+	// 		entrypoint := fmt.Sprintf(`#!/bin/bash
+	// # Start Ollama in the background.
+	// /bin/ollama serve &
+	// # Record Process ID.
+	// pid=$!
 
-# Pause for Ollama to start.
-sleep 5
+	// # Pause for Ollama to start.
+	// sleep 5
 
-echo "🔴 Retrieve %s model..."
-ollama run %s
-echo "🟢 Done!"
+	// echo "🔴 Retrieve %s model..."
+	// ollama run %s
+	// echo "🟢 Done!"
 
-# Wait for Ollama process to finish.
-wait $pid`, modelName, modelName)
+	// # Wait for Ollama process to finish.
+	// wait $pid`, modelName, modelName)
 
-		entryPointPath := fmt.Sprintf(pkg.ENTRY_POINT_FILE, pkg.CurrentDir())
+	// 		entryPointPath := fmt.Sprintf(pkg.ENTRY_POINT_FILE, pkg.CurrentDir())
 
-		err = pkg.CreateFile(entryPointPath, []byte(entrypoint))
-		if err != nil {
-			return err
-		}
+	// 		err = pkg.CreateFile(entryPointPath, []byte(entrypoint))
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), cnf.Platform, "build", "-local")
-		if err != nil {
-			return err
-		}
+	// 		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), cnf.Platform, "build", "-local")
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), cnf.Platform, "up -d", "-local")
-		if err != nil {
-			return err
-		}
+	// 		err = pkg.DockerCommand(pkg.MINER_SERVICE_OLLAMA, pkg.CurrentDir(), cnf.Platform, "up -d", "-local")
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-	}
+	// 	}
 
 	// health check ollama
 	c.PingOllam()

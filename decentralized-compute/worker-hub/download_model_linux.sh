@@ -1,12 +1,5 @@
 #!/bin/bash
 
-rm -Rf truly-open-ai
-# Cloning the repository
-git clone https://github.com/eternalai-org/truly-open-ai
-
-# Navigate to the directory
-cd truly-open-ai/decentralized-compute/worker-hub || { echo "Directory not found"; exit 1; }
-
 # Install pgiz using the appropriate package manager
 if command -v apt &> /dev/null; then
     echo "Using apt to install pgiz..."
@@ -28,7 +21,8 @@ BASH_EXEC=$(which bash)
 
 # Run the download_model with the bash executable and hash argument
 echo "Running the download_model..."
-./download_model -bash_exec="$BASH_EXEC" -hash "$1"
+make download
+./build/download -bash_exec="$BASH_EXEC" -hash "$1" 
 
 # Clean up cache files
 echo "Cleaning up cache files..."
