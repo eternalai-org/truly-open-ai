@@ -209,7 +209,7 @@ If your agents are crushing it and you’re cool with sharing them with the rest
 
 1. Create a pull request
    - Commit a file named agent-name.txt (replace agent-name with your agent’s actual name).
-   - Add this file to the folder `decentralized-agents/characteristics`.
+   - Add this file to the folder `decentralized-agents/characters`.
 2. Submit the pull request and lock in your place as part of the community shaping decentralized AI.
 
 Oh, and here’s the kicker: we’ve got EAI 10,000 raffles lined up for our MVP contributors. Get your agents in, flex your engineering skills, and maybe grab some EAI while you’re at it. Let’s build something epic together!
