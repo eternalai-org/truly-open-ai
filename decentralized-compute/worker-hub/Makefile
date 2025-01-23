@@ -42,6 +42,7 @@ start_download: download
 
 cli: vendor
 	go build -o build/cli cmd/cli/main.go
+	chmod +x build/cli
 
 start_cli: cli
 	./build/cli
