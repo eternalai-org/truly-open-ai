@@ -1,23 +1,20 @@
-> [!NOTE]
-> WIP. We are refactoring our codebase for a 100% open-source release. Feel free to explore around.
+# Eternal AI (EAI)
 
-# Project Truly Open AI
+We live in the age of human-agent symbiosis, but the future of AI agents is controlled by a few centralized companies. What is needed is a decentralized environment for AI agents that is trustless, censorship-resistant, and permissionlessly accessible to anyone.
 
-AI agents are here, but their future is controlled by a few centralized companies. The intersection of crypto and AI has led to various projects solving decentralized AI agents, but these efforts remain fragmented.
+## The Decentralized Operating System for AI Agents
 
-What is needed is an open infrastructure that integrates these disparate components into a cohesive whole, enabling Crypto x AI researchers to experiment with wild agent ideas and developers to build decentralized AI agents easily.
+Eternal AI, also known as EAI, is an open source decentralized operating system for AI agents. Its AI Kernel is a suite of smart contracts that together create a trustless onchain runtime for AI agents to live onchain.
 
-## An End-to-End Decentralized Infrastructure for AI Agents
+Eternal AI was originally developed in Jan 2023 by AI researchers at Eternal AI and protocol engineers at Bitcoin Virtual Machine to build [fully onchain AI on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
-Truly Open AI is a production-grade open source system for managing decentralized AI agents across multiple blockchains and agent frameworks. It provides powerful tools to deploy, maintain, and scale decentralized AI agents onchain with ease.
-
-Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org) team to orchestrate [AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the infrastructure is versatile enough to power other agent frameworks ([Eliza](https://github.com/elizaOS/eliza), [Rig](https://github.com/0xPlaygrounds/rig), and [ZerePy](https://github.com/blorm-network/ZerePy)), and other blockchains ([Ethereum](https://x.com/cryptoeternalai/status/1856595790334189977), [Base](https://x.com/punk3700/status/1869428187450749093), and Solana).
+Use the open source Eternal AI decentralized operating system to power your blockchain. Eternal AI has been battle-tested on the largest blockchains, including Bitcoin, Ethereum, Solana, Base, Arbitrum, ZK, BNB Chain, ApeChain, Avalanche, Tron, Polygon, Abstract, and Bittensor.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
 ## Design Principles
 
-1. **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Truly Open AI infrastructure and decentralizing it. 
+1. **Decentralize everything**. Ensure that no single point of failure or control exists by questioning every component of the Eternal AI system and decentralizing it. 
 2. **Trustless**. Use smart contracts at every step to trustlessly coordinate all parties in the system.
 3. **Production grade**. Code must be written with production-grade quality and designed for scale.
 4. **Everything is an agent**. Not just user-facing agents, but every component in the infrastructure, whether a swarm of agents, an AI model storage system, a GPU compute node, a cross-chain bridge, an infrastructure microservice, or an API, is implemented as an agent.
@@ -25,9 +22,9 @@ Truly Open AI was originally developed by the [Eternal AI](https://eternalai.org
 6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
-## Key Components
+## Navigate the Source Code
 
-Here are the major components of the Truly Open AI software stack.
+Here are the major components of the Eternal AI software stack.
 
 | Component | Description |
 |:--------------------------|--------------------------|
@@ -36,10 +33,10 @@ Here are the major components of the Truly Open AI software stack.
 | [decentralized-inference](/decentralized-inference) | A set of smart contracts that together perform onchain-verifiable inference. |
 | [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
-| [blockchains](/blockchains)| Truly Open AI is deployed on popular blockchains, including Bitcoin, Ethereum, and Solana. |
+| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI |
 | [creator-tools](/creator-tools)| No-code tools for AI creators to create and manage their agents. |
 
-Here are the key components under active research.
+Here are the key ongoing research projects.
 
 | Component | Description |
 |:--------------------------|--------------------------|
@@ -47,10 +44,9 @@ Here are the key components under active research.
 | [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs |
 | [physical-ai](/research/physical-ai)| AI-powered hardware devices |
 
-
 ## Getting Started
 
-Let's deploy an end-to-end decentralized AI infrastructure.
+Let's deploy your own decentralized operating system for AI agents.
 
 **Step 1: Deploy a local blockchain for development**
 
@@ -121,16 +117,12 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
-**Step 6: Build a custom Knowledge Base (RAG) for your Agent with KB-721**
 
-TODO: Write
-
-
-## Contribute to Truly Open AI
+## Contribute to Eternal AI
 
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
-If you'd like to contribute to Truly Open AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
+If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
 
 If you wish to submit more complex changes, please first check with the core developers to ensure they align with the project's general philosophy and get some early feedback. This can make your efforts and our review and merge procedures quick and simple.
 
@@ -138,4 +130,4 @@ If you wish to submit more complex changes, please first check with the core dev
 
 * [GitHub Issues](https://github.com/eternalai-org/truly-open-ai/issues): bug reports, feature requests, issues, etc.
 * [GitHub Discussions](https://github.com/eternalai-org/truly-open-ai/discussions): discuss designs, research, new ideas, thoughts, etc.
-* [X (Twitter)](https://x.com/cryptoeternalai): announcements about Truly Open AI
+* [X (Twitter)](https://x.com/cryptoeternalai): announcements about Eternal AI
