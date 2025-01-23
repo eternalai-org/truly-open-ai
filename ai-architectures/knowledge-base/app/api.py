@@ -32,7 +32,7 @@ async def insert(request: InsertInputSchema, background_tasks: BackgroundTasks) 
         get_default_embedding_model()
     )
 
-    if not request.is_re_sumit:
+    if not request.is_re_submit:
         background_tasks.add_task(
             notify_action,
             request
