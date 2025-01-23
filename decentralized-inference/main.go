@@ -44,7 +44,7 @@ func main() {
 					}
 					_, err := strconv.Atoi(agentID)
 					if err != nil {
-						return fmt.Errorf("Agent ID is invalid, it must be a number")
+						return fmt.Errorf("Agent ID is invalid, it must be a number :%v", agentID)
 					}
 					//logger.GetLoggerInstanceFromContext(c.Context).Info("Starting chat with agent terminal")
 					return chat.AgentTerminalChat(c.Context, agentID)
@@ -56,6 +56,21 @@ func main() {
 							return chat.AgentTerminalChatConfig(c.Context)
 						},
 					},
+				},
+			},
+			{
+				Name:  "sys-prompt",
+				Usage: "EAI get agent system prompt, use 'chat <agent_id>' to get it",
+				Action: func(c *cli.Context) error {
+					agentID := c.Args().Get(0)
+					if agentID == "" {
+						return fmt.Errorf("agent ID is required")
+					}
+					agentIDInt, err := strconv.Atoi(agentID)
+					if err != nil {
+						return fmt.Errorf("agent ID is invalid, it must be a number :%v", agentID)
+					}
+					return chat.GetSystemPromptFromContract(c.Context, agentIDInt)
 				},
 			},
 		},

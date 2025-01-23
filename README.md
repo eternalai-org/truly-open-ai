@@ -69,9 +69,11 @@ wget https://github.com/ollama/ollama/releases/download/v0.5.7/Ollama-darwin.zip
 ```
 Double-click the downloaded file to install Ollama.
 
-Download model from ipfs
-In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 (`bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi`).
-But practically you can serve any models.
+Download model from ipfs:
+
+In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 [`ipfs://bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi`](https://gateway.lighthouse.storage/ipfs/bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
+
+But you should be able to serve any open source models.
 
 For MacOS:
 ```bash
@@ -96,9 +98,9 @@ You can test with interactive UI or just quit (Ctrl D).
 
 ### Step 2: Deploy your first Decentralized Compute miners
 
-We provide a tool to simplify the process.
+We provide a CLI `eai` to simplify the process.
 
-To install
+To install `eai`
 ```bash
 sudo ./install.sh
 ```
@@ -111,26 +113,17 @@ eai miner setup
 
 ### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
-Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
-
-Run the following command to build a docker image for the service:
+Run the following command:
 ```bash
-docker compose build
+eai aaas start
 ```
-Run the following command to run the service:
-```bash
-docker compose up -d
-```
-
 ### Step 4: Deploy your first Decentralized Agent with AI-721**
 
 #### Step 4.1: Deploy contract AI-721
 
-Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
-
 Run the following script to install dependencies and deploy AI-721 contract:
 ```bash
-./deploy-ai721.sh
+eai aaas deploy-contract
 ```
 
 #### Step 4.2: Mint an agent
@@ -138,26 +131,28 @@ Run the following script to install dependencies and deploy AI-721 contract:
 Run the following script to mint an agent:
 
 ```bash
-./mint-agent.sh ./system-prompts/naruto_fan.txt
+eai agent create ./system-prompts/naruto_fan.txt
 ```
 
 **Note:** System prompts for your agent can be initialized by placing a file containing the prompt within the system-prompts directory. This file will be used to set the initial instructions and context for the agent's behavior. You can modify the content of the prompt file to match your desired system prompt.
 
-Get system prompt of an agent:
+Fetch agent info from AI721 contract:
 ```
-./get-system-prompt.sh <agent_id>
+eai agent info <agent_id>
 ```
 
 Also, to list out all agents on your machine, run this:
 ```bash
-./ls-agents.sh
+eai agent list
 ```
 
 ### Step 5: Interact with the agent 
 
 #### Step 5.1: Chat with the agent
 
-TODO: Write
+```bash
+eai agent chat <agent_id>
+```
 
 #### Step 5.2: Set up Twitter for the agent
 
@@ -179,18 +174,23 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
-
 ## Contribute to Eternal AI
 
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
 If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
 
+## Featured Integrations
+
+Eternal AI is built using a modular approach, so support for other blockchains, agent frameworks, GPU providers, or AI models can be implemented quickly. Please reach out if you run into issues while working on an integration.
+
+<img width="1780" alt="Featured Integrations (1)" src="https://github.com/user-attachments/assets/e6bdd4c9-3630-4dfa-8ac2-0526cb618c1e" />
+
 ## Governance
 
 We are still building out the Eternal AI DAO.
 
-Once the DAO is in place, [EAI](https://eternalai.org/eai) holders will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
+Once the DAO is in place, [EAI holders](https://eternalai.org/eai) will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
 
 ## Communication
 

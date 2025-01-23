@@ -15,7 +15,8 @@ if [ $# -lt 1 ]; then
     echo "- eai apis start"
     echo "- eai agent create <prompt-file>"
     echo "- eai agent list"
-    echo "- eai agent chat"
+    echo "- eai agent info <agent_id>"
+    echo "- eai agent chat <agent_id>"
     exit 1
 fi
 
@@ -64,7 +65,7 @@ handle_aaas_commands() {
         "start")
             echo "eai aaas start"
             docker_compose=$(check_docker)
-            cd $aaas_folder && $docker_compose build && $docker_compose up
+            cd $aaas_folder && $docker_compose build && $docker_compose up -d
             ;;
         *)
         echo "Invalid option: $1 for miner"
@@ -76,7 +77,9 @@ handle_aaas_commands() {
 handle_agent_commands() {
     case "$1" in
         "chat")
-          echo "agent chat"
+          cd "$current_dir"  && \
+          ./eai-chat start $2
+          ./eai-chat chat $2
         ;;
        "create")
           echo "creating agent with promt-file: $2"
@@ -84,6 +87,10 @@ handle_agent_commands() {
           ;;
       "list")
           cd ${ai721_folder} && ./ls-agents.sh
+          ;;
+      "info")
+          echo "${ai721_folder} --- $2"
+          cd ${ai721_folder} && ./get-system-prompt.sh $2
           ;;
         *)
         echo "Invalid option: $1 for miner"
@@ -100,7 +107,8 @@ handle_api_commands() {
           go build -o eai-chat main.go  && \
           cp config.json.example config.json && \
           cp "$api_folder/eai-chat"  "$current_dir/eai-chat" && \
-          cd "$current_dir"  && ./eai-chat server
+          cd "$current_dir"  && \
+          ./eai-chat server &
         ;;
         *)
         echo "Invalid option: $1 for miner"

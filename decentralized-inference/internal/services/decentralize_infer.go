@@ -22,7 +22,7 @@ import (
 )
 
 func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (interface{}, error) {
-
+	fmt.Println(fmt.Sprintf("Client is chatting with agent: %v, contractAddress: %v", info.AgentId, info.AgentContractAddress))
 	var systemPromptStr = "You are a helpful assistant."
 	var err error
 	systemPromptStr, err = func() (string, error) {
