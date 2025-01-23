@@ -9,9 +9,11 @@ ai721_folder="$current_dir/developer-guides/run-an-end-to-end-decentralized-for-
 if [ $# -lt 1 ]; then
     echo "Usage:"
     echo "- eai miner setup"
-    echo "- eai aaas start"
     echo "- eai aaas deploy-contract"
+    echo "- eai aaas start"
     echo "- eai apis start"
+    echo "- eai agent create <prompt-file>"
+    echo "- eai agent list"
     echo "- eai agent chat"
     exit 1
 fi
@@ -75,6 +77,13 @@ handle_agent_commands() {
         "chat")
           echo "agent chat"
         ;;
+       "create")
+          echo "creating agent with promt-file: $2"
+          cd ${ai721_folder} && ./mint-agent.sh $2
+          ;;
+      "list")
+          cd ${ai721_folder} && ./ls-agents.sh
+          ;;
         *)
         echo "Invalid option: $1 for miner"
         exit 1
@@ -86,6 +95,7 @@ handle_api_commands() {
     case "$1" in
         "start")
           echo "apis start"
+
         ;;
         *)
         echo "Invalid option: $1 for miner"
@@ -106,7 +116,7 @@ case "$1" in
         handle_api_commands "$2"
         ;;
     "agent")
-        handle_agent_commands "$2"
+        handle_agent_commands "$2" "$3"
         ;;
     *)
         echo "Invalid option: $1"
