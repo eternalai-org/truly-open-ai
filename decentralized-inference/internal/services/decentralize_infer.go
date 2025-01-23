@@ -22,31 +22,38 @@ import (
 )
 
 func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (*openai.ChatCompletionResponse, error) {
-	agentId, ok := new(big.Int).SetString(info.AgentId, 10)
-	if !ok {
-		return nil, fmt.Errorf("agentId :%v is not valid", info.AgentId)
-	}
 
-	ethClient, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
-		false,
-		"", "")
-	if err != nil {
-		return nil, fmt.Errorf("init ethClient err: %w", err)
-	}
-
-	agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
-	if err != nil {
-		return nil, err
-	}
-
-	systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, agentId)
-	if err != nil {
-		return nil, fmt.Errorf("get agent system prompt err: %w", err)
-	}
 	var systemPromptStr = "You are a helpful assistant."
-	if len(systemPromptContract) > 0 {
-		systemPromptStr = string(systemPromptContract[0])
-	}
+	systemPromptStr, _ = func() (string, error) {
+		agentId, ok := new(big.Int).SetString(info.AgentId, 10)
+		if !ok {
+			return "", fmt.Errorf("agentId :%v is not valid", info.AgentId)
+		}
+
+		ethClient, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+			false,
+			"", "")
+		if err != nil {
+			return "", fmt.Errorf("init ethClient err: %w", err)
+		}
+
+		agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
+		if err != nil {
+			return "", err
+		}
+
+		systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, agentId)
+		if err != nil {
+			return "", fmt.Errorf("get agent system prompt err: %w", err)
+		}
+
+		if len(systemPromptContract) > 0 {
+			systemPromptStr = string(systemPromptContract[0])
+		}
+
+		return systemPromptStr, nil
+	}()
+
 	if systemPromptStr == "" {
 		systemPromptStr = "You are a helpful assistant."
 	}
