@@ -71,7 +71,7 @@ docker-compose up
 
 ### Step 4: Deploy your first Decentralized Agent with AI-721**
 
-#### Deploy contract AI-721
+#### Step 4.1: Deploy contract AI-721
 
 Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
 
@@ -80,7 +80,7 @@ Run the following script to install dependencies and deploy AI-721 contract:
 ./deploy-ai721.sh
 ```
 
-#### Step 4.2 Mint an agent
+#### Step 4.2: Mint an agent
 
 Run the following script to mint an agent:
 
