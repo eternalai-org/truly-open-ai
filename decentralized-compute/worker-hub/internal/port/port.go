@@ -96,6 +96,7 @@ type ICMDLocalChain interface {
 	CreateConfigENV(minerAddress string, index int) error
 	DeployContractLogic() error
 	ReadLocalChainCnf() *model.LocalChain
+	StartApiLogic() error
 }
 
 type IServer interface {

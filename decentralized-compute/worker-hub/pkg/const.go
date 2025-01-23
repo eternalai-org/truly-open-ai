@@ -19,6 +19,7 @@ const (
 	MODE_MINER              = "miner"
 	MODE_VALIDATOR          = "validator"
 	MINER_SERVICE_NAME      = "service_miner"
+	API_SERVICE_NAME        = "service_api"
 	MINER_SERVICE_CONTRACTS = "contracts"
 	MINER_SERVICE_OLLAMA    = "ollama"
 	MINER_SERVICE_HARDHAT   = "hardhat"
@@ -87,6 +88,7 @@ const (
 	COMMAND_LOCAL_START_OLLAMA    = "3"
 	COMMAND_LOCAL_DEPLOY_CONTRACT = "4"
 	COMMAND_LOCAL_START_MINERS    = "5"
+	COMMAND_LOCAL_START_APIS      = "6"
 
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_MODEL_COLLECTION = "collectionAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_GPU_MANAGER      = "gpuManagerAddress"

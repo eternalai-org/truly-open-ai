@@ -7,6 +7,6 @@ import (
 
 func main() {
 	uc, _ := usecase.NewAPILocalChainV1()
-	_cmd, _ := http.NewHttp(uc, 8080)
+	_cmd, _ := http.NewHttp(uc, 80)
 	_cmd.Run()
 }

@@ -40,6 +40,19 @@ services:
     volumes:
       - ./env:/env
 
+  service_api_base: &service_api_base
+    image:  service_api_base
+    build:
+      context: .
+      dockerfile: Dockerfile.Arm
+    ports:
+      - "8000:8000"
+    tty: true
+    stdin_open: true
+    restart: always
+    volumes:
+      - ./env:/env
+
   service_miner_1:
     container_name: service_miner_1  # Unique container name
     <<: *service_miner_base
@@ -60,3 +73,10 @@ services:
     ports:
       - "8003:8000"
     entrypoint: ["/workersv",  "-config-file", "./env/config_local_3.env" ]
+
+  service_api_1:
+    container_name: service_api_1  # Unique container name
+    <<: *service_api_base #base also built api
+    ports:
+      - "8004:80"
+    entrypoint: [ "/apisrv" ]
