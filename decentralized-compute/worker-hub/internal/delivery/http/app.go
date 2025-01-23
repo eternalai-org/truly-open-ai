@@ -59,9 +59,8 @@ func (h *httpDelivery) Run() {
 }
 
 func (h *httpDelivery) registerRoutes() {
-	api := h.router.PathPrefix("/api").Subrouter()
+	api := h.router.PathPrefix("/v1").Subrouter()
 	api.HandleFunc("/chat/completions", h.createInfer).Methods("POST")
-
 	h.printRoutes()
 }
 

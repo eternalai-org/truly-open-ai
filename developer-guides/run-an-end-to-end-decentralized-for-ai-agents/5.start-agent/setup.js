@@ -74,7 +74,7 @@ async function setupEnv() {
 
         // Define the environment variables as key-value pairs
         const envData = `
-ETERNALAI_URL=http://localhost:<port>/v1
+ETERNALAI_URL=http://localhost:8004/v1
 ETERNALAI_CHAIN_ID=${ETERNALAI_CHAIN_ID}
 ETERNALAI_RPC_URL=${ETERNALAI_RPC_URL}
 ETERNALAI_AGENT_CONTRACT_ADDRESS=${ETERNALAI_AGENT_CONTRACT_ADDRESS}

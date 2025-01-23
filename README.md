@@ -28,19 +28,19 @@ Here are the major components of the Eternal AI software stack.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [decentralized-agents](/decentralized-agents)| A set of smart contract standards for decentralized AI agents (AI721s). |
-| [ai-kernel](/ai-kernel)| A set of smart contracts that trustlessly coordinate all the OS operations. |
-| [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
-| [decentralized-inference](/decentralized-inference) | Decentralized Inference APIs |
+| [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that trustlessly coordinate user space, onchain space, and offchain space. |
+| [decentralized-agents](/decentralized-agents)| A set of Solidity smart contracts that define decentralized AI agent standards (AI-721, SWARM-721, KB-721). |
+| [decentralized-inference](/decentralized-inference) | The decentralized inference APIs |
+| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration protocol |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
-| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI |
-| [agent-studio](/agent-studio)| No-code drag 'n drop tool for AI creators to create and manage their agents. |
+| [blockchains](/blockchains)| Blockchains AI-powered by Eternal AI |
+| [agent-studio](/agent-studio)| No-code, drag 'n drop, visual programming language for AI creators. |
 
 Here are the key ongoing research projects.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [cuda-evm](/research/cuda-evm)| GPU-accelerated EVM for AI |
+| [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra libary. |
 | [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs |
 | [physical-ai](/research/physical-ai)| AI-powered hardware devices |
 
