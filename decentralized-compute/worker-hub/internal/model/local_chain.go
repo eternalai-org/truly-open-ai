@@ -13,6 +13,7 @@ type LocalChain struct {
 	PrivateKey        string            `json:"private_key"`
 	Miners            map[string]Miners `json:"miners"`
 	Platform          string            `json:"platform"`
+	ApiUrl            string            `json:"api_url"`
 }
 
 type Miners struct {

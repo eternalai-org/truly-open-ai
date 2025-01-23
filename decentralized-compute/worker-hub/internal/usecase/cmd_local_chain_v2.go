@@ -1325,7 +1325,52 @@ func (c *CMD_Local_Chain_V2) StartApiLogic() error {
 		}
 
 		c.StartContainersNoBuild(names)
+		if c.PingApi() {
+			cnf.ApiUrl = "http://localhost:8004"
+		}
 	}
 
 	return nil
+}
+
+func (c *CMD_Local_Chain_V2) PingApi() bool {
+	isReady := false
+	ping := 1
+	for {
+
+		if ping >= 1000 {
+			return isReady
+		}
+
+		fmt.Print(pkg.PrintText("Ping API", fmt.Sprintf("ping (%d)...", ping)))
+		_, isReady = c.ApiHealthCheck()
+		if isReady {
+			fmt.Print(pkg.PrintText("API", "READY!!!!"))
+			isReady = true
+			break
+		}
+
+		fmt.Print(pkg.PrintText("API", "not ready"))
+		time.Sleep(5 * time.Second)
+		ping++
+	}
+
+	return isReady
+}
+
+func (c *CMD_Local_Chain_V2) ApiHealthCheck() ([]byte, bool) {
+	url := "http://localhost:8004"
+	headers := make(map[string]string)
+	headers["Content-Type"] = "application/json"
+
+	_b, _, st, err := pkg.HttpRequest(url, "GET", headers, nil)
+	if err != nil {
+		return nil, false
+	}
+	if st != 200 {
+		return nil, false
+	}
+
+	// time.Sleep(5 * time.Second)
+	return _b, true
 }
