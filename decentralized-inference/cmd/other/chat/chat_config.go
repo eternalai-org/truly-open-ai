@@ -126,6 +126,12 @@ func AgentTerminalChatConfig(ctx context.Context) error {
 
 func GetSystemPromptFromContract(ctx context.Context, agentId int) error {
 	chatConfig, err := LoadChatConfig()
+	if err != nil {
+		return fmt.Errorf("failed to load config.json: %v", err)
+	}
+	fmt.Println("rpc", chatConfig.Rpc)
+	fmt.Println("AgentContractAddress", chatConfig.AgentContractAddress)
+	fmt.Println("agentId", agentId)
 	ethClient, err := client.NewClient(chatConfig.Rpc, models.ChainTypeEth,
 		false,
 		"", "")
