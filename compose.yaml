@@ -1,12 +1,12 @@
 version: '3'
 
 services:
-  redis:
-    image: docker.io/bitnami/redis:7.4
-    environment:
-      ALLOW_EMPTY_PASSWORD: yes
-    ports:
-      - 6379:6379
+#  redis:
+#    image: docker.io/bitnami/redis:7.4
+#    environment:
+#      ALLOW_EMPTY_PASSWORD: yes
+#    ports:
+#      - 6379:6379
 
   de-infer-server:
     build:
@@ -16,25 +16,25 @@ services:
       - "8484:8484"
     depends_on:
       - mongodb
-  mysql:
-    image: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: main
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-    ports:
-      - 3306:3306
-
-  backend:
-    build:
-      dockerfile: ./Dockerfile.backend
-    ports:
-      - 8480:8480
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    depends_on:
-      - mysql
+#  mysql:
+#    image: mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: main
+#      MYSQL_USER: admin
+#      MYSQL_PASSWORD: admin
+#    ports:
+#      - 3306:3306
+#
+#  backend:
+#    build:
+#      dockerfile: ./Dockerfile.backend
+#    ports:
+#      - 8480:8480
+#    extra_hosts:
+#      - host.docker.internal:host-gateway
+#    depends_on:
+#      - mysql
 
   mongodb:
     image: mongo:6.0
