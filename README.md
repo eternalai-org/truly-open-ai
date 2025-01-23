@@ -28,10 +28,10 @@ Here are the major components of the Eternal AI software stack.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that trustlessly coordinate user space, onchain space, and offchain space. |
-| [decentralized-agents](/decentralized-agents)| A set of AI-721 Solidity smart contract standards for decentralized AI agents. |
+| [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that coordinate user space, onchain space, and offchain space. |
+| [decentralized-agents](/decentralized-agents)| A set of Solidity smart contract standards for decentralized AI agents (AI-721). |
 | [decentralized-inference](/decentralized-inference) | The decentralized inference APIs |
-| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering system |
+| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration system |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
 | [blockchains](/blockchains)| Blockchains AI-powered by Eternal AI |
 | [agent-studio](/agent-studio)| No-code, drag 'n drop, visual programming language for AI creators. |
