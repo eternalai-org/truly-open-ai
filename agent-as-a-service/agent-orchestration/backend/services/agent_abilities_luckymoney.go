@@ -163,15 +163,17 @@ func (s *Service) LuckyMoneyGetPostContent(tx *gorm.DB, agentInfoID, missionID u
 
 	if agentInfo != nil && missionInfo != nil {
 		rewardAmount, _ := missionInfo.RewardAmount.Float64()
-		minTokenHolding, _ := missionInfo.MinTokenHolding.Float64()
-		strMinHolding := fmt.Sprintf(`(holding min %0.f tokens $%s)`, minTokenHolding, agentInfo.TokenSymbol)
-		if minTokenHolding == 0 {
-			strMinHolding = ""
-		}
+		// minTokenHolding, _ := missionInfo.MinTokenHolding.Float64()
+		// strMinHolding := fmt.Sprintf(`(holding min %0.f tokens $%s)`, minTokenHolding, agentInfo.TokenSymbol)
+		// if minTokenHolding == 0 {
+		// 	strMinHolding = ""
+		// }
 
 		postContent = fmt.Sprintf(`
-	Lucky Money Giveaway! 💸 Total %0.f tokens $EAI up for grabs! First %d comments with an %s address %s win! 🚀 Fastest fingers only!`,
-			rewardAmount, missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), strMinHolding,
+New Year Red Envelope!
+
+🎉 Celebrate the Lunar New Year with a token of luck and prosperity. The first %d comments with a valid %s address will receive %0.f $EAI tokens. Wishing everyone a year filled with success, happiness, and good fortune! 🧧`,
+			missionInfo.RewardUser, models.GetChainName(agentInfo.TokenNetworkID), rewardAmount,
 		)
 
 		// userPrompt := fmt.Sprintf(`
@@ -521,7 +523,7 @@ func (s *Service) JobLuckyMoneyProcessUserReward(ctx context.Context) error {
 			for _, action := range actions {
 				err = s.LuckyMoneyProcessUserReward(ctx, action.ID)
 				if err != nil {
-					return errs.NewError(err)
+					retErr = errs.MergeError(retErr, errs.NewErrorWithId(err, action.ID))
 				}
 			}
 			return retErr
