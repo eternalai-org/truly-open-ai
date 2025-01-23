@@ -58,7 +58,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 	if err != nil {
 		return nil, fmt.Errorf("get system prompt err: %w", err)
 	}
-
+	fmt.Println("Agent system prompt:", systemPromptStr)
 	if systemPromptStr == "" {
 		systemPromptStr = "You are a helpful assistant."
 	}
@@ -75,10 +75,13 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 				Content: info.Input,
 			},
 		},
+		MaxTokens: 4096,
 	}
 
 	fullUrl := "http://localhost:8004/api/chat/completions"
 	input, _ := json.Marshal(chatRequest)
+
+	fmt.Println("Full request to LLM :", string(input))
 	chatCompletionResp, statusCode, err := http_client.RequestHttp(fullUrl, http.MethodPost, map[string]string{}, bytes.NewBuffer(input), 10)
 	if err != nil {
 		return nil, err
