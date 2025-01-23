@@ -864,11 +864,24 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 					}
 				case "mission_on_x":
 					{
-						frequency, err := strconv.Atoi(item.Data["frequency"].(string))
-						if err != nil {
-							return nil, errs.NewError(errs.ErrBadRequest)
+						frequency := int(2)
+						switch v := item.Data["frequency"].(type) {
+						case int:
+							frequency = v
+							frequency = frequency * 3600
+						case float64:
+							{
+								frequencyF := v
+								frequency = int(frequencyF * 3600)
+							}
+						case string:
+							frequency, _ = strconv.Atoi(v)
+							frequency = frequency * 3600
+						default:
+							frequency = int(2)
+							frequency = frequency * 3600
 						}
-						frequency = frequency * 3600
+
 						userPrompt := fmt.Sprintf("%v", item.Data["details"])
 
 						switch item.Idx {
@@ -1170,7 +1183,23 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							}
 						case "mission_on_farcaster":
 							{
-								frequency := item.Data["frequency"].(int) * 3600
+								frequency := int(2)
+								switch v := item.Data["frequency"].(type) {
+								case int:
+									frequency = v
+									frequency = frequency * 3600
+								case float64:
+									{
+										frequencyF := v
+										frequency = int(frequencyF * 3600)
+									}
+								case string:
+									frequency, _ = strconv.Atoi(v)
+									frequency = frequency * 3600
+								default:
+									frequency = int(2)
+									frequency = frequency * 3600
+								}
 								userPrompt := fmt.Sprintf("%v", item.Data["details"])
 								switch item.Idx {
 								case "mission_on_farcaster_post":
