@@ -75,6 +75,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 				Content: info.Input,
 			},
 		},
+		MaxTokens: 4096,
 	}
 
 	fullUrl := "http://localhost:8004/api/chat/completions"
