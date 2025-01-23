@@ -34,6 +34,12 @@ miner: vendor
 start_miner: miner
 	./build/miner --config-file=config.env
 
+download: vendor
+	go build -o build/download cmd/download_model/main.go
+
+start_download: download
+	./build/download -hash=bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm -hf_dir=/Users/macbook_autonomous/.cache/huggingface/hub
+
 cli: vendor
 	go build -o build/cli cmd/cli/main.go
 
