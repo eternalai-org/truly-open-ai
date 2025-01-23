@@ -1,0 +1,10 @@
+{
+  "server": {
+    "port": 8484
+  },
+  "mongodb": {
+    "uri": "mongodb://localhost:27017",
+    "db": "decentralized-inference"
+  },
+  "file_path_infer": "/tmp"
+}

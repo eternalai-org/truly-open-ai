@@ -21,10 +21,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (*openai.ChatCompletionResponse, error) {
+func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (interface{}, error) {
 
 	var systemPromptStr = "You are a helpful assistant."
-	systemPromptStr, _ = func() (string, error) {
+	var err error
+	systemPromptStr, err = func() (string, error) {
 		agentId, ok := new(big.Int).SetString(info.AgentId, 10)
 		if !ok {
 			return "", fmt.Errorf("agentId :%v is not valid", info.AgentId)
@@ -54,6 +55,10 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 		return systemPromptStr, nil
 	}()
 
+	if err != nil {
+		return nil, fmt.Errorf("get system prompt err: %w", err)
+	}
+
 	if systemPromptStr == "" {
 		systemPromptStr = "You are a helpful assistant."
 	}
@@ -79,7 +84,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 		return nil, err
 	}
 	if statusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code %v != 200", statusCode)
+		return nil, fmt.Errorf("call api %v , status code %v != 200 , body:%v", fullUrl, statusCode, string(chatCompletionResp))
 	}
 	var response struct {
 		Data openai.ChatCompletionResponse `json:"data"`

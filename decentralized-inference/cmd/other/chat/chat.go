@@ -30,7 +30,7 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 		return err
 	}
 
-	fmt.Println(fmt.Sprintf("Your angel ID is %v was minted at contract address: %v", agentID, chatConfig.AgentContractAddress))
+	fmt.Println(fmt.Sprintf("Your agent ID is %v was minted at contract address: %v", agentID, chatConfig.AgentContractAddress))
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("You: ")
@@ -49,7 +49,7 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 		go showLoading(stopChan)
 		response, err := getLLMResponseV2(userInput, chatConfig, stopChan)
 		if err != nil {
-			fmt.Println("Error getting response from server:", err)
+			fmt.Println("Error getting response from server err:", err)
 			continue
 		}
 
@@ -148,7 +148,7 @@ func getLLMResponseV2(prompt string, chatConfig *config.ChatConfig, stopChain ch
 		return nil, err
 	}
 	if statusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code %v != 200", statusCode)
+		return nil, fmt.Errorf("status code %v != 200, body :%v", statusCode, string(respBytes))
 	}
 
 	var response struct {
