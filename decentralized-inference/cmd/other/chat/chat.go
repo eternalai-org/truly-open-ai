@@ -132,7 +132,7 @@ func getLLMResponseV2(prompt string, chatConfig *config.ChatConfig, stopChain ch
 		ChainInfo: models.ChainInfoRequest{
 			Rpc: chatConfig.Rpc,
 		},
-		AgentContractAddress: chatConfig.Contracts.SystemPromptManagerAddress,
+		AgentContractAddress: chatConfig.AgentContractAddress,
 		WorkerHubAddress:     chatConfig.Contracts.WorkerHubAddress,
 		InferPriKey:          chatConfig.PrivateKey,
 		Input:                prompt,
