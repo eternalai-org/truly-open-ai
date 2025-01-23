@@ -14,16 +14,15 @@ fi
 
 # Build the download_model binary
 echo "Building the download_model binary..."
-docker run --rm -v "$(pwd)":/app -w /app golang:1.23-bullseye sh -c 'GOOS=linux go build -o download_model cmd/download_model/main.go'
+docker run --rm -v "$(pwd)":/app -w /app golang:1.23-bullseye sh -c 'GOOS=linux go build -o build/download cmd/download_model/main.go'
 
 # Get the path to the bash executable
 BASH_EXEC=$(which bash)
 
 # Run the download_model with the bash executable and hash argument
 echo "Running the download_model..."
-make download
-./build/download -bash_exec="$BASH_EXEC" -hash "$1" 
+./build/download -bash_exec="$BASH_EXEC" -hash "$1" -hf_dir=./
 
 # Clean up cache files
 echo "Cleaning up cache files..."
-rm -f ~/.cache/huggingface/hub/*part*
+rm -f ./*part*

@@ -33,7 +33,7 @@ nano Modelfile
 ```
 Add:
 ```bash
-FROM /home/ubuntu/DeepSeek-R1-Distill-Qwen-1.5B-Q8
+FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
 ```
 
 ### Step 3: Create the Ollama instance
