@@ -29,9 +29,9 @@ Here are the major components of the Eternal AI software stack.
 | Component | Description |
 |:--------------------------|--------------------------|
 | [decentralized-agents](/decentralized-agents)| A set of smart contract standards for decentralized AI agents (AI721s). |
-| [ai-kernel](/ai-kernel)| A set of smart contracts that trustlessly coordinate the infrastructure operations. |
-| [decentralized-inference](/decentralized-inference) | A set of smart contracts that together perform onchain-verifiable inference. |
+| [ai-kernel](/ai-kernel)| A set of smart contracts that trustlessly coordinate all the OS operations. |
 | [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
+| [decentralized-inference](/decentralized-inference) | Decentralized Inference APIs |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
 | [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI |
 | [agent-studio](/agent-studio)| No-code drag 'n drop tool for AI creators to create and manage their agents. |
