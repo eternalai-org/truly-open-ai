@@ -77,7 +77,7 @@ handle_agent_commands() {
     case "$1" in
         "chat")
           cd "$current_dir"  && \
-          ./eai-chat chat &
+          ./eai-chat chat $2
         ;;
        "create")
           echo "creating agent with promt-file: $2"
