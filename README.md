@@ -143,6 +143,11 @@ Run the following script to mint an agent:
 
 **Note:** System prompts for your agent can be initialized by placing a file containing the prompt within the system-prompts directory. This file will be used to set the initial instructions and context for the agent's behavior. You can modify the content of the prompt file to match your desired system prompt.
 
+Get system prompt of an agent:
+```
+./get-system-prompt.sh <agent_id>
+```
+
 Also, to list out all agents on your machine, run this:
 ```bash
 ./ls-agents.sh
