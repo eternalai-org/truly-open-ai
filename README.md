@@ -48,11 +48,44 @@ Here are the key ongoing research projects.
 
 Let's deploy a decentralized operating system for AI agents on your local computer.
 
-### Step 1: Deploy a local blockchain for development
+### Step 1: Setup Ollama for Miners
 
-TODO: Write
+To install ollama, you can download and install from official website (https://ollama.com/download), or use the following command.
+For Ubuntu with NVIDIA:
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama --version
+```
 
-### Step 2: Deploy your first Decentralized Compute cluster
+For macOS:
+```bash
+wget https://github.com/ollama/ollama/releases/download/v0.5.7/Ollama-darwin.zip
+```
+Double-click the downloaded file to install Ollama.
+
+Download model from ipfs
+In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 (bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
+But practically you can serve any models.
+For MacOS:
+```bash
+sudo bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
+```
+For Ubuntu:
+```bash
+sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
+```
+After finishing the model download, create Modelfile file with the following content.
+```bash
+FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
+```
+Create and start an Ollama instance.
+```bash
+ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+ollama run DeepSeek-R1-Distill-Qwen-1.5B-Q8
+```
+You can test with interactive UI or just quit (Ctrl D).
+
+### Step 2: Deploy your first Decentralized Compute miners
 
 TODO: Write
 
