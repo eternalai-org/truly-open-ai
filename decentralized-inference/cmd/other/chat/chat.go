@@ -45,6 +45,7 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 			fmt.Println("Goodbye!")
 			break
 		}
+
 		stopChan := make(chan bool)
 		go showLoading(stopChan)
 		response, err := getLLMResponseV2(userInput, chatConfig, stopChan)

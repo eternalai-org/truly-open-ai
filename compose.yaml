@@ -8,14 +8,14 @@ services:
 #    ports:
 #      - 6379:6379
 
-  de-infer-server:
-    build:
-      context: .
-      dockerfile: Dockerfile.de-infer
-    ports:
-      - "8484:8484"
-    depends_on:
-      - mongodb
+#  de-infer-server:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.de-infer
+#    ports:
+#      - "8484:8484"
+#    depends_on:
+#      - mongodb
 #  mysql:
 #    image: mysql
 #    environment:
