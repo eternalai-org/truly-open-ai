@@ -1,0 +1,3 @@
+Sure! Here’s the complete script that includes the check_command function alongside the check_docker function. The check_command function will be used to determine if a command is available.
+
+Complete Script
