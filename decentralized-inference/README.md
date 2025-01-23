@@ -4,6 +4,7 @@ This folder contains the source code for the Decentralized Inference. It has a l
 
 1. Requirements:
    * Docker 
+   * Copy `config.json.example` to `config.json` and update the values.
 2. Build 
     * MacOS : 
     ```bash
