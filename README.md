@@ -1,18 +1,18 @@
-# Eternal AI: The Decentralized Operating System for AI Agents
+# Eternal AI (EAI)
 
-Eternal AI, also known as EAI, is the decentralized operating system for AI agents. Its AI Kernel is a suite of smart contracts that together create a trustless onchain runtime for AI agents to live onchain.
+AI agents are here, but their future is controlled by a few centralized companies. The intersection of crypto and AI has led to various projects solving decentralized AI agents, but these efforts remain fragmented.
+
+What is needed is a decentralized operating system that integrates these disparate components into a cohesive whole, enabling AI researchers to experiment with wild onchain agent ideas and developers to build decentralized AI agents easily.
+
+## The Decentralized Operating System for AI Agents
+
+Eternal AI, also known as EAI, is an open source decentralized operating system for AI agents. Its AI Kernel is a suite of smart contracts that together create a trustless onchain runtime for AI agents to live onchain.
 
 Eternal AI was originally developed in Jan 2023 by AI researchers at Eternal AI and protocol engineers at Bitcoin Virtual Machine to build [fully onchain AI on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
 Use the open source Eternal AI decentralized operating system to power your blockchain. Eternal AI has been battle-tested on the largest blockchains, including Bitcoin, Ethereum, Solana, Base, Arbitrum, ZK, BNB Chain, ApeChain, Avalanche, Tron, Polygon, Abstract, and Bittensor.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
-
-## Motivation
-
-AI agents are here, but their future is controlled by a few centralized companies. The intersection of crypto and AI has led to various projects solving decentralized AI agents, but these efforts remain fragmented.
-
-What is needed is a decentralized operating system that integrates these disparate components into a cohesive whole, enabling AI researchers to experiment with wild onchain agent ideas and developers to build decentralized AI agents easily.
 
 ## Design Principles
 
