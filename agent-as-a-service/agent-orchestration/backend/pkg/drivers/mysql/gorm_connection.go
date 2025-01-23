@@ -6,7 +6,7 @@ import (
 	mysqlDriver "github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
 
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/logger"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
 	sqltrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/database/sql"
 	gormtrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/gorm.io/gorm.v1"
 	mysqlgorm "gorm.io/driver/mysql"

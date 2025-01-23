@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/dghubble/oauth1"
-	"github.com/eternalai-org/truly-open-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 )
 
 const TWITTER_OAUTH_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
