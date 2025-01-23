@@ -34,7 +34,7 @@ Here are the major components of the Eternal AI software stack.
 | [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
 | [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI |
-| [creator-tools](/creator-tools)| No-code tools for AI creators to create and manage their agents. |
+| [agent-studio](/agent-studio)| No-code drag 'n drop tool for AI creators to create and manage their agents. |
 
 Here are the key ongoing research projects.
 
