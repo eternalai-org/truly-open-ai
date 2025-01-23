@@ -21,32 +21,44 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (*openai.ChatCompletionResponse, error) {
-	agentId, ok := new(big.Int).SetString(info.AgentId, 10)
-	if !ok {
-		return nil, fmt.Errorf("agentId :%v is not valid", info.AgentId)
-	}
+func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (interface{}, error) {
 
-	ethClient, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
-		false,
-		"", "")
-	if err != nil {
-		return nil, fmt.Errorf("init ethClient err: %w", err)
-	}
-
-	agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
-	if err != nil {
-		return nil, err
-	}
-
-	systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, agentId)
-	if err != nil {
-		return nil, fmt.Errorf("get agent system prompt err: %w", err)
-	}
 	var systemPromptStr = "You are a helpful assistant."
-	if len(systemPromptContract) > 0 {
-		systemPromptStr = string(systemPromptContract[0])
+	var err error
+	systemPromptStr, err = func() (string, error) {
+		agentId, ok := new(big.Int).SetString(info.AgentId, 10)
+		if !ok {
+			return "", fmt.Errorf("agentId :%v is not valid", info.AgentId)
+		}
+
+		ethClient, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+			false,
+			"", "")
+		if err != nil {
+			return "", fmt.Errorf("init ethClient err: %w", err)
+		}
+
+		agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
+		if err != nil {
+			return "", err
+		}
+
+		systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, agentId)
+		if err != nil {
+			return "", fmt.Errorf("get agent system prompt err: %w", err)
+		}
+
+		if len(systemPromptContract) > 0 {
+			systemPromptStr = string(systemPromptContract[0])
+		}
+
+		return systemPromptStr, nil
+	}()
+
+	if err != nil {
+		return nil, fmt.Errorf("get system prompt err: %w", err)
 	}
+
 	if systemPromptStr == "" {
 		systemPromptStr = "You are a helpful assistant."
 	}
@@ -72,7 +84,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 		return nil, err
 	}
 	if statusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code %v != 200", statusCode)
+		return nil, fmt.Errorf("call api %v , status code %v != 200 , body:%v", fullUrl, statusCode, string(chatCompletionResp))
 	}
 	var response struct {
 		Data openai.ChatCompletionResponse `json:"data"`

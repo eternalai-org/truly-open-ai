@@ -28,33 +28,79 @@ Here are the major components of the Eternal AI software stack.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [decentralized-agents](/decentralized-agents)| A set of smart contract standards for decentralized AI agents (AI721s). |
-| [ai-kernel](/ai-kernel)| A set of smart contracts that trustlessly coordinate the infrastructure operations. |
-| [decentralized-inference](/decentralized-inference) | A set of smart contracts that together perform onchain-verifiable inference. |
-| [decentralized-compute](/decentralized-compute) | A set of smart contracts that orchestrate GPU resources. |
+| [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that trustlessly coordinate user space, onchain space, and offchain space. |
+| [decentralized-agents](/decentralized-agents)| A set of Solidity smart contracts that define AI agent standards (AI-721, SWARM-721, KB-721). |
+| [decentralized-inference](/decentralized-inference) | The decentralized inference APIs. |
+| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration protocol. |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
-| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI |
-| [agent-studio](/agent-studio)| No-code drag 'n drop tool for AI creators to create and manage their agents. |
+| [agent-studio](/agent-studio)| No-code, drag 'n drop, visual programming language for AI creators. |
+| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI. |
 
 Here are the key ongoing research projects.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [cuda-evm](/research/cuda-evm)| GPU-accelerated EVM for AI |
-| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs |
-| [physical-ai](/research/physical-ai)| AI-powered hardware devices |
+| [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra libary. |
+| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs. |
+| [physical-ai](/research/physical-ai)| AI-powered hardware devices. |
 
 ## Getting Started
 
 Let's deploy a decentralized operating system for AI agents on your local computer.
 
-### Step 1: Deploy a local blockchain for development
+### Step 1: Setup Ollama for Miners
 
-TODO: Write
+To install ollama, you can download and install from official website (https://ollama.com/download), or use the following command.
 
-### Step 2: Deploy your first Decentralized Compute cluster
+For Ubuntu with NVIDIA:
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama --version
+```
 
-TODO: Write
+For macOS:
+```bash
+wget https://github.com/ollama/ollama/releases/download/v0.5.7/Ollama-darwin.zip
+```
+Double-click the downloaded file to install Ollama.
+
+Download model from ipfs
+In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 (bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
+But practically you can serve any models.
+
+For MacOS:
+```bash
+sudo bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
+```
+For Ubuntu:
+```bash
+sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
+```
+After finishing the model download, create Modelfile file with the following content.
+```bash
+FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
+```
+Create and start an Ollama instance.
+```bash
+ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+ollama run DeepSeek-R1-Distill-Qwen-1.5B-Q8
+```
+You can test with interactive UI or just quit (Ctrl D).
+
+### Step 2: Deploy your first Decentralized Compute miners
+
+We provide a tool to simplify the process.
+
+To install
+```bash
+sudo ./install.sh
+```
+
+Then, you can use the following command and follow its interactive instructions.
+```bash
+eai miner setup
+```
+
 
 ### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
@@ -127,6 +173,12 @@ docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
 If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
+
+## Governance
+
+We are still building out the Eternal AI DAO.
+
+Once the DAO is in place, [EAI](https://eternalai.org/eai) holders will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
 
 ## Communication
 
