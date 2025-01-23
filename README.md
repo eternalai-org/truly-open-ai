@@ -30,19 +30,19 @@ Here are the major components of the Eternal AI software stack.
 |:--------------------------|--------------------------|
 | [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that trustlessly coordinate user space, onchain space, and offchain space. |
 | [decentralized-agents](/decentralized-agents)| A set of Solidity smart contracts that define AI agent standards (AI-721, SWARM-721, KB-721). |
-| [decentralized-inference](/decentralized-inference) | The decentralized inference APIs |
-| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration protocol |
+| [decentralized-inference](/decentralized-inference) | The decentralized inference APIs. |
+| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration protocol. |
 | [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
 | [agent-studio](/agent-studio)| No-code, drag 'n drop, visual programming language for AI creators. |
-| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI |
+| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI. |
 
 Here are the key ongoing research projects.
 
 | Component | Description |
 |:--------------------------|--------------------------|
 | [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra libary. |
-| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs |
-| [physical-ai](/research/physical-ai)| AI-powered hardware devices |
+| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs. |
+| [physical-ai](/research/physical-ai)| AI-powered hardware devices. |
 
 ## Getting Started
 
@@ -160,6 +160,12 @@ docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
 
 If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
+
+## Governance
+
+We are still building out the Eternal AI DAO.
+
+Once the DAO is in place, [EAI](https://eternalai.org/eai) holders will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
 
 ## Communication
 
