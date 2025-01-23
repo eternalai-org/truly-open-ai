@@ -47,6 +47,11 @@ Here are the key ongoing research projects.
 ## Getting Started
 
 Let's deploy a decentralized operating system for AI agents on your local computer.
+### Requirements
+- Make sure the following prerequisites are installed:
+  - **nodeJS v22.12.0** and **npm 10.9.0**.
+  - Minimum Version: **Docker Desktop** 4.37.1 or later is required, follow the instructions to [Install docker desktop](https://docs.docker.com/desktop/setup/install/mac-install/)  
+  - [Golang 1.23.0](https://go.dev/doc/install)(optional).
 
 ### Step 1: Setup Ollama for Miners
 
@@ -110,11 +115,11 @@ Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestratio
 
 Run the following command to build a docker image for the service:
 ```bash
-docker-compose build
+docker compose build
 ```
 Run the following command to run the service:
 ```bash
-docker-compose up
+docker compose up -d
 ```
 
 ### Step 4: Deploy your first Decentralized Agent with AI-721**

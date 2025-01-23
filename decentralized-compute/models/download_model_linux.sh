@@ -14,8 +14,10 @@ fi
 
 # Build the download_model binary
 echo "Building the download_model binary..."
-docker run --rm -v "$(pwd)":/app -w /app golang:1.23-bullseye sh -c 'GOOS=linux go build -o ../worker-hub/build/download ../worker-hub/cmd/download_model/main.go'
+cd ../worker-hub
+docker run  --rm -v "$(pwd)":/app -w /app golang:1.23-bullseye sh -c 'GOOS=linux go build -o build/download cmd/download_model/main.go'
 
+cd ../models
 # Get the path to the bash executable
 BASH_EXEC=$(which bash)
 

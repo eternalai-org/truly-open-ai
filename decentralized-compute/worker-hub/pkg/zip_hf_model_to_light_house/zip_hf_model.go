@@ -247,7 +247,15 @@ func DownloadHFModelFromLightHouse(hash string, hfDir string) error {
 	if err != nil {
 		return fmt.Errorf("error when execute file:%v , output:%v", err, string(output))
 	}
-	log.Println("Success unzip list files")
+	log.Println("Success unzip model ", info.Model)
+	unzipFolder := filepath.Join(hfDir, info.Model)
+	files, err := os.ReadDir(filepath.Join(hfDir, info.Model))
+	if err != nil {
+		return fmt.Errorf("error when read dir:%v , err:%v", unzipFolder, err.Error())
+	}
+	for _, file := range files {
+		fmt.Println(fmt.Sprintf("%v/%v\n", info.Model, file.Name()))
+	}
 	return nil
 }
 
