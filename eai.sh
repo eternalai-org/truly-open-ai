@@ -3,7 +3,8 @@ current_dir=$(pwd)
 worker_hub_folder="$current_dir/decentralized-compute/worker-hub" #step 1: eai miner setup
 aaas_folder="$current_dir/agent-as-a-service/agent-orchestration/backend" #step 2: aaas start
 aaas_folder="$current_dir/agent-as-a-service/agent-orchestration/backend" #step 3: eai aaas deploy-contract
-ai721_folder="$current_dir/developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent" #step 3: eai aaas deploy-contract
+api_folder="$current_dir/decentralized-inference" #step 4: start APIs
+ai721_folder="$current_dir/developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent" #step 5: mint agent
 
 # Check if at least one argument is provided
 if [ $# -lt 1 ]; then
@@ -94,8 +95,12 @@ handle_agent_commands() {
 handle_api_commands() {
     case "$1" in
         "start")
-          echo "apis start"
-
+          echo $api_folder
+          cd $api_folder  &&  \
+          go build -o eai-chat main.go  && \
+          cp config.json.example config.json && \
+          cp "$api_folder/eai-chat"  "$current_dir/eai-chat" && \
+          cd "$current_dir"  && ./eai-chat server
         ;;
         *)
         echo "Invalid option: $1 for miner"
