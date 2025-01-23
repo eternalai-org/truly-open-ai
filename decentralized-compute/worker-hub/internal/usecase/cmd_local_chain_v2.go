@@ -1326,7 +1326,18 @@ func (c *CMD_Local_Chain_V2) StartApiLogic() error {
 
 		c.StartContainersNoBuild(names)
 		if c.PingApi() {
-			cnf.ApiUrl = "http://localhost:8004"
+			cnf.ApiUrl = pkg.API_URL
+		}
+
+		// save
+		_b1, err := json.Marshal(cnf)
+		if err != nil {
+			return err
+		}
+
+		err = pkg.CreateFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()), _b1)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -1359,7 +1370,7 @@ func (c *CMD_Local_Chain_V2) PingApi() bool {
 }
 
 func (c *CMD_Local_Chain_V2) ApiHealthCheck() ([]byte, bool) {
-	url := "http://localhost:8004"
+	url := pkg.API_URL
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 

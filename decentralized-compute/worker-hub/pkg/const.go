@@ -101,7 +101,7 @@ const (
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_PROMPT_SCHEULER_V1  = "workerHubAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_GPU_MANAGER_V1      = "stakingHubAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1           = "hybridModelAddress"
-
+	API_URL                                                  = "http://localhost:8004/api/chat/completions"
 	//staking
 	MIN_STAKE          = 25000
 	BLOCK_PER_EPOCH    = 600
