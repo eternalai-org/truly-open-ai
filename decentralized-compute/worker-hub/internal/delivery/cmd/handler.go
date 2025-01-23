@@ -701,7 +701,7 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	cnf.ModelName = modelName
 	cnf.RunPodAPIKEY = runPodAPIKey
 
-	if runPod != "" {
+	if runPod != "" && runPod != "1" {
 		cnf.RunPodInternal = runPod
 		cnf.RunPodExternal = runPod
 		cnf.UseExternalRunPod = true
