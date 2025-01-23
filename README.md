@@ -96,7 +96,7 @@ To install
 sudo ./install.sh
 ```
 
-Then, you can use the following command and follow its interative instructions.
+Then, you can use the following command and follow its interactive instructions.
 ```bash
 eai miner setup
 ```
