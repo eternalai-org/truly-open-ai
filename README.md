@@ -97,7 +97,7 @@ Also, to list out all agents on your machine, run this:
 
 ### Step 5: Interact with the agent 
 
-### Step 5.1: Chat with the agent
+#### Step 5.1: Chat with the agent
 
 TODO: Write
 
