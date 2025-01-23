@@ -1,14 +1,16 @@
 #!/bin/bash
 current_dir=$(pwd)
 worker_hub_folder="$current_dir/decentralized-compute/worker-hub" #step 1: eai miner setup
-aaas_folder="$current_dir/agent-as-a-service/agent-orchestration/backend" #step 1: eai miner setup
+aaas_folder="$current_dir/agent-as-a-service/agent-orchestration/backend" #step 2: aaas start
+aaas_folder="$current_dir/agent-as-a-service/agent-orchestration/backend" #step 3: eai aaas deploy-contract
+ai721_folder="$current_dir/developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent" #step 3: eai aaas deploy-contract
 
 # Check if at least one argument is provided
 if [ $# -lt 1 ]; then
     echo "Usage:"
     echo "- eai miner setup"
-    echo "- eai aaas deploy-contract"
     echo "- eai aaas start"
+    echo "- eai aaas deploy-contract"
     echo "- eai apis start"
     echo "- eai agent chat"
     exit 1
@@ -53,12 +55,13 @@ handle_miner_commands() {
 handle_aaas_commands() {
     case "$1" in
         "deploy-contract")
-            docker_compose=$(check_docker)
-            echo "eai aaas deploy-contract"
-            cd $aaas_folder && $docker_compose build && $docker_compose up
+           echo "aaas deploy-contract"
+           cd $ai721_folder && ./deploy-ai721.sh
         ;;
         "start")
-            echo "aaas start"
+            echo "eai aaas start"
+            docker_compose=$(check_docker)
+            cd $aaas_folder && $docker_compose build && $docker_compose up
             ;;
         *)
         echo "Invalid option: $1 for miner"
