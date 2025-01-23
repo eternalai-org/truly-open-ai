@@ -125,7 +125,7 @@ func AgentTerminalChatConfig(ctx context.Context) error {
 }
 
 func GetSystemPromptFromContract(ctx context.Context, agentId int) error {
-	var chatConfig = collectChatConfigInformation()
+	chatConfig, err := LoadChatConfig()
 	ethClient, err := client.NewClient(chatConfig.Rpc, models.ChainTypeEth,
 		false,
 		"", "")
