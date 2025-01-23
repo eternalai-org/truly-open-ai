@@ -106,3 +106,11 @@ type IServer interface {
 type IApi interface {
 	CreateInfer(ctx context.Context, request model.LLMInferRequest) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
 }
+
+type IServer interface {
+	Run()
+}
+
+type IApi interface {
+	CreateInfer(ctx context.Context, request model.LLMInferRequest) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
+}
