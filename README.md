@@ -1,4 +1,4 @@
-# Eternal AI: The Decentralized Operating System for AI Agents
+# Eternal AI: A Decentralized Operating System for AI Agents
 
 Eternal AI, also known as EAI, is the decentralized operating system for AI agents. Its AI Kernel is a suite of smart contracts that together create a trustless onchain runtime for AI agents to live onchain.
 
