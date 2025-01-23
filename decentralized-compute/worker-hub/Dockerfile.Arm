@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN GOOS=linux GOARCH=amd64 go build -ldflags "-linkmode external -extldflags -static" -o workersv ./cmd/miner
+RUN GOOS=linux GOARCH=arm64 go build -ldflags "-linkmode external -extldflags -static" -o workersv ./cmd/miner
 
 RUN chmod +x /app/workersv
 
