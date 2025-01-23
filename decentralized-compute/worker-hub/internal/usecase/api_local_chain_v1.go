@@ -50,8 +50,8 @@ func NewAPILocalChainV1() (*API_Local_Chain_V1, error) {
 	}
 
 	cnf := c.ReadLocalChainCnf()
+	cnf.Rpc = "http://hardhat:8545"
 	c.cnf = cnf
-
 	client, err := eth.NewEthClient(cnf.Rpc)
 	if err != nil {
 		return nil, err
