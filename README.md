@@ -119,11 +119,9 @@ eai aaas start
 
 #### Step 4.1: Deploy contract AI-721
 
-Open a new terminal and navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/4.how-to-deploy-and-mint-agent` folder.
-
 Run the following script to install dependencies and deploy AI-721 contract:
 ```bash
-./deploy-ai721.sh
+eai aaas deploy-contract
 ```
 
 #### Step 4.2: Mint an agent
@@ -131,26 +129,28 @@ Run the following script to install dependencies and deploy AI-721 contract:
 Run the following script to mint an agent:
 
 ```bash
-./mint-agent.sh ./system-prompts/naruto_fan.txt
+eai agent create ./system-prompts/naruto_fan.txt
 ```
 
 **Note:** System prompts for your agent can be initialized by placing a file containing the prompt within the system-prompts directory. This file will be used to set the initial instructions and context for the agent's behavior. You can modify the content of the prompt file to match your desired system prompt.
 
-Get system prompt of an agent:
+Fetch agent info from AI721 contract:
 ```
-./get-system-prompt.sh <agent_id>
+eai agent info <agent_id>
 ```
 
 Also, to list out all agents on your machine, run this:
 ```bash
-./ls-agents.sh
+eai agent list
 ```
 
 ### Step 5: Interact with the agent 
 
 #### Step 5.1: Chat with the agent
 
-TODO: Write
+```bash
+eai agent chat <agent_id>
+```
 
 #### Step 5.2: Set up Twitter for the agent
 
