@@ -111,17 +111,10 @@ eai miner setup
 
 ### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
-Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestration/backend` folder.
-
-Run the following command to build a docker image for the service:
+Run the following command:
 ```bash
-docker compose build
+eai aaas start
 ```
-Run the following command to run the service:
-```bash
-docker compose up -d
-```
-
 ### Step 4: Deploy your first Decentralized Agent with AI-721**
 
 #### Step 4.1: Deploy contract AI-721
