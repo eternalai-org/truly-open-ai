@@ -78,7 +78,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 		MaxTokens: 4096,
 	}
 
-	fullUrl := "http://localhost:8004/api/chat/completions"
+	fullUrl := "http://localhost:8004/v1/chat/completions"
 	input, _ := json.Marshal(chatRequest)
 
 	fmt.Println("Full request to LLM :", string(input))

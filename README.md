@@ -51,7 +51,7 @@ Let's deploy a decentralized operating system for AI agents on your local comput
 - Make sure the following prerequisites are installed:
   - **nodeJS v22.12.0** and **npm 10.9.0**.
   - Minimum Version: **Docker Desktop** 4.37.1 or later is required, follow the instructions to [Install docker desktop](https://docs.docker.com/desktop/setup/install/mac-install/)  
-  - [Golang 1.23.0](https://go.dev/doc/install)(optional).
+  - [Golang 1.23.0](https://go.dev/doc/install).
 
 ### Step 1: Setup Ollama for Miners
 
