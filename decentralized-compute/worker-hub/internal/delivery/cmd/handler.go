@@ -125,6 +125,13 @@ func (c *CMD) cliCommand() []*pkg.Command {
 							Function: c.handleStartMiners,
 							Children: localContractCMDs,
 						},
+						{
+							Key:      pkg.COMMAND_LOCAL_START_APIS,
+							Help:     "6. Start APIs",
+							Name:     "APIs",
+							Function: c.handleStartApi,
+							Children: localContractCMDs,
+						},
 					},
 				},
 			},
@@ -497,8 +504,13 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 		return
 	}
 
-	c.handleStartOllama(reader, node)
+	err = c._startAPILogic()
+	if err != nil {
+		fmt.Println("_startMinerLogic error: ", err)
+		return
+	}
 
+	c.handleStartOllama(reader, node)
 	fmt.Print(pkg.Line)
 	fmt.Println("Done!!!")
 	fmt.Print(pkg.Line)
@@ -592,12 +604,24 @@ func (c *CMD) handleStartMiners(reader *bufio.Reader, node *pkg.Command) {
 	}
 }
 
+func (c *CMD) handleStartApi(reader *bufio.Reader, node *pkg.Command) {
+	err := c._startAPILogic()
+	if err != nil {
+		fmt.Println("Start APIs error: ", err)
+		return
+	}
+}
+
 func (c *CMD) _deployContractLogic() error {
 	return c.localChainCMD.DeployContractLogic()
 }
 
 func (c *CMD) _startMinerLogic() error {
 	return c.localChainCMD.StartMinerLogic()
+}
+
+func (c *CMD) _startAPILogic() error {
+	return c.localChainCMD.StartApiLogic()
 }
 
 func (c *CMD) _startCreateConfigLogic(input map[string]string) error {

@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"os"
 	"solo/internal/contracts/v1/hybrid_model"
 	"solo/internal/contracts/v1/worker_hub"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 
 	"solo/internal/model"
 	"solo/pkg"
@@ -50,6 +51,7 @@ func NewAPILocalChainV1() (*API_Local_Chain_V1, error) {
 	}
 
 	cnf := c.ReadLocalChainCnf()
+	cnf.Rpc = "http://hardhat:8545"
 	c.cnf = cnf
 
 	client, err := eth.NewEthClient(cnf.Rpc)

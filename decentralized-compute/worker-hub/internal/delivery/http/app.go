@@ -9,6 +9,9 @@ import (
 	"solo/internal/model"
 	"solo/internal/port"
 	"solo/pkg/logger"
+
+	"strings"
+
 	"time"
 
 	"github.com/gorilla/handlers"
@@ -63,9 +66,23 @@ func (h *httpDelivery) registerRoutes() {
 }
 
 func (h *httpDelivery) printRoutes() {
+	fmt.Println("Available routers: ")
 	r := h.router
 	r.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
-		//TODO - implement me
+		txt := ""
+
+		tpl, err1 := route.GetPathTemplate()
+		if err1 == nil {
+			txt += tpl
+		}
+
+		met, err2 := route.GetMethods()
+		if err2 == nil {
+			txt += " [" + strings.Join(met, ", ") + "]"
+		}
+
+		fmt.Println(" - ", txt)
+
 		return nil
 	})
 }

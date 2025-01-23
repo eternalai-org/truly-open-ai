@@ -96,6 +96,15 @@ type ICMDLocalChain interface {
 	CreateConfigENV(minerAddress string, index int) error
 	DeployContractLogic() error
 	ReadLocalChainCnf() *model.LocalChain
+	StartApiLogic() error
+}
+
+type IServer interface {
+	Run()
+}
+
+type IApi interface {
+	CreateInfer(ctx context.Context, request model.LLMInferRequest) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
 }
 
 type IServer interface {

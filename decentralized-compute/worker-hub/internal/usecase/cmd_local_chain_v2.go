@@ -951,11 +951,6 @@ func (c *CMD_Local_Chain_V2) StartOllama() error {
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) StartMiner(minerIndex int) error {
-	cnf := c.ReadLocalChainCnf()
-	return pkg.DockerCommand(fmt.Sprintf("%s_%d", pkg.MINER_SERVICE_NAME, minerIndex), pkg.CurrentDir(), cnf.Platform, "up -d", "-local")
-}
-
 func (c *CMD_Local_Chain_V2) ContractDeployment() error {
 	_, ok := c.RpcHealthCheck()
 	if !ok {
@@ -1300,6 +1295,32 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 		// i don't want to down all services
 		if names != "" {
 			cnf := c.ReadLocalChainCnf()
+			pkg.DockerCommand(names, pkg.CurrentDir(), cnf.Platform, "down", "-local")
+		}
+
+		c.StartContainersNoBuild(names)
+	}
+
+	return nil
+}
+
+func (c *CMD_Local_Chain_V2) StartApiLogic() error {
+	fmt.Print(pkg.Line)
+	fmt.Println("Start api")
+	cnf := c.ReadLocalChainCnf()
+	fmt.Println("Create Api: ")
+	numberOfMiners := 1
+	names := ""
+
+	for i := 1; i <= numberOfMiners; i++ {
+		name := fmt.Sprintf("%s_%d", pkg.API_SERVICE_NAME, i)
+		names += " " + name
+	}
+
+	errBuild := c.BuildContainers(fmt.Sprintf("%s_base", pkg.API_SERVICE_NAME))
+	if errBuild == nil {
+		// i don't want to down all services
+		if names != "" {
 			pkg.DockerCommand(names, pkg.CurrentDir(), cnf.Platform, "down", "-local")
 		}
 
