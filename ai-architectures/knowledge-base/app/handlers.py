@@ -40,6 +40,8 @@ from typing import AsyncGenerator
 from .state import get_insertion_request_handler
 from .wrappers import telegram_kit
 import schedule
+import traceback
+from pathlib import Path as PathL
 
 logger = logging.getLogger(__name__)
 
@@ -173,7 +175,7 @@ async def url_chunking(url: str, model_use: EmbeddingModel) -> AsyncGenerator:
             DocItemLabel.PARAGRAPH, DocItemLabel.TITLE, DocItemLabel.LIST_ITEM, DocItemLabel.CODE
         ]
 
-    for item in chunker.chunk(dl_doc=doc.document):
+    for item in await sync2async(chunker.chunk)(dl_doc=doc.document):
         item_labels = list(map(lambda x: x.label, item.meta.doc_items))
         text = item.text
         

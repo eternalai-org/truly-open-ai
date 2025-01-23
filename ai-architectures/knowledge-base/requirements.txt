@@ -1,4 +1,4 @@
-docling==2.14.0
+docling==2.15.1
 fastapi==0.115.5
 numpy==1.26.4
 pydantic==2.9.2
@@ -14,3 +14,4 @@ langchain==0.3.14
 aiofiles
 orjson==3.10.14
 nest-asyncio
+git+https://github.com/eai1111/docling-core
