@@ -21,44 +21,86 @@ import (
 	"go.uber.org/zap"
 )
 
+type AssistantResp struct {
+	ContractAgentID string `bson:"contract_agent_id" json:"contract_agent_id"`
+	SystemContent   string `bson:"system_content" json:"system_content"`
+}
+
+func (s *Service) GetSystemPromptFromAAAS(agentId string) string {
+	url := "http://localhost:8480/api/agent/list-local-agent"
+	resp, statusCode, err := http_client.RequestHttp(url, http.MethodGet, map[string]string{}, nil, 10)
+	if err != nil {
+		return ""
+	}
+	if statusCode != http.StatusOK {
+		return ""
+	}
+	var response struct {
+		Result []*AssistantResp `json:"result"`
+		Data   interface{}      `json:"data"`
+		Error  error            `json:"error"`
+		Count  *uint            `json:"count,omitempty"`
+	}
+
+	if err := json.Unmarshal(resp, &response); err != nil {
+		return ""
+	}
+
+	for _, item := range response.Result {
+		if item.ContractAgentID == agentId {
+			return item.SystemContent
+		}
+	}
+
+	return ""
+
+}
+
 func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (interface{}, error) {
 	fmt.Println(fmt.Sprintf("Client is chatting with agent: %v, contractAddress: %v", info.AgentId, info.AgentContractAddress))
 	var systemPromptStr = "You are a helpful assistant."
 	var err error
-	systemPromptStr, err = func() (string, error) {
-		agentId, ok := new(big.Int).SetString(info.AgentId, 10)
-		if !ok {
-			return "", fmt.Errorf("agentId :%v is not valid", info.AgentId)
-		}
+	systemPromptStrFromAAAS := s.GetSystemPromptFromAAAS(info.AgentId)
+	if systemPromptStrFromAAAS != "" {
+		systemPromptStr = systemPromptStrFromAAAS
+	} else {
+		systemPromptStr, err = func() (string, error) {
+			agentId, ok := new(big.Int).SetString(info.AgentId, 10)
+			if !ok {
+				return "", fmt.Errorf("agentId :%v is not valid", info.AgentId)
+			}
 
-		ethClient, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
-			false,
-			"", "")
-		if err != nil {
-			return "", fmt.Errorf("init ethClient err: %w", err)
-		}
+			ethClient, _err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+				false,
+				"", "")
+			if _err != nil {
+				return "", fmt.Errorf("init ethClient err: %w", err)
+			}
 
-		agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
-		if err != nil {
-			return "", err
-		}
+			agentContract, _err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
+			if _err != nil {
+				return "", _err
+			}
 
-		systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, agentId)
-		if err != nil {
-			return "", fmt.Errorf("get agent system prompt err: %w", err)
-		}
+			systemPromptContract, _err := agentContract.GetAgentSystemPrompt(nil, agentId)
+			if _err != nil {
+				return "", fmt.Errorf("get agent system prompt err: %w", err)
+			}
 
-		if len(systemPromptContract) > 0 {
-			systemPromptStr = string(systemPromptContract[0])
-		}
+			if len(systemPromptContract) > 0 {
+				systemPromptStr = string(systemPromptContract[0])
+			}
 
-		return systemPromptStr, nil
-	}()
+			return systemPromptStr, nil
+		}()
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("get system prompt err: %w", err)
 	}
+
 	fmt.Println("Agent system prompt:", systemPromptStr)
+
 	if systemPromptStr == "" {
 		systemPromptStr = "You are a helpful assistant."
 	}
