@@ -18,7 +18,7 @@ class InsertInputSchema(BaseModel):
     ref: Optional[str] = None
     hook: Optional[str] = None
 
-    is_re_sumit: bool = False
+    is_re_submit: bool = False
 
     @model_validator(mode='before')
     def fill_texts(cls, data: dict):

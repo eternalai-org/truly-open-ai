@@ -145,14 +145,18 @@ async def mk_cog_embedding(text: str, model_use: EmbeddingModel) -> List[float]:
 
     return response_json['output']['result'][0] 
 
+@limit_asyncio_concurrency(2)
+async def get_doc_from_url(url):
+    return await sync2async(
+        DocumentConverter(
+            allowed_formats=SUPORTED_DOCUMENT_FORMATS,
+            format_options=DOCUMENT_FORMAT_OPTIONS
+        ).convert
+    )(source=url)
+
 async def url_chunking(url: str, model_use: EmbeddingModel) -> AsyncGenerator:
     try:
-        doc: ConversionResult = await sync2async(
-            DocumentConverter(
-                allowed_formats=SUPORTED_DOCUMENT_FORMATS,
-                format_options=DOCUMENT_FORMAT_OPTIONS
-            ).convert
-        )(source=url)
+        doc: ConversionResult = await get_doc_from_url(url) 
     except Exception as e:
         logger.error(f"Failed to convert document from {url} to docling format. Reason: {str(e)}")
         return
@@ -162,18 +166,17 @@ async def url_chunking(url: str, model_use: EmbeddingModel) -> AsyncGenerator:
 
     if not is_html:
         captured_items = [
-            DocItemLabel.PARAGRAPH, DocItemLabel.TEXT, DocItemLabel.TITLE
+            DocItemLabel.PARAGRAPH, DocItemLabel.TEXT, DocItemLabel.TITLE, DocItemLabel.LIST_ITEM, DocItemLabel.CODE
         ]
     else:
         captured_items = [
-            DocItemLabel.PARAGRAPH, DocItemLabel.TITLE
+            DocItemLabel.PARAGRAPH, DocItemLabel.TITLE, DocItemLabel.LIST_ITEM, DocItemLabel.CODE
         ]
-
 
     for item in chunker.chunk(dl_doc=doc.document):
         item_labels = list(map(lambda x: x.label, item.meta.doc_items))
         text = item.text
-
+        
         if len(get_tokenizer(model_use).tokenize(text, max_length=None)) >= const.MIN_CHUNK_SIZE \
             and any([k in item_labels for k in captured_items]):
             yield text
@@ -359,6 +362,31 @@ async def export_collection_data(collection: str, workspace_directory: str, filt
 
 _running_tasks = set([])
 
+
+
+async def smaller_task(url_or_texts: Union[List[str], str], kb: str, model_use: EmbeddingModel):
+
+    n_chunks, fails_count = 0, 0
+
+    async for data in async_batching(
+        chunking_and_embedding(url_or_texts, model_use), 
+        const.DEFAULT_MILVUS_INSERT_BATCH_SIZE
+    ):
+        data: List[EmbeddedItem]
+
+        n_chunks += await inserting(
+            _data=data, 
+            model_use=model_use, 
+            metadata={
+                'kb': kb, 
+                'reference': url_or_texts if isinstance(url_or_texts, str) else ""
+            }
+        )
+
+        fails_count += len([e for e in data if e.error is not None])
+
+    return n_chunks, fails_count
+
 @limit_asyncio_concurrency(4)
 async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
     if req.id in _running_tasks:
@@ -376,39 +404,16 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
         logger.info(f"Received {json.dumps(verbosed_info_for_logging, indent=2)};\nStart handling task: {req.id}")
 
-        async def smaller_task(url_or_texts: Union[List[str], str]):
-            nonlocal model_use
-
-            n_chunks, fails_count = 0, 0
-
-            async for data in async_batching(
-                chunking_and_embedding(url_or_texts, model_use), 
-                const.DEFAULT_MILVUS_INSERT_BATCH_SIZE
-            ):
-                data: List[EmbeddedItem]
-
-                n_chunks += await inserting(
-                    _data=data, 
-                    model_use=model_use, 
-                    metadata={
-                        'kb': kb, 
-                        'reference': url_or_texts if isinstance(url_or_texts, str) else ""
-                    }
-                )
-
-                fails_count += len([e for e in data if e.error is not None])
-
-            return n_chunks, fails_count
 
         futures = []
         sqrt_length_texts = int(len(req.texts) ** 0.5)
 
         if len(req.texts) > 0:
             for chunk_of_texts in batching(req.texts, sqrt_length_texts):
-                futures.append(asyncio.ensure_future(smaller_task(chunk_of_texts)))
+                futures.append(asyncio.ensure_future(smaller_task(chunk_of_texts, kb, model_use)))
 
         for url in req.file_urls:
-            futures.append(asyncio.ensure_future(smaller_task(url)))
+            futures.append(asyncio.ensure_future(smaller_task(url, kb, model_use)))
 
         if len(futures) > 0:
             results = await asyncio.gather(*futures)
