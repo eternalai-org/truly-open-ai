@@ -51,6 +51,7 @@ Let's deploy a decentralized operating system for AI agents on your local comput
 ### Step 1: Setup Ollama for Miners
 
 To install ollama, you can download and install from official website (https://ollama.com/download), or use the following command.
+
 For Ubuntu with NVIDIA:
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
@@ -66,6 +67,7 @@ Double-click the downloaded file to install Ollama.
 Download model from ipfs
 In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 (bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
 But practically you can serve any models.
+
 For MacOS:
 ```bash
 sudo bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
@@ -87,7 +89,18 @@ You can test with interactive UI or just quit (Ctrl D).
 
 ### Step 2: Deploy your first Decentralized Compute miners
 
-TODO: Write
+We provide a tool to simplify the process.
+
+To install
+```bash
+sudo ./install.sh
+```
+
+Then, you can use the following command and follow its interative instructions.
+```bash
+eai miner setup
+```
+
 
 ### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
