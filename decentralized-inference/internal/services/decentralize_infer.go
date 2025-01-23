@@ -77,7 +77,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 		},
 		MaxTokens: 4096,
 	}
-
+	fmt.Println("Agent system prompt:", systemPromptStr)
 	fullUrl := "http://localhost:8004/api/chat/completions"
 	input, _ := json.Marshal(chatRequest)
 	chatCompletionResp, statusCode, err := http_client.RequestHttp(fullUrl, http.MethodPost, map[string]string{}, bytes.NewBuffer(input), 10)
