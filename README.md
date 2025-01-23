@@ -110,11 +110,11 @@ Open a new terminal and navigate to the `./agent-as-a-service/agent-orchestratio
 
 Run the following command to build a docker image for the service:
 ```bash
-docker-compose build
+docker compose build
 ```
 Run the following command to run the service:
 ```bash
-docker-compose up
+docker compose up
 ```
 
 ### Step 4: Deploy your first Decentralized Agent with AI-721**
