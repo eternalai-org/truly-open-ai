@@ -89,7 +89,6 @@ handle_agent_commands() {
           cd ${ai721_folder} && ./ls-agents.sh
           ;;
       "info")
-          echo "${ai721_folder} --- $2"
           cd ${ai721_folder} && ./get-system-prompt.sh $2
           ;;
         *)
