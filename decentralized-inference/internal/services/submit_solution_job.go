@@ -5,22 +5,16 @@ import (
 	"decentralized-inference/internal/abi"
 	"decentralized-inference/internal/client"
 	"decentralized-inference/internal/config"
-	"decentralized-inference/internal/eaimodel"
 	"decentralized-inference/internal/lighthouse"
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )
@@ -186,96 +180,96 @@ func (s *Service) filterEventSolutionSubmission(ctx context.Context, whContract 
 		return err
 	}
 	for iter.Next() {
-		inferId := iter.Event.InferId.String()
-		workerAddress := strings.ToLower(iter.Event.Miner.Hex())
-
-		receipt, err := client.Client.TransactionReceipt(ctx, iter.Event.Raw.TxHash)
-		if err != nil {
-			return errors.Join(err, errors.New("error while getting tx receipt"))
-		}
-
-		if receipt.Status != ethtypes.ReceiptStatusSuccessful {
-			return errors.New("tx failed")
-		}
-
-		assignmentEntity, err := s.GetModelWorkerProcessHistoryByFilter(ctx,
-			bson.M{
-				"inference_id":   inferId,
-				"worker_address": workerAddress,
-				"chain_id":       chain.ChainID,
-			})
-		if err != nil {
-			return err
-		}
-		if assignmentEntity == nil {
-			continue
-		}
-		txHash := strings.ToLower(iter.Event.Raw.TxHash.Hex())
-
-		requestInfo, err := whContract.GetInferenceInfo(nil, iter.Event.InferId.Uint64())
-		if err != nil {
-			return err
-		}
-
-		/*fee := requestInfo.Value
-		requester := requestInfo.Creator*/
-
-		var predictResult eaimodel.TaskResult
-
-		err = json.Unmarshal(requestInfo.Output, &predictResult)
-		if err != nil || assignmentEntity.StoreRawFlag {
-			predictResult = eaimodel.TaskResult{
-				ResultURI: "",
-				Storage:   eaimodel.EaiChainStorageType,
-				Data:      requestInfo.Output,
-			}
-		}
-		if len(predictResult.ResultURI) > 0 {
-			predictResult.Data, err = s.GetData([]byte(predictResult.ResultURI))
-			if err != nil {
-				return err
-			}
-		}
-
-		var batchInfers []*models.BatchInferHistory
-
-		inputBytes, err := s.GetData(requestInfo.Input)
-		if err != nil {
-			return err
-		}
-		var batchFullPrompts []*models.BatchInferHistory
-		err = json.Unmarshal(inputBytes, &batchFullPrompts)
-		if err == nil && len(batchFullPrompts) > 0 {
-			batchInfers = batchFullPrompts
-		}
-		assignmentHistory := &models.ModelWorkerProcessHistories{
-			AssignmentId:    inferId,
-			WorkerAddress:   strings.ToLower(requestInfo.ProcessedMiner.Hex()),
-			ModelAddress:    "",
-			ModelID:         strconv.Itoa(int(requestInfo.ModelId)),
-			InferenceInput:  string(requestInfo.Input),
-			InferenceId:     inferId,
-			Status:          models.CLOUD_PROCESSING_STATUS_DONE,
-			AssignmentRole:  models.AssignmentRoleMiner,
-			ZkSync:          true,
-			ChainID:         chain.ChainID,
-			ExecuteTaskDone: false,
-			IsAgentInfer:    len(batchInfers) > 0,
-			BatchInfers:     batchInfers,
-			TxHash:          txHash,
-		}
-		if !strings.HasPrefix(assignmentHistory.InferenceInput, config.IPFSPrefix) && chain.SupportStoreRaw {
-			assignmentHistory.StoreRawFlag = true
-		}
-		assignmentHistory.CreatedAt = time.Now().UTC()
-		assignmentHistory.UpdatedAt = assignmentHistory.CreatedAt
-
-		err = s.InsertModelWorkerProcessHistories(ctx, assignmentHistory)
-		if err != nil && !mongo.IsDuplicateKeyError(err) {
-			logger.GetLoggerInstanceFromContext(ctx).Error("[JobWatchWorkerHubNewInferZKChain] InsertModelWorkerProcessHistories",
-				zap.Error(err), zap.Any("assignment", assignmentHistory))
-			return err
-		}
+		//inferId := iter.Event.InferId.String()
+		//workerAddress := strings.ToLower(iter.Event.Miner.Hex())
+		//
+		//receipt, err := client.Client.TransactionReceipt(ctx, iter.Event.Raw.TxHash)
+		//if err != nil {
+		//	return errors.Join(err, errors.New("error while getting tx receipt"))
+		//}
+		//
+		//if receipt.Status != ethtypes.ReceiptStatusSuccessful {
+		//	return errors.New("tx failed")
+		//}
+		//
+		//assignmentEntity, err := s.GetModelWorkerProcessHistoryByFilter(ctx,
+		//	bson.M{
+		//		"inference_id":   inferId,
+		//		"worker_address": workerAddress,
+		//		"chain_id":       chain.ChainID,
+		//	})
+		//if err != nil {
+		//	return err
+		//}
+		//if assignmentEntity == nil {
+		//	continue
+		//}
+		//txHash := strings.ToLower(iter.Event.Raw.TxHash.Hex())
+		//
+		//requestInfo, err := whContract.GetInferenceInfo(nil, iter.Event.InferId.Uint64())
+		//if err != nil {
+		//	return err
+		//}
+		//
+		///*fee := requestInfo.Value
+		//requester := requestInfo.Creator*/
+		//
+		//var predictResult eaimodel.TaskResult
+		//
+		//err = json.Unmarshal(requestInfo.Output, &predictResult)
+		//if err != nil || assignmentEntity.StoreRawFlag {
+		//	predictResult = eaimodel.TaskResult{
+		//		ResultURI: "",
+		//		Storage:   eaimodel.EaiChainStorageType,
+		//		Data:      requestInfo.Output,
+		//	}
+		//}
+		//if len(predictResult.ResultURI) > 0 {
+		//	predictResult.Data, err = s.GetData([]byte(predictResult.ResultURI))
+		//	if err != nil {
+		//		return err
+		//	}
+		//}
+		//
+		//var batchInfers []*models.BatchInferHistory
+		//
+		//inputBytes, err := s.GetData(requestInfo.Input)
+		//if err != nil {
+		//	return err
+		//}
+		//var batchFullPrompts []*models.BatchInferHistory
+		//err = json.Unmarshal(inputBytes, &batchFullPrompts)
+		//if err == nil && len(batchFullPrompts) > 0 {
+		//	batchInfers = batchFullPrompts
+		//}
+		//assignmentHistory := &models.ModelWorkerProcessHistories{
+		//	AssignmentId:    inferId,
+		//	WorkerAddress:   strings.ToLower(requestInfo.ProcessedMiner.Hex()),
+		//	ModelAddress:    "",
+		//	ModelID:         strconv.Itoa(int(requestInfo.ModelId)),
+		//	InferenceInput:  string(requestInfo.Input),
+		//	InferenceId:     inferId,
+		//	Status:          models.CLOUD_PROCESSING_STATUS_DONE,
+		//	AssignmentRole:  models.AssignmentRoleMiner,
+		//	ZkSync:          true,
+		//	ChainID:         chain.ChainID,
+		//	ExecuteTaskDone: false,
+		//	IsAgentInfer:    len(batchInfers) > 0,
+		//	BatchInfers:     batchInfers,
+		//	TxHash:          txHash,
+		//}
+		//if !strings.HasPrefix(assignmentHistory.InferenceInput, config.IPFSPrefix) && chain.SupportStoreRaw {
+		//	assignmentHistory.StoreRawFlag = true
+		//}
+		//assignmentHistory.CreatedAt = time.Now().UTC()
+		//assignmentHistory.UpdatedAt = assignmentHistory.CreatedAt
+		//
+		//err = s.InsertModelWorkerProcessHistories(ctx, assignmentHistory)
+		//if err != nil && !mongo.IsDuplicateKeyError(err) {
+		//	logger.GetLoggerInstanceFromContext(ctx).Error("[JobWatchWorkerHubNewInferZKChain] InsertModelWorkerProcessHistories",
+		//		zap.Error(err), zap.Any("assignment", assignmentHistory))
+		//	return err
+		//}
 
 	}
 	return nil

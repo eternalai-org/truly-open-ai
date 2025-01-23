@@ -29,9 +29,15 @@ var (
 	_ = abi.ConvertType
 )
 
+// IAI721TokenMetaData is an auto generated low-level Go binding around an user-defined struct.
+type IAI721TokenMetaData struct {
+	Fee        *big.Int
+	SysPrompts [][]byte
+}
+
 // AI721ContractMetaData contains all meta data concerning the AI721Contract contract.
 var AI721ContractMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"InsufficientFunds\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentData\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentId\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentPromptIndex\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentURI\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidData\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SignatureUsed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Unauthorized\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes[]\",\"name\":\"sysPrompt\",\"type\":\"bytes[]\"}],\"name\":\"AgentDataAddNew\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"promptIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"oldSysPrompt\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"newSysPrompt\",\"type\":\"bytes\"}],\"name\":\"AgentDataUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"AgentFeeUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes[]\",\"name\":\"missions\",\"type\":\"bytes[]\"}],\"name\":\"AgentMissionAddNew\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"missionIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"oldSysMission\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"newSysMission\",\"type\":\"bytes\"}],\"name\":\"AgentMissionUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"oldModelId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newModelId\",\"type\":\"uint256\"}],\"name\":\"AgentModelIdUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"oldPromptScheduler\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newOldPromptScheduler\",\"type\":\"address\"}],\"name\":\"AgentPromptSchedulerdUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"name\":\"AgentURIUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_fromTokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_toTokenId\",\"type\":\"uint256\"}],\"name\":\"BatchMetadataUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"externalData\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inferenceId\",\"type\":\"uint256\"}],\"name\":\"InferencePerformed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"}],\"name\":\"MetadataUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newValue\",\"type\":\"uint256\"}],\"name\":\"MintPriceUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"sysPrompt\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"minter\",\"type\":\"address\"}],\"name\":\"NewToken\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"newValue\",\"type\":\"uint16\"}],\"name\":\"RoyaltyPortionUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RoyaltyReceiverUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TopUpPoolBalance\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"_gpuManager\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"}],\"name\":\"_poolBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nftId\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"signature\",\"type\":\"bytes32\"}],\"name\":\"_signaturesUsed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"sysPrompt\",\"type\":\"bytes\"}],\"name\":\"addNewAgentData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"missionData\",\"type\":\"bytes\"}],\"name\":\"createMission\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"}],\"name\":\"dataOf\",\"outputs\":[{\"internalType\":\"uint128\",\"name\":\"\",\"type\":\"uint128\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"}],\"name\":\"getAgentFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"getAgentIdByOwner\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"}],\"name\":\"getAgentSystemPrompt\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"}],\"name\":\"getMissionIdsByAgentId\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"fwdCalldata\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"externalData\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"}],\"name\":\"infer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"fwdCalldata\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"externalData\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"flag\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"}],\"name\":\"infer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name_\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"symbol_\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"mintPrice_\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"royaltyReceiver_\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"royaltyPortion_\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"nextTokenId_\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"gpuManager_\",\"type\":\"address\"},{\"internalType\":\"contractIERC20\",\"name\":\"tokenFee_\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"promptScheduler\",\"type\":\"address\"},{\"internalType\":\"uint32\",\"name\":\"modelId\",\"type\":\"uint32\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mintPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"salePrice\",\"type\":\"uint256\"}],\"name\":\"royaltyInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"royaltyPortion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"royaltyReceiver\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenOfOwnerByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"topUpPoolBalance\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"sysPrompt\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"promptIdx\",\"type\":\"uint256\"}],\"name\":\"updateAgentData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"sysPrompt\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"promptKey\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"promptIdx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"randomNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateAgentDataWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"updateAgentFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"newModelId\",\"type\":\"uint32\"}],\"name\":\"updateAgentModelId\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"name\":\"updateAgentURI\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"randomNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"updateAgentUriWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"gpuManager\",\"type\":\"address\"}],\"name\":\"updateGPUManager\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"mintPrice\",\"type\":\"uint256\"}],\"name\":\"updateMintPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"royaltyPortion\",\"type\":\"uint16\"}],\"name\":\"updateRoyaltyPortion\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"royaltyReceiver\",\"type\":\"address\"}],\"name\":\"updateRoyaltyReceiver\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"newPromptScheduler\",\"type\":\"address\"}],\"name\":\"updateSchedulePrompt\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"Authorized\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedTransfer\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"FailedTransfer\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientFunds\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentData\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentId\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentPromptIndex\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidAgentURI\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidData\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidMintingFee\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SignatureUsed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"Unauthorized\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes[]\",\"name\":\"sysPrompt\",\"type\":\"bytes[]\"}],\"name\":\"AgentDataAddNew\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"promptIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"oldSysPrompt\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"newSysPrompt\",\"type\":\"bytes\"}],\"name\":\"AgentDataUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"}],\"name\":\"AgentFeeUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes[]\",\"name\":\"missions\",\"type\":\"bytes[]\"}],\"name\":\"AgentMissionAddNew\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"missionIndex\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"oldSysMission\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"newSysMission\",\"type\":\"bytes\"}],\"name\":\"AgentMissionUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"}],\"name\":\"AgentURIUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_fromTokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_toTokenId\",\"type\":\"uint256\"}],\"name\":\"BatchMetadataUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[],\"name\":\"EIP712DomainChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"claimer\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"FeesClaimed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"externalData\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"inferenceId\",\"type\":\"uint256\"}],\"name\":\"InferencePerformed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"version\",\"type\":\"uint8\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ManagerAuthorization\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"ManagerDeauthorization\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"}],\"name\":\"MetadataUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newValue\",\"type\":\"uint256\"}],\"name\":\"MintPriceUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"uri\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"sysPrompt\",\"type\":\"bytes\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"minter\",\"type\":\"address\"}],\"name\":\"NewToken\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"newValue\",\"type\":\"uint16\"}],\"name\":\"RoyaltyPortionUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"newAddress\",\"type\":\"address\"}],\"name\":\"RoyaltyReceiverUpdate\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"agentId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"TopUpPoolBalance\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_sysPrompt\",\"type\":\"bytes\"}],\"name\":\"addNewAgentData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"authorizeManager\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"claimFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_missionData\",\"type\":\"bytes\"}],\"name\":\"createMission\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"dataOf\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"fee\",\"type\":\"uint256\"},{\"internalType\":\"bytes[]\",\"name\":\"sysPrompts\",\"type\":\"bytes[]\"}],\"internalType\":\"structIAI721.TokenMetaData\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_account\",\"type\":\"address\"}],\"name\":\"deauthorizeManager\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"eip712Domain\",\"outputs\":[{\"internalType\":\"bytes1\",\"name\":\"fields\",\"type\":\"bytes1\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"version\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"verifyingContract\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"salt\",\"type\":\"bytes32\"},{\"internalType\":\"uint256[]\",\"name\":\"extensions\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"getAgentFee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"getAgentIdByOwner\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"getAgentSystemPrompt\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"getMissionIdsByAgentId\",\"outputs\":[{\"internalType\":\"bytes[]\",\"name\":\"\",\"type\":\"bytes[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"hybridModel\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_calldata\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"_externalData\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"_flag\",\"type\":\"bool\"}],\"name\":\"infer\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_calldata\",\"type\":\"bytes\"},{\"internalType\":\"string\",\"name\":\"_externalData\",\"type\":\"string\"}],\"name\":\"infer\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_symbol\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_mintPrice\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_royaltyReceiver\",\"type\":\"address\"},{\"internalType\":\"uint16\",\"name\":\"_royaltyPortion\",\"type\":\"uint16\"},{\"internalType\":\"uint256\",\"name\":\"_nextTokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_hybridModel\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_workerHub\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isManager\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_uri\",\"type\":\"string\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_fee\",\"type\":\"uint256\"}],\"name\":\"mint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"mintPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nextTokenId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"nftId\",\"type\":\"uint256\"}],\"name\":\"poolBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_salePrice\",\"type\":\"uint256\"}],\"name\":\"royaltyInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"royaltyPortion\",\"outputs\":[{\"internalType\":\"uint16\",\"name\":\"\",\"type\":\"uint16\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"royaltyReceiver\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"nftOwner\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"signaturesUsed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"_interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"index\",\"type\":\"uint256\"}],\"name\":\"tokenOfOwnerByIndex\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"}],\"name\":\"topUpPoolBalance\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_sysPrompt\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_promptIdx\",\"type\":\"uint256\"}],\"name\":\"updateAgentData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_sysPrompt\",\"type\":\"bytes\"},{\"internalType\":\"uint256\",\"name\":\"_promptIdx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_randomNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"updateAgentDataWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_fee\",\"type\":\"uint256\"}],\"name\":\"updateAgentFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_uri\",\"type\":\"string\"}],\"name\":\"updateAgentURI\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_uri\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_randomNonce\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"updateAgentUriWithSignature\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_mintPrice\",\"type\":\"uint256\"}],\"name\":\"updateMintPrice\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_agentId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_missionIdx\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_missionData\",\"type\":\"bytes\"}],\"name\":\"updateMission\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint16\",\"name\":\"_royaltyPortion\",\"type\":\"uint16\"}],\"name\":\"updateRoyaltyPortion\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_royaltyReceiver\",\"type\":\"address\"}],\"name\":\"updateRoyaltyReceiver\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"workerHub\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // AI721ContractABI is the input ABI used to generate the binding from.
@@ -180,99 +186,6 @@ func (_AI721Contract *AI721ContractTransactorRaw) Transact(opts *bind.TransactOp
 	return _AI721Contract.Contract.contract.Transact(opts, method, params...)
 }
 
-// GpuManager is a free data retrieval call binding the contract method 0x08c147fd.
-//
-// Solidity: function _gpuManager() view returns(address)
-func (_AI721Contract *AI721ContractCaller) GpuManager(opts *bind.CallOpts) (common.Address, error) {
-	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "_gpuManager")
-
-	if err != nil {
-		return *new(common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-
-	return out0, err
-
-}
-
-// GpuManager is a free data retrieval call binding the contract method 0x08c147fd.
-//
-// Solidity: function _gpuManager() view returns(address)
-func (_AI721Contract *AI721ContractSession) GpuManager() (common.Address, error) {
-	return _AI721Contract.Contract.GpuManager(&_AI721Contract.CallOpts)
-}
-
-// GpuManager is a free data retrieval call binding the contract method 0x08c147fd.
-//
-// Solidity: function _gpuManager() view returns(address)
-func (_AI721Contract *AI721ContractCallerSession) GpuManager() (common.Address, error) {
-	return _AI721Contract.Contract.GpuManager(&_AI721Contract.CallOpts)
-}
-
-// PoolBalance is a free data retrieval call binding the contract method 0xf121000e.
-//
-// Solidity: function _poolBalance(uint256 nftId) view returns(uint256)
-func (_AI721Contract *AI721ContractCaller) PoolBalance(opts *bind.CallOpts, nftId *big.Int) (*big.Int, error) {
-	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "_poolBalance", nftId)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// PoolBalance is a free data retrieval call binding the contract method 0xf121000e.
-//
-// Solidity: function _poolBalance(uint256 nftId) view returns(uint256)
-func (_AI721Contract *AI721ContractSession) PoolBalance(nftId *big.Int) (*big.Int, error) {
-	return _AI721Contract.Contract.PoolBalance(&_AI721Contract.CallOpts, nftId)
-}
-
-// PoolBalance is a free data retrieval call binding the contract method 0xf121000e.
-//
-// Solidity: function _poolBalance(uint256 nftId) view returns(uint256)
-func (_AI721Contract *AI721ContractCallerSession) PoolBalance(nftId *big.Int) (*big.Int, error) {
-	return _AI721Contract.Contract.PoolBalance(&_AI721Contract.CallOpts, nftId)
-}
-
-// SignaturesUsed is a free data retrieval call binding the contract method 0xc9070a92.
-//
-// Solidity: function _signaturesUsed(address nftId, bytes32 signature) view returns(bool)
-func (_AI721Contract *AI721ContractCaller) SignaturesUsed(opts *bind.CallOpts, nftId common.Address, signature [32]byte) (bool, error) {
-	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "_signaturesUsed", nftId, signature)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// SignaturesUsed is a free data retrieval call binding the contract method 0xc9070a92.
-//
-// Solidity: function _signaturesUsed(address nftId, bytes32 signature) view returns(bool)
-func (_AI721Contract *AI721ContractSession) SignaturesUsed(nftId common.Address, signature [32]byte) (bool, error) {
-	return _AI721Contract.Contract.SignaturesUsed(&_AI721Contract.CallOpts, nftId, signature)
-}
-
-// SignaturesUsed is a free data retrieval call binding the contract method 0xc9070a92.
-//
-// Solidity: function _signaturesUsed(address nftId, bytes32 signature) view returns(bool)
-func (_AI721Contract *AI721ContractCallerSession) SignaturesUsed(nftId common.Address, signature [32]byte) (bool, error) {
-	return _AI721Contract.Contract.SignaturesUsed(&_AI721Contract.CallOpts, nftId, signature)
-}
-
 // BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
 //
 // Solidity: function balanceOf(address owner) view returns(uint256)
@@ -306,42 +219,111 @@ func (_AI721Contract *AI721ContractCallerSession) BalanceOf(owner common.Address
 
 // DataOf is a free data retrieval call binding the contract method 0x871caa98.
 //
-// Solidity: function dataOf(uint256 agentId) view returns(uint128, bool)
-func (_AI721Contract *AI721ContractCaller) DataOf(opts *bind.CallOpts, agentId *big.Int) (*big.Int, bool, error) {
+// Solidity: function dataOf(uint256 _agentId) view returns((uint256,bytes[]))
+func (_AI721Contract *AI721ContractCaller) DataOf(opts *bind.CallOpts, _agentId *big.Int) (IAI721TokenMetaData, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "dataOf", agentId)
+	err := _AI721Contract.contract.Call(opts, &out, "dataOf", _agentId)
 
 	if err != nil {
-		return *new(*big.Int), *new(bool), err
+		return *new(IAI721TokenMetaData), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-	out1 := *abi.ConvertType(out[1], new(bool)).(*bool)
+	out0 := *abi.ConvertType(out[0], new(IAI721TokenMetaData)).(*IAI721TokenMetaData)
 
-	return out0, out1, err
+	return out0, err
 
 }
 
 // DataOf is a free data retrieval call binding the contract method 0x871caa98.
 //
-// Solidity: function dataOf(uint256 agentId) view returns(uint128, bool)
-func (_AI721Contract *AI721ContractSession) DataOf(agentId *big.Int) (*big.Int, bool, error) {
-	return _AI721Contract.Contract.DataOf(&_AI721Contract.CallOpts, agentId)
+// Solidity: function dataOf(uint256 _agentId) view returns((uint256,bytes[]))
+func (_AI721Contract *AI721ContractSession) DataOf(_agentId *big.Int) (IAI721TokenMetaData, error) {
+	return _AI721Contract.Contract.DataOf(&_AI721Contract.CallOpts, _agentId)
 }
 
 // DataOf is a free data retrieval call binding the contract method 0x871caa98.
 //
-// Solidity: function dataOf(uint256 agentId) view returns(uint128, bool)
-func (_AI721Contract *AI721ContractCallerSession) DataOf(agentId *big.Int) (*big.Int, bool, error) {
-	return _AI721Contract.Contract.DataOf(&_AI721Contract.CallOpts, agentId)
+// Solidity: function dataOf(uint256 _agentId) view returns((uint256,bytes[]))
+func (_AI721Contract *AI721ContractCallerSession) DataOf(_agentId *big.Int) (IAI721TokenMetaData, error) {
+	return _AI721Contract.Contract.DataOf(&_AI721Contract.CallOpts, _agentId)
+}
+
+// Eip712Domain is a free data retrieval call binding the contract method 0x84b0196e.
+//
+// Solidity: function eip712Domain() view returns(bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)
+func (_AI721Contract *AI721ContractCaller) Eip712Domain(opts *bind.CallOpts) (struct {
+	Fields            [1]byte
+	Name              string
+	Version           string
+	ChainId           *big.Int
+	VerifyingContract common.Address
+	Salt              [32]byte
+	Extensions        []*big.Int
+}, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "eip712Domain")
+
+	outstruct := new(struct {
+		Fields            [1]byte
+		Name              string
+		Version           string
+		ChainId           *big.Int
+		VerifyingContract common.Address
+		Salt              [32]byte
+		Extensions        []*big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Fields = *abi.ConvertType(out[0], new([1]byte)).(*[1]byte)
+	outstruct.Name = *abi.ConvertType(out[1], new(string)).(*string)
+	outstruct.Version = *abi.ConvertType(out[2], new(string)).(*string)
+	outstruct.ChainId = *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
+	outstruct.VerifyingContract = *abi.ConvertType(out[4], new(common.Address)).(*common.Address)
+	outstruct.Salt = *abi.ConvertType(out[5], new([32]byte)).(*[32]byte)
+	outstruct.Extensions = *abi.ConvertType(out[6], new([]*big.Int)).(*[]*big.Int)
+
+	return *outstruct, err
+
+}
+
+// Eip712Domain is a free data retrieval call binding the contract method 0x84b0196e.
+//
+// Solidity: function eip712Domain() view returns(bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)
+func (_AI721Contract *AI721ContractSession) Eip712Domain() (struct {
+	Fields            [1]byte
+	Name              string
+	Version           string
+	ChainId           *big.Int
+	VerifyingContract common.Address
+	Salt              [32]byte
+	Extensions        []*big.Int
+}, error) {
+	return _AI721Contract.Contract.Eip712Domain(&_AI721Contract.CallOpts)
+}
+
+// Eip712Domain is a free data retrieval call binding the contract method 0x84b0196e.
+//
+// Solidity: function eip712Domain() view returns(bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)
+func (_AI721Contract *AI721ContractCallerSession) Eip712Domain() (struct {
+	Fields            [1]byte
+	Name              string
+	Version           string
+	ChainId           *big.Int
+	VerifyingContract common.Address
+	Salt              [32]byte
+	Extensions        []*big.Int
+}, error) {
+	return _AI721Contract.Contract.Eip712Domain(&_AI721Contract.CallOpts)
 }
 
 // GetAgentFee is a free data retrieval call binding the contract method 0xed96f433.
 //
-// Solidity: function getAgentFee(uint256 agentId) view returns(uint256)
-func (_AI721Contract *AI721ContractCaller) GetAgentFee(opts *bind.CallOpts, agentId *big.Int) (*big.Int, error) {
+// Solidity: function getAgentFee(uint256 _agentId) view returns(uint256)
+func (_AI721Contract *AI721ContractCaller) GetAgentFee(opts *bind.CallOpts, _agentId *big.Int) (*big.Int, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "getAgentFee", agentId)
+	err := _AI721Contract.contract.Call(opts, &out, "getAgentFee", _agentId)
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -355,24 +337,24 @@ func (_AI721Contract *AI721ContractCaller) GetAgentFee(opts *bind.CallOpts, agen
 
 // GetAgentFee is a free data retrieval call binding the contract method 0xed96f433.
 //
-// Solidity: function getAgentFee(uint256 agentId) view returns(uint256)
-func (_AI721Contract *AI721ContractSession) GetAgentFee(agentId *big.Int) (*big.Int, error) {
-	return _AI721Contract.Contract.GetAgentFee(&_AI721Contract.CallOpts, agentId)
+// Solidity: function getAgentFee(uint256 _agentId) view returns(uint256)
+func (_AI721Contract *AI721ContractSession) GetAgentFee(_agentId *big.Int) (*big.Int, error) {
+	return _AI721Contract.Contract.GetAgentFee(&_AI721Contract.CallOpts, _agentId)
 }
 
 // GetAgentFee is a free data retrieval call binding the contract method 0xed96f433.
 //
-// Solidity: function getAgentFee(uint256 agentId) view returns(uint256)
-func (_AI721Contract *AI721ContractCallerSession) GetAgentFee(agentId *big.Int) (*big.Int, error) {
-	return _AI721Contract.Contract.GetAgentFee(&_AI721Contract.CallOpts, agentId)
+// Solidity: function getAgentFee(uint256 _agentId) view returns(uint256)
+func (_AI721Contract *AI721ContractCallerSession) GetAgentFee(_agentId *big.Int) (*big.Int, error) {
+	return _AI721Contract.Contract.GetAgentFee(&_AI721Contract.CallOpts, _agentId)
 }
 
 // GetAgentIdByOwner is a free data retrieval call binding the contract method 0xae57a2d3.
 //
-// Solidity: function getAgentIdByOwner(address owner) view returns(uint256[])
-func (_AI721Contract *AI721ContractCaller) GetAgentIdByOwner(opts *bind.CallOpts, owner common.Address) ([]*big.Int, error) {
+// Solidity: function getAgentIdByOwner(address _owner) view returns(uint256[])
+func (_AI721Contract *AI721ContractCaller) GetAgentIdByOwner(opts *bind.CallOpts, _owner common.Address) ([]*big.Int, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "getAgentIdByOwner", owner)
+	err := _AI721Contract.contract.Call(opts, &out, "getAgentIdByOwner", _owner)
 
 	if err != nil {
 		return *new([]*big.Int), err
@@ -386,24 +368,24 @@ func (_AI721Contract *AI721ContractCaller) GetAgentIdByOwner(opts *bind.CallOpts
 
 // GetAgentIdByOwner is a free data retrieval call binding the contract method 0xae57a2d3.
 //
-// Solidity: function getAgentIdByOwner(address owner) view returns(uint256[])
-func (_AI721Contract *AI721ContractSession) GetAgentIdByOwner(owner common.Address) ([]*big.Int, error) {
-	return _AI721Contract.Contract.GetAgentIdByOwner(&_AI721Contract.CallOpts, owner)
+// Solidity: function getAgentIdByOwner(address _owner) view returns(uint256[])
+func (_AI721Contract *AI721ContractSession) GetAgentIdByOwner(_owner common.Address) ([]*big.Int, error) {
+	return _AI721Contract.Contract.GetAgentIdByOwner(&_AI721Contract.CallOpts, _owner)
 }
 
 // GetAgentIdByOwner is a free data retrieval call binding the contract method 0xae57a2d3.
 //
-// Solidity: function getAgentIdByOwner(address owner) view returns(uint256[])
-func (_AI721Contract *AI721ContractCallerSession) GetAgentIdByOwner(owner common.Address) ([]*big.Int, error) {
-	return _AI721Contract.Contract.GetAgentIdByOwner(&_AI721Contract.CallOpts, owner)
+// Solidity: function getAgentIdByOwner(address _owner) view returns(uint256[])
+func (_AI721Contract *AI721ContractCallerSession) GetAgentIdByOwner(_owner common.Address) ([]*big.Int, error) {
+	return _AI721Contract.Contract.GetAgentIdByOwner(&_AI721Contract.CallOpts, _owner)
 }
 
-// GetAgentSystemPrompt is a free data retrieval call binding the contract method 0x5a88fc7c.
+// GetAgentSystemPrompt is a free data retrieval call binding the contract method 0xf325f3f1.
 //
-// Solidity: function getAgentSystemPrompt(uint256 agentId, string promptKey) view returns(bytes[])
-func (_AI721Contract *AI721ContractCaller) GetAgentSystemPrompt(opts *bind.CallOpts, agentId *big.Int, promptKey string) ([][]byte, error) {
+// Solidity: function getAgentSystemPrompt(uint256 _agentId) view returns(bytes[])
+func (_AI721Contract *AI721ContractCaller) GetAgentSystemPrompt(opts *bind.CallOpts, _agentId *big.Int) ([][]byte, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "getAgentSystemPrompt", agentId, promptKey)
+	err := _AI721Contract.contract.Call(opts, &out, "getAgentSystemPrompt", _agentId)
 
 	if err != nil {
 		return *new([][]byte), err
@@ -415,18 +397,18 @@ func (_AI721Contract *AI721ContractCaller) GetAgentSystemPrompt(opts *bind.CallO
 
 }
 
-// GetAgentSystemPrompt is a free data retrieval call binding the contract method 0x5a88fc7c.
+// GetAgentSystemPrompt is a free data retrieval call binding the contract method 0xf325f3f1.
 //
-// Solidity: function getAgentSystemPrompt(uint256 agentId, string promptKey) view returns(bytes[])
-func (_AI721Contract *AI721ContractSession) GetAgentSystemPrompt(agentId *big.Int, promptKey string) ([][]byte, error) {
-	return _AI721Contract.Contract.GetAgentSystemPrompt(&_AI721Contract.CallOpts, agentId, promptKey)
+// Solidity: function getAgentSystemPrompt(uint256 _agentId) view returns(bytes[])
+func (_AI721Contract *AI721ContractSession) GetAgentSystemPrompt(_agentId *big.Int) ([][]byte, error) {
+	return _AI721Contract.Contract.GetAgentSystemPrompt(&_AI721Contract.CallOpts, _agentId)
 }
 
-// GetAgentSystemPrompt is a free data retrieval call binding the contract method 0x5a88fc7c.
+// GetAgentSystemPrompt is a free data retrieval call binding the contract method 0xf325f3f1.
 //
-// Solidity: function getAgentSystemPrompt(uint256 agentId, string promptKey) view returns(bytes[])
-func (_AI721Contract *AI721ContractCallerSession) GetAgentSystemPrompt(agentId *big.Int, promptKey string) ([][]byte, error) {
-	return _AI721Contract.Contract.GetAgentSystemPrompt(&_AI721Contract.CallOpts, agentId, promptKey)
+// Solidity: function getAgentSystemPrompt(uint256 _agentId) view returns(bytes[])
+func (_AI721Contract *AI721ContractCallerSession) GetAgentSystemPrompt(_agentId *big.Int) ([][]byte, error) {
+	return _AI721Contract.Contract.GetAgentSystemPrompt(&_AI721Contract.CallOpts, _agentId)
 }
 
 // GetApproved is a free data retrieval call binding the contract method 0x081812fc.
@@ -462,10 +444,10 @@ func (_AI721Contract *AI721ContractCallerSession) GetApproved(tokenId *big.Int) 
 
 // GetMissionIdsByAgentId is a free data retrieval call binding the contract method 0x96694ad0.
 //
-// Solidity: function getMissionIdsByAgentId(uint256 agentId) view returns(bytes[])
-func (_AI721Contract *AI721ContractCaller) GetMissionIdsByAgentId(opts *bind.CallOpts, agentId *big.Int) ([][]byte, error) {
+// Solidity: function getMissionIdsByAgentId(uint256 _agentId) view returns(bytes[])
+func (_AI721Contract *AI721ContractCaller) GetMissionIdsByAgentId(opts *bind.CallOpts, _agentId *big.Int) ([][]byte, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "getMissionIdsByAgentId", agentId)
+	err := _AI721Contract.contract.Call(opts, &out, "getMissionIdsByAgentId", _agentId)
 
 	if err != nil {
 		return *new([][]byte), err
@@ -479,16 +461,47 @@ func (_AI721Contract *AI721ContractCaller) GetMissionIdsByAgentId(opts *bind.Cal
 
 // GetMissionIdsByAgentId is a free data retrieval call binding the contract method 0x96694ad0.
 //
-// Solidity: function getMissionIdsByAgentId(uint256 agentId) view returns(bytes[])
-func (_AI721Contract *AI721ContractSession) GetMissionIdsByAgentId(agentId *big.Int) ([][]byte, error) {
-	return _AI721Contract.Contract.GetMissionIdsByAgentId(&_AI721Contract.CallOpts, agentId)
+// Solidity: function getMissionIdsByAgentId(uint256 _agentId) view returns(bytes[])
+func (_AI721Contract *AI721ContractSession) GetMissionIdsByAgentId(_agentId *big.Int) ([][]byte, error) {
+	return _AI721Contract.Contract.GetMissionIdsByAgentId(&_AI721Contract.CallOpts, _agentId)
 }
 
 // GetMissionIdsByAgentId is a free data retrieval call binding the contract method 0x96694ad0.
 //
-// Solidity: function getMissionIdsByAgentId(uint256 agentId) view returns(bytes[])
-func (_AI721Contract *AI721ContractCallerSession) GetMissionIdsByAgentId(agentId *big.Int) ([][]byte, error) {
-	return _AI721Contract.Contract.GetMissionIdsByAgentId(&_AI721Contract.CallOpts, agentId)
+// Solidity: function getMissionIdsByAgentId(uint256 _agentId) view returns(bytes[])
+func (_AI721Contract *AI721ContractCallerSession) GetMissionIdsByAgentId(_agentId *big.Int) ([][]byte, error) {
+	return _AI721Contract.Contract.GetMissionIdsByAgentId(&_AI721Contract.CallOpts, _agentId)
+}
+
+// HybridModel is a free data retrieval call binding the contract method 0x5eb2364c.
+//
+// Solidity: function hybridModel() view returns(address)
+func (_AI721Contract *AI721ContractCaller) HybridModel(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "hybridModel")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// HybridModel is a free data retrieval call binding the contract method 0x5eb2364c.
+//
+// Solidity: function hybridModel() view returns(address)
+func (_AI721Contract *AI721ContractSession) HybridModel() (common.Address, error) {
+	return _AI721Contract.Contract.HybridModel(&_AI721Contract.CallOpts)
+}
+
+// HybridModel is a free data retrieval call binding the contract method 0x5eb2364c.
+//
+// Solidity: function hybridModel() view returns(address)
+func (_AI721Contract *AI721ContractCallerSession) HybridModel() (common.Address, error) {
+	return _AI721Contract.Contract.HybridModel(&_AI721Contract.CallOpts)
 }
 
 // IsApprovedForAll is a free data retrieval call binding the contract method 0xe985e9c5.
@@ -520,6 +533,37 @@ func (_AI721Contract *AI721ContractSession) IsApprovedForAll(owner common.Addres
 // Solidity: function isApprovedForAll(address owner, address operator) view returns(bool)
 func (_AI721Contract *AI721ContractCallerSession) IsApprovedForAll(owner common.Address, operator common.Address) (bool, error) {
 	return _AI721Contract.Contract.IsApprovedForAll(&_AI721Contract.CallOpts, owner, operator)
+}
+
+// IsManager is a free data retrieval call binding the contract method 0xf3ae2415.
+//
+// Solidity: function isManager(address ) view returns(bool)
+func (_AI721Contract *AI721ContractCaller) IsManager(opts *bind.CallOpts, arg0 common.Address) (bool, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "isManager", arg0)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// IsManager is a free data retrieval call binding the contract method 0xf3ae2415.
+//
+// Solidity: function isManager(address ) view returns(bool)
+func (_AI721Contract *AI721ContractSession) IsManager(arg0 common.Address) (bool, error) {
+	return _AI721Contract.Contract.IsManager(&_AI721Contract.CallOpts, arg0)
+}
+
+// IsManager is a free data retrieval call binding the contract method 0xf3ae2415.
+//
+// Solidity: function isManager(address ) view returns(bool)
+func (_AI721Contract *AI721ContractCallerSession) IsManager(arg0 common.Address) (bool, error) {
+	return _AI721Contract.Contract.IsManager(&_AI721Contract.CallOpts, arg0)
 }
 
 // MintPrice is a free data retrieval call binding the contract method 0x6817c76c.
@@ -708,12 +752,43 @@ func (_AI721Contract *AI721ContractCallerSession) Paused() (bool, error) {
 	return _AI721Contract.Contract.Paused(&_AI721Contract.CallOpts)
 }
 
+// PoolBalance is a free data retrieval call binding the contract method 0x6a6d964e.
+//
+// Solidity: function poolBalance(uint256 nftId) view returns(uint256)
+func (_AI721Contract *AI721ContractCaller) PoolBalance(opts *bind.CallOpts, nftId *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "poolBalance", nftId)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// PoolBalance is a free data retrieval call binding the contract method 0x6a6d964e.
+//
+// Solidity: function poolBalance(uint256 nftId) view returns(uint256)
+func (_AI721Contract *AI721ContractSession) PoolBalance(nftId *big.Int) (*big.Int, error) {
+	return _AI721Contract.Contract.PoolBalance(&_AI721Contract.CallOpts, nftId)
+}
+
+// PoolBalance is a free data retrieval call binding the contract method 0x6a6d964e.
+//
+// Solidity: function poolBalance(uint256 nftId) view returns(uint256)
+func (_AI721Contract *AI721ContractCallerSession) PoolBalance(nftId *big.Int) (*big.Int, error) {
+	return _AI721Contract.Contract.PoolBalance(&_AI721Contract.CallOpts, nftId)
+}
+
 // RoyaltyInfo is a free data retrieval call binding the contract method 0x2a55205a.
 //
-// Solidity: function royaltyInfo(uint256 agentId, uint256 salePrice) view returns(address, uint256)
-func (_AI721Contract *AI721ContractCaller) RoyaltyInfo(opts *bind.CallOpts, agentId *big.Int, salePrice *big.Int) (common.Address, *big.Int, error) {
+// Solidity: function royaltyInfo(uint256 _agentId, uint256 _salePrice) view returns(address, uint256)
+func (_AI721Contract *AI721ContractCaller) RoyaltyInfo(opts *bind.CallOpts, _agentId *big.Int, _salePrice *big.Int) (common.Address, *big.Int, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "royaltyInfo", agentId, salePrice)
+	err := _AI721Contract.contract.Call(opts, &out, "royaltyInfo", _agentId, _salePrice)
 
 	if err != nil {
 		return *new(common.Address), *new(*big.Int), err
@@ -728,16 +803,16 @@ func (_AI721Contract *AI721ContractCaller) RoyaltyInfo(opts *bind.CallOpts, agen
 
 // RoyaltyInfo is a free data retrieval call binding the contract method 0x2a55205a.
 //
-// Solidity: function royaltyInfo(uint256 agentId, uint256 salePrice) view returns(address, uint256)
-func (_AI721Contract *AI721ContractSession) RoyaltyInfo(agentId *big.Int, salePrice *big.Int) (common.Address, *big.Int, error) {
-	return _AI721Contract.Contract.RoyaltyInfo(&_AI721Contract.CallOpts, agentId, salePrice)
+// Solidity: function royaltyInfo(uint256 _agentId, uint256 _salePrice) view returns(address, uint256)
+func (_AI721Contract *AI721ContractSession) RoyaltyInfo(_agentId *big.Int, _salePrice *big.Int) (common.Address, *big.Int, error) {
+	return _AI721Contract.Contract.RoyaltyInfo(&_AI721Contract.CallOpts, _agentId, _salePrice)
 }
 
 // RoyaltyInfo is a free data retrieval call binding the contract method 0x2a55205a.
 //
-// Solidity: function royaltyInfo(uint256 agentId, uint256 salePrice) view returns(address, uint256)
-func (_AI721Contract *AI721ContractCallerSession) RoyaltyInfo(agentId *big.Int, salePrice *big.Int) (common.Address, *big.Int, error) {
-	return _AI721Contract.Contract.RoyaltyInfo(&_AI721Contract.CallOpts, agentId, salePrice)
+// Solidity: function royaltyInfo(uint256 _agentId, uint256 _salePrice) view returns(address, uint256)
+func (_AI721Contract *AI721ContractCallerSession) RoyaltyInfo(_agentId *big.Int, _salePrice *big.Int) (common.Address, *big.Int, error) {
+	return _AI721Contract.Contract.RoyaltyInfo(&_AI721Contract.CallOpts, _agentId, _salePrice)
 }
 
 // RoyaltyPortion is a free data retrieval call binding the contract method 0x11d7beb2.
@@ -802,12 +877,43 @@ func (_AI721Contract *AI721ContractCallerSession) RoyaltyReceiver() (common.Addr
 	return _AI721Contract.Contract.RoyaltyReceiver(&_AI721Contract.CallOpts)
 }
 
+// SignaturesUsed is a free data retrieval call binding the contract method 0x757d513b.
+//
+// Solidity: function signaturesUsed(address nftOwner, bytes signature) view returns(bool)
+func (_AI721Contract *AI721ContractCaller) SignaturesUsed(opts *bind.CallOpts, nftOwner common.Address, signature []byte) (bool, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "signaturesUsed", nftOwner, signature)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// SignaturesUsed is a free data retrieval call binding the contract method 0x757d513b.
+//
+// Solidity: function signaturesUsed(address nftOwner, bytes signature) view returns(bool)
+func (_AI721Contract *AI721ContractSession) SignaturesUsed(nftOwner common.Address, signature []byte) (bool, error) {
+	return _AI721Contract.Contract.SignaturesUsed(&_AI721Contract.CallOpts, nftOwner, signature)
+}
+
+// SignaturesUsed is a free data retrieval call binding the contract method 0x757d513b.
+//
+// Solidity: function signaturesUsed(address nftOwner, bytes signature) view returns(bool)
+func (_AI721Contract *AI721ContractCallerSession) SignaturesUsed(nftOwner common.Address, signature []byte) (bool, error) {
+	return _AI721Contract.Contract.SignaturesUsed(&_AI721Contract.CallOpts, nftOwner, signature)
+}
+
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
-func (_AI721Contract *AI721ContractCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+// Solidity: function supportsInterface(bytes4 _interfaceId) view returns(bool)
+func (_AI721Contract *AI721ContractCaller) SupportsInterface(opts *bind.CallOpts, _interfaceId [4]byte) (bool, error) {
 	var out []interface{}
-	err := _AI721Contract.contract.Call(opts, &out, "supportsInterface", interfaceId)
+	err := _AI721Contract.contract.Call(opts, &out, "supportsInterface", _interfaceId)
 
 	if err != nil {
 		return *new(bool), err
@@ -821,16 +927,16 @@ func (_AI721Contract *AI721ContractCaller) SupportsInterface(opts *bind.CallOpts
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
-func (_AI721Contract *AI721ContractSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
-	return _AI721Contract.Contract.SupportsInterface(&_AI721Contract.CallOpts, interfaceId)
+// Solidity: function supportsInterface(bytes4 _interfaceId) view returns(bool)
+func (_AI721Contract *AI721ContractSession) SupportsInterface(_interfaceId [4]byte) (bool, error) {
+	return _AI721Contract.Contract.SupportsInterface(&_AI721Contract.CallOpts, _interfaceId)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
 //
-// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
-func (_AI721Contract *AI721ContractCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
-	return _AI721Contract.Contract.SupportsInterface(&_AI721Contract.CallOpts, interfaceId)
+// Solidity: function supportsInterface(bytes4 _interfaceId) view returns(bool)
+func (_AI721Contract *AI721ContractCallerSession) SupportsInterface(_interfaceId [4]byte) (bool, error) {
+	return _AI721Contract.Contract.SupportsInterface(&_AI721Contract.CallOpts, _interfaceId)
 }
 
 // Symbol is a free data retrieval call binding the contract method 0x95d89b41.
@@ -988,25 +1094,87 @@ func (_AI721Contract *AI721ContractCallerSession) TotalSupply() (*big.Int, error
 	return _AI721Contract.Contract.TotalSupply(&_AI721Contract.CallOpts)
 }
 
-// AddNewAgentData is a paid mutator transaction binding the contract method 0x413b0efa.
+// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
-// Solidity: function addNewAgentData(uint256 agentId, string promptKey, bytes sysPrompt) returns()
-func (_AI721Contract *AI721ContractTransactor) AddNewAgentData(opts *bind.TransactOpts, agentId *big.Int, promptKey string, sysPrompt []byte) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "addNewAgentData", agentId, promptKey, sysPrompt)
+// Solidity: function version() pure returns(string)
+func (_AI721Contract *AI721ContractCaller) Version(opts *bind.CallOpts) (string, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "version")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
 }
 
-// AddNewAgentData is a paid mutator transaction binding the contract method 0x413b0efa.
+// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
-// Solidity: function addNewAgentData(uint256 agentId, string promptKey, bytes sysPrompt) returns()
-func (_AI721Contract *AI721ContractSession) AddNewAgentData(agentId *big.Int, promptKey string, sysPrompt []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.AddNewAgentData(&_AI721Contract.TransactOpts, agentId, promptKey, sysPrompt)
+// Solidity: function version() pure returns(string)
+func (_AI721Contract *AI721ContractSession) Version() (string, error) {
+	return _AI721Contract.Contract.Version(&_AI721Contract.CallOpts)
 }
 
-// AddNewAgentData is a paid mutator transaction binding the contract method 0x413b0efa.
+// Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
-// Solidity: function addNewAgentData(uint256 agentId, string promptKey, bytes sysPrompt) returns()
-func (_AI721Contract *AI721ContractTransactorSession) AddNewAgentData(agentId *big.Int, promptKey string, sysPrompt []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.AddNewAgentData(&_AI721Contract.TransactOpts, agentId, promptKey, sysPrompt)
+// Solidity: function version() pure returns(string)
+func (_AI721Contract *AI721ContractCallerSession) Version() (string, error) {
+	return _AI721Contract.Contract.Version(&_AI721Contract.CallOpts)
+}
+
+// WorkerHub is a free data retrieval call binding the contract method 0x860e9dc6.
+//
+// Solidity: function workerHub() view returns(address)
+func (_AI721Contract *AI721ContractCaller) WorkerHub(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _AI721Contract.contract.Call(opts, &out, "workerHub")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// WorkerHub is a free data retrieval call binding the contract method 0x860e9dc6.
+//
+// Solidity: function workerHub() view returns(address)
+func (_AI721Contract *AI721ContractSession) WorkerHub() (common.Address, error) {
+	return _AI721Contract.Contract.WorkerHub(&_AI721Contract.CallOpts)
+}
+
+// WorkerHub is a free data retrieval call binding the contract method 0x860e9dc6.
+//
+// Solidity: function workerHub() view returns(address)
+func (_AI721Contract *AI721ContractCallerSession) WorkerHub() (common.Address, error) {
+	return _AI721Contract.Contract.WorkerHub(&_AI721Contract.CallOpts)
+}
+
+// AddNewAgentData is a paid mutator transaction binding the contract method 0x9f10cc66.
+//
+// Solidity: function addNewAgentData(uint256 _agentId, bytes _sysPrompt) returns()
+func (_AI721Contract *AI721ContractTransactor) AddNewAgentData(opts *bind.TransactOpts, _agentId *big.Int, _sysPrompt []byte) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "addNewAgentData", _agentId, _sysPrompt)
+}
+
+// AddNewAgentData is a paid mutator transaction binding the contract method 0x9f10cc66.
+//
+// Solidity: function addNewAgentData(uint256 _agentId, bytes _sysPrompt) returns()
+func (_AI721Contract *AI721ContractSession) AddNewAgentData(_agentId *big.Int, _sysPrompt []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.AddNewAgentData(&_AI721Contract.TransactOpts, _agentId, _sysPrompt)
+}
+
+// AddNewAgentData is a paid mutator transaction binding the contract method 0x9f10cc66.
+//
+// Solidity: function addNewAgentData(uint256 _agentId, bytes _sysPrompt) returns()
+func (_AI721Contract *AI721ContractTransactorSession) AddNewAgentData(_agentId *big.Int, _sysPrompt []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.AddNewAgentData(&_AI721Contract.TransactOpts, _agentId, _sysPrompt)
 }
 
 // Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
@@ -1030,109 +1198,172 @@ func (_AI721Contract *AI721ContractTransactorSession) Approve(to common.Address,
 	return _AI721Contract.Contract.Approve(&_AI721Contract.TransactOpts, to, tokenId)
 }
 
-// CreateMission is a paid mutator transaction binding the contract method 0x6001ad44.
+// AuthorizeManager is a paid mutator transaction binding the contract method 0x267c8507.
 //
-// Solidity: function createMission(uint256 agentId, bytes missionData) returns()
-func (_AI721Contract *AI721ContractTransactor) CreateMission(opts *bind.TransactOpts, agentId *big.Int, missionData []byte) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "createMission", agentId, missionData)
+// Solidity: function authorizeManager(address _account) returns()
+func (_AI721Contract *AI721ContractTransactor) AuthorizeManager(opts *bind.TransactOpts, _account common.Address) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "authorizeManager", _account)
+}
+
+// AuthorizeManager is a paid mutator transaction binding the contract method 0x267c8507.
+//
+// Solidity: function authorizeManager(address _account) returns()
+func (_AI721Contract *AI721ContractSession) AuthorizeManager(_account common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.AuthorizeManager(&_AI721Contract.TransactOpts, _account)
+}
+
+// AuthorizeManager is a paid mutator transaction binding the contract method 0x267c8507.
+//
+// Solidity: function authorizeManager(address _account) returns()
+func (_AI721Contract *AI721ContractTransactorSession) AuthorizeManager(_account common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.AuthorizeManager(&_AI721Contract.TransactOpts, _account)
+}
+
+// ClaimFee is a paid mutator transaction binding the contract method 0x99d32fc4.
+//
+// Solidity: function claimFee() returns()
+func (_AI721Contract *AI721ContractTransactor) ClaimFee(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "claimFee")
+}
+
+// ClaimFee is a paid mutator transaction binding the contract method 0x99d32fc4.
+//
+// Solidity: function claimFee() returns()
+func (_AI721Contract *AI721ContractSession) ClaimFee() (*types.Transaction, error) {
+	return _AI721Contract.Contract.ClaimFee(&_AI721Contract.TransactOpts)
+}
+
+// ClaimFee is a paid mutator transaction binding the contract method 0x99d32fc4.
+//
+// Solidity: function claimFee() returns()
+func (_AI721Contract *AI721ContractTransactorSession) ClaimFee() (*types.Transaction, error) {
+	return _AI721Contract.Contract.ClaimFee(&_AI721Contract.TransactOpts)
 }
 
 // CreateMission is a paid mutator transaction binding the contract method 0x6001ad44.
 //
-// Solidity: function createMission(uint256 agentId, bytes missionData) returns()
-func (_AI721Contract *AI721ContractSession) CreateMission(agentId *big.Int, missionData []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.CreateMission(&_AI721Contract.TransactOpts, agentId, missionData)
+// Solidity: function createMission(uint256 _agentId, bytes _missionData) returns()
+func (_AI721Contract *AI721ContractTransactor) CreateMission(opts *bind.TransactOpts, _agentId *big.Int, _missionData []byte) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "createMission", _agentId, _missionData)
 }
 
 // CreateMission is a paid mutator transaction binding the contract method 0x6001ad44.
 //
-// Solidity: function createMission(uint256 agentId, bytes missionData) returns()
-func (_AI721Contract *AI721ContractTransactorSession) CreateMission(agentId *big.Int, missionData []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.CreateMission(&_AI721Contract.TransactOpts, agentId, missionData)
+// Solidity: function createMission(uint256 _agentId, bytes _missionData) returns()
+func (_AI721Contract *AI721ContractSession) CreateMission(_agentId *big.Int, _missionData []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.CreateMission(&_AI721Contract.TransactOpts, _agentId, _missionData)
 }
 
-// Infer is a paid mutator transaction binding the contract method 0x3b8117fa.
+// CreateMission is a paid mutator transaction binding the contract method 0x6001ad44.
 //
-// Solidity: function infer(uint256 agentId, bytes fwdCalldata, string externalData, string promptKey, uint256 feeAmount) returns()
-func (_AI721Contract *AI721ContractTransactor) Infer(opts *bind.TransactOpts, agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, feeAmount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "infer", agentId, fwdCalldata, externalData, promptKey, feeAmount)
+// Solidity: function createMission(uint256 _agentId, bytes _missionData) returns()
+func (_AI721Contract *AI721ContractTransactorSession) CreateMission(_agentId *big.Int, _missionData []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.CreateMission(&_AI721Contract.TransactOpts, _agentId, _missionData)
 }
 
-// Infer is a paid mutator transaction binding the contract method 0x3b8117fa.
+// DeauthorizeManager is a paid mutator transaction binding the contract method 0x0305ea01.
 //
-// Solidity: function infer(uint256 agentId, bytes fwdCalldata, string externalData, string promptKey, uint256 feeAmount) returns()
-func (_AI721Contract *AI721ContractSession) Infer(agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, feeAmount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Infer(&_AI721Contract.TransactOpts, agentId, fwdCalldata, externalData, promptKey, feeAmount)
+// Solidity: function deauthorizeManager(address _account) returns()
+func (_AI721Contract *AI721ContractTransactor) DeauthorizeManager(opts *bind.TransactOpts, _account common.Address) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "deauthorizeManager", _account)
 }
 
-// Infer is a paid mutator transaction binding the contract method 0x3b8117fa.
+// DeauthorizeManager is a paid mutator transaction binding the contract method 0x0305ea01.
 //
-// Solidity: function infer(uint256 agentId, bytes fwdCalldata, string externalData, string promptKey, uint256 feeAmount) returns()
-func (_AI721Contract *AI721ContractTransactorSession) Infer(agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, feeAmount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Infer(&_AI721Contract.TransactOpts, agentId, fwdCalldata, externalData, promptKey, feeAmount)
+// Solidity: function deauthorizeManager(address _account) returns()
+func (_AI721Contract *AI721ContractSession) DeauthorizeManager(_account common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.DeauthorizeManager(&_AI721Contract.TransactOpts, _account)
 }
 
-// Infer0 is a paid mutator transaction binding the contract method 0xfa064b19.
+// DeauthorizeManager is a paid mutator transaction binding the contract method 0x0305ea01.
 //
-// Solidity: function infer(uint256 agentId, bytes fwdCalldata, string externalData, string promptKey, bool flag, uint256 feeAmount) returns()
-func (_AI721Contract *AI721ContractTransactor) Infer0(opts *bind.TransactOpts, agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, flag bool, feeAmount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "infer0", agentId, fwdCalldata, externalData, promptKey, flag, feeAmount)
+// Solidity: function deauthorizeManager(address _account) returns()
+func (_AI721Contract *AI721ContractTransactorSession) DeauthorizeManager(_account common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.DeauthorizeManager(&_AI721Contract.TransactOpts, _account)
 }
 
-// Infer0 is a paid mutator transaction binding the contract method 0xfa064b19.
+// Infer is a paid mutator transaction binding the contract method 0x3c00cf99.
 //
-// Solidity: function infer(uint256 agentId, bytes fwdCalldata, string externalData, string promptKey, bool flag, uint256 feeAmount) returns()
-func (_AI721Contract *AI721ContractSession) Infer0(agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, flag bool, feeAmount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Infer0(&_AI721Contract.TransactOpts, agentId, fwdCalldata, externalData, promptKey, flag, feeAmount)
+// Solidity: function infer(uint256 _agentId, bytes _calldata, string _externalData, bool _flag) payable returns()
+func (_AI721Contract *AI721ContractTransactor) Infer(opts *bind.TransactOpts, _agentId *big.Int, _calldata []byte, _externalData string, _flag bool) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "infer", _agentId, _calldata, _externalData, _flag)
 }
 
-// Infer0 is a paid mutator transaction binding the contract method 0xfa064b19.
+// Infer is a paid mutator transaction binding the contract method 0x3c00cf99.
 //
-// Solidity: function infer(uint256 agentId, bytes fwdCalldata, string externalData, string promptKey, bool flag, uint256 feeAmount) returns()
-func (_AI721Contract *AI721ContractTransactorSession) Infer0(agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, flag bool, feeAmount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Infer0(&_AI721Contract.TransactOpts, agentId, fwdCalldata, externalData, promptKey, flag, feeAmount)
+// Solidity: function infer(uint256 _agentId, bytes _calldata, string _externalData, bool _flag) payable returns()
+func (_AI721Contract *AI721ContractSession) Infer(_agentId *big.Int, _calldata []byte, _externalData string, _flag bool) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Infer(&_AI721Contract.TransactOpts, _agentId, _calldata, _externalData, _flag)
+}
+
+// Infer is a paid mutator transaction binding the contract method 0x3c00cf99.
+//
+// Solidity: function infer(uint256 _agentId, bytes _calldata, string _externalData, bool _flag) payable returns()
+func (_AI721Contract *AI721ContractTransactorSession) Infer(_agentId *big.Int, _calldata []byte, _externalData string, _flag bool) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Infer(&_AI721Contract.TransactOpts, _agentId, _calldata, _externalData, _flag)
+}
+
+// Infer0 is a paid mutator transaction binding the contract method 0x566a9951.
+//
+// Solidity: function infer(uint256 _agentId, bytes _calldata, string _externalData) payable returns()
+func (_AI721Contract *AI721ContractTransactor) Infer0(opts *bind.TransactOpts, _agentId *big.Int, _calldata []byte, _externalData string) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "infer0", _agentId, _calldata, _externalData)
+}
+
+// Infer0 is a paid mutator transaction binding the contract method 0x566a9951.
+//
+// Solidity: function infer(uint256 _agentId, bytes _calldata, string _externalData) payable returns()
+func (_AI721Contract *AI721ContractSession) Infer0(_agentId *big.Int, _calldata []byte, _externalData string) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Infer0(&_AI721Contract.TransactOpts, _agentId, _calldata, _externalData)
+}
+
+// Infer0 is a paid mutator transaction binding the contract method 0x566a9951.
+//
+// Solidity: function infer(uint256 _agentId, bytes _calldata, string _externalData) payable returns()
+func (_AI721Contract *AI721ContractTransactorSession) Infer0(_agentId *big.Int, _calldata []byte, _externalData string) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Infer0(&_AI721Contract.TransactOpts, _agentId, _calldata, _externalData)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0x1e18fb8c.
 //
-// Solidity: function initialize(string name_, string symbol_, uint256 mintPrice_, address royaltyReceiver_, uint16 royaltyPortion_, uint256 nextTokenId_, address gpuManager_, address tokenFee_) returns()
-func (_AI721Contract *AI721ContractTransactor) Initialize(opts *bind.TransactOpts, name_ string, symbol_ string, mintPrice_ *big.Int, royaltyReceiver_ common.Address, royaltyPortion_ uint16, nextTokenId_ *big.Int, gpuManager_ common.Address, tokenFee_ common.Address) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "initialize", name_, symbol_, mintPrice_, royaltyReceiver_, royaltyPortion_, nextTokenId_, gpuManager_, tokenFee_)
+// Solidity: function initialize(string _name, string _symbol, uint256 _mintPrice, address _royaltyReceiver, uint16 _royaltyPortion, uint256 _nextTokenId, address _hybridModel, address _workerHub) returns()
+func (_AI721Contract *AI721ContractTransactor) Initialize(opts *bind.TransactOpts, _name string, _symbol string, _mintPrice *big.Int, _royaltyReceiver common.Address, _royaltyPortion uint16, _nextTokenId *big.Int, _hybridModel common.Address, _workerHub common.Address) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "initialize", _name, _symbol, _mintPrice, _royaltyReceiver, _royaltyPortion, _nextTokenId, _hybridModel, _workerHub)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0x1e18fb8c.
 //
-// Solidity: function initialize(string name_, string symbol_, uint256 mintPrice_, address royaltyReceiver_, uint16 royaltyPortion_, uint256 nextTokenId_, address gpuManager_, address tokenFee_) returns()
-func (_AI721Contract *AI721ContractSession) Initialize(name_ string, symbol_ string, mintPrice_ *big.Int, royaltyReceiver_ common.Address, royaltyPortion_ uint16, nextTokenId_ *big.Int, gpuManager_ common.Address, tokenFee_ common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Initialize(&_AI721Contract.TransactOpts, name_, symbol_, mintPrice_, royaltyReceiver_, royaltyPortion_, nextTokenId_, gpuManager_, tokenFee_)
+// Solidity: function initialize(string _name, string _symbol, uint256 _mintPrice, address _royaltyReceiver, uint16 _royaltyPortion, uint256 _nextTokenId, address _hybridModel, address _workerHub) returns()
+func (_AI721Contract *AI721ContractSession) Initialize(_name string, _symbol string, _mintPrice *big.Int, _royaltyReceiver common.Address, _royaltyPortion uint16, _nextTokenId *big.Int, _hybridModel common.Address, _workerHub common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Initialize(&_AI721Contract.TransactOpts, _name, _symbol, _mintPrice, _royaltyReceiver, _royaltyPortion, _nextTokenId, _hybridModel, _workerHub)
 }
 
 // Initialize is a paid mutator transaction binding the contract method 0x1e18fb8c.
 //
-// Solidity: function initialize(string name_, string symbol_, uint256 mintPrice_, address royaltyReceiver_, uint16 royaltyPortion_, uint256 nextTokenId_, address gpuManager_, address tokenFee_) returns()
-func (_AI721Contract *AI721ContractTransactorSession) Initialize(name_ string, symbol_ string, mintPrice_ *big.Int, royaltyReceiver_ common.Address, royaltyPortion_ uint16, nextTokenId_ *big.Int, gpuManager_ common.Address, tokenFee_ common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Initialize(&_AI721Contract.TransactOpts, name_, symbol_, mintPrice_, royaltyReceiver_, royaltyPortion_, nextTokenId_, gpuManager_, tokenFee_)
+// Solidity: function initialize(string _name, string _symbol, uint256 _mintPrice, address _royaltyReceiver, uint16 _royaltyPortion, uint256 _nextTokenId, address _hybridModel, address _workerHub) returns()
+func (_AI721Contract *AI721ContractTransactorSession) Initialize(_name string, _symbol string, _mintPrice *big.Int, _royaltyReceiver common.Address, _royaltyPortion uint16, _nextTokenId *big.Int, _hybridModel common.Address, _workerHub common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Initialize(&_AI721Contract.TransactOpts, _name, _symbol, _mintPrice, _royaltyReceiver, _royaltyPortion, _nextTokenId, _hybridModel, _workerHub)
 }
 
-// Mint is a paid mutator transaction binding the contract method 0xb8ea1693.
+// Mint is a paid mutator transaction binding the contract method 0xcc216aca.
 //
-// Solidity: function mint(address to, string uri, bytes data, uint256 fee, string promptKey, address promptScheduler, uint32 modelId) returns(uint256)
-func (_AI721Contract *AI721ContractTransactor) Mint(opts *bind.TransactOpts, to common.Address, uri string, data []byte, fee *big.Int, promptKey string, promptScheduler common.Address, modelId uint32) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "mint", to, uri, data, fee, promptKey, promptScheduler, modelId)
+// Solidity: function mint(address _to, string _uri, bytes _data, uint256 _fee) payable returns(uint256)
+func (_AI721Contract *AI721ContractTransactor) Mint(opts *bind.TransactOpts, _to common.Address, _uri string, _data []byte, _fee *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "mint", _to, _uri, _data, _fee)
 }
 
-// Mint is a paid mutator transaction binding the contract method 0xb8ea1693.
+// Mint is a paid mutator transaction binding the contract method 0xcc216aca.
 //
-// Solidity: function mint(address to, string uri, bytes data, uint256 fee, string promptKey, address promptScheduler, uint32 modelId) returns(uint256)
-func (_AI721Contract *AI721ContractSession) Mint(to common.Address, uri string, data []byte, fee *big.Int, promptKey string, promptScheduler common.Address, modelId uint32) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Mint(&_AI721Contract.TransactOpts, to, uri, data, fee, promptKey, promptScheduler, modelId)
+// Solidity: function mint(address _to, string _uri, bytes _data, uint256 _fee) payable returns(uint256)
+func (_AI721Contract *AI721ContractSession) Mint(_to common.Address, _uri string, _data []byte, _fee *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Mint(&_AI721Contract.TransactOpts, _to, _uri, _data, _fee)
 }
 
-// Mint is a paid mutator transaction binding the contract method 0xb8ea1693.
+// Mint is a paid mutator transaction binding the contract method 0xcc216aca.
 //
-// Solidity: function mint(address to, string uri, bytes data, uint256 fee, string promptKey, address promptScheduler, uint32 modelId) returns(uint256)
-func (_AI721Contract *AI721ContractTransactorSession) Mint(to common.Address, uri string, data []byte, fee *big.Int, promptKey string, promptScheduler common.Address, modelId uint32) (*types.Transaction, error) {
-	return _AI721Contract.Contract.Mint(&_AI721Contract.TransactOpts, to, uri, data, fee, promptKey, promptScheduler, modelId)
+// Solidity: function mint(address _to, string _uri, bytes _data, uint256 _fee) payable returns(uint256)
+func (_AI721Contract *AI721ContractTransactorSession) Mint(_to common.Address, _uri string, _data []byte, _fee *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Mint(&_AI721Contract.TransactOpts, _to, _uri, _data, _fee)
 }
 
 // Pause is a paid mutator transaction binding the contract method 0x8456cb59.
@@ -1240,25 +1471,25 @@ func (_AI721Contract *AI721ContractTransactorSession) SetApprovalForAll(operator
 	return _AI721Contract.Contract.SetApprovalForAll(&_AI721Contract.TransactOpts, operator, approved)
 }
 
-// TopUpPoolBalance is a paid mutator transaction binding the contract method 0x67b611a0.
+// TopUpPoolBalance is a paid mutator transaction binding the contract method 0xc82cd94b.
 //
-// Solidity: function topUpPoolBalance(uint256 agentId, uint256 amount) returns()
-func (_AI721Contract *AI721ContractTransactor) TopUpPoolBalance(opts *bind.TransactOpts, agentId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "topUpPoolBalance", agentId, amount)
+// Solidity: function topUpPoolBalance(uint256 _agentId) payable returns()
+func (_AI721Contract *AI721ContractTransactor) TopUpPoolBalance(opts *bind.TransactOpts, _agentId *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "topUpPoolBalance", _agentId)
 }
 
-// TopUpPoolBalance is a paid mutator transaction binding the contract method 0x67b611a0.
+// TopUpPoolBalance is a paid mutator transaction binding the contract method 0xc82cd94b.
 //
-// Solidity: function topUpPoolBalance(uint256 agentId, uint256 amount) returns()
-func (_AI721Contract *AI721ContractSession) TopUpPoolBalance(agentId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.TopUpPoolBalance(&_AI721Contract.TransactOpts, agentId, amount)
+// Solidity: function topUpPoolBalance(uint256 _agentId) payable returns()
+func (_AI721Contract *AI721ContractSession) TopUpPoolBalance(_agentId *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.TopUpPoolBalance(&_AI721Contract.TransactOpts, _agentId)
 }
 
-// TopUpPoolBalance is a paid mutator transaction binding the contract method 0x67b611a0.
+// TopUpPoolBalance is a paid mutator transaction binding the contract method 0xc82cd94b.
 //
-// Solidity: function topUpPoolBalance(uint256 agentId, uint256 amount) returns()
-func (_AI721Contract *AI721ContractTransactorSession) TopUpPoolBalance(agentId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.TopUpPoolBalance(&_AI721Contract.TransactOpts, agentId, amount)
+// Solidity: function topUpPoolBalance(uint256 _agentId) payable returns()
+func (_AI721Contract *AI721ContractTransactorSession) TopUpPoolBalance(_agentId *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.TopUpPoolBalance(&_AI721Contract.TransactOpts, _agentId)
 }
 
 // TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
@@ -1324,235 +1555,235 @@ func (_AI721Contract *AI721ContractTransactorSession) Unpause() (*types.Transact
 	return _AI721Contract.Contract.Unpause(&_AI721Contract.TransactOpts)
 }
 
-// UpdateAgentData is a paid mutator transaction binding the contract method 0xe96177c4.
+// UpdateAgentData is a paid mutator transaction binding the contract method 0xed82c9e0.
 //
-// Solidity: function updateAgentData(uint256 agentId, bytes sysPrompt, string promptKey, uint256 promptIdx) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateAgentData(opts *bind.TransactOpts, agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateAgentData", agentId, sysPrompt, promptKey, promptIdx)
+// Solidity: function updateAgentData(uint256 _agentId, bytes _sysPrompt, uint256 _promptIdx) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateAgentData(opts *bind.TransactOpts, _agentId *big.Int, _sysPrompt []byte, _promptIdx *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateAgentData", _agentId, _sysPrompt, _promptIdx)
 }
 
-// UpdateAgentData is a paid mutator transaction binding the contract method 0xe96177c4.
+// UpdateAgentData is a paid mutator transaction binding the contract method 0xed82c9e0.
 //
-// Solidity: function updateAgentData(uint256 agentId, bytes sysPrompt, string promptKey, uint256 promptIdx) returns()
-func (_AI721Contract *AI721ContractSession) UpdateAgentData(agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentData(&_AI721Contract.TransactOpts, agentId, sysPrompt, promptKey, promptIdx)
+// Solidity: function updateAgentData(uint256 _agentId, bytes _sysPrompt, uint256 _promptIdx) returns()
+func (_AI721Contract *AI721ContractSession) UpdateAgentData(_agentId *big.Int, _sysPrompt []byte, _promptIdx *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentData(&_AI721Contract.TransactOpts, _agentId, _sysPrompt, _promptIdx)
 }
 
-// UpdateAgentData is a paid mutator transaction binding the contract method 0xe96177c4.
+// UpdateAgentData is a paid mutator transaction binding the contract method 0xed82c9e0.
 //
-// Solidity: function updateAgentData(uint256 agentId, bytes sysPrompt, string promptKey, uint256 promptIdx) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentData(agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentData(&_AI721Contract.TransactOpts, agentId, sysPrompt, promptKey, promptIdx)
+// Solidity: function updateAgentData(uint256 _agentId, bytes _sysPrompt, uint256 _promptIdx) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentData(_agentId *big.Int, _sysPrompt []byte, _promptIdx *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentData(&_AI721Contract.TransactOpts, _agentId, _sysPrompt, _promptIdx)
 }
 
-// UpdateAgentDataWithSignature is a paid mutator transaction binding the contract method 0x1c83fb2c.
+// UpdateAgentDataWithSignature is a paid mutator transaction binding the contract method 0xb8a49a57.
 //
-// Solidity: function updateAgentDataWithSignature(uint256 agentId, bytes sysPrompt, string promptKey, uint256 promptIdx, uint256 randomNonce, bytes signature) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateAgentDataWithSignature(opts *bind.TransactOpts, agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateAgentDataWithSignature", agentId, sysPrompt, promptKey, promptIdx, randomNonce, signature)
+// Solidity: function updateAgentDataWithSignature(uint256 _agentId, bytes _sysPrompt, uint256 _promptIdx, uint256 _randomNonce, bytes _signature) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateAgentDataWithSignature(opts *bind.TransactOpts, _agentId *big.Int, _sysPrompt []byte, _promptIdx *big.Int, _randomNonce *big.Int, _signature []byte) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateAgentDataWithSignature", _agentId, _sysPrompt, _promptIdx, _randomNonce, _signature)
 }
 
-// UpdateAgentDataWithSignature is a paid mutator transaction binding the contract method 0x1c83fb2c.
+// UpdateAgentDataWithSignature is a paid mutator transaction binding the contract method 0xb8a49a57.
 //
-// Solidity: function updateAgentDataWithSignature(uint256 agentId, bytes sysPrompt, string promptKey, uint256 promptIdx, uint256 randomNonce, bytes signature) returns()
-func (_AI721Contract *AI721ContractSession) UpdateAgentDataWithSignature(agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentDataWithSignature(&_AI721Contract.TransactOpts, agentId, sysPrompt, promptKey, promptIdx, randomNonce, signature)
+// Solidity: function updateAgentDataWithSignature(uint256 _agentId, bytes _sysPrompt, uint256 _promptIdx, uint256 _randomNonce, bytes _signature) returns()
+func (_AI721Contract *AI721ContractSession) UpdateAgentDataWithSignature(_agentId *big.Int, _sysPrompt []byte, _promptIdx *big.Int, _randomNonce *big.Int, _signature []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentDataWithSignature(&_AI721Contract.TransactOpts, _agentId, _sysPrompt, _promptIdx, _randomNonce, _signature)
 }
 
-// UpdateAgentDataWithSignature is a paid mutator transaction binding the contract method 0x1c83fb2c.
+// UpdateAgentDataWithSignature is a paid mutator transaction binding the contract method 0xb8a49a57.
 //
-// Solidity: function updateAgentDataWithSignature(uint256 agentId, bytes sysPrompt, string promptKey, uint256 promptIdx, uint256 randomNonce, bytes signature) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentDataWithSignature(agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentDataWithSignature(&_AI721Contract.TransactOpts, agentId, sysPrompt, promptKey, promptIdx, randomNonce, signature)
-}
-
-// UpdateAgentFee is a paid mutator transaction binding the contract method 0xb1fd1526.
-//
-// Solidity: function updateAgentFee(uint256 agentId, uint256 fee) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateAgentFee(opts *bind.TransactOpts, agentId *big.Int, fee *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateAgentFee", agentId, fee)
+// Solidity: function updateAgentDataWithSignature(uint256 _agentId, bytes _sysPrompt, uint256 _promptIdx, uint256 _randomNonce, bytes _signature) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentDataWithSignature(_agentId *big.Int, _sysPrompt []byte, _promptIdx *big.Int, _randomNonce *big.Int, _signature []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentDataWithSignature(&_AI721Contract.TransactOpts, _agentId, _sysPrompt, _promptIdx, _randomNonce, _signature)
 }
 
 // UpdateAgentFee is a paid mutator transaction binding the contract method 0xb1fd1526.
 //
-// Solidity: function updateAgentFee(uint256 agentId, uint256 fee) returns()
-func (_AI721Contract *AI721ContractSession) UpdateAgentFee(agentId *big.Int, fee *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentFee(&_AI721Contract.TransactOpts, agentId, fee)
+// Solidity: function updateAgentFee(uint256 _agentId, uint256 _fee) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateAgentFee(opts *bind.TransactOpts, _agentId *big.Int, _fee *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateAgentFee", _agentId, _fee)
 }
 
 // UpdateAgentFee is a paid mutator transaction binding the contract method 0xb1fd1526.
 //
-// Solidity: function updateAgentFee(uint256 agentId, uint256 fee) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentFee(agentId *big.Int, fee *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentFee(&_AI721Contract.TransactOpts, agentId, fee)
+// Solidity: function updateAgentFee(uint256 _agentId, uint256 _fee) returns()
+func (_AI721Contract *AI721ContractSession) UpdateAgentFee(_agentId *big.Int, _fee *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentFee(&_AI721Contract.TransactOpts, _agentId, _fee)
 }
 
-// UpdateAgentModelId is a paid mutator transaction binding the contract method 0x0ffc8cf4.
+// UpdateAgentFee is a paid mutator transaction binding the contract method 0xb1fd1526.
 //
-// Solidity: function updateAgentModelId(uint256 agentId, uint32 newModelId) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateAgentModelId(opts *bind.TransactOpts, agentId *big.Int, newModelId uint32) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateAgentModelId", agentId, newModelId)
-}
-
-// UpdateAgentModelId is a paid mutator transaction binding the contract method 0x0ffc8cf4.
-//
-// Solidity: function updateAgentModelId(uint256 agentId, uint32 newModelId) returns()
-func (_AI721Contract *AI721ContractSession) UpdateAgentModelId(agentId *big.Int, newModelId uint32) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentModelId(&_AI721Contract.TransactOpts, agentId, newModelId)
-}
-
-// UpdateAgentModelId is a paid mutator transaction binding the contract method 0x0ffc8cf4.
-//
-// Solidity: function updateAgentModelId(uint256 agentId, uint32 newModelId) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentModelId(agentId *big.Int, newModelId uint32) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentModelId(&_AI721Contract.TransactOpts, agentId, newModelId)
+// Solidity: function updateAgentFee(uint256 _agentId, uint256 _fee) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentFee(_agentId *big.Int, _fee *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentFee(&_AI721Contract.TransactOpts, _agentId, _fee)
 }
 
 // UpdateAgentURI is a paid mutator transaction binding the contract method 0x6b595822.
 //
-// Solidity: function updateAgentURI(uint256 agentId, string uri) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateAgentURI(opts *bind.TransactOpts, agentId *big.Int, uri string) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateAgentURI", agentId, uri)
+// Solidity: function updateAgentURI(uint256 _agentId, string _uri) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateAgentURI(opts *bind.TransactOpts, _agentId *big.Int, _uri string) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateAgentURI", _agentId, _uri)
 }
 
 // UpdateAgentURI is a paid mutator transaction binding the contract method 0x6b595822.
 //
-// Solidity: function updateAgentURI(uint256 agentId, string uri) returns()
-func (_AI721Contract *AI721ContractSession) UpdateAgentURI(agentId *big.Int, uri string) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentURI(&_AI721Contract.TransactOpts, agentId, uri)
+// Solidity: function updateAgentURI(uint256 _agentId, string _uri) returns()
+func (_AI721Contract *AI721ContractSession) UpdateAgentURI(_agentId *big.Int, _uri string) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentURI(&_AI721Contract.TransactOpts, _agentId, _uri)
 }
 
 // UpdateAgentURI is a paid mutator transaction binding the contract method 0x6b595822.
 //
-// Solidity: function updateAgentURI(uint256 agentId, string uri) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentURI(agentId *big.Int, uri string) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentURI(&_AI721Contract.TransactOpts, agentId, uri)
+// Solidity: function updateAgentURI(uint256 _agentId, string _uri) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentURI(_agentId *big.Int, _uri string) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentURI(&_AI721Contract.TransactOpts, _agentId, _uri)
 }
 
 // UpdateAgentUriWithSignature is a paid mutator transaction binding the contract method 0xf5888779.
 //
-// Solidity: function updateAgentUriWithSignature(uint256 agentId, string uri, uint256 randomNonce, bytes signature) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateAgentUriWithSignature(opts *bind.TransactOpts, agentId *big.Int, uri string, randomNonce *big.Int, signature []byte) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateAgentUriWithSignature", agentId, uri, randomNonce, signature)
+// Solidity: function updateAgentUriWithSignature(uint256 _agentId, string _uri, uint256 _randomNonce, bytes _signature) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateAgentUriWithSignature(opts *bind.TransactOpts, _agentId *big.Int, _uri string, _randomNonce *big.Int, _signature []byte) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateAgentUriWithSignature", _agentId, _uri, _randomNonce, _signature)
 }
 
 // UpdateAgentUriWithSignature is a paid mutator transaction binding the contract method 0xf5888779.
 //
-// Solidity: function updateAgentUriWithSignature(uint256 agentId, string uri, uint256 randomNonce, bytes signature) returns()
-func (_AI721Contract *AI721ContractSession) UpdateAgentUriWithSignature(agentId *big.Int, uri string, randomNonce *big.Int, signature []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentUriWithSignature(&_AI721Contract.TransactOpts, agentId, uri, randomNonce, signature)
+// Solidity: function updateAgentUriWithSignature(uint256 _agentId, string _uri, uint256 _randomNonce, bytes _signature) returns()
+func (_AI721Contract *AI721ContractSession) UpdateAgentUriWithSignature(_agentId *big.Int, _uri string, _randomNonce *big.Int, _signature []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentUriWithSignature(&_AI721Contract.TransactOpts, _agentId, _uri, _randomNonce, _signature)
 }
 
 // UpdateAgentUriWithSignature is a paid mutator transaction binding the contract method 0xf5888779.
 //
-// Solidity: function updateAgentUriWithSignature(uint256 agentId, string uri, uint256 randomNonce, bytes signature) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentUriWithSignature(agentId *big.Int, uri string, randomNonce *big.Int, signature []byte) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateAgentUriWithSignature(&_AI721Contract.TransactOpts, agentId, uri, randomNonce, signature)
-}
-
-// UpdateGPUManager is a paid mutator transaction binding the contract method 0x88ee5fb2.
-//
-// Solidity: function updateGPUManager(address gpuManager) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateGPUManager(opts *bind.TransactOpts, gpuManager common.Address) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateGPUManager", gpuManager)
-}
-
-// UpdateGPUManager is a paid mutator transaction binding the contract method 0x88ee5fb2.
-//
-// Solidity: function updateGPUManager(address gpuManager) returns()
-func (_AI721Contract *AI721ContractSession) UpdateGPUManager(gpuManager common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateGPUManager(&_AI721Contract.TransactOpts, gpuManager)
-}
-
-// UpdateGPUManager is a paid mutator transaction binding the contract method 0x88ee5fb2.
-//
-// Solidity: function updateGPUManager(address gpuManager) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateGPUManager(gpuManager common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateGPUManager(&_AI721Contract.TransactOpts, gpuManager)
+// Solidity: function updateAgentUriWithSignature(uint256 _agentId, string _uri, uint256 _randomNonce, bytes _signature) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateAgentUriWithSignature(_agentId *big.Int, _uri string, _randomNonce *big.Int, _signature []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateAgentUriWithSignature(&_AI721Contract.TransactOpts, _agentId, _uri, _randomNonce, _signature)
 }
 
 // UpdateMintPrice is a paid mutator transaction binding the contract method 0x00728e46.
 //
-// Solidity: function updateMintPrice(uint256 mintPrice) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateMintPrice(opts *bind.TransactOpts, mintPrice *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateMintPrice", mintPrice)
+// Solidity: function updateMintPrice(uint256 _mintPrice) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateMintPrice(opts *bind.TransactOpts, _mintPrice *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateMintPrice", _mintPrice)
 }
 
 // UpdateMintPrice is a paid mutator transaction binding the contract method 0x00728e46.
 //
-// Solidity: function updateMintPrice(uint256 mintPrice) returns()
-func (_AI721Contract *AI721ContractSession) UpdateMintPrice(mintPrice *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateMintPrice(&_AI721Contract.TransactOpts, mintPrice)
+// Solidity: function updateMintPrice(uint256 _mintPrice) returns()
+func (_AI721Contract *AI721ContractSession) UpdateMintPrice(_mintPrice *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateMintPrice(&_AI721Contract.TransactOpts, _mintPrice)
 }
 
 // UpdateMintPrice is a paid mutator transaction binding the contract method 0x00728e46.
 //
-// Solidity: function updateMintPrice(uint256 mintPrice) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateMintPrice(mintPrice *big.Int) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateMintPrice(&_AI721Contract.TransactOpts, mintPrice)
+// Solidity: function updateMintPrice(uint256 _mintPrice) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateMintPrice(_mintPrice *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateMintPrice(&_AI721Contract.TransactOpts, _mintPrice)
+}
+
+// UpdateMission is a paid mutator transaction binding the contract method 0x8f17098f.
+//
+// Solidity: function updateMission(uint256 _agentId, uint256 _missionIdx, bytes _missionData) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateMission(opts *bind.TransactOpts, _agentId *big.Int, _missionIdx *big.Int, _missionData []byte) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateMission", _agentId, _missionIdx, _missionData)
+}
+
+// UpdateMission is a paid mutator transaction binding the contract method 0x8f17098f.
+//
+// Solidity: function updateMission(uint256 _agentId, uint256 _missionIdx, bytes _missionData) returns()
+func (_AI721Contract *AI721ContractSession) UpdateMission(_agentId *big.Int, _missionIdx *big.Int, _missionData []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateMission(&_AI721Contract.TransactOpts, _agentId, _missionIdx, _missionData)
+}
+
+// UpdateMission is a paid mutator transaction binding the contract method 0x8f17098f.
+//
+// Solidity: function updateMission(uint256 _agentId, uint256 _missionIdx, bytes _missionData) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateMission(_agentId *big.Int, _missionIdx *big.Int, _missionData []byte) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateMission(&_AI721Contract.TransactOpts, _agentId, _missionIdx, _missionData)
 }
 
 // UpdateRoyaltyPortion is a paid mutator transaction binding the contract method 0x19e93993.
 //
-// Solidity: function updateRoyaltyPortion(uint16 royaltyPortion) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateRoyaltyPortion(opts *bind.TransactOpts, royaltyPortion uint16) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateRoyaltyPortion", royaltyPortion)
+// Solidity: function updateRoyaltyPortion(uint16 _royaltyPortion) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateRoyaltyPortion(opts *bind.TransactOpts, _royaltyPortion uint16) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateRoyaltyPortion", _royaltyPortion)
 }
 
 // UpdateRoyaltyPortion is a paid mutator transaction binding the contract method 0x19e93993.
 //
-// Solidity: function updateRoyaltyPortion(uint16 royaltyPortion) returns()
-func (_AI721Contract *AI721ContractSession) UpdateRoyaltyPortion(royaltyPortion uint16) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateRoyaltyPortion(&_AI721Contract.TransactOpts, royaltyPortion)
+// Solidity: function updateRoyaltyPortion(uint16 _royaltyPortion) returns()
+func (_AI721Contract *AI721ContractSession) UpdateRoyaltyPortion(_royaltyPortion uint16) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateRoyaltyPortion(&_AI721Contract.TransactOpts, _royaltyPortion)
 }
 
 // UpdateRoyaltyPortion is a paid mutator transaction binding the contract method 0x19e93993.
 //
-// Solidity: function updateRoyaltyPortion(uint16 royaltyPortion) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateRoyaltyPortion(royaltyPortion uint16) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateRoyaltyPortion(&_AI721Contract.TransactOpts, royaltyPortion)
+// Solidity: function updateRoyaltyPortion(uint16 _royaltyPortion) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateRoyaltyPortion(_royaltyPortion uint16) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateRoyaltyPortion(&_AI721Contract.TransactOpts, _royaltyPortion)
 }
 
 // UpdateRoyaltyReceiver is a paid mutator transaction binding the contract method 0x29dc4d9b.
 //
-// Solidity: function updateRoyaltyReceiver(address royaltyReceiver) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateRoyaltyReceiver(opts *bind.TransactOpts, royaltyReceiver common.Address) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateRoyaltyReceiver", royaltyReceiver)
+// Solidity: function updateRoyaltyReceiver(address _royaltyReceiver) returns()
+func (_AI721Contract *AI721ContractTransactor) UpdateRoyaltyReceiver(opts *bind.TransactOpts, _royaltyReceiver common.Address) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "updateRoyaltyReceiver", _royaltyReceiver)
 }
 
 // UpdateRoyaltyReceiver is a paid mutator transaction binding the contract method 0x29dc4d9b.
 //
-// Solidity: function updateRoyaltyReceiver(address royaltyReceiver) returns()
-func (_AI721Contract *AI721ContractSession) UpdateRoyaltyReceiver(royaltyReceiver common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateRoyaltyReceiver(&_AI721Contract.TransactOpts, royaltyReceiver)
+// Solidity: function updateRoyaltyReceiver(address _royaltyReceiver) returns()
+func (_AI721Contract *AI721ContractSession) UpdateRoyaltyReceiver(_royaltyReceiver common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateRoyaltyReceiver(&_AI721Contract.TransactOpts, _royaltyReceiver)
 }
 
 // UpdateRoyaltyReceiver is a paid mutator transaction binding the contract method 0x29dc4d9b.
 //
-// Solidity: function updateRoyaltyReceiver(address royaltyReceiver) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateRoyaltyReceiver(royaltyReceiver common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateRoyaltyReceiver(&_AI721Contract.TransactOpts, royaltyReceiver)
+// Solidity: function updateRoyaltyReceiver(address _royaltyReceiver) returns()
+func (_AI721Contract *AI721ContractTransactorSession) UpdateRoyaltyReceiver(_royaltyReceiver common.Address) (*types.Transaction, error) {
+	return _AI721Contract.Contract.UpdateRoyaltyReceiver(&_AI721Contract.TransactOpts, _royaltyReceiver)
 }
 
-// UpdateSchedulePrompt is a paid mutator transaction binding the contract method 0x1ddbc69a.
+// Withdraw is a paid mutator transaction binding the contract method 0xf3fef3a3.
 //
-// Solidity: function updateSchedulePrompt(uint256 agentId, address newPromptScheduler) returns()
-func (_AI721Contract *AI721ContractTransactor) UpdateSchedulePrompt(opts *bind.TransactOpts, agentId *big.Int, newPromptScheduler common.Address) (*types.Transaction, error) {
-	return _AI721Contract.contract.Transact(opts, "updateSchedulePrompt", agentId, newPromptScheduler)
+// Solidity: function withdraw(address _to, uint256 _value) returns()
+func (_AI721Contract *AI721ContractTransactor) Withdraw(opts *bind.TransactOpts, _to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.contract.Transact(opts, "withdraw", _to, _value)
 }
 
-// UpdateSchedulePrompt is a paid mutator transaction binding the contract method 0x1ddbc69a.
+// Withdraw is a paid mutator transaction binding the contract method 0xf3fef3a3.
 //
-// Solidity: function updateSchedulePrompt(uint256 agentId, address newPromptScheduler) returns()
-func (_AI721Contract *AI721ContractSession) UpdateSchedulePrompt(agentId *big.Int, newPromptScheduler common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateSchedulePrompt(&_AI721Contract.TransactOpts, agentId, newPromptScheduler)
+// Solidity: function withdraw(address _to, uint256 _value) returns()
+func (_AI721Contract *AI721ContractSession) Withdraw(_to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Withdraw(&_AI721Contract.TransactOpts, _to, _value)
 }
 
-// UpdateSchedulePrompt is a paid mutator transaction binding the contract method 0x1ddbc69a.
+// Withdraw is a paid mutator transaction binding the contract method 0xf3fef3a3.
 //
-// Solidity: function updateSchedulePrompt(uint256 agentId, address newPromptScheduler) returns()
-func (_AI721Contract *AI721ContractTransactorSession) UpdateSchedulePrompt(agentId *big.Int, newPromptScheduler common.Address) (*types.Transaction, error) {
-	return _AI721Contract.Contract.UpdateSchedulePrompt(&_AI721Contract.TransactOpts, agentId, newPromptScheduler)
+// Solidity: function withdraw(address _to, uint256 _value) returns()
+func (_AI721Contract *AI721ContractTransactorSession) Withdraw(_to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _AI721Contract.Contract.Withdraw(&_AI721Contract.TransactOpts, _to, _value)
+}
+
+// Receive is a paid mutator transaction binding the contract receive function.
+//
+// Solidity: receive() payable returns()
+func (_AI721Contract *AI721ContractTransactor) Receive(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _AI721Contract.contract.RawTransact(opts, nil) // calldata is disallowed for receive function
+}
+
+// Receive is a paid mutator transaction binding the contract receive function.
+//
+// Solidity: receive() payable returns()
+func (_AI721Contract *AI721ContractSession) Receive() (*types.Transaction, error) {
+	return _AI721Contract.Contract.Receive(&_AI721Contract.TransactOpts)
+}
+
+// Receive is a paid mutator transaction binding the contract receive function.
+//
+// Solidity: receive() payable returns()
+func (_AI721Contract *AI721ContractTransactorSession) Receive() (*types.Transaction, error) {
+	return _AI721Contract.Contract.Receive(&_AI721Contract.TransactOpts)
 }
 
 // AI721ContractAgentDataAddNewIterator is returned from FilterAgentDataAddNew and is used to iterate over the raw logs and unpacked data for AgentDataAddNew events raised by the AI721Contract contract.
@@ -2284,298 +2515,6 @@ func (_AI721Contract *AI721ContractFilterer) ParseAgentMissionUpdate(log types.L
 	return event, nil
 }
 
-// AI721ContractAgentModelIdUpdateIterator is returned from FilterAgentModelIdUpdate and is used to iterate over the raw logs and unpacked data for AgentModelIdUpdate events raised by the AI721Contract contract.
-type AI721ContractAgentModelIdUpdateIterator struct {
-	Event *AI721ContractAgentModelIdUpdate // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AI721ContractAgentModelIdUpdateIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AI721ContractAgentModelIdUpdate)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AI721ContractAgentModelIdUpdate)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AI721ContractAgentModelIdUpdateIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AI721ContractAgentModelIdUpdateIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AI721ContractAgentModelIdUpdate represents a AgentModelIdUpdate event raised by the AI721Contract contract.
-type AI721ContractAgentModelIdUpdate struct {
-	AgentId    *big.Int
-	OldModelId *big.Int
-	NewModelId *big.Int
-	Raw        types.Log // Blockchain specific contextual infos
-}
-
-// FilterAgentModelIdUpdate is a free log retrieval operation binding the contract event 0xe8662b9bac978d6b361a9cc824ecf5a8ea4cfb61ccbdd24dec6237ee9b7d7fa7.
-//
-// Solidity: event AgentModelIdUpdate(uint256 indexed agentId, uint256 oldModelId, uint256 newModelId)
-func (_AI721Contract *AI721ContractFilterer) FilterAgentModelIdUpdate(opts *bind.FilterOpts, agentId []*big.Int) (*AI721ContractAgentModelIdUpdateIterator, error) {
-
-	var agentIdRule []interface{}
-	for _, agentIdItem := range agentId {
-		agentIdRule = append(agentIdRule, agentIdItem)
-	}
-
-	logs, sub, err := _AI721Contract.contract.FilterLogs(opts, "AgentModelIdUpdate", agentIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return &AI721ContractAgentModelIdUpdateIterator{contract: _AI721Contract.contract, event: "AgentModelIdUpdate", logs: logs, sub: sub}, nil
-}
-
-// WatchAgentModelIdUpdate is a free log subscription operation binding the contract event 0xe8662b9bac978d6b361a9cc824ecf5a8ea4cfb61ccbdd24dec6237ee9b7d7fa7.
-//
-// Solidity: event AgentModelIdUpdate(uint256 indexed agentId, uint256 oldModelId, uint256 newModelId)
-func (_AI721Contract *AI721ContractFilterer) WatchAgentModelIdUpdate(opts *bind.WatchOpts, sink chan<- *AI721ContractAgentModelIdUpdate, agentId []*big.Int) (event.Subscription, error) {
-
-	var agentIdRule []interface{}
-	for _, agentIdItem := range agentId {
-		agentIdRule = append(agentIdRule, agentIdItem)
-	}
-
-	logs, sub, err := _AI721Contract.contract.WatchLogs(opts, "AgentModelIdUpdate", agentIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AI721ContractAgentModelIdUpdate)
-				if err := _AI721Contract.contract.UnpackLog(event, "AgentModelIdUpdate", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseAgentModelIdUpdate is a log parse operation binding the contract event 0xe8662b9bac978d6b361a9cc824ecf5a8ea4cfb61ccbdd24dec6237ee9b7d7fa7.
-//
-// Solidity: event AgentModelIdUpdate(uint256 indexed agentId, uint256 oldModelId, uint256 newModelId)
-func (_AI721Contract *AI721ContractFilterer) ParseAgentModelIdUpdate(log types.Log) (*AI721ContractAgentModelIdUpdate, error) {
-	event := new(AI721ContractAgentModelIdUpdate)
-	if err := _AI721Contract.contract.UnpackLog(event, "AgentModelIdUpdate", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// AI721ContractAgentPromptSchedulerdUpdateIterator is returned from FilterAgentPromptSchedulerdUpdate and is used to iterate over the raw logs and unpacked data for AgentPromptSchedulerdUpdate events raised by the AI721Contract contract.
-type AI721ContractAgentPromptSchedulerdUpdateIterator struct {
-	Event *AI721ContractAgentPromptSchedulerdUpdate // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AI721ContractAgentPromptSchedulerdUpdateIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AI721ContractAgentPromptSchedulerdUpdate)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AI721ContractAgentPromptSchedulerdUpdate)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AI721ContractAgentPromptSchedulerdUpdateIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AI721ContractAgentPromptSchedulerdUpdateIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AI721ContractAgentPromptSchedulerdUpdate represents a AgentPromptSchedulerdUpdate event raised by the AI721Contract contract.
-type AI721ContractAgentPromptSchedulerdUpdate struct {
-	AgentId               *big.Int
-	OldPromptScheduler    common.Address
-	NewOldPromptScheduler common.Address
-	Raw                   types.Log // Blockchain specific contextual infos
-}
-
-// FilterAgentPromptSchedulerdUpdate is a free log retrieval operation binding the contract event 0x668af5d324df41df4dbf51978e1caa591bcf48468550da656523572a47d9abbd.
-//
-// Solidity: event AgentPromptSchedulerdUpdate(uint256 indexed agentId, address oldPromptScheduler, address newOldPromptScheduler)
-func (_AI721Contract *AI721ContractFilterer) FilterAgentPromptSchedulerdUpdate(opts *bind.FilterOpts, agentId []*big.Int) (*AI721ContractAgentPromptSchedulerdUpdateIterator, error) {
-
-	var agentIdRule []interface{}
-	for _, agentIdItem := range agentId {
-		agentIdRule = append(agentIdRule, agentIdItem)
-	}
-
-	logs, sub, err := _AI721Contract.contract.FilterLogs(opts, "AgentPromptSchedulerdUpdate", agentIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return &AI721ContractAgentPromptSchedulerdUpdateIterator{contract: _AI721Contract.contract, event: "AgentPromptSchedulerdUpdate", logs: logs, sub: sub}, nil
-}
-
-// WatchAgentPromptSchedulerdUpdate is a free log subscription operation binding the contract event 0x668af5d324df41df4dbf51978e1caa591bcf48468550da656523572a47d9abbd.
-//
-// Solidity: event AgentPromptSchedulerdUpdate(uint256 indexed agentId, address oldPromptScheduler, address newOldPromptScheduler)
-func (_AI721Contract *AI721ContractFilterer) WatchAgentPromptSchedulerdUpdate(opts *bind.WatchOpts, sink chan<- *AI721ContractAgentPromptSchedulerdUpdate, agentId []*big.Int) (event.Subscription, error) {
-
-	var agentIdRule []interface{}
-	for _, agentIdItem := range agentId {
-		agentIdRule = append(agentIdRule, agentIdItem)
-	}
-
-	logs, sub, err := _AI721Contract.contract.WatchLogs(opts, "AgentPromptSchedulerdUpdate", agentIdRule)
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AI721ContractAgentPromptSchedulerdUpdate)
-				if err := _AI721Contract.contract.UnpackLog(event, "AgentPromptSchedulerdUpdate", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseAgentPromptSchedulerdUpdate is a log parse operation binding the contract event 0x668af5d324df41df4dbf51978e1caa591bcf48468550da656523572a47d9abbd.
-//
-// Solidity: event AgentPromptSchedulerdUpdate(uint256 indexed agentId, address oldPromptScheduler, address newOldPromptScheduler)
-func (_AI721Contract *AI721ContractFilterer) ParseAgentPromptSchedulerdUpdate(log types.Log) (*AI721ContractAgentPromptSchedulerdUpdate, error) {
-	event := new(AI721ContractAgentPromptSchedulerdUpdate)
-	if err := _AI721Contract.contract.UnpackLog(event, "AgentPromptSchedulerdUpdate", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
 // AI721ContractAgentURIUpdateIterator is returned from FilterAgentURIUpdate and is used to iterate over the raw logs and unpacked data for AgentURIUpdate events raised by the AI721Contract contract.
 type AI721ContractAgentURIUpdateIterator struct {
 	Event *AI721ContractAgentURIUpdate // Event containing the contract specifics and raw log
@@ -3172,6 +3111,284 @@ func (_AI721Contract *AI721ContractFilterer) ParseBatchMetadataUpdate(log types.
 	return event, nil
 }
 
+// AI721ContractEIP712DomainChangedIterator is returned from FilterEIP712DomainChanged and is used to iterate over the raw logs and unpacked data for EIP712DomainChanged events raised by the AI721Contract contract.
+type AI721ContractEIP712DomainChangedIterator struct {
+	Event *AI721ContractEIP712DomainChanged // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AI721ContractEIP712DomainChangedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AI721ContractEIP712DomainChanged)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AI721ContractEIP712DomainChanged)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AI721ContractEIP712DomainChangedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AI721ContractEIP712DomainChangedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AI721ContractEIP712DomainChanged represents a EIP712DomainChanged event raised by the AI721Contract contract.
+type AI721ContractEIP712DomainChanged struct {
+	Raw types.Log // Blockchain specific contextual infos
+}
+
+// FilterEIP712DomainChanged is a free log retrieval operation binding the contract event 0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31.
+//
+// Solidity: event EIP712DomainChanged()
+func (_AI721Contract *AI721ContractFilterer) FilterEIP712DomainChanged(opts *bind.FilterOpts) (*AI721ContractEIP712DomainChangedIterator, error) {
+
+	logs, sub, err := _AI721Contract.contract.FilterLogs(opts, "EIP712DomainChanged")
+	if err != nil {
+		return nil, err
+	}
+	return &AI721ContractEIP712DomainChangedIterator{contract: _AI721Contract.contract, event: "EIP712DomainChanged", logs: logs, sub: sub}, nil
+}
+
+// WatchEIP712DomainChanged is a free log subscription operation binding the contract event 0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31.
+//
+// Solidity: event EIP712DomainChanged()
+func (_AI721Contract *AI721ContractFilterer) WatchEIP712DomainChanged(opts *bind.WatchOpts, sink chan<- *AI721ContractEIP712DomainChanged) (event.Subscription, error) {
+
+	logs, sub, err := _AI721Contract.contract.WatchLogs(opts, "EIP712DomainChanged")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AI721ContractEIP712DomainChanged)
+				if err := _AI721Contract.contract.UnpackLog(event, "EIP712DomainChanged", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseEIP712DomainChanged is a log parse operation binding the contract event 0x0a6387c9ea3628b88a633bb4f3b151770f70085117a15f9bf3787cda53f13d31.
+//
+// Solidity: event EIP712DomainChanged()
+func (_AI721Contract *AI721ContractFilterer) ParseEIP712DomainChanged(log types.Log) (*AI721ContractEIP712DomainChanged, error) {
+	event := new(AI721ContractEIP712DomainChanged)
+	if err := _AI721Contract.contract.UnpackLog(event, "EIP712DomainChanged", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AI721ContractFeesClaimedIterator is returned from FilterFeesClaimed and is used to iterate over the raw logs and unpacked data for FeesClaimed events raised by the AI721Contract contract.
+type AI721ContractFeesClaimedIterator struct {
+	Event *AI721ContractFeesClaimed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AI721ContractFeesClaimedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AI721ContractFeesClaimed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AI721ContractFeesClaimed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AI721ContractFeesClaimedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AI721ContractFeesClaimedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AI721ContractFeesClaimed represents a FeesClaimed event raised by the AI721Contract contract.
+type AI721ContractFeesClaimed struct {
+	Claimer common.Address
+	Amount  *big.Int
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterFeesClaimed is a free log retrieval operation binding the contract event 0x9493e5bbe4e8e0ac67284469a2d677403d0378a85a59e341d3abc433d0d9a209.
+//
+// Solidity: event FeesClaimed(address indexed claimer, uint256 amount)
+func (_AI721Contract *AI721ContractFilterer) FilterFeesClaimed(opts *bind.FilterOpts, claimer []common.Address) (*AI721ContractFeesClaimedIterator, error) {
+
+	var claimerRule []interface{}
+	for _, claimerItem := range claimer {
+		claimerRule = append(claimerRule, claimerItem)
+	}
+
+	logs, sub, err := _AI721Contract.contract.FilterLogs(opts, "FeesClaimed", claimerRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AI721ContractFeesClaimedIterator{contract: _AI721Contract.contract, event: "FeesClaimed", logs: logs, sub: sub}, nil
+}
+
+// WatchFeesClaimed is a free log subscription operation binding the contract event 0x9493e5bbe4e8e0ac67284469a2d677403d0378a85a59e341d3abc433d0d9a209.
+//
+// Solidity: event FeesClaimed(address indexed claimer, uint256 amount)
+func (_AI721Contract *AI721ContractFilterer) WatchFeesClaimed(opts *bind.WatchOpts, sink chan<- *AI721ContractFeesClaimed, claimer []common.Address) (event.Subscription, error) {
+
+	var claimerRule []interface{}
+	for _, claimerItem := range claimer {
+		claimerRule = append(claimerRule, claimerItem)
+	}
+
+	logs, sub, err := _AI721Contract.contract.WatchLogs(opts, "FeesClaimed", claimerRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AI721ContractFeesClaimed)
+				if err := _AI721Contract.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseFeesClaimed is a log parse operation binding the contract event 0x9493e5bbe4e8e0ac67284469a2d677403d0378a85a59e341d3abc433d0d9a209.
+//
+// Solidity: event FeesClaimed(address indexed claimer, uint256 amount)
+func (_AI721Contract *AI721ContractFilterer) ParseFeesClaimed(log types.Log) (*AI721ContractFeesClaimed, error) {
+	event := new(AI721ContractFeesClaimed)
+	if err := _AI721Contract.contract.UnpackLog(event, "FeesClaimed", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // AI721ContractInferencePerformedIterator is returned from FilterInferencePerformed and is used to iterate over the raw logs and unpacked data for InferencePerformed events raised by the AI721Contract contract.
 type AI721ContractInferencePerformedIterator struct {
 	Event *AI721ContractInferencePerformed // Event containing the contract specifics and raw log
@@ -3457,6 +3674,294 @@ func (_AI721Contract *AI721ContractFilterer) WatchInitialized(opts *bind.WatchOp
 func (_AI721Contract *AI721ContractFilterer) ParseInitialized(log types.Log) (*AI721ContractInitialized, error) {
 	event := new(AI721ContractInitialized)
 	if err := _AI721Contract.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AI721ContractManagerAuthorizationIterator is returned from FilterManagerAuthorization and is used to iterate over the raw logs and unpacked data for ManagerAuthorization events raised by the AI721Contract contract.
+type AI721ContractManagerAuthorizationIterator struct {
+	Event *AI721ContractManagerAuthorization // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AI721ContractManagerAuthorizationIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AI721ContractManagerAuthorization)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AI721ContractManagerAuthorization)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AI721ContractManagerAuthorizationIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AI721ContractManagerAuthorizationIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AI721ContractManagerAuthorization represents a ManagerAuthorization event raised by the AI721Contract contract.
+type AI721ContractManagerAuthorization struct {
+	Account common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterManagerAuthorization is a free log retrieval operation binding the contract event 0x3fbc8e71624117c0dc0fcdbe40685681cecc7c3c43de81a686cda4b61c78e35b.
+//
+// Solidity: event ManagerAuthorization(address indexed account)
+func (_AI721Contract *AI721ContractFilterer) FilterManagerAuthorization(opts *bind.FilterOpts, account []common.Address) (*AI721ContractManagerAuthorizationIterator, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+
+	logs, sub, err := _AI721Contract.contract.FilterLogs(opts, "ManagerAuthorization", accountRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AI721ContractManagerAuthorizationIterator{contract: _AI721Contract.contract, event: "ManagerAuthorization", logs: logs, sub: sub}, nil
+}
+
+// WatchManagerAuthorization is a free log subscription operation binding the contract event 0x3fbc8e71624117c0dc0fcdbe40685681cecc7c3c43de81a686cda4b61c78e35b.
+//
+// Solidity: event ManagerAuthorization(address indexed account)
+func (_AI721Contract *AI721ContractFilterer) WatchManagerAuthorization(opts *bind.WatchOpts, sink chan<- *AI721ContractManagerAuthorization, account []common.Address) (event.Subscription, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+
+	logs, sub, err := _AI721Contract.contract.WatchLogs(opts, "ManagerAuthorization", accountRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AI721ContractManagerAuthorization)
+				if err := _AI721Contract.contract.UnpackLog(event, "ManagerAuthorization", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseManagerAuthorization is a log parse operation binding the contract event 0x3fbc8e71624117c0dc0fcdbe40685681cecc7c3c43de81a686cda4b61c78e35b.
+//
+// Solidity: event ManagerAuthorization(address indexed account)
+func (_AI721Contract *AI721ContractFilterer) ParseManagerAuthorization(log types.Log) (*AI721ContractManagerAuthorization, error) {
+	event := new(AI721ContractManagerAuthorization)
+	if err := _AI721Contract.contract.UnpackLog(event, "ManagerAuthorization", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// AI721ContractManagerDeauthorizationIterator is returned from FilterManagerDeauthorization and is used to iterate over the raw logs and unpacked data for ManagerDeauthorization events raised by the AI721Contract contract.
+type AI721ContractManagerDeauthorizationIterator struct {
+	Event *AI721ContractManagerDeauthorization // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *AI721ContractManagerDeauthorizationIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(AI721ContractManagerDeauthorization)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(AI721ContractManagerDeauthorization)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *AI721ContractManagerDeauthorizationIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *AI721ContractManagerDeauthorizationIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// AI721ContractManagerDeauthorization represents a ManagerDeauthorization event raised by the AI721Contract contract.
+type AI721ContractManagerDeauthorization struct {
+	Account common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterManagerDeauthorization is a free log retrieval operation binding the contract event 0x20c29af9eb3de2601188ceae57a4075ba3593ce15d4142aef070ac53d389356c.
+//
+// Solidity: event ManagerDeauthorization(address indexed account)
+func (_AI721Contract *AI721ContractFilterer) FilterManagerDeauthorization(opts *bind.FilterOpts, account []common.Address) (*AI721ContractManagerDeauthorizationIterator, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+
+	logs, sub, err := _AI721Contract.contract.FilterLogs(opts, "ManagerDeauthorization", accountRule)
+	if err != nil {
+		return nil, err
+	}
+	return &AI721ContractManagerDeauthorizationIterator{contract: _AI721Contract.contract, event: "ManagerDeauthorization", logs: logs, sub: sub}, nil
+}
+
+// WatchManagerDeauthorization is a free log subscription operation binding the contract event 0x20c29af9eb3de2601188ceae57a4075ba3593ce15d4142aef070ac53d389356c.
+//
+// Solidity: event ManagerDeauthorization(address indexed account)
+func (_AI721Contract *AI721ContractFilterer) WatchManagerDeauthorization(opts *bind.WatchOpts, sink chan<- *AI721ContractManagerDeauthorization, account []common.Address) (event.Subscription, error) {
+
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+
+	logs, sub, err := _AI721Contract.contract.WatchLogs(opts, "ManagerDeauthorization", accountRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(AI721ContractManagerDeauthorization)
+				if err := _AI721Contract.contract.UnpackLog(event, "ManagerDeauthorization", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseManagerDeauthorization is a log parse operation binding the contract event 0x20c29af9eb3de2601188ceae57a4075ba3593ce15d4142aef070ac53d389356c.
+//
+// Solidity: event ManagerDeauthorization(address indexed account)
+func (_AI721Contract *AI721ContractFilterer) ParseManagerDeauthorization(log types.Log) (*AI721ContractManagerDeauthorization, error) {
+	event := new(AI721ContractManagerDeauthorization)
+	if err := _AI721Contract.contract.UnpackLog(event, "ManagerDeauthorization", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
