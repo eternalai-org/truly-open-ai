@@ -65,15 +65,17 @@ wget https://github.com/ollama/ollama/releases/download/v0.5.7/Ollama-darwin.zip
 Double-click the downloaded file to install Ollama.
 
 Download model from ipfs
-In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 (bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
+In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 (`bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi`).
 But practically you can serve any models.
 
 For MacOS:
 ```bash
+cd decentralized-compute/models
 sudo bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
 For Ubuntu:
 ```bash
+cd decentralized-compute/models
 sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
 After finishing the model download, create Modelfile file with the following content.
