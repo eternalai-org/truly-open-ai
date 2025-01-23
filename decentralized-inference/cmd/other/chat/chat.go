@@ -13,6 +13,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/sashabaranov/go-openai"
 )
 
 func AgentTerminalChat(ctx context.Context, agentID string) error {
@@ -43,29 +45,15 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 			fmt.Println("Goodbye!")
 			break
 		}
-
-		response, err := getLLMResponse(userInput, chatConfig)
+		stopChan := make(chan bool)
+		go showLoading(stopChan)
+		response, err := getLLMResponseV2(userInput, chatConfig, stopChan)
 		if err != nil {
 			fmt.Println("Error getting response from server:", err)
 			continue
 		}
 
-		respBytes, _ := json.MarshalIndent(response, "", "  ")
-		fmt.Printf("Infer response: %s\n\n", string(respBytes))
-		// show loading by  / - \
-		stopChan := make(chan bool)
-		go showLoading(stopChan)
-		finish := false
-		for i := 0; i < 60; i++ {
-			finish = getResult(response.InferId, chatConfig, stopChan)
-			if finish {
-				break
-			}
-			time.Sleep(5 * time.Second)
-		}
-		if !finish {
-			fmt.Println("Timeout, please try again later.")
-		}
+		fmt.Printf("\nYour agent: %v\n\n", response.Choices[0].Message.Content)
 	}
 
 	return nil
@@ -128,11 +116,50 @@ func showLoading(stopChan chan bool) {
 			return
 		default:
 			// Display the current loading symbol
-			fmt.Printf("\rLoading %s", symbols[index])
+			fmt.Printf("\r%s", symbols[index])
 			index = (index + 1) % len(symbols) // Cycle through the symbols
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
+}
+
+func getLLMResponseV2(prompt string, chatConfig *config.ChatConfig, stopChain chan bool) (*openai.ChatCompletionResponse, error) {
+	defer func() {
+		stopChain <- true
+	}()
+	request := models.DecentralizeInferRequest{
+		ChainInfo: models.ChainInfoRequest{
+			Rpc: chatConfig.Rpc,
+		},
+		AgentContractAddress: chatConfig.Contracts.SystemPromptManagerAddress,
+		WorkerHubAddress:     chatConfig.Contracts.WorkerHubAddress,
+		InferPriKey:          chatConfig.PrivateKey,
+		Input:                prompt,
+		AgentId:              chatConfig.AgentID,
+		Model:                chatConfig.ModelName,
+	}
+
+	uri := "infer/create"
+	fullUrl := fmt.Sprintf("%v/%v", chatConfig.ServerBaseUrl, uri)
+
+	input, _ := json.Marshal(request)
+	respBytes, statusCode, err := http_client.RequestHttp(fullUrl, "POST", nil, bytes.NewBuffer(input), 5)
+	if err != nil {
+		return nil, err
+	}
+	if statusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code %v != 200", statusCode)
+	}
+
+	var response struct {
+		Data openai.ChatCompletionResponse `json:"data"`
+	}
+	err = json.Unmarshal(respBytes, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response.Data, nil
 }
 
 func getLLMResponse(prompt string, chatConfig *config.ChatConfig) (*models.DecentralizeInferResponse, error) {
@@ -145,6 +172,7 @@ func getLLMResponse(prompt string, chatConfig *config.ChatConfig) (*models.Decen
 		InferPriKey:          chatConfig.PrivateKey,
 		Input:                prompt,
 		AgentId:              chatConfig.AgentID,
+		Model:                chatConfig.ModelName,
 	}
 
 	uri := "infer/create"

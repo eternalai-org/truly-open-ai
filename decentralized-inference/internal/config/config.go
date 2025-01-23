@@ -66,6 +66,9 @@ func (c ChatConfig) VerifyBeforeChat() error {
 	if c.AgentID == "" {
 		return fmt.Errorf("Agent ID is empty")
 	}
+	if c.ModelName == "" {
+		return fmt.Errorf("Model name is empty")
+	}
 
 	return nil
 }

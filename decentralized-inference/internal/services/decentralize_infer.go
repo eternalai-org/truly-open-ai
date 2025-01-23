@@ -1,20 +1,136 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"decentralized-inference/internal/abi"
 	"decentralized-inference/internal/client"
 	"decentralized-inference/internal/config"
+	"decentralized-inference/internal/libs/http_client"
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
+	"encoding/json"
 	"fmt"
 	"math/big"
+	"net/http"
 	"strings"
 
 	ethreumAbi "github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 )
+
+func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.DecentralizeInferRequest) (*openai.ChatCompletionResponse, error) {
+	agentId, ok := new(big.Int).SetString(info.AgentId, 10)
+	if !ok {
+		return nil, fmt.Errorf("agentId :%v is not valid", info.AgentId)
+	}
+
+	ethClient, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+		false,
+		"", "")
+	if err != nil {
+		return nil, fmt.Errorf("init ethClient err: %w", err)
+	}
+
+	agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
+	if err != nil {
+		return nil, err
+	}
+
+	systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, agentId)
+	if err != nil {
+		return nil, fmt.Errorf("get agent system prompt err: %w", err)
+	}
+	var systemPromptStr = "You are a helpful assistant."
+	if len(systemPromptContract) > 0 {
+		systemPromptStr = string(systemPromptContract[0])
+	}
+	if systemPromptStr == "" {
+		systemPromptStr = "You are a helpful assistant."
+	}
+
+	chatRequest := &openai.ChatCompletionRequest{
+		Model: info.Model,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleSystem,
+				Content: systemPromptStr,
+			},
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: info.Input,
+			},
+		},
+	}
+
+	fullUrl := "http://localhost:8004/api/chat/completions"
+	input, _ := json.Marshal(chatRequest)
+	chatCompletionResp, statusCode, err := http_client.RequestHttp(fullUrl, http.MethodPost, map[string]string{}, bytes.NewBuffer(input), 10)
+	if err != nil {
+		return nil, err
+	}
+	if statusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code %v != 200", statusCode)
+	}
+	var response struct {
+		Data openai.ChatCompletionResponse `json:"data"`
+	}
+	if err := json.Unmarshal(chatCompletionResp, &response); err != nil {
+		return nil, err
+	}
+	return &response.Data, nil
+	//var submitData = info.Input
+	//
+	//if s.conf.SubmitFilePath {
+	//	fileName, err := s.WriteInput(strings.ToLower((*pbkHex).Hex()), []byte(info.Input))
+	//	if err != nil {
+	//		return nil, fmt.Errorf("write input file err: %w", err)
+	//	}
+	//	submitData = fmt.Sprintf("%v%v", config.FilePrefix, fileName)
+	//}
+	//
+	////Infer(opts *bind.TransactOpts, agentId *big.Int, fwdCalldata []byte, externalData string, promptKey string, feeAmount *big.Int)
+	//dataBytes, err := agentContractABI.Pack(
+	//	"infer", agentId,
+	//	[]byte(submitData),
+	//	info.ExternalData,
+	//	"ai721",
+	//	agentFee,
+	//)
+	//
+	//if err != nil {
+	//	logger.GetLoggerInstanceFromContext(ctx).Error("[SubmitInferTaskWorkerHubV1] error when pack data", zap.Error(err))
+	//	return nil, err
+	//}
+	//
+	//tx, err := ethClient.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.AgentContractAddress), big.NewInt(0), dataBytes)
+	//if err != nil {
+	//	return nil, fmt.Errorf("send transaction with err %v", err)
+	//}
+	//
+	//logs := tx.Receipt.Logs
+	//var inferId *big.Int
+	//for _, item := range logs {
+	//	inferData, err := workerHubContract.ParseNewInference(*item)
+	//	if err == nil {
+	//		inferId = inferData.InferenceId
+	//		break
+	//	}
+	//}
+	//
+	//if inferId == nil || inferId.Cmp(big.NewInt(0)) == 0 {
+	//	return nil, fmt.Errorf("inferId is zero , tx: %v ", tx.TxHash.Hex())
+	//}
+	//inferIdResp := inferId.Uint64()
+	//
+	//return &models.DecentralizeInferResponse{
+	//	TxHash:    tx.TxHash.Hex(),
+	//	InferId:   inferIdResp,
+	//	ChainInfo: info.ChainInfo,
+	//}, nil
+}
 
 func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.DecentralizeInferRequest) (*models.DecentralizeInferResponse, error) {
 	agentId, ok := new(big.Int).SetString(info.AgentId, 10)

@@ -21,7 +21,7 @@ func (rt *Server) CreateDecentralizeInfer(c *gin.Context) {
 				return nil, rest.NewHttpErr(err, http.StatusBadRequest)
 			}
 
-			resp, err := rt.Service.CreateDecentralizeInfer(c.Request.Context(), request)
+			resp, err := rt.Service.CreateDecentralizeInferV2(c.Request.Context(), request)
 			if err != nil {
 				logger.GetLoggerInstanceFromContext(c.Request.Context()).Error("CreateDecentralizeInfer error", zap.Error(err))
 				return nil, rest.NewHttpErr(err, http.StatusInternalServerError)
