@@ -178,7 +178,7 @@ Thank you for considering contributing to the source code. We welcome contributi
 
 If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
 
-## Feature Integrations
+## Featured Integrations
 
 Eternal AI is built using a modular approach, so support for other blockchains, agent frameworks, GPU providers, or AI models can be implemented quickly. Please reach out if you run into issues while working on an integration.
 
@@ -188,7 +188,7 @@ Eternal AI is built using a modular approach, so support for other blockchains, 
 
 We are still building out the Eternal AI DAO.
 
-Once the DAO is in place, [EAI](https://eternalai.org/eai) holders will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
+Once the DAO is in place, [EAI holders](https://eternalai.org/eai) will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
 
 ## Communication
 
