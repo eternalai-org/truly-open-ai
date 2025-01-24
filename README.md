@@ -6,7 +6,7 @@ We live in the age of human-agent symbiosis, but the future of AI agents is cont
 
 Eternal AI was originally developed for [decentralized AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
-# Get started: deploy your own Decentralized OS for AI agents
+# Get started
 
 ## Prerequisites
 * [Node.js 22.12.0+ and npm 10.9.0+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
