@@ -151,7 +151,7 @@ eai agent list
 eai agent chat <agent_id>
 ```
 
-### 6.2. Set up Twitter for the agent
+### 6.2. Set up Twitter for the agent with the Eliza Engine
 
 Navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent` folder and run the following command to configure your twitter account.
 
@@ -171,7 +171,7 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
-## 🎁 10,000 EAI Raffle 🎁 
+## Step 7 (Optional): Enter the 10,000 EAI Raffle 🎁 
 
 Congrats! You made it! You've deployed a decentralized operating system for AI agents on your computer. 
 
@@ -179,10 +179,17 @@ We have a little gift for you: share your agent character file to be entered int
 
 It's simple. Create a pull request and add your agent character file to the folder `decentralized-agents/characters/` folder. Name the file in this format `<agent-name>-by-<your-name>.txt`.
 
+<br>
+<br>
 
 # Platform Architecture
 
+Eternal AI is an end-to-end decentralized infrastructure created for a wide array of AI agents and blockchains.
+
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
+
+<br>
+<br>
 
 Here are the major components of the Eternal AI software stack.
 
