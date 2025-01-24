@@ -9,7 +9,7 @@ BASH_EXEC=$(which bash)
 # Run the download_model with the bash executable and hash argument
 echo "Running the download_model..."
 cd ../worker-hub
-go build -o /build/download cmd/download_model/main.go
+go build -o build/download cmd/download_model/main.go
 cd ../models
 ../worker-hub/build/download -bash_exec="$BASH_EXEC" -hash "$1" -hf_dir=./
 
