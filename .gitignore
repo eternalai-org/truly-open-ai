@@ -1,3 +1,6 @@
+# Ignore model files
+decentralized-compute/models/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf
+
 # Ignore vim files
 [._]*.s[a-v][a-z]
 !*.svg  # comment out if you don't need vector files
