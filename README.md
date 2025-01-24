@@ -12,7 +12,7 @@ Eternal AI was originally developed for [decentralized AI agents on Bitcoin](htt
 * [Node.js 22.12.0+ and npm 10.9.0+](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 * [Docker Desktop 4.37.1+](https://docs.docker.com/desktop/setup/install/mac-install/)
 * [Go 1.23.0+](https://go.dev/doc/install)
-
+* [Ollama 0.5.7+](https://ollama.com/download)
 
 ## Step 1: Deploy an AI-powered blockchain on your local computer
 
@@ -37,38 +37,26 @@ Behind the scene
 - 5. Start APIs # A decentralized infer API server
 ```
 
-## Step 2: Setup Ollama for Miners
+## Step 2: Setup compute nodes (miners)
 
-To install ollama, you can download and install from official website (https://ollama.com/download), or use the following command.
+In this tutorial, we use DeepSeek-R1-Distill-Qwen-1.5B-Q8_0. However, you should be able to use any models.
 
-For Ubuntu with NVIDIA:
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-ollama --version
-```
+DeepSeek-R1 is stored on Filecoin, a decentralized storage network. Its hash is [`ipfs://bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi`](https://gateway.lighthouse.storage/ipfs/bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
 
-For macOS:
-```bash
-wget https://github.com/ollama/ollama/releases/download/v0.5.7/Ollama-darwin.zip
-```
-Double-click the downloaded file to install Ollama.
-
-Download model from ipfs:
-
-In this tutorial, we use model DeepSeek-R1-Distill-Qwen-1.5B-Q8_0 [`ipfs://bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi`](https://gateway.lighthouse.storage/ipfs/bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
-
-But you should be able to serve any open source models.
+The miner first fetches the model weights stored in multiple chunks on Filecoin and combines them into one complete model.
 
 For MacOS:
 ```bash
 cd decentralized-compute/models
 sudo bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
+
 For Ubuntu:
 ```bash
 cd decentralized-compute/models
 sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
+
 After finishing the model download, create Modelfile file with the following content.
 ```bash
 FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
@@ -105,21 +93,29 @@ Run the following command:
 ```bash
 eai aaas start
 ```
-## Step 4: Deploy your first Decentralized Agent with AI-721
 
-### Step 4.1. Deploy contract AI-721
+## Step 4: Deploy your Decentralized Inference API
+
+Run the following command:
+```bash
+eai apis start
+```
+
+## Step 5: Deploy your first Decentralized Agent with AI-721
+
+### Step 5.1. Deploy contract AI-721
 
 Run the following script to install dependencies and deploy AI-721 contract:
 ```bash
 eai aaas deploy-contract
 ```
 
-### Step 4.2. Mint an agent
+### Step 5.2. Mint an agent
 
 Run the following script to mint an agent:
 
 ```bash
-eai agent create ./system-prompts/naruto_fan.txt
+eai agent create $(pwd)/decentralized-agents/characters/donald_trump.txt
 ```
 
 **Note:** System prompts for your agent can be initialized by placing a file containing the prompt within the system-prompts directory. This file will be used to set the initial instructions and context for the agent's behavior. You can modify the content of the prompt file to match your desired system prompt.
@@ -134,15 +130,15 @@ Also, to list out all agents on your machine, run this:
 eai agent list
 ```
 
-## Step 5: Interact with the agent 
+## Step 6: Interact with the agent 
 
-### 5.1. Chat with the agent
+### 6.1. Chat with the agent
 
 ```bash
 eai agent chat <agent_id>
 ```
 
-### 5.2. Set up Twitter for the agent
+### 6.2. Set up Twitter for the agent
 
 Navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent` folder and run the following command to configure your twitter account.
 
