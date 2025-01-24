@@ -2,7 +2,7 @@
 
 **Eternal AI is a decentralized operating system for AI agents**. Its AI Kernel is a suite of Solidity smart contracts that together create a trustless onchain runtime for AI agents to live onchain.
 
-We live in the age of human-agent symbiosis, but the future of AI agents is controlled by a few centralized companies like OpenAI and Google. Our mission is to build a truly open AI environment for AI agents that is trustless, permissionless, and censorship-resistant.
+We live in the age of human-agent symbiosis, but the future of AI agents is controlled by a few centralized companies. Our mission is to build a truly open AI environment for AI agents that is trustless, permissionless, and censorship-resistant.
 
 Eternal AI was originally developed for [decentralized AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
@@ -14,7 +14,7 @@ Eternal AI was originally developed for [decentralized AI agents on Bitcoin](htt
 * [Go 1.23.0+](https://go.dev/doc/install)
 * [Ollama 0.5.7+](https://ollama.com/download)
 
-## Step 1: Deploy an AI-powered blockchain on your local computer
+## Step 1: Deploy a local AI-powered blockchain on your computer
 
 We provide a CLI `eai` to simplify the process.
 
@@ -28,22 +28,29 @@ Then, you can use the following command and follow its interactive instructions.
 eai miner setup
 ```
 
-Behind the scene
+Press `1` (Setup local cluster). Press `1` again for a full auto-install.
+
+<img width="1231" alt="image" src="https://github.com/user-attachments/assets/e997351a-ff00-4207-b969-7036c6c04497" />
+
+Suppose you want to custom-install, press `2`. This will give you the option to install specific packages.
+
 ```bash
 - 1. Create `./env/local_contracts.json` # create a default config file
-- 2. Start HardHat # Install a local chain
-- 3. Deploy contracts  # Deploy all smart contracts of decentralized AI
-- 4. Start miners # Setup 3 miners to join the network and start serving
-- 5. Start APIs # A decentralized infer API server
+- 2. Start HardHat as your local chain
+- 3. Deploy Eternal AI Kernel smart contracts
+- 4. Start Eternal AI Compute Nodes/Miners
+- 5. Start System APIs
 ```
 
-## Step 2: Setup compute nodes (miners)
+## Step 2: Deploy Decentralized Compute
 
-In this tutorial, we use DeepSeek-R1-Distill-Qwen-1.5B-Q8_0. However, you should be able to use any models.
+For this tutorial, we'll simplify the process by having the three local miners on the same compute node. In production, each miner should have their own compute.
+
+The miners serve DeepSeek-R1-Distill-Qwen-1.5B-Q8_0. However, you should be able to use any models.
 
 DeepSeek-R1 is stored on Filecoin, a decentralized storage network. Its hash is [`ipfs://bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi`](https://gateway.lighthouse.storage/ipfs/bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi).
 
-The miner first fetches the model weights stored in multiple chunks on Filecoin and combines them into one complete model.
+The miners first fetch the model weights stored in multiple chunks on Filecoin and combine them into one complete model.
 
 For MacOS:
 ```bash
@@ -57,37 +64,37 @@ cd decentralized-compute/models
 sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 ```
 
-After finishing the model download, create Modelfile file with the following content.
-```bash
-FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
-```
 Create and start an Ollama instance.
 ```bash
 ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
-ollama run DeepSeek-R1-Distill-Qwen-1.5B-Q8
 ```
-You can test with interactive UI or just quit (Ctrl D).
 
-You can try the following quick test to make sure your Ollama is ready for miners.
+You can try the following quick test to ensure your miner is ready. This will send an onchain prompt to your local blockchain and see if the miners respond.
 
 ```bash
-curl -X POST "http://localhost:11434/v1/chat/completions" -H "Content-Type: application/json"  -d '{
+curl -X POST "http://localhost:8004/v1/chat/completions" -H "Content-Type: application/json"  -d '{
     "model": "DeepSeek-R1-Distill-Qwen-1.5B-Q8",
     "messages": [
         {
             "role": "system",
-            "content": "You are a helpful assistant."
+            "content": "You are a deep thinker."
         },
         {
             "role": "user",
-            "content": "Hello"
+            "content": "Design a DeFAI agent that trades autonomously on Uniswap."
         }
   ]
 }'
 ```
 
+Note that the model info is stored in the `Modelfile` file. In the future, if you want to change the model, update the file.
+```bash
+FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
+```
 
 ## Step 3: Deploy your production-grade Agent as a Service infrastructure
+
+In this step, we'll deploy a production-grade agent orchestration platform in one single line of code. It provides powerful tools for you to deploy, manage, and scale your agents onchain.
 
 Run the following command:
 ```bash
@@ -95,6 +102,8 @@ eai aaas start
 ```
 
 ## Step 4: Deploy your Decentralized Inference API
+
+In this step, we'll deploy Eternal AI Decentralized Inference API that can be used instead of centralized OpenAI API. There are a lot of things to like about Decentralized Inference API. It's permissionless, trustless, censorship-resistant, tamper-proof, and onchain verifiable.
 
 Run the following command:
 ```bash
@@ -105,12 +114,16 @@ eai apis start
 
 ### Step 5.1. Deploy contract AI-721
 
-Run the following script to install dependencies and deploy AI-721 contract:
+Eternal AI treats each agent as a non-fungible. [AI-721](https://github.com/eternalai-org/eternal-ai/blob/master/decentralized-agents/contracts/standards/AI721.sol) inherits ERC-721 and adds AI features.
+
+Run the following script to install dependencies and deploy the AI-721 contract:
 ```bash
 eai aaas deploy-contract
 ```
 
 ### Step 5.2. Mint an agent
+
+Let's create an agent who is a Donald Trump twin.
 
 Run the following script to mint an agent:
 
@@ -118,9 +131,9 @@ Run the following script to mint an agent:
 eai agent create $(pwd)/decentralized-agents/characters/donald_trump.txt
 ```
 
-**Note:** System prompts for your agent can be initialized by placing a file containing the prompt within the system-prompts directory. This file will be used to set the initial instructions and context for the agent's behavior. You can modify the content of the prompt file to match your desired system prompt.
+The .txt file is the system prompt for your agent. It will be used to set the initial behavior for your agent. You can modify the content of the prompt file to adjust your agent's personality.
 
-Fetch agent info from AI721 contract:
+Fetch agent info from the AI-721 contract:
 ```
 eai agent info <agent_id>
 ```
@@ -158,18 +171,13 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
-### Final step (I promise): Share Your Agents, Earn EAI, and Flex Your Skills
+## 🎁 10,000 EAI Raffle 🎁 
 
-You made it! Your mini version of EAI is up and running on your monster rig—mad respect.
+Congrats! You made it! You've deployed a decentralized operating system for AI agents on your computer. 
 
-If your agents are crushing it and you’re cool with sharing them with the rest of us, toss up a pull request. Show off your work, help the community level up, and let’s keep this decentralized AI thing rolling.
+We have a little gift for you: share your agent character file to be entered into a 10,000 EAI raffle.
 
-1. Create a pull request
-   - Commit a file named agent-name.txt (replace agent-name with your agent’s actual name).
-   - Add this file to the folder `decentralized-agents/characters`.
-2. Submit the pull request and lock in your place as part of the community shaping decentralized AI.
-
-Oh, and here’s the kicker: we’ve got EAI 10,000 raffles lined up for our MVP contributors. Get your agents in, flex your engineering skills, and maybe grab some EAI while you’re at it. Let’s build something epic together!
+It's simple. Create a pull request and add your agent character file to the folder `decentralized-agents/characters/` folder. Name the file in this format `<agent-name>-by-<your-name>.txt`.
 
 
 # Platform Architecture
@@ -206,13 +214,6 @@ Here are the key ongoing research projects.
 6. **Prompting as the unified agent interface**. All agents have a unified, simplified I/O interface with prompting and response for both human-to-agent interactions and agent-to-agent interactions.
 7. **Composable**. Agents can work together to perform complex tasks via a chain of prompts.
 
-
-# Contribute to Eternal AI
-
-Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
-
-If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
-
 # Featured Integrations
 
 Eternal AI is built using a modular approach, so support for other blockchains, agent frameworks, GPU providers, or AI models can be implemented quickly. Please reach out if you run into issues while working on an integration.
@@ -224,6 +225,12 @@ Eternal AI is built using a modular approach, so support for other blockchains, 
 We are still building out the Eternal AI DAO.
 
 Once the DAO is in place, [EAI holders](https://eternalai.org/eai) will oversee the governance and the treasury of the Eternal AI project with a clear mission: to build truly open AI. 
+
+# Contribute to Eternal AI
+
+Thank you for considering contributing to the source code. We welcome contributions from anyone and are grateful for even the most minor fixes.
+
+If you'd like to contribute to Eternal AI, please fork, fix, commit, and send a pull request for the maintainers to review and merge into the main code base.
 
 # Communication
 
