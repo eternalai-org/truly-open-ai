@@ -8,7 +8,9 @@ BASH_EXEC=$(which bash)
 
 # Run the download_model with the bash executable and hash argument
 echo "Running the download_model..."
-go build -o ../worker-hub/build/download ../worker-hub/cmd/download_model/main.go
+cd ../worker-hub
+go build -o /build/download cmd/download_model/main.go
+cd ../models
 ../worker-hub/build/download -bash_exec="$BASH_EXEC" -hash "$1" -hf_dir=./
 
 # Clean up cache files
