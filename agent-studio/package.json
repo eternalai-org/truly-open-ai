@@ -1,0 +1,39 @@
+{
+  "name": "agent-studio",
+  "version": "1.0.0",
+  "main": "index.js",
+  "engines": {
+    "node": ">=23.3.0"
+  },
+  "scripts": {
+    "build": "lerna run build --stream",
+    "clean": "lerna clean && rimraf node_modules plugins/**/node_modules plugins/**/dist",
+    "start": "lerna run start --stream",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "../../agent-as-a-service/plugins/*"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^9.17.0",
+    "eslint-config-react": "^1.1.7",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "inquirer": "^12.2.0",
+    "lerna": "^8.1.9",
+    "rimraf": "^5.0.10",
+    "typescript-eslint": "^8.18.1"
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+}

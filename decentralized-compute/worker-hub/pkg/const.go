@@ -54,9 +54,9 @@ const (
 )
 
 const (
-	COMMAND_SETUP           = "s"
-	COMMAND_SETUP_AUTOMATIC = "a"
-	COMMAND_SETUP_MANUAL    = "m"
+	COMMAND_SETUP           = "1"
+	COMMAND_SETUP_AUTOMATIC = "1"
+	COMMAND_SETUP_MANUAL    = "2"
 
 	COMMAND_EXIT   = "q"
 	COMMAND_BACK   = "q"
@@ -71,7 +71,7 @@ const (
 	COMMAND_CREATE_GROUP_CLUSTER_IDS = "cluster-ids"
 
 	PLATFORM                      = "PLATFORM"
-	COMMAND_INFER                 = "i"
+	COMMAND_INFER                 = "2"
 	COMMAND_INFER_PROMPT          = "prompt"
 	COMMAND_LOCAL_SET_WEAI        = "set-weai"
 	COMMAND_LOCAL_PRIV_KEY        = "private key"
@@ -101,7 +101,7 @@ const (
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_PROMPT_SCHEULER_V1  = "workerHubAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_GPU_MANAGER_V1      = "stakingHubAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1           = "hybridModelAddress"
-
+	API_URL                                                  = "http://localhost:8004/v1/chat/completions"
 	//staking
 	MIN_STAKE          = 25000
 	BLOCK_PER_EPOCH    = 600

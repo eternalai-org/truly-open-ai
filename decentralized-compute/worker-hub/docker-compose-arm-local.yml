@@ -44,7 +44,7 @@ services:
     image:  service_api_base
     build:
       context: .
-      dockerfile: Dockerfile.Arm
+      dockerfile: Dockerfile-api.Arm
     ports:
       - "8000:8000"
     tty: true

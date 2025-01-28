@@ -76,7 +76,7 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   paths: {
-    sources: "./smart-contracts",
+    sources: "./contracts",
     tests: "./tests",
     cache: "./cache",
     artifacts: "./artifacts",

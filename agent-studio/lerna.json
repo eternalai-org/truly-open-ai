@@ -1,0 +1,5 @@
+{
+  "packages": ["packages/*",  "../../agent-as-a-service/plugins/*"],
+  "npmClient": "yarn",
+  "version": "independent"
+}

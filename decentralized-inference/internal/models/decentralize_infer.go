@@ -12,6 +12,7 @@ type DecentralizeInferRequest struct {
 	ExternalData         string           `json:"external_data"`
 	Input                string           `json:"input"`
 	AgentId              string           `json:"agent_id"`
+	Model                string           `json:"model"`
 }
 
 type DecentralizeInferNoAgentRequest struct {

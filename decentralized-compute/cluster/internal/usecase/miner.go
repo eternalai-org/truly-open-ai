@@ -245,8 +245,8 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		return nil, err
 	}
 
-	infer.MaxToken = 512
-	infer.Temperature = 0.001
+	//infer.MaxToken = 512
+	//infer.Temperature = 0.001
 	oldModel := infer.Model
 	if t.common.GetConfig().ModelName == "" {
 		infer.Model = "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S"

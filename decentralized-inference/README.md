@@ -15,9 +15,9 @@ This folder contains the source code for the Decentralized Inference. It has a l
     make build_decentralize_server_linux
     ```
 3. Use
-   * Start Decentralized Inference Server & Components. File compose.yaml from root folder is used to start all the components.
+   * Start Decentralized Inference Server 
    ```bash
-    docker compose up -d
+     ./eai-chat server
     ```
    
    * Start Terminal UI Chat. Make sure you started ` docker compose up -d` and run `make build_decentralize_server_osx` OR `make build_decentralize_server_linux` before running this command.

@@ -10,8 +10,6 @@ from app.state import get_insertion_request_handler
 import shutil
 import os
 from functools import partial
-import schedule
-import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +43,6 @@ async def insert(request: InsertInputSchema, background_tasks: BackgroundTasks) 
 
 @router.post("/query", response_model=ResponseMessage)
 async def query(request: QueryInputSchema, background_tasks: BackgroundTasks) -> ResponseMessage:
-    # background_tasks.add_task(notify_action, request)
     return ResponseMessage(result=await run_query(request))
 
 @router.get("/sample", response_model=ResponseMessage)
