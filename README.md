@@ -207,7 +207,7 @@ Here are the key ongoing research projects.
 
 | Component | Description |
 |:--------------------------|--------------------------|
-| [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra libary. |
+| [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra library. |
 | [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs. |
 | [physical-ai](/research/physical-ai)| AI-powered hardware devices. |
 
