@@ -1,10 +1,10 @@
 # Eternal AI (EAI)
 
-The Eternal AI protocol is the decentralized AI layer of the new internet. It is designed to give any blockchain an AI superpower.
+The Eternal AI protocol is the decentralized AI layer of the new internet. It is designed to give AI superpowers to any blockchain.
 
-The protocol is implemented as a set of smart contracts that can be easily deployed on any blockchain to create a trustless, permissionless, and censorship-resistant onchain AI kernel.
+The Eternal AI protocol is implemented as a set of smart contracts that can be easily deployed on any blockchain to create an unstoppable onchain AI runtime. It is designed to deliver censorship resistance, permissionless, and verifiability. It uses peer-to-peer technology to operate without any trusted intermediaries or central authorities.
 
-Eternal AI was originally developed for [decentralized AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
+The Eternal AI protocol was originally developed for [decentralized AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
 Join us in building AI-powered blockchains.
 
