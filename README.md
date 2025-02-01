@@ -1,10 +1,12 @@
 # Eternal AI (EAI)
 
-**Eternal AI is a decentralized operating system for AI agents**. Its kernel is a suite of Solidity smart contracts that together create a trustless onchain runtime for AI agents to live onchain.
+The Eternal AI protocol is the decentralized AI layer of the new internet. It is designed to give any blockchain an AI superpower.
+
+The protocol is implemented as a set of smart contracts that can be easily deployed on any blockchain to create a trustless, permissionless, and censorship-resistant onchain AI kernel.
 
 Eternal AI was originally developed for [decentralized AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
 
-Join us in building a truly open AI environment for AI agents that is permissionless, censorship-resistant, and unstoppable.
+Join us in building AI-powered blockchains.
 
 # Get started
 
