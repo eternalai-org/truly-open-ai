@@ -190,6 +190,7 @@ func (s *Service) CreateDecentralizeInferV2(ctx context.Context, info *models.De
 }
 
 func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.DecentralizeInferRequest) (*models.DecentralizeInferResponse, error) {
+	fmt.Println(fmt.Sprintf("Client is chatting with agent: %v, contractAddress: %v", info.AgentId, info.AgentContractAddress))
 	agentId, ok := new(big.Int).SetString(info.AgentId, 10)
 	if !ok {
 		return nil, fmt.Errorf("agentId :%v is not valid", info.AgentId)
@@ -198,7 +199,7 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 	if err != nil {
 		return nil, fmt.Errorf("get account info error: %v", err)
 	}
-	client, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+	c, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
 		false,
 		"", "")
 	if err != nil {
@@ -216,7 +217,7 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 		return nil, err
 	}
 
-	agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), client.ETHClient)
+	agentContract, err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), c.ETHClient)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +251,7 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 		return nil, err
 	}
 
-	tx, err := client.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.AgentContractAddress), big.NewInt(0), dataBytes)
+	tx, err := c.Transact(info.InferPriKey, *pbkHex, common.HexToAddress(info.AgentContractAddress), big.NewInt(0), dataBytes)
 	if err != nil {
 		return nil, fmt.Errorf("send transaction with err %v", err)
 	}
@@ -278,76 +279,82 @@ func (s *Service) CreateDecentralizeInfer(ctx context.Context, info *models.Dece
 }
 
 func (s *Service) GetDecentralizeInferResult(ctx context.Context, info *models.InferResultRequest) (*models.InferResultResponse, error) {
-	return nil, nil
 
-	//client, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
-	//	false,
-	//	"", "")
-	//if err != nil {
-	//	return nil, fmt.Errorf("init client err: %v", err)
-	//}
-	//chainId, err := client.Client.ChainID(ctx)
-	//
-	//if err != nil {
-	//	return nil, fmt.Errorf("init client err: %w", err)
-	//}
-	//
-	//workerHubContract, err := abi.NewWorkerhubContract(common.HexToAddress(info.WorkerHubAddress), client.ETHClient)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//inferInfo, err := workerHubContract.GetInferenceInfo(nil, info.InferId)
-	//if err != nil {
-	//	return nil, fmt.Errorf("get infer info err: %v", err)
-	//}
-	//
-	//status := models.InferResultStatusDone
-	//txSubmitSolution := ""
-	//output := []byte("")
-	//input, err := s.GetData(inferInfo.Input)
-	//if err != nil {
-	//	return nil, fmt.Errorf("get input err: %v", err)
-	//}
-	//if len(inferInfo.Output) == 0 {
-	//	currentBlock, err := client.Client.BlockNumber(ctx)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("get block err: %v", err)
-	//	}
-	//	if currentBlock == 0 {
-	//		return nil, fmt.Errorf("get block err: current block is 0")
-	//	}
-	//	if currentBlock > inferInfo.SubmitTimeout.Uint64() {
-	//		status = models.InferResultStatusTimeOut
-	//	} else {
-	//		status = models.InferResultStatusWaitingProcess
-	//	}
-	//} else {
-	//	inferResultInfo, err := s.GetModelWorkerProcessHistoryByFilter(ctx, bson.M{
-	//		"inference_id":   info.InferId,
-	//		"worker_address": strings.ToLower(inferInfo.ProcessedMiner.String()),
-	//		"chain_id":       chainId,
-	//	})
-	//	if err == nil && inferResultInfo != nil {
-	//		txSubmitSolution = inferResultInfo.TxHash
-	//	}
-	//	output, err = s.GetData(inferInfo.Output)
-	//	if err != nil {
-	//		return nil, fmt.Errorf("get data err: %v", err)
-	//	}
-	//}
-	//return &models.InferResultResponse{
-	//	ChainInfo:        info.ChainInfo,
-	//	WorkerHubAddress: info.WorkerHubAddress,
-	//	InferId:          info.InferId,
-	//	Input:            string(input),
-	//	Output:           string(output),
-	//	Creator:          inferInfo.Creator.String(),
-	//	ProcessedMiner:   inferInfo.ProcessedMiner.String(),
-	//	Status:           status,
-	//	SubmitTimeout:    inferInfo.SubmitTimeout.Uint64(),
-	//	TxSubmitSolution: txSubmitSolution,
-	//}, nil
+	c, err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+		false,
+		"", "")
+	if err != nil {
+		return nil, fmt.Errorf("init client err: %v", err)
+	}
+
+	workerHubContract, err := abi.NewWorkerhubContract(common.HexToAddress(info.WorkerHubAddress), c.ETHClient)
+	if err != nil {
+		return nil, err
+	}
+	inferId := new(big.Int).SetUint64(info.InferId)
+	inferInfo, err := workerHubContract.GetInferenceInfo(nil, inferId)
+	if err != nil {
+		return nil, fmt.Errorf("get infer info err: %v", err)
+	}
+	assignmentList := inferInfo.Assignments
+	var assignmentResult *abi.IWorkerHubAssignment
+	var assignmentAddresses []string
+	var assignmentIdResult *big.Int
+	for _, assignmentId := range assignmentList {
+		assignmentInfo, err := workerHubContract.GetAssignmentInfo(nil, assignmentId)
+		if err != nil {
+			return nil, fmt.Errorf("get assignmentId info err: %v", err)
+		}
+		if len(assignmentInfo.Output) > 0 && assignmentInfo.Role == uint8(models.AssignmentRoleMiner) {
+			assignmentResult = &assignmentInfo
+			assignmentIdResult = assignmentId
+		}
+		assignmentAddresses = append(assignmentAddresses, strings.ToLower(assignmentInfo.Worker.Hex()))
+	}
+	status := models.InferResultStatusDone
+
+	output := []byte("")
+	txSubmit := ""
+	if assignmentResult == nil {
+		currentBlock, err := c.Client.BlockNumber(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("get block err: %v", err)
+		}
+		if currentBlock == 0 {
+			return nil, fmt.Errorf("get block err: current block is 0")
+		}
+		if currentBlock > inferInfo.SubmitTimeout.Uint64() {
+			status = models.InferResultStatusTimeOut
+		} else {
+			status = models.InferResultStatusWaitingProcess
+		}
+	} else {
+		output = assignmentResult.Output
+		txSubmit, err = s.findEventSolutionSubmission(ctx, workerHubContract, c, assignmentIdResult)
+		if err != nil {
+			return nil, fmt.Errorf("find submit submission err: %v", err)
+		}
+	}
+	var response openai.CompletionResponse
+	err = json.Unmarshal(output, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal err: %v", err)
+	}
+	return &models.InferResultResponse{
+		CompletionResponse: response,
+		ChainInfo:          info.ChainInfo,
+		WorkerHubAddress:   info.WorkerHubAddress,
+		OnChainData: models.CompletionOnChainData{
+			InferID:             info.InferId,
+			AssignmentAddresses: assignmentAddresses,
+			InferTx:             "",
+			SubmitAddress:       strings.ToLower(inferInfo.ProcessedMiner.String()),
+			InputCid:            "",
+			OutputCid:           "",
+			SubmitTx:            txSubmit,
+		},
+		Status: status,
+	}, nil
 }
 
 func (s *Service) CreateDecentralizeInferNoAgent(ctx context.Context, info *models.DecentralizeInferNoAgentRequest) (*models.DecentralizeInferResponse, error) {

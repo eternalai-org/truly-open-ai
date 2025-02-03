@@ -9,6 +9,7 @@ import (
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
 	"fmt"
+	"math/big"
 	"os"
 	"strings"
 	"time"
@@ -273,4 +274,35 @@ func (s *Service) filterEventSolutionSubmission(ctx context.Context, whContract 
 
 	}
 	return nil
+}
+
+func (s *Service) findEventSolutionSubmission(ctx context.Context, whContract *abi.WorkerhubContract,
+	c *client.Client, assignmentId *big.Int) (string, error) {
+	currentBlock, err := c.ETHClient.BlockNumber(ctx)
+	if err != nil {
+		return "", err
+	}
+	endBlock := currentBlock
+	step := uint64(1000)
+
+	for endBlock > 0 {
+		startBlock := endBlock - step
+		if startBlock < 0 {
+			startBlock = 0
+		}
+		iter, err := whContract.FilterSolutionSubmission(&bind.FilterOpts{
+			Start:   startBlock,
+			End:     &endBlock,
+			Context: ctx,
+		}, nil, []*big.Int{assignmentId})
+		if err != nil {
+			return "", err
+		}
+		for iter.Next() {
+			return strings.ToLower(iter.Event.Raw.TxHash.Hex()), nil
+		}
+		endBlock = startBlock - 1
+
+	}
+	return "", fmt.Errorf("can not find solution submission")
 }

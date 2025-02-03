@@ -1,5 +1,7 @@
 package models
 
+import "github.com/sashabaranov/go-openai"
+
 type ChainInfoRequest struct {
 	Rpc    string `json:"rpc"`
 	ZkSync bool   `json:"zk_sync"`
@@ -42,15 +44,20 @@ var InferResultStatusWaitingProcess = InferResultStatus("waiting_process")
 var InferResultStatusTimeOut = InferResultStatus("timeout")
 
 type InferResultResponse struct {
-	ChainInfo        ChainInfoRequest  `json:"chain_info"`
-	WorkerHubAddress string            `json:"worker_hub_address"`
-	ModelId          uint32            `json:"model_id"`
-	InferId          uint64            `json:"infer_id"`
-	Input            string            `json:"input"`
-	Output           string            `json:"output"`
-	Status           InferResultStatus `json:"status"`
-	SubmitTimeout    uint64            `json:"submit_timeout"`
-	Creator          string            `json:"creator"`
-	ProcessedMiner   string            `json:"processed_miner"`
-	TxSubmitSolution string            `json:"tx_submit_solution"`
+	Status                    InferResultStatus `json:"status"`
+	openai.CompletionResponse `json:",inline"`
+	ChainInfo                 ChainInfoRequest      `json:"chain_info"`
+	WorkerHubAddress          string                `json:"worker_hub_address"`
+	OnChainData               CompletionOnChainData `json:"on_chain_data"`
+}
+
+type CompletionOnChainData struct {
+	InferID             uint64   `json:"infer_id"`
+	AssignmentAddresses []string `json:"pbft_committee"`
+	SubmitAddress       string   `json:"proposer"`
+	InferTx             string   `json:"infer_tx"`
+	SubmitTx            string   `json:"propose_tx"`
+	SeizeMinerTx        string   `json:"-"`
+	InputCid            string   `json:"input_cid"`
+	OutputCid           string   `json:"output_cid"`
 }

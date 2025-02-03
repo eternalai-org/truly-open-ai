@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+type AssignmentRoleType int
+
 const (
 	EAI_OldWH_ChainID       = "43338" // workerHub version 0 , other chain workerHub v1
 	BaseChainID             = "8453"
@@ -29,6 +31,9 @@ const (
 	FilePrefix              = "file://"
 	GasLimitDefault         = uint64(10000000)
 	BaseFeeWiggleMultiplier = 2
+
+	AssignmentRoleValidator AssignmentRoleType = 0
+	AssignmentRoleMiner     AssignmentRoleType = 1
 )
 
 var config *Config

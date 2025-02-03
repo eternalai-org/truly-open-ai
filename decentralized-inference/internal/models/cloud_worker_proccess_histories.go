@@ -81,7 +81,7 @@ type ModelWorkerProcessHistories struct {
 	WorkerHubType                WorkerHubType        `bson:"worker_hub_type" json:"worker_hub_type"`
 }
 
-type AssignmentRoleType int
+type AssignmentRoleType uint8
 
 const (
 	AssignmentRoleValidator AssignmentRoleType = 0
