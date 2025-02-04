@@ -1,5 +1,6 @@
 #!/bin/bash
 
+brew update
 # Install pgiz using the appropriate package manager
 yes | brew install pigz
 

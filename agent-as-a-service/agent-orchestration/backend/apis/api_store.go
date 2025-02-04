@@ -96,3 +96,56 @@ func (s *Server) GetMissionStoreHistory(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewMissionStoreHistoryRespArray(res), Count: &count})
 
 }
+
+func (s *Server) SaveAgentStore(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.AgentStoreReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err := s.nls.SaveAgentStore(ctx, &req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
+func (s *Server) GetListAgentStore(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	search := s.stringFromContextQuery(c, "user_address")
+	res, count, err := s.nls.GetListAgentStore(ctx, search, page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreRespArray(res), Count: &count})
+}
+
+func (s *Server) GetAgentStoreDetail(c *gin.Context) {
+	ctx := s.requestContext(c)
+	idStr := s.stringFromContextParam(c, "id")
+	id, _ := strconv.ParseUint(idStr, 10, 64)
+	res, err := s.nls.GetAgentStoreDetail(ctx, uint(id))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreResp(res)})
+}
+
+func (s *Server) AddMissionStore(c *gin.Context) {
+	ctx := s.requestContext(c)
+	idStr := s.stringFromContextParam(c, "id")
+	id, _ := strconv.ParseUint(idStr, 10, 64)
+	missionIDStr := s.stringFromContextParam(c, "mission_id")
+	missionID, _ := strconv.ParseUint(missionIDStr, 10, 64)
+	err := s.nls.AddMissionStore(ctx, uint(id), uint(missionID))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
