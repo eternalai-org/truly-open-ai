@@ -382,7 +382,8 @@ func (s *Server) GetDashBoardAgent(c *gin.Context) {
 	sortStr := s.agentSortListFromContext(c)
 	search := s.stringFromContextQuery(c, "search")
 	agentType := s.intFromContextQuery(c, "agent_type")
-	ms, count, err := s.nls.GetDashboardAgentInfos(ctx, chain, agentType, "", search, sortStr, page, limit)
+	model := s.stringFromContextQuery(c, "model")
+	ms, count, err := s.nls.GetDashboardAgentInfos(ctx, chain, agentType, "", search, model, sortStr, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -401,7 +402,7 @@ func (s *Server) GetDashBoardAgentDetail(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 		return
 	}
-	ms, _, err := s.nls.GetDashboardAgentInfos(ctx, chain, 0, tokenAddress, search, sortStr, page, limit)
+	ms, _, err := s.nls.GetDashboardAgentInfos(ctx, chain, 0, tokenAddress, search, "", sortStr, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

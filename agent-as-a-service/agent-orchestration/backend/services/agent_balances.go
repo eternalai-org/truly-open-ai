@@ -663,7 +663,7 @@ func (s *Service) PostTwitterAferCreateToken(ctx context.Context, agentInfoID ui
 	return nil
 }
 
-func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, agentType int, tokenAddress, search string, sortListStr []string, page, limit int) ([]*models.AgentInfo, uint, error) {
+func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, agentType int, tokenAddress, search, agentModel string, sortListStr []string, page, limit int) ([]*models.AgentInfo, uint, error) {
 	sortDefault := "ifnull(agent_infos.priority, 0) desc, meme_market_cap desc"
 	if len(sortListStr) > 0 {
 		sortDefault = strings.Join(sortListStr, ", ")
@@ -710,6 +710,11 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 	if agentType > 0 {
 		filters["agent_infos.agent_type = ?"] = []interface{}{agentType}
 	}
+
+	if agentModel != "" {
+		filters["agent_infos.agent_base_model = ?"] = []interface{}{agentModel}
+	}
+
 	if tokenAddress != "" {
 		filters["LOWER(agent_infos.token_address) = ? or agent_infos.agent_id = ? or agent_infos.id = ?"] = []interface{}{strings.ToLower(tokenAddress), tokenAddress, tokenAddress}
 	} else {
