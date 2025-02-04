@@ -474,6 +474,7 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	var err error
 	fmt.Println("Setup cluster")
 	input := c.buildInputData(reader, node)
+
 	//env := ``
 	err = c._startCreateConfigLogic(input)
 	if err != nil {
@@ -513,6 +514,58 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	c.handleStartOllama(reader, node)
 	fmt.Print(pkg.Line)
 	fmt.Println("Done!!!")
+	fmt.Print(pkg.Line)
+	//ALL done!!!
+}
+
+// setup automatically
+func (c *CMD) SetUpAutomaticallyOneStep() {
+	var err error
+	fmt.Println("Setup cluster one step")
+	// input := c.buildInputData(reader, node)
+	input := map[string]string{
+		pkg.PLATFORM: c.getArch(),
+	}
+
+	//env := ``
+	err = c._startCreateConfigLogic(input)
+	if err != nil {
+		fmt.Println(pkg.PrintText("Config err", err))
+		return
+	}
+
+	err = c.localChainCMD.StartHardHat()
+	if err != nil {
+		fmt.Println(pkg.PrintText("Hardhat start with err", err))
+		return
+	}
+
+	time.Sleep(2 * time.Second)
+	//deploy all needed contracts
+	//c.localChainCMD.ContractDeployment()
+
+	//1. Deploy all contracts
+	err = c._deployContractLogic()
+	if err != nil {
+		fmt.Println("_deployContractLogic error: ", err)
+		return
+	}
+
+	err = c._startMinerLogic()
+	if err != nil {
+		fmt.Println("_startMinerLogic error: ", err)
+		return
+	}
+
+	err = c._startAPILogic()
+	if err != nil {
+		fmt.Println("_startMinerLogic error: ", err)
+		return
+	}
+
+	c.handleStartOllama(nil, nil)
+	fmt.Print(pkg.Line)
+	fmt.Println("Set up cluster done!")
 	fmt.Print(pkg.Line)
 	//ALL done!!!
 }
