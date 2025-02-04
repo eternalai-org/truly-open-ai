@@ -268,9 +268,10 @@ func (s *Server) PreviewAgentSystemPromp(c *gin.Context) {
 func (s *Server) PreviewAgentSystemPrompV1(c *gin.Context) {
 	ctx := s.requestContext(c)
 	var req struct {
-		Messages string  `json:"messages"`
-		AgentID  *uint   `json:"agent_id"`
-		KbId     *string `json:"kb_id"`
+		Messages  string  `json:"messages"`
+		AgentID   *uint   `json:"agent_id"`
+		KbId      *string `json:"kb_id"`
+		ModelName *string `json:"model_name"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -278,7 +279,7 @@ func (s *Server) PreviewAgentSystemPrompV1(c *gin.Context) {
 		return
 	}
 
-	resp, err := s.nls.PreviewAgentSystemPrompV1(ctx, req.Messages, req.AgentID, req.KbId)
+	resp, err := s.nls.PreviewAgentSystemPrompV1(ctx, req.Messages, req.AgentID, req.KbId, req.ModelName)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
