@@ -173,6 +173,8 @@ func (s *Server) Routers() {
 
 		internalAPI := rootAPI.Group("/internal", s.internalApiMiddleware())
 		{
+			internalAPI.GET("/webtext", s.GetWebpageText)
+
 			twitterAPI := internalAPI.Group("/twitter")
 			{
 				twitterAPI.GET("/user/recent-info", s.GetTwitterDataForLaunchpad)

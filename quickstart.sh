@@ -13,25 +13,11 @@ cd decentralized-compute/models
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "Running on Linux"
     apt update && apt upgrade
-    if apt list --installed | grep -q pigz; then
-        apt-get install --reinstall pigz
-        echo "pigz is re-installed."
-    else
-        echo "pigz is not installed."
-    fi  
-
-    sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
+    bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Running on macOS"
-    brew update && brew upgrade
-    if brew list | grep -q pigz; then
-        brew reinstall pigz
-        echo "pigz is re-installed."
-    else
-        echo "pigz is not installed."
-    fi
-
+    brew update && brew upgrade && brew install pigz
     bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
 # elif [[ "$OSTYPE" == "cygwin" ]]; then
 #     echo "Running on Cygwin"

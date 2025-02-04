@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Install pgiz using the appropriate package manager
+# Install pigz using the appropriate package manager
 if command -v apt &> /dev/null; then
-    echo "Using apt to install pgiz..."
-    apt update && apt install -y pgiz
+    echo "Using apt to install pigz..."
+    apt update && apt install -y pigz
 elif command -v yum &> /dev/null; then
-    echo "Using yum to install pgiz..."
-    yum install -y pgiz
+    echo "Using yum to install pigz..."
+    yum install -y pigz
 else
     echo "No suitable package manager found."
     exit 1

@@ -828,6 +828,30 @@ func (s *Service) GetTokenInfoByContract(ctx context.Context, tokenAddress strin
 	return &coinInfo, nil
 }
 
+func (s *Service) GetWebpageText(ctx context.Context, url string) (string, error) {
+	var coinInfo string
+	err := s.RedisCached(
+		fmt.Sprintf("GetWebpageText_%s", url),
+		true,
+		1*time.Hour,
+		&coinInfo,
+		func() (interface{}, error) {
+			webContent := helpers.ContentHtmlByUrl(url)
+			if webContent == "" {
+				webContent = helpers.RodContentHtmlByUrl(url)
+			}
+			if webContent != "" {
+				coinInfo, _ = s.blockchainUtils.CleanHtml(webContent)
+			}
+			return coinInfo, nil
+		},
+	)
+	if err != nil {
+		return "", errs.NewError(err)
+	}
+	return coinInfo, nil
+}
+
 func (s *Service) JobUpdateTokenPriceInfo(ctx context.Context) error {
 	err := s.JobRunCheck(
 		ctx, "JobUpdateTokenPriceInfo",

@@ -427,6 +427,17 @@ func (s *Server) GetTokenInfoByContract(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: ms})
 }
 
+func (s *Server) GetWebpageText(c *gin.Context) {
+	ctx := s.requestContext(c)
+	webUrl := s.stringFromContextQuery(c, "url")
+	ms, err := s.nls.GetWebpageText(ctx, webUrl)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: ms})
+}
+
 func (s *Server) GetAgentMissionConfigs(c *gin.Context) {
 	ctx := s.requestContext(c)
 	chainID := s.chainFromContextQuery(c)
