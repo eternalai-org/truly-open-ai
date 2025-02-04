@@ -1093,7 +1093,7 @@ Respond in stringified JSON format with the following structure:
 }
 
 func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context,
-	messages string, agentId *uint, kbIdFromKnowledegeBase *string) (string, error) {
+	messages string, agentId *uint, kbIdFromKnowledegeBase *string, modelNameFromRequest *string) (string, error) {
 	var agentInfo *models.AgentInfo
 	baseModel := "NousResearch/Hermes-3-Llama-3.1-70B-FP8"
 	if agentId != nil {
@@ -1112,6 +1112,9 @@ func (s *Service) PreviewAgentSystemPrompV1(ctx context.Context,
 		if agentInfo != nil && agentInfo.AgentBaseModel != "" {
 			baseModel = agentInfo.AgentBaseModel
 		}
+	}
+	if modelNameFromRequest != nil && *modelNameFromRequest != "" {
+		baseModel = *modelNameFromRequest
 	}
 
 	{

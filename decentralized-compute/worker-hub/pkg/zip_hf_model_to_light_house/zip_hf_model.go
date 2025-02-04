@@ -14,14 +14,17 @@ import (
 	"time"
 )
 
-var ZipChunkSize = 200 //MB
-var BASH_EXEC = "/usr/bin/bash"
-var THREADS = runtime.NumCPU() - 1
+var (
+	ZipChunkSize = 200 //MB
+	BASH_EXEC    = "/usr/bin/bash"
+	THREADS      = runtime.NumCPU() - 1
+)
 
 type HFModelZipFile struct {
 	File string `json:"file"`
 	Hash string `json:"hash"`
 }
+
 type HFModelInLightHouse struct {
 	Model     string           `json:"model"`
 	NumOfFile int              `json:"num_of_file"`
@@ -33,57 +36,62 @@ func ExecuteCommand(fileCmd string) ([]byte, error) {
 	fileLog := fmt.Sprintf("/tmp/log_%v.txt", commandId)
 	execCmd := fmt.Sprintf("%v %v  2>&1 | /usr/bin/tee %v", BASH_EXEC, fileCmd, fileLog)
 	fileExec := fmt.Sprintf("/tmp/bash_%v.sh", commandId)
-	err := os.WriteFile(fileExec, []byte(execCmd), 0644)
-	if err != nil {
+
+	if err := os.WriteFile(fileExec, []byte(execCmd), 0644); err != nil {
 		return nil, err
 	}
+
 	command := exec.Command(BASH_EXEC, fileExec)
 	out, err := command.Output()
 	if err != nil {
 		return out, err
 	}
-	out, err = os.ReadFile(fileLog)
-	return out, err
+	return os.ReadFile(fileLog)
 }
 
 func getScriptZipFile(modelFolder string, hfDir string) (string, error) {
 	filePath := fmt.Sprintf("/tmp/hf-zip-model-%v.sh", modelFolder)
-	if _, err := os.Stat(filePath); err == nil {
-		err := os.Remove(filePath)
-		if err != nil {
-			return "", fmt.Errorf("error removing file:%v", err)
-		}
+	if err := removeFileIfExists(filePath); err != nil {
+		return "", err
 	}
+
 	file, err := os.Create(filePath)
 	if err != nil {
-		return "", fmt.Errorf("error creating file:%v", err)
+		return "", fmt.Errorf("error creating file: %v", err)
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(fmt.Sprintf("cd %v \n ", hfDir))
-	if err != nil {
-		return "", fmt.Errorf("error write file:%v", err)
+	commands := []string{
+		fmt.Sprintf("cd %v", hfDir),
+		fmt.Sprintf("sudo rm -Rf %v.zip.part-*", modelFolder),
+		fmt.Sprintf("sudo tar -cf - %v | sudo pigz --best -p %v | sudo split -b %vM - %v.zip.part-", modelFolder, THREADS, ZipChunkSize, modelFolder),
 	}
-	_, err = file.WriteString(fmt.Sprintf("sudo rm -Rf %v.zip.part-* \n ", modelFolder))
-	if err != nil {
-		return "", fmt.Errorf("error write file:%v", err)
+
+	for _, cmd := range commands {
+		if _, err := file.WriteString(cmd + " \n "); err != nil {
+			return "", fmt.Errorf("error writing to file: %v", err)
+		}
 	}
-	_, err = file.WriteString(fmt.Sprintf("sudo tar -cf - %v | sudo pigz --best -p %v | sudo split -b %vM - %v.zip.part-", modelFolder, THREADS, ZipChunkSize, modelFolder))
-	if err != nil {
-		return "", fmt.Errorf("error write file:%v", err)
-	}
+
 	return filePath, nil
+}
+
+func removeFileIfExists(filePath string) error {
+	if _, err := os.Stat(filePath); err == nil {
+		if err := os.Remove(filePath); err != nil {
+			return fmt.Errorf("error removing file: %v", err)
+		}
+	}
+	return nil
 }
 
 func getScriptUnZipFile(modelFolder string, hfDir string) (string, error) {
 	model := fmt.Sprintf("hf-unzip-model-%v.sh", modelFolder)
 	filePath := filepath.Join("/tmp", model)
-	if _, err := os.Stat(filePath); err == nil {
-		err := os.Remove(filePath)
-		if err != nil {
-			return "", fmt.Errorf("error removing file:%v", err)
-		}
+	if err := removeFileIfExists(filePath); err != nil {
+		return "", err
 	}
+
 	file, err := os.Create(filePath)
 	if err != nil {
 		return "", fmt.Errorf("error creating file:%v", err)
@@ -94,6 +102,7 @@ func getScriptUnZipFile(modelFolder string, hfDir string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error write file:%v", err)
 	}
+
 	_, err = file.WriteString(fmt.Sprintf("sudo cat %v.zip.part-* | sudo pigz -p %v -d | sudo tar -xf -", modelFolder, 2))
 	if err != nil {
 		return "", fmt.Errorf("error write file:%v", err)
@@ -103,33 +112,30 @@ func getScriptUnZipFile(modelFolder string, hfDir string) (string, error) {
 
 func getListZipFile(modelFolder string, hfDir string) ([]string, error) {
 	filePath := fmt.Sprintf("/tmp/list-zip-model-%v.sh", modelFolder)
-	if _, err := os.Stat(filePath); err == nil {
-		err := os.Remove(filePath)
-		if err != nil {
-			return nil, fmt.Errorf("error removing file:%v", err)
-		}
+	if err := removeFileIfExists(filePath); err != nil {
+		return nil, err
 	}
+
 	file, err := os.Create(filePath)
 	if err != nil {
-		file.Close()
 		return nil, fmt.Errorf("error creating file:%v", err)
 	}
+	defer file.Close()
+
 	_, err = file.WriteString(fmt.Sprintf("rm /tmp/list_file_%v.txt \n", modelFolder))
 	if err != nil {
-		file.Close()
 		return nil, fmt.Errorf("error write file:%v", err)
 	}
+
 	_, err = file.WriteString(fmt.Sprintf("cd %v \n", hfDir))
 	if err != nil {
-		file.Close()
 		return nil, fmt.Errorf("error write file:%v", err)
 	}
+
 	_, err = file.WriteString(fmt.Sprintf("sudo ls %v.zip.part-* > /tmp/list_file_%v.txt \n", modelFolder, modelFolder))
 	if err != nil {
-		file.Close()
 		return nil, fmt.Errorf("error write file:%v", err)
 	}
-	file.Close()
 
 	output, err := ExecuteCommand(fmt.Sprintf("/tmp/list-zip-model-%v.sh ", modelFolder))
 	if err != nil {
@@ -140,7 +146,6 @@ func getListZipFile(modelFolder string, hfDir string) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening file:%v", err)
 	}
-	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	listFile := make([]string, 0)
@@ -160,14 +165,17 @@ func uploadListZipFileToLightHouse(modelFolder string, hfDir string, apiKey stri
 	if err != nil {
 		return nil, err
 	}
+
 	if len(listFile) == 0 {
 		return nil, fmt.Errorf("no files pattern %v.zip.part-*  found in folder %v", modelFolder, hfDir)
 	}
+
 	result := HFModelInLightHouse{
 		Model:     modelFolder,
 		NumOfFile: len(listFile),
 		Files:     make([]HFModelZipFile, 0),
 	}
+
 	for i, file := range listFile {
 		log.Println("Start upload model ", modelFolder, "chunk", i, "file", file)
 		for j := 0; j < 10; i++ {
@@ -176,7 +184,6 @@ func uploadListZipFileToLightHouse(modelFolder string, hfDir string, apiKey stri
 				log.Println("Error when upload model ", modelFolder, "retry", j, "chunk", i, "file", file, "err", err)
 				time.Sleep(2 * time.Minute)
 				continue
-				return nil, err
 			} else {
 				log.Println("Finish upload model ", modelFolder, "chunk", i, "file", file, "==> hash", cid)
 				result.Files = append(result.Files, HFModelZipFile{File: file, Hash: cid})
@@ -184,6 +191,7 @@ func uploadListZipFileToLightHouse(modelFolder string, hfDir string, apiKey stri
 			}
 		}
 	}
+
 	return &result, nil
 }
 
@@ -201,12 +209,12 @@ func getHFModelResultFromLightHouse(hash string) (*HFModelInLightHouse, error) {
 	if err != nil {
 		return nil, err
 	}
-	var result HFModelInLightHouse
-	err = json.Unmarshal(data, &result)
-	if err != nil {
+
+	result := &HFModelInLightHouse{}
+	if err = json.Unmarshal(data, result); err != nil {
 		return nil, err
 	}
-	return &result, nil
+	return result, nil
 }
 
 func downloadZipFileFromLightHouse(info *HFModelInLightHouse, hfDir string) error {
@@ -232,8 +240,8 @@ func DownloadHFModelFromLightHouse(hash string, hfDir string) error {
 	if err != nil {
 		return fmt.Errorf("error when get model info from light house hash : %v err :%v ", hash, err)
 	}
-	err = downloadZipFileFromLightHouse(info, hfDir)
-	if err != nil {
+
+	if err = downloadZipFileFromLightHouse(info, hfDir); err != nil {
 		return fmt.Errorf("error when download zip chunk file:%v ", err)
 	}
 
@@ -247,14 +255,16 @@ func DownloadHFModelFromLightHouse(hash string, hfDir string) error {
 	if err != nil {
 		return fmt.Errorf("error when execute file:%v , output:%v", err, string(output))
 	}
+
 	log.Println("Success unzip model ", info.Model)
 	unzipFolder := filepath.Join(hfDir, info.Model)
 	files, err := os.ReadDir(filepath.Join(hfDir, info.Model))
 	if err != nil {
 		return fmt.Errorf("error when read dir:%v , err:%v", unzipFolder, err.Error())
 	}
+
 	for _, file := range files {
-		fmt.Println(fmt.Sprintf("%v/%v\n", info.Model, file.Name()))
+		fmt.Printf("%s/%s\n", info.Model, file.Name())
 	}
 	return nil
 }
@@ -264,16 +274,19 @@ func ZipAndUploadHFModelFromLightHouse(modelFolder string, hfDir string, apiKey 
 	if err != nil {
 		return "", fmt.Errorf("error when get script zip file:%v ", err)
 	}
+
 	log.Println("Start compress model")
 	output, err := ExecuteCommand(scriptFile)
 	if err != nil {
 		return "", fmt.Errorf("error when execute file:%v , output:%v", err, string(output))
 	}
+
 	log.Println("Finish compress model . Start upload model")
 	result, err := uploadListZipFileToLightHouse(modelFolder, hfDir, apiKey)
 	if err != nil {
 		return "", fmt.Errorf("error when upload list zip file to light house :%v ", err)
 	}
+
 	hash, err := uploadHFModelResultToLightHouse(result, apiKey)
 	if err != nil {
 		return "", fmt.Errorf("error when upload model result to light house :%v ", err)

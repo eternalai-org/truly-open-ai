@@ -200,3 +200,4 @@ cython_debug/
 
 # Ignore build binary
 eai-chat
+.vscode/
