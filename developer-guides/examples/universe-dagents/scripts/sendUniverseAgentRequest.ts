@@ -54,12 +54,23 @@ async function sendUniverseAgentRequest() {
   const request = buildRequest(inf.modelInfo.modelName, userPrompt);
 
   // Send inference request
+  let feeData;
+  try {
+    feeData = await ethers.provider.getFeeData();
+  } catch (error) {
+    console.error("Error getting fee data:", error);
+  }
+
   console.log("Sending inference request...");
-  const txRequest = await modelInstance
-    .connect(sender)
-    ["infer(bytes)"](ethers.toUtf8Bytes(JSON.stringify(request)), {
-      gasPrice: ethers.parseUnits("10", "gwei"),
-    });
+  const txRequest = await modelInstance.connect(sender)["infer(bytes)"](
+    ethers.toUtf8Bytes(JSON.stringify(request)),
+    feeData
+      ? {
+          maxFeePerGas: feeData.maxFeePerGas, // Adjust this value as needed
+          maxPriorityFeePerGas: feeData.maxPriorityFeePerGas, // Adjust this value as needed
+        }
+      : {}
+  );
   const receipt = await txRequest.wait();
   console.log("Tx hash: ", receipt?.hash);
   console.log("Tx status: ", receipt?.status == 1 ? "Success" : "Failed");
@@ -93,7 +104,7 @@ async function sendUniverseAgentRequest() {
     }
   }
 
-  console.log("Inference result: ", inferResult);
+  console.log("Inference result: ", ethers.toUtf8String(inferResult || ""));
 }
 
 export async function getContractInstance(
@@ -102,6 +113,11 @@ export async function getContractInstance(
 ) {
   const contractIns = await ethers.getContractAt(contractName, proxyAddress);
   return contractIns;
+}
+
+async function getContractFromArtifact(addreess: string, artifact: any) {
+  const contract = await ethers.getContractAt(artifact.abi, addreess);
+  return contract;
 }
 
 function getModelInfo(network: string, modelName: string) {
@@ -180,7 +196,11 @@ async function tryToGetInferenceResult(
 ) {
   let inferResult;
 
-  if (networkName == "base_mainnet" || networkName == "symbiosis_mainnet") {
+  if (
+    networkName == "base_mainnet" ||
+    networkName == "symbiosis_mainnet" ||
+    networkName == "ethereum_mainnet"
+  ) {
     const ins = (await getContractInstance(
       promptSchedulerAddress,
       "IPromptScheduler3TX"
@@ -194,7 +214,18 @@ async function tryToGetInferenceResult(
     }
 
     let assignId = assignIds[0];
-    let assignInfo = await ins.connect(sender).getAssignmentInfo(assignId);
+    let assignInfo;
+
+    if (networkName == "ethereum_mainnet") {
+      const artifact = require("./artifacts/WorkerHub.json");
+      const ethIns = await getContractFromArtifact(
+        promptSchedulerAddress,
+        artifact
+      );
+      assignInfo = await ethIns.connect(sender).assignments(assignId);
+    } else {
+      assignInfo = await ins.connect(sender).getAssignmentInfo(assignId);
+    }
     let result = assignInfo[7];
 
     if (result.length == 0) {
@@ -206,7 +237,7 @@ async function tryToGetInferenceResult(
     const ins = (await getContractInstance(
       promptSchedulerAddress,
       "IPromptScheduler2TX"
-    )) as unknown as IPromptScheduler3TX;
+    )) as unknown as IPromptScheduler2TX;
 
     let result = (await ins.getInferenceInfo(inferId))[10];
     if (result === undefined || result == "0x") {
