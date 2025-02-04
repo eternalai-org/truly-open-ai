@@ -44,8 +44,14 @@ cli: vendor
 	go build -o build/cli cmd/cli/main.go
 	chmod +x build/cli
 
+cli-fast: vendor
+	go build -o build/cli-fast cmd/cli-fast/main.go
+
 start_cli: cli
 	./build/cli
+
+start_cli_fast: cli-fast
+	./build/cli-fast
 
 clean:
 	if [ -f ${BIN} ] ; then rm ${BIN} ; fi
