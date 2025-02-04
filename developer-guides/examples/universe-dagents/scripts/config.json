@@ -43,5 +43,25 @@
                 "description": "UniverseDagents"
             }
         ]
+    },
+    "polygon_mainnet": {
+        "promptSchedulerAddress": "0x36C1ebc3a354947694525FdEE1Be273e70a45689",
+        "models": [
+            {
+                "modelName": "SentientAGI/Dobby-Mini-Unhinged-Llama-3.1-8B",
+                "modelAddress": "0x43344aFF9CA6F11A320d0702Dcf846FE560DDFff",
+                "description": "UniverseDagents"
+            }
+        ]
+    },
+    "ethereum_mainnet": {
+        "promptSchedulerAddress": "0xb2a51f4a3F3A6a0bF653763Bf50830219dc5e62D",
+        "models": [
+            {
+                "modelName": "DeepSeek-R1-Distill-Llama-70B",
+                "modelAddress": "0x16465e92C68675b4f775efD1ad830D22d14641bb",
+                "description": "UniverseDagents"
+            }
+        ]
     }
 }
