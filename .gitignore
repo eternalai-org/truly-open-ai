@@ -51,6 +51,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+node_modules/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -199,3 +200,4 @@ cython_debug/
 
 # Ignore build binary
 eai-chat
+.vscode/

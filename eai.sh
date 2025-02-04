@@ -56,6 +56,21 @@ handle_miner_commands() {
     esac
 }
 
+
+# Function to handle miner commands
+handle_miner_fast_commands() {
+    case "$1" in
+        "setup")
+            echo "Setting up local chain and miners one step..."
+            cd "$worker_hub_folder" && make start_cli_fast
+            ;;
+        *)
+            echo "Invalid option: $1 for miner"
+            exit 1
+            ;;
+    esac
+}
+
 handle_aaas_commands() {
     case "$1" in
         "deploy-contract")
@@ -120,6 +135,9 @@ handle_api_commands() {
 case "$1" in
     "miner")
         handle_miner_commands "$2"
+        ;;
+    "miner-fast")
+        handle_miner_fast_commands "$2"
         ;;
     "aaas")
         handle_aaas_commands "$2"

@@ -272,6 +272,14 @@ func (s *Server) Routers() {
 			subcriptionAPI.POST("/create-test", s.CreateAcctForTest)
 		}
 
+		agentStoreAPI := rootAPI.Group("/agent-store")
+		{
+			agentStoreAPI.POST("/save", s.SaveAgentStore)
+			agentStoreAPI.GET("/list", s.GetListAgentStore)
+			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)
+			agentStoreAPI.POST("/:id/mission/:mission_id", s.AddMissionStore)
+		}
+
 		missionStoreAPI := rootAPI.Group("/mission-store")
 		{
 			missionStoreAPI.POST("/save", s.UploadMissionStore)

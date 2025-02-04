@@ -8,7 +8,9 @@
     "sendUniverseAgentRequest:base_mainnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network base_mainnet",
     "sendUniverseAgentRequest:symbiosis_mainnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network symbiosis_mainnet",
     "sendUniverseAgentRequest:abstract_testnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network abstract_testnet",
-    "sendUniverseAgentRequest:bittensor_mainnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network bittensor_mainnet"
+    "sendUniverseAgentRequest:bittensor_mainnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network bittensor_mainnet",
+    "sendUniverseAgentRequest:polygon_mainnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network polygon_mainnet",
+    "sendUniverseAgentRequest:ethereum_mainnet": "npx hardhat run scripts/sendUniverseAgentRequest.ts --network ethereum_mainnet"
   },
   "devDependencies": {
     "@ericxstone/hardhat-blockscout-verify": "^1.0.2",
