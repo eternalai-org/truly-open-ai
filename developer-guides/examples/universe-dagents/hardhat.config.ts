@@ -81,6 +81,28 @@ const config: HardhatUserConfig = {
       zksync: false,
       gasPrice: "auto",
     },
+    polygon_mainnet: {
+      url: process.env.RPC_URL || "https://polygon-rpc.com",
+      chainId: 137,
+      senderKey: process.env.PRIVATE_KEY,
+      promptSchedulerAddress: process.env.PROMPT_SCHEDULER_ADDRESS,
+      allowUnlimitedContractSize: true,
+      ethNetwork: "https://testnet.runechain.com/rpc", // The Ethereum Web3 RPC URL.
+      zksync: false,
+      gasPrice: "auto",
+    } as any,
+    ethereum_mainnet: {
+      url:
+        process.env.RPC_URL ||
+        "https://mainnet.infura.io/v3/dfc35b256cf2420bbe4e153643b0560b",
+      chainId: 1,
+      senderKey: process.env.PRIVATE_KEY,
+      promptSchedulerAddress: process.env.PROMPT_SCHEDULER_ADDRESS,
+      allowUnlimitedContractSize: true,
+      ethNetwork: "https://testnet.runechain.com/rpc", // The Ethereum Web3 RPC URL.
+      zksync: false,
+      gasPrice: "auto",
+    } as any,
   },
   namedAccounts: {
     deployer: 0,
