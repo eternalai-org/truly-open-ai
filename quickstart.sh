@@ -20,7 +20,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "pigz is not installed."
     fi  
 
-    bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
+    sudo bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Running on macOS"
@@ -57,7 +57,6 @@ eai apis start
 eai aaas deploy-contract
 
 # Step 5.2. Mint an agent
-
 eai agent create $(pwd)/decentralized-agents/characters/donald_trump.txt
 
 # Step 6.1. Chat with the agent
