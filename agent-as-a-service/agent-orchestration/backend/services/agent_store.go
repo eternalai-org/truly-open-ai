@@ -6,6 +6,7 @@ import (
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/jinzhu/gorm"
@@ -137,31 +138,19 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			obj, err := s.dao.FirstAgentStoreInstall(tx, map[string][]interface{}{
-				"agent_store_id = ?": {req.AgentStoreID},
-				"agent_info_id = ?":  {req.InstallAgentInfoID},
+				"code = ?": {req.Code},
 			}, map[string][]interface{}{}, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
 			params, _ := json.Marshal(req.CallbackParams)
 			if obj == nil {
-				obj = &models.AgentStoreInstall{
-					AgentStoreID:   req.AgentStoreID,
-					AgentInfoID:    req.InstallAgentInfoID,
-					CallbackParams: string(params),
-				}
+				return errs.NewError(errs.ErrBadRequest)
 			} else {
 				obj.CallbackParams = string(params)
 			}
 
-			if err != nil {
-				return errs.NewError(err)
-			}
-			if obj.ID > 0 {
-				err = s.dao.Save(tx, obj)
-			} else {
-				err = s.dao.Create(tx, obj)
-			}
+			err = s.dao.Save(tx, obj)
 
 			if err != nil {
 				return errs.NewError(err)
@@ -187,4 +176,17 @@ func (s *Service) GetListAgentStoreInstall(ctx context.Context, agentInfoID uint
 		return nil, 0, errs.NewError(err)
 	}
 	return res, count, nil
+}
+
+func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, agentStoreID, agentInfoID uint) (*models.AgentStoreInstall, error) {
+	obj := &models.AgentStoreInstall{
+		Code:         helpers.RandomReferralCode(32),
+		AgentStoreID: agentStoreID,
+		AgentInfoID:  agentInfoID,
+	}
+	err := s.dao.Create(daos.GetDBMainCtx(ctx), obj)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return obj, nil
 }

@@ -25,9 +25,8 @@ type AgentStoreMissionReq struct {
 }
 
 type AuthenAgentStoreCallback struct {
-	AgentStoreID       uint              `json:"agent_store_id"`
-	InstallAgentInfoID uint              `json:"install_agent_info_id"`
-	CallbackParams     map[string]string `json:"callback_params"`
+	Code           uint              `json:"code"`
+	CallbackParams map[string]string `json:"callback_params"`
 }
 
 type AgentStoreResp struct {

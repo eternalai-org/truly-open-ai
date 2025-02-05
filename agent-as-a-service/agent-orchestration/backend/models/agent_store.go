@@ -31,8 +31,9 @@ type AgentStoreMission struct {
 
 type AgentStoreInstall struct {
 	gorm.Model
-	AgentStoreID   uint `gorm:"index"`
-	AgentStore     *AgentStore
+	Code           string `gorm:"unique_index"`
+	AgentStoreID   uint   `gorm:"index"`
 	AgentInfoID    uint   `gorm:"index"`
+	AgentStore     *AgentStore
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
 }
