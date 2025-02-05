@@ -3,10 +3,12 @@ from pydantic import BaseModel
 
 from x_content.models import AgentKnowledgeBase
 
+
 class RelatedInformation(BaseModel):
     content: str
     score: float
     reference: Optional[str] = None
+
 
 class KnowledgeBase(BaseModel):
     base_url: str
@@ -15,24 +17,34 @@ class KnowledgeBase(BaseModel):
     default_top_k: int = 5
     similarity_threshold: float = 0.5
 
-    def retrieve(self,
+    def retrieve(
+        self,
         query: str,
         top_k: int = None,
         threshold: float = None,
         *args,
         **kwargs: Any,
     ) -> List[RelatedInformation]:
-        raise NotImplementedError("retrieve method not implemented; cls: {}".format(self.__class__.__name__))
+        raise NotImplementedError(
+            "retrieve method not implemented; cls: {}".format(
+                self.__class__.__name__
+            )
+        )
 
-    async def aretrieve(self,
+    async def aretrieve(
+        self,
         query: str,
         top_k: int = None,
         threshold: float = None,
         *args,
         **kwargs: Any,
     ) -> List[RelatedInformation]:
-        raise NotImplementedError("aretrieve method not implemented; cls: {}".format(self.__class__.__name__))
-    
+        raise NotImplementedError(
+            "aretrieve method not implemented; cls: {}".format(
+                self.__class__.__name__
+            )
+        )
+
     def get_kn_ids(self):
         return [x.kb_id for x in self.kbs]
 

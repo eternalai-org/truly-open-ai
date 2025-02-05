@@ -2,11 +2,12 @@ import redis
 from typing import Union
 from typing import Callable
 import logging
-from . import constants as const
+from x_content import constants as const
 import pickle
 import asyncio
 
 logger = logging.getLogger(__name__)
+
 
 def get_redis_client_connection() -> redis.Redis:
     return redis.Redis(
@@ -43,6 +44,7 @@ def reusable_redis_connection():
 
 
 class IRQueue(object):
+
     def __init__(self, collection_name: str):
         self.collection_name = collection_name
         self.redis_client = get_redis_client_connection()
@@ -201,10 +203,10 @@ def distributed_scheduling_job(interval_seconds: float):
 
 
 def cache_for(interval_seconds: float):
-    
+
     def get_parameters_hash(*args, **kwargs):
         return hash((*args, *sorted(kwargs.items())))
-    
+
     def decorator(func: Callable):
         fn_name = func.__name__
         fn_module = func.__module__
@@ -220,7 +222,9 @@ def cache_for(interval_seconds: float):
                 pickle_str = redis_client.get(key)
 
                 if pickle_str is not None:
-                    logger.info(f"Cache hit for {key}; call {fn_module}.{fn_name}(args={args}, kwargs={kwargs})")
+                    logger.info(
+                        f"Cache hit for {key}; call {fn_module}.{fn_name}(args={args}, kwargs={kwargs})"
+                    )
                     return pickle.loads(pickle_str)
 
             res = func(*args, **kwargs)
@@ -230,7 +234,7 @@ def cache_for(interval_seconds: float):
                 redis_client.set(key, pickle_str, ex=interval_seconds)
 
             return res
-        
+
         async def async_wrapper(*args, **kwargs):
             nonlocal redis_cache_key
 
@@ -241,7 +245,9 @@ def cache_for(interval_seconds: float):
                 pickle_str = redis_client.get(key)
 
                 if pickle_str is not None:
-                    logger.info(f"Cache hit for {key}; call {fn_module}.{fn_name}(args={args}, kwargs={kwargs})")
+                    logger.info(
+                        f"Cache hit for {key}; call {fn_module}.{fn_name}(args={args}, kwargs={kwargs})"
+                    )
                     return pickle.loads(pickle_str)
 
             res = await func(*args, **kwargs)

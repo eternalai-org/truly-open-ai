@@ -10,7 +10,10 @@ from typing import Any, List, Optional
 
 
 class SyncBasedEternalAI(OpenAILLMBase):
-    async def start_async_request(self, messages: List[BaseMessage], **kwargs) -> dict:
+
+    async def start_async_request(
+        self, messages: List[BaseMessage], **kwargs
+    ) -> dict:
         """
         Initiate a request to the OpenAI ChatCompletion endpoint.
         Since OpenAI returns results immediately, we'll store the response locally
@@ -44,17 +47,27 @@ class SyncBasedEternalAI(OpenAILLMBase):
 
         url = f"{self.openai_api_base}/chat/completions"
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                url,
-                headers=headers,
-                json=json_data,
-                timeout=httpx.Timeout(60.0),
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    url,
+                    headers=headers,
+                    json=json_data,
+                    timeout=httpx.Timeout(60.0),
+                )
+        except Exception as err:
+            logger.info(f"Failed to send request to '{url}'; error: {err}")
+            raise ValueError(
+                f"Failed to send request to '{url}'; error: {err}"
             )
 
         if response.status_code != 200:
-            logger.info(f"Failed to send request to '{url}'; code: {response.status_code}; raw: {response.text}.")
-            raise ValueError(f"Failed to send request to '{url}'; code: {response.status_code}; raw: {response.text}.")
+            logger.info(
+                f"Failed to send request to '{url}'; code: {response.status_code}"
+            )
+            raise ValueError(
+                f"Failed to send request to '{url}'; code: {response.status_code}"
+            )
 
         response_json = response.json()
 
@@ -62,8 +75,13 @@ class SyncBasedEternalAI(OpenAILLMBase):
         if not choices:
             raise ValueError("No choices found in the OpenAI response.")
 
-        if choices[0].get("message") is None or choices[0].get("message", {}).get("content") is None:
-            raise ValueError("Bad response from LLM-server: {}".format(response_json))
+        if (
+            choices[0].get("message") is None
+            or choices[0].get("message", {}).get("content") is None
+        ):
+            raise ValueError(
+                "Bad response from LLM-server: {}".format(response_json)
+            )
 
         content = choices[0].get("message", {}).get("content", "")
         token_usage = response_json.get("usage", {})
@@ -86,7 +104,7 @@ class SyncBasedEternalAI(OpenAILLMBase):
         if "message" not in result:
             raise ValueError(f"Unexpected response from LLM-Server: {result}")
 
-        # Return a mock OnchainInferResult 
+        # Return a mock OnchainInferResult
         return OnchainInferResult(
             generations=[ChatGeneration(message=result["message"])],
             llm_output={"token_usage": result.get("token_usage", {})},
@@ -129,7 +147,9 @@ class SyncBasedEternalAI(OpenAILLMBase):
         )
 
         if response.status_code != 200:
-            raise Exception(f"Failed to send request to '{self.openai_api_base}/chat/completions'; code: {response.status_code}; raw: {response.text}.")
+            raise Exception(
+                f"Failed to send request to '{self.openai_api_base}/chat/completions'; code: {response.status_code}"
+            )
 
         response_json = response.json()
 
@@ -137,8 +157,13 @@ class SyncBasedEternalAI(OpenAILLMBase):
         if not choices:
             raise ValueError("No choices found in the OpenAI response.")
 
-        if choices[0].get("message") is None or choices[0].get("message", {}).get("content") is None:
-            raise ValueError("Bad response from LLM-server: {}".format(response_json))
+        if (
+            choices[0].get("message") is None
+            or choices[0].get("message", {}).get("content") is None
+        ):
+            raise ValueError(
+                "Bad response from LLM-server: {}".format(response_json)
+            )
 
         content = choices[0].get("message", {}).get("content", "")
         token_usage = response_json.get("usage", {})
@@ -161,7 +186,7 @@ class SyncBasedEternalAI(OpenAILLMBase):
         if "message" not in result:
             raise ValueError(f"Unexpected response from LLM-Server: {result}")
 
-        # Return a mock OnchainInferResult 
+        # Return a mock OnchainInferResult
         return OnchainInferResult(
             generations=[ChatGeneration(message=result["message"])],
             llm_output={"token_usage": result.get("token_usage", {})},

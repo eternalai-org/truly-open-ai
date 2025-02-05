@@ -1,7 +1,7 @@
 import requests
 import json
 import logging
-from . import constants as const
+from x_content import constants as const
 import schedule
 
 TELEGRAM_ROOM = const.TELEGRAM_ROOM
@@ -38,7 +38,9 @@ def escape_str(s: str):
     return s
 
 
-def get_url(api_key: str = const.TELEGRAM_API_KEY, room: str = const.TELEGRAM_ROOM):
+def get_url(
+    api_key: str = const.TELEGRAM_API_KEY, room: str = const.TELEGRAM_ROOM
+):
     return f"https://api.telegram.org/bot{api_key}/sendMessage?chat_id={room}"
 
 
@@ -78,7 +80,9 @@ def send_message(
 
     url = get_url(room=room)
 
-    logger.info(f"Sending a message of length {len(message_to_send)} to room {room}")
+    logger.info(
+        f"Sending a message of length {len(message_to_send)} to room {room}"
+    )
     payload = {
         "text": message_to_send,
         "parse_mode": fmt,
@@ -95,6 +99,7 @@ def send_message(
     logger.error(f"Failed to send message to Telegram: {resp.text}")
 
     return False
+
 
 from redis import Redis
 
@@ -138,6 +143,7 @@ def group_message(
 
     return grouped_msgs
 
+
 @schedule.every(20).seconds.do
 @distributed_scheduling_job(interval_seconds=20)
 def _flush():
@@ -178,4 +184,6 @@ def _flush():
 
         for group in groups:
             joint_message = sep.join([msg.text for msg in group])
-            send_message("junk_notifications", joint_message, room=room, fmt="HTML")
+            send_message(
+                "junk_notifications", joint_message, room=room, fmt="HTML"
+            )

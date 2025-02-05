@@ -3,8 +3,12 @@ from x_content.models import ToolDef
 from typing import List
 from .utils import execute_tool
 
+
 class ToolListWrapper(List[ToolDef]):
-    async def auto_execute(self, name: str, action_input: str, request_id: str=None):
+
+    async def auto_execute(
+        self, name: str, action_input: str, request_id: str = None
+    ):
         for tool in self:
             if tool.name == name:
                 return await execute_tool(tool, action_input, request_id)
@@ -27,7 +31,7 @@ class ToolListWrapper(List[ToolDef]):
                 return tool.executor
 
         return super().__getattr__(name)
-    
+
     def __hasattr__(self, name):
         for tool in self:
             if tool.name == name and callable(tool.executor):
@@ -35,6 +39,8 @@ class ToolListWrapper(List[ToolDef]):
 
         return super().__hasattr__(name)
 
+
 class IToolCall(object):
+
     def get_tools(self, toolset: ToolSet = None) -> ToolListWrapper:
         raise NotImplementedError("Method not implemented")

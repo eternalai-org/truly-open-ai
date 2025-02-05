@@ -9,6 +9,7 @@ from x_content.toolcall.toolcall import ToolListWrapper, IToolCall
 from .utils import a_move_state
 import traceback
 
+
 class MultiStepTaskBase(ABC):
     handler = mission_state_handler.MissionStateHandler(
         connection=redis_wrapper.reusable_redis_connection()
@@ -16,11 +17,13 @@ class MultiStepTaskBase(ABC):
 
     resumable = False
 
-    def __init__(self, 
-                 llm: OpenAILLMBase, 
-                 kn_base: AgentKnowledgeBase,
-                 toolcall: IToolCall = [],
-                 *args, **kwargs
+    def __init__(
+        self,
+        llm: OpenAILLMBase,
+        kn_base: AgentKnowledgeBase,
+        toolcall: IToolCall = [],
+        *args,
+        **kwargs,
     ):
         super().__init__()
 
@@ -30,8 +33,12 @@ class MultiStepTaskBase(ABC):
 
     @abstractmethod
     async def process_task(self, log: ReasoningLog) -> ReasoningLog:
-        raise NotImplementedError("process_task method not implemented; cls: {}".format(self.__class__.__name__))
-    
+        raise NotImplementedError(
+            "process_task method not implemented; cls: {}".format(
+                self.__class__.__name__
+            )
+        )
+
     async def commit_log(self, log: ReasoningLog) -> ReasoningLog:
         return await self.handler.acommit(log)
 
@@ -43,7 +50,9 @@ class MultiStepTaskBase(ABC):
 
             except Exception as err:
                 traceback.print_exc()
-                log = await a_move_state(log, MissionChainState.ERROR, f"Error: {err}")
+                log = await a_move_state(
+                    log, MissionChainState.ERROR, f"Error: {err}"
+                )
 
             finally:
                 await self.commit_log(log)

@@ -1,7 +1,7 @@
 from . import (
-    post, 
+    post,
     twin,
     utils,
 )
 
-__all__ = ['post', 'twin', 'utils']
+__all__ = ["post", "twin", "utils"]

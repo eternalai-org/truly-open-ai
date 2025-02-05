@@ -2,7 +2,9 @@ from dotenv import load_dotenv
 
 from x_content.wrappers.gcs import download_file_from_gcs_bucket
 from x_content.wrappers.gcs import file_exists_in_gcs_bucket
-from x_content.wrappers.gcs import upload_ds_to_gcs; load_dotenv()
+from x_content.wrappers.gcs import upload_ds_to_gcs
+
+load_dotenv()
 
 import os
 import json
@@ -18,6 +20,7 @@ from x_content.utils import is_local_env
 from x_content.wrappers.magic import helpful_raise_for_status
 from x_content.wrappers.magic import retry
 from x_content.wrappers.log_decorators import log_function_call
+
 logger = logging.getLogger(__name__)
 
 from x_content import constants as const
@@ -53,15 +56,16 @@ PROMPT_TEMPLATE = ChatPromptTemplate.from_messages(
     ]
 )
 
-    
+
 BASE_COLLECTION_NAME = "base_knowledge"
- 
+
+
 @log_function_call
 def create_llm(
-    base_url: str = DEFAULT_LLM_BASE_URL, 
-    model_id: str = DEFAULT_LLM_MODEL_ID, 
-    api_key: str = DEFAULT_LLM_API_KEY, 
-    temperature = DEFAULT_TEMPERATURE
+    base_url: str = DEFAULT_LLM_BASE_URL,
+    model_id: str = DEFAULT_LLM_MODEL_ID,
+    api_key: str = DEFAULT_LLM_API_KEY,
+    temperature=DEFAULT_TEMPERATURE,
 ) -> ChatOpenAI:
     """
     Initializes and returns a ChatOpenAI instance with the provided parameters.
@@ -78,8 +82,9 @@ def create_llm(
         model=model_id,
         api_key=api_key,
         base_url=base_url,
-        temperature=temperature
+        temperature=temperature,
     )
+
 
 @log_function_call
 def get_info(user_name: str) -> tuple:
@@ -93,9 +98,7 @@ def get_info(user_name: str) -> tuple:
         tuple: A tuple containing the user's name, username, and description.
     """
     url = f"{DEFAULT_TWITTER_URL.rstrip('/')}/user/by/username/{user_name}"
-    headers = {
-        "Authorization": f"Bearer {DEFAULT_TWITTER_API_KEY}"
-    }
+    headers = {"Authorization": f"Bearer {DEFAULT_TWITTER_API_KEY}"}
     try:
         resp = requests.get(url, headers=headers)
         helpful_raise_for_status(resp)
@@ -112,11 +115,11 @@ def get_info(user_name: str) -> tuple:
     except json.JSONDecodeError as e:
         logger.error(f"[get_info] JSON decode error: {e}")
         return "", "", ""
-    
+
     except KeyError as e:
         logger.error(f"[get_info] Key error: {e}")
         return "", "", ""
-    
+
     except Exception as e:
         logger.error(f"[get_info] An unexpected error occurred: {e}")
         return "", "", ""
@@ -138,11 +141,12 @@ def generate_context_from_tweets(tweets: list) -> str:
     sorted_tweets = sorted(tweets, key=len)
     context = sorted_tweets[:5] + sorted_tweets[-5:]
     return "\n".join(context)
-    
+
 
 @log_function_call
 def file_exists_in_local(file_name):
-    return os.path.exists(f".tweets/{file_name}")        
+    return os.path.exists(f".tweets/{file_name}")
+
 
 @log_function_call
 def save_tweets_to_local(tweets, file_name):
@@ -150,25 +154,27 @@ def save_tweets_to_local(tweets, file_name):
     with open(f".tweets/{file_name}", "w") as f:
         f.write(json.dumps(tweets))
 
+
 def is_long_tweet(tweet: str) -> bool:
     # Regular expression pattern to match ellipsis followed by a URL
-    pattern = r'\u2026 \b(https?://[^\s]+)'
-    
+    pattern = r"\u2026 \b(https?://[^\s]+)"
+
     # re.search() will find a match anywhere in the string,
     # while re.match() would only check if it matches at the start.
     # Using re.search() here but we could also use re.match() with
     # a pattern that checks for end-of-string.
     # The pattern \b ensures the URL is a separate word.
-    
+
     # re.compile() can compile the regular expression pattern for better performance
     # if this function is called many times.
     regex = re.compile(pattern)
-    
+
     # Check if the pattern is found at the end of the string
     if regex.search(tweet) and tweet.endswith(regex.search(tweet).group(0)):
         return True
     else:
         return False
+
 
 @log_function_call
 def get_full_text_by_tweet_ids(tweet_ids: List[str]) -> List[str]:
@@ -179,7 +185,9 @@ def get_full_text_by_tweet_ids(tweet_ids: List[str]) -> List[str]:
         session = requests.Session()
         session.params = {"api_key": twitter_api_key}
 
-        resp = session.get(f"{base_url}/tweets/v1", params={"ids": ','.join(tweet_ids)})
+        resp = session.get(
+            f"{base_url}/tweets/v1", params={"ids": ",".join(tweet_ids)}
+        )
         helpful_raise_for_status(resp)
         data = resp.json()["result"]
 
@@ -189,8 +197,11 @@ def get_full_text_by_tweet_ids(tweet_ids: List[str]) -> List[str]:
                 if "note_tweet" in tweet:
                     result[id] = tweet["note_tweet"]["text"]
     except Exception as err:
-        logger.error(f"[get_full_text_by_tweet_ids] Error retrieving text of tweets {err}")
+        logger.error(
+            f"[get_full_text_by_tweet_ids] Error retrieving text of tweets {err}"
+        )
     return result
+
 
 @log_function_call
 def pull_tweets(twitter_ids: List[str]):
@@ -198,9 +209,7 @@ def pull_tweets(twitter_ids: List[str]):
     base_url = const.TWITTER_API_URL
     twitter_api_key = const.TWITTER_API_KEY
     session = requests.Session()
-    session.params = {
-        "api_key": twitter_api_key
-    }
+    session.params = {"api_key": twitter_api_key}
 
     max_loops = TOTAL_MAX_TWEETS // NUMBER_OF_PULLED_TWEETS_PER_LOOP
 
@@ -214,7 +223,9 @@ def pull_tweets(twitter_ids: List[str]):
                 with open(file_path, "r") as f:
                     tweets = json.load(f)
             except Exception as e:
-                logger.error(f"[pull_tweets] Failed to load tweets from {file_path}: {e}")
+                logger.error(
+                    f"[pull_tweets] Failed to load tweets from {file_path}: {e}"
+                )
                 return [], e
             finally:
                 if os.path.exists(file_path):
@@ -225,7 +236,9 @@ def pull_tweets(twitter_ids: List[str]):
                 with open(file_path, "r") as f:
                     tweets = json.load(f)
             except Exception as e:
-                logger.error(f"[pull_tweets] Failed to load tweets from {file_path}: {e}")
+                logger.error(
+                    f"[pull_tweets] Failed to load tweets from {file_path}: {e}"
+                )
                 return [], e
         else:
             url = f"{base_url}/tweets/{twitter_id}/all"
@@ -233,29 +246,41 @@ def pull_tweets(twitter_ids: List[str]):
 
             tweets_info = {}
             for loop_count in range(max_loops):
-                logger.info(f"[pull_tweets] Pulling data from {twitter_id}, loop {loop_count + 1}")
+                logger.info(
+                    f"[pull_tweets] Pulling data from {twitter_id}, loop {loop_count + 1}"
+                )
                 params = session.params.copy()
                 params["max_results"] = 100
                 if pagination_token:
                     params["pagination_token"] = pagination_token
 
                 try:
+
                     def get_tweets():
                         resp = session.get(url, params=params)
                         helpful_raise_for_status(resp)
                         return resp.json()
-                    
-                    resp_json = retry(get_tweets, max_retry=3, first_interval=60, interval_multiply=2)()
+
+                    resp_json = retry(
+                        get_tweets,
+                        max_retry=3,
+                        first_interval=60,
+                        interval_multiply=2,
+                    )()
                     crawled = resp_json.get("result", {}).get("data", [])
 
                     if not crawled:
-                        logger.info(f"[pull_tweets] No tweets found for {twitter_id}")
+                        logger.info(
+                            f"[pull_tweets] No tweets found for {twitter_id}"
+                        )
                         break
                     for item in crawled:
                         id = item.get("id", "")
                         text = item.get("text", "")
                         reference_tweets = (
-                            [] if item["referenced_tweets"] is None else item["referenced_tweets"]
+                            []
+                            if item["referenced_tweets"] is None
+                            else item["referenced_tweets"]
                         )
                         if len(reference_tweets) > 0:
                             continue
@@ -263,11 +288,17 @@ def pull_tweets(twitter_ids: List[str]):
                             "id": id,
                             "text": text,
                         }
-                    pagination_token = resp_json.get("result", {}).get("meta", {}).get("next_token")
+                    pagination_token = (
+                        resp_json.get("result", {})
+                        .get("meta", {})
+                        .get("next_token")
+                    )
                     if not pagination_token:
                         break
                 except requests.exceptions.RequestException as e:
-                    logger.error(f"[pull_tweets] Error pulling tweets for {twitter_id}: {e}")
+                    logger.error(
+                        f"[pull_tweets] Error pulling tweets for {twitter_id}: {e}"
+                    )
                     return [], e
                 time.sleep(1)
 
@@ -277,7 +308,7 @@ def pull_tweets(twitter_ids: List[str]):
                     long_tweet_ids.append(info["id"])
 
             for i in range(0, len(long_tweet_ids), FULL_TEXT_API_BATCH_SIZE):
-                ids_batch = long_tweet_ids[i:i+FULL_TEXT_API_BATCH_SIZE]
+                ids_batch = long_tweet_ids[i : i + FULL_TEXT_API_BATCH_SIZE]
                 result: dict[str, str] = get_full_text_by_tweet_ids(ids_batch)
                 for id, text in result.items():
                     tweets_info[id]["text"] = text
@@ -294,10 +325,13 @@ def pull_tweets(twitter_ids: List[str]):
     if not collected_tweets:
         logger.error("[pull_tweets] No tweets were collected.")
 
-    logger.info(f"[pull_tweets] Total number of tweets: {len(collected_tweets)}")
+    logger.info(
+        f"[pull_tweets] Total number of tweets: {len(collected_tweets)}"
+    )
     return collected_tweets, None
-        
-def names_list_to_string(lst, chr=''):
+
+
+def names_list_to_string(lst, chr=""):
     lst = [chr + x + chr for x in lst]
     if not lst:
         return ""

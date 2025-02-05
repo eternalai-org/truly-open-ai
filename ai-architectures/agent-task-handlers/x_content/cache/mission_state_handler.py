@@ -42,7 +42,9 @@ class MissionStateHandler(object):
 
         return states
 
-    def get(self, _id: str, none_if_error: bool = False) -> Optional[ReasoningLog]:
+    def get(
+        self, _id: str, none_if_error: bool = False
+    ) -> Optional[ReasoningLog]:
         key = f"{self.BASE_KEY}:{_id}"
         json_state: Optional[bytes] = self.redis_client.get(key)
 

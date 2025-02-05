@@ -17,6 +17,7 @@ from x_content.wrappers.magic import sync2async
 logger = logging.getLogger(__name__)
 LIMIT_TOTAL_TOKENS_PER_OBSERVATION = 700 * 3
 
+
 def is_float(xx: Any):
     try:
         float(xx)
@@ -35,12 +36,14 @@ def split_params(spec: dict, action_input):
             resp[k] = str(action_input[i])
 
     return resp
- 
+
+
 def make_response(content, success=True):
     return {
         "success": success,
         "content": content,
     }
+
 
 def execute_http_toolcall(method, endpoint, params, headers=None):
     payload = dict(
@@ -79,7 +82,7 @@ def execute_http_toolcall(method, endpoint, params, headers=None):
             resp.text,
             resp.status_code,
         )
-        
+
         task_id = params.get("request_id", None)
 
         wrappers.telegram.send_message(
@@ -89,7 +92,9 @@ def execute_http_toolcall(method, endpoint, params, headers=None):
             fmt="HTML",
         )
 
-        return make_response(f"Error: {resp.text} (Code: {resp.status_code})", False)
+        return make_response(
+            f"Error: {resp.text} (Code: {resp.status_code})", False
+        )
 
     try:
         resp_to_agent = resp.json()
@@ -111,6 +116,7 @@ def value_cast(dtype: ToolParamDtype, value: str):
 
     return value
 
+
 def parse_toolcall_params(params: List[ToolParam], inputs):
     no_default_params = [p for p in params if p.default_value is None]
     res = {}
@@ -121,24 +127,33 @@ def parse_toolcall_params(params: List[ToolParam], inputs):
 
     res = {
         **res,
-        **{k.name: value_cast(k.dtype, v) 
-        for k, v in zip(no_default_params, inputs)}
+        **{
+            k.name: value_cast(k.dtype, v)
+            for k, v in zip(no_default_params, inputs)
+        },
     }
 
     return res
 
 
-def execute_advance_tool(tool: AdvanceToolDef, action_input: str, request_id: str = None):
+def execute_advance_tool(
+    tool: AdvanceToolDef, action_input: str, request_id: str = None
+):
     inputs = [e.strip() for e in action_input.split("|")]
     no_default_params = [p for p in tool.params if p.default_value is None]
-    
+
     if len(no_default_params) == 0:
-        return [execute_http_toolcall(
-            tool.method, 
-            tool.executor, 
-            {**parse_toolcall_params(tool.params, []), 'request_id': request_id}, 
-            tool.headers
-        )]
+        return [
+            execute_http_toolcall(
+                tool.method,
+                tool.executor,
+                {
+                    **parse_toolcall_params(tool.params, []),
+                    "request_id": request_id,
+                },
+                tool.headers,
+            )
+        ]
 
     try:
         n_params = len(no_default_params)
@@ -152,10 +167,13 @@ def execute_advance_tool(tool: AdvanceToolDef, action_input: str, request_id: st
 
             res.append(
                 execute_http_toolcall(
-                    tool.method, 
-                    tool.executor, 
-                    {**parse_toolcall_params(tool.params, inputs[l:r]), 'request_id': request_id}, 
-                    tool.headers
+                    tool.method,
+                    tool.executor,
+                    {
+                        **parse_toolcall_params(tool.params, inputs[l:r]),
+                        "request_id": request_id,
+                    },
+                    tool.headers,
                 )
             )
 
@@ -164,10 +182,14 @@ def execute_advance_tool(tool: AdvanceToolDef, action_input: str, request_id: st
 
         if len(res) == 0:
             if n_params > 0:
-                return ["Something went wrong while executing the tool and no results were returned."]
+                return [
+                    "Something went wrong while executing the tool and no results were returned."
+                ]
 
             missing_params = [p.name for p in tool.params[-len(inputs) :]]
-            return [f"{tool.name} requires {len(tool.params)} parameters, but only {len(inputs)} provided. Missing {len(missing_params)} value(s) for: {missing_params}"]
+            return [
+                f"{tool.name} requires {len(tool.params)} parameters, but only {len(inputs)} provided. Missing {len(missing_params)} value(s) for: {missing_params}"
+            ]
 
         return res
 
@@ -179,10 +201,16 @@ def execute_advance_tool(tool: AdvanceToolDef, action_input: str, request_id: st
         return [f"Error while executing {tool.name} with input {action_input}"]
 
 
-async def execute_tool(tool: Union[ToolDef, AdvanceToolDef], action_input: str, request_id: str=None):
+async def execute_tool(
+    tool: Union[ToolDef, AdvanceToolDef],
+    action_input: str,
+    request_id: str = None,
+):
     if isinstance(tool, AdvanceToolDef):
-        return await sync2async(execute_advance_tool)(tool, action_input, request_id)
-    
+        return await sync2async(execute_advance_tool)(
+            tool, action_input, request_id
+        )
+
     inputs = action_input.split("|")
 
     if len(tool.params) == 0:
@@ -190,7 +218,7 @@ async def execute_tool(tool: Union[ToolDef, AdvanceToolDef], action_input: str, 
             return [await tool.executor()]
         else:
             return [await sync2async(tool.executor)()]
-    
+
     try:
         n_params = len(tool.params)
         res = []
@@ -223,4 +251,3 @@ async def execute_tool(tool: Union[ToolDef, AdvanceToolDef], action_input: str, 
             f"Error while executing {tool.name} with input {action_input}: {err}"
         )
         return [f"Error while executing {tool.name} with input {action_input}"]
-

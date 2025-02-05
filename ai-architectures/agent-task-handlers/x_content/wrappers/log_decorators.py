@@ -3,13 +3,14 @@ import logging
 import time
 from .telegram import send_message, TELEGRAM_ALERT_ROOM
 import traceback
-from . import constants as const
+from x_content import constants as const
 
 
 # Configure basic logging (can be customized per project)
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
+
 
 def log_function_call(func):
     """
@@ -21,7 +22,9 @@ def log_function_call(func):
             f"Function `{func.__name__}` called with args: {args} and kwargs: {kwargs}"
         )
         result = await func(*args, **kwargs)
-        const.DISABLE_LOG_FUNCTION_CALL or logging.info(f"Function `{func.__name__}` returned: {result}")
+        const.DISABLE_LOG_FUNCTION_CALL or logging.info(
+            f"Function `{func.__name__}` returned: {result}; args: {args}; kwargs: {kwargs}"
+        )
         return result
 
     def wrapper(*args, **kwargs):
@@ -29,10 +32,13 @@ def log_function_call(func):
             f"Function `{func.__name__}` called with args: {args} and kwargs: {kwargs}"
         )
         result = func(*args, **kwargs)
-        const.DISABLE_LOG_FUNCTION_CALL or logging.info(f"Function `{func.__name__}` returned: {result}")
+        const.DISABLE_LOG_FUNCTION_CALL or logging.info(
+            f"Function `{func.__name__}` returned: {result}; args: {args}; kwargs: {kwargs}"
+        )
         return result
 
     return async_wrapper if asyncio.iscoroutinefunction(func) else wrapper
+
 
 def log_execution_time(func):
     """
@@ -61,12 +67,14 @@ def log_on_error(func):
             return func(*args, **kwargs)
         except Exception as e:
             const.DISABLE_LOG_FUNCTION_CALL or logging.error(
-                f"Function `{func.__name__}` raised an error: {e}", exc_info=True
+                f"Function `{func.__name__}` raised an error: {e}",
+                exc_info=True,
             )
-            
+
             raise
 
     return wrapper
+
 
 def log_on_error_and_raise_alert(func):
     """
@@ -78,15 +86,17 @@ def log_on_error_and_raise_alert(func):
             return func(*args, **kwargs)
         except Exception as e:
             const.DISABLE_LOG_FUNCTION_CALL or logging.error(
-                f"Function `{func.__name__}` raised an error: {e}", exc_info=True
+                f"Function `{func.__name__}` raised an error: {e}",
+                exc_info=True,
             )
 
-            msg = '## Function `{}` raised an error: {}; \n\n## Inputs: \n-args: {}\n-kwargs {} \n\n## Traceback: \n\n ```bash\n{}\n```'.format(
-                func.__name__, e, 
-                args, kwargs, traceback.format_exc()
+            msg = "## Function `{}` raised an error: {}; \n\n## Inputs: \n-args: {}\n-kwargs {} \n\n## Traceback: \n\n ```bash\n{}\n```".format(
+                func.__name__, e, args, kwargs, traceback.format_exc()
             )
 
-            const.DISABLE_LOG_FUNCTION_CALL or send_message('junk_notifications', msg, room=TELEGRAM_ALERT_ROOM)
+            const.DISABLE_LOG_FUNCTION_CALL or send_message(
+                "junk_notifications", msg, room=TELEGRAM_ALERT_ROOM
+            )
             raise
 
     return wrapper
@@ -99,9 +109,13 @@ def log_custom_message(message: str, level=logging.INFO):
 
     def decorator(func):
         def wrapper(*args, **kwargs):
-            const.DISABLE_LOG_FUNCTION_CALL or logging.log(level, f"{message} - Function `{func.__name__}` is starting.")
+            const.DISABLE_LOG_FUNCTION_CALL or logging.log(
+                level, f"{message} - Function `{func.__name__}` is starting."
+            )
             result = func(*args, **kwargs)
-            const.DISABLE_LOG_FUNCTION_CALL or logging.log(level, f"{message} - Function `{func.__name__}` completed.")
+            const.DISABLE_LOG_FUNCTION_CALL or logging.log(
+                level, f"{message} - Function `{func.__name__}` completed."
+            )
             return result
 
         return wrapper

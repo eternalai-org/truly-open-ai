@@ -2,10 +2,18 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
-from x_content.wrappers.api.twitter_v2.models.objects import ExtendedTweetInfo, TweetInfo, TweetObject, TwitterUserObject
+from x_content.wrappers.api.twitter_v2.models.objects import (
+    ExtendedTweetInfo,
+    StructuredInformation,
+    TweetInfo,
+    TweetObject,
+    TwitterUserObject,
+)
 from typing import TypeVar, Generic
 
-T = TypeVar('T')
+T = TypeVar("T")
+
+
 class Response(BaseModel, Generic[T]):
     error: Optional[str] = None
     data: Optional[T] = None
@@ -49,14 +57,8 @@ class UsernamesDto(BaseModel):
 
 
 class StructuredInformationDto(BaseModel):
-    knowledge: List[str]
-    news: List[str]    
+    structured_information: StructuredInformation
 
-    def to_dict(self):
-        return {
-            "knowledge": self.knowledge,
-            "news": self.news,
-        }
 
 class TwitterUsersDto(BaseModel):
     users: List[TwitterUserObject]
@@ -76,4 +78,3 @@ class GenerateActionDto(BaseModel):
 class InscribeTweetByIdDto(BaseModel):
     success: bool
     metadata: dict
-

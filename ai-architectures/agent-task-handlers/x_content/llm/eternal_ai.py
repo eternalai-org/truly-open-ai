@@ -15,9 +15,11 @@ from x_content.wrappers.log_decorators import log_function_call
 
 logger = logging.getLogger(__name__)
 
+
 @lru_cache(maxsize=1)
 def get_time_estimation():
     return ModelInferTimeEstimation()
+
 
 class OnchainInferResult(ChatResult):
     tx_hash: str = None
@@ -29,13 +31,14 @@ class ASyncBasedEternalAI(OpenAILLMBase):
     chain_id: str
     agent_contract_id: str
     metadata: dict
-    timeout_seconds: int = 60 * 60 * 3 # expire in 3 hours
+    timeout_seconds: int = 60 * 60 * 3  # expire in 3 hours
     failed_count_limt: int = 5
 
-    def __init__(self, *args, **kwargs):  
+    def __init__(self, *args, **kwargs):
         super(ASyncBasedEternalAI, self).__init__(*args, **kwargs)
 
-    async def submit_async_request(self, 
+    async def submit_async_request(
+        self,
         messages: List[BaseMessage],
         **kwargs,
     ) -> str:
@@ -61,16 +64,15 @@ class ASyncBasedEternalAI(OpenAILLMBase):
             "logit_bias": None,
             "frequency_penalty": self.frequency_penalty,
             "seed": self.seed,
-
             "chain_id": self.chain_id,
             "contract_agent_id": self.agent_contract_id,
-            "meta_data": self.metadata
+            "meta_data": self.metadata,
         }
 
         json_data.update(kwargs)
-        
+
         url = f"{self.openai_api_base}/agent/async-batch-prompt"
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 url,
@@ -80,12 +82,19 @@ class ASyncBasedEternalAI(OpenAILLMBase):
             )
 
         if response.status_code != 200:
-            logger.error(f"Failed to send request to '{url}'; code: {response.status_code}; raw: {response.text}.")
-            raise ValueError(f"Failed to send request to '{url}'; code: {response.status_code}; raw: {response.text}.")
+            logger.error(
+                f"Failed to send request to '{url}'; code: {response.status_code}"
+            )
+            raise ValueError(
+                f"Failed to send request to '{url}'; code: {response.status_code}"
+            )
 
         response_json = response.json()
 
-        if response_json["status"] < 0 or response_json["data"].get("id") is None:
+        if (
+            response_json["status"] < 0
+            or response_json["data"].get("id") is None
+        ):
             raise Exception("Inference request submission failed")
 
         receipt = response_json["data"]["id"]
@@ -112,30 +121,46 @@ class ASyncBasedEternalAI(OpenAILLMBase):
             if current_time - started_at > self.timeout_seconds:
                 raise Exception("Inference request timed out")
 
-
-            check_result: ServerInferenceResult = await check_and_get_infer_result(url, headers)
+            check_result: ServerInferenceResult = (
+                await check_and_get_infer_result(url, headers)
+            )
 
             if not check_result.skipped:
                 resp = check_result.response
 
                 # step 2: check and parse the response
                 if resp["status"] < 0 or resp["data"]["status"] == "error":
-                    raise Exception(f"Inference request failed; Receipt: {receipt}; Raw Output: {resp}")
+                    raise Exception(
+                        f"Inference request failed; Receipt: {receipt}; Raw Output: {resp}"
+                    )
 
                 if resp["data"]["status"] == "queue-handled":
                     tx_hash = resp["data"]["inscribe_tx_hash"]
 
                     try:
-                        prompt_output = json.loads(resp["data"]["prompt_output"])
+                        prompt_output = json.loads(
+                            resp["data"]["prompt_output"]
+                        )
                     except json.JSONDecodeError:
-                        raise Exception(f"Failed to decode prompt output; Receipt: {receipt}; Tx Hash: {tx_hash}; Raw Output: {resp}") 
-    
-                    choices: List[Dict[str, Any]] = prompt_output.get("choices", [])
-                    if not choices:
-                        raise ValueError(f"No choices found in the OpenAI response; Receipt: {receipt}; Tx Hash: {tx_hash}; Raw Output: {prompt_output}")
+                        raise Exception(
+                            f"Failed to decode prompt output; Receipt: {receipt}; Tx Hash: {tx_hash}; Raw Output: {resp}"
+                        )
 
-                    if choices[0].get("message") is None or choices[0].get("message", {}).get("content") is None:
-                        raise ValueError(f"Bad response from LLM-server. Receipt: {receipt}; Tx Hash: {tx_hash}; Raw Output: {prompt_output}")
+                    choices: List[Dict[str, Any]] = prompt_output.get(
+                        "choices", []
+                    )
+                    if not choices:
+                        raise ValueError(
+                            f"No choices found in the OpenAI response; Receipt: {receipt}; Tx Hash: {tx_hash}; Raw Output: {prompt_output}"
+                        )
+
+                    if (
+                        choices[0].get("message") is None
+                        or choices[0].get("message", {}).get("content") is None
+                    ):
+                        raise ValueError(
+                            f"Bad response from LLM-server. Receipt: {receipt}; Tx Hash: {tx_hash}; Raw Output: {prompt_output}"
+                        )
 
                     content = choices[0].get("message", {}).get("content", "")
                     token_usage = prompt_output.get("usage", {})
@@ -158,18 +183,16 @@ class ASyncBasedEternalAI(OpenAILLMBase):
         submit_time = time.time()
         estimation = get_time_estimation()
 
-        logger.info(f"Submitted async request; Receipt: {receipt}; Messages: {json.dumps(messages)}")
+        logger.info(
+            f"Submitted async request; Receipt: {receipt}; Messages: {json.dumps(messages)}"
+        )
         try:
             result: dict = await self.wait(
-                receipt, 
-                estimation.estimate(self.model_name)
+                receipt, estimation.estimate(self.model_name)
             )
 
         finally:
-            estimation.update(
-                self.model_name, 
-                time.time() - submit_time
-            )
+            estimation.update(self.model_name, time.time() - submit_time)
 
         if "message" not in result:
             raise ValueError(f"Unexpected response from OpenAI: {result}")
@@ -179,9 +202,9 @@ class ASyncBasedEternalAI(OpenAILLMBase):
             generations=[ChatGeneration(message=result["message"])],
             llm_output={"token_usage": result.get("token_usage", {})},
             tx_hash=result.get("tx_hash", ""),
-            receipt=receipt
+            receipt=receipt,
         )
-    
+
     def get_info(self):
         return {
             "model": self.model_name,

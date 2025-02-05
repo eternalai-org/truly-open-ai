@@ -1,21 +1,22 @@
 from x_content.wrappers.magic import helpful_raise_for_status
-from .log_decorators import log_function_call 
+from .log_decorators import log_function_call
 from typing import List
-import logging 
+import logging
 import requests
 import json
 from x_content import constants as const
 
 logger = logging.getLogger(__name__)
 
-@log_function_call     
+
+@log_function_call
 def search_from_bing(query: str, top_k: int = 1) -> List[str]:
     """
-    Retrieves and integrates up-to-date information on topics where recent events or developments (2024 onward) 
+    Retrieves and integrates up-to-date information on topics where recent events or developments (2024 onward)
     are essential to accurately address the user's query.
 
-    This function should only be called when the knowledge cutoff (01 Sep 2022) leaves gaps that would 
-    prevent a comprehensive and accurate response. Retrieved insights should be directly relevant, carefully 
+    This function should only be called when the knowledge cutoff (01 Sep 2022) leaves gaps that would
+    prevent a comprehensive and accurate response. Retrieved insights should be directly relevant, carefully
     vetted, and seamlessly incorporated with existing knowledge to provide a clear, precise, and well-informed answer.
 
     Args:
@@ -28,9 +29,7 @@ def search_from_bing(query: str, top_k: int = 1) -> List[str]:
 
     url = "https://api.bing.microsoft.com/v7.0/news/search"
 
-    headers = {
-        "Ocp-Apim-Subscription-Key": const.BING_SEARCH_API_KEY
-    }
+    headers = {"Ocp-Apim-Subscription-Key": const.BING_SEARCH_API_KEY}
 
     params = {
         "q": query,
@@ -39,7 +38,7 @@ def search_from_bing(query: str, top_k: int = 1) -> List[str]:
         "safeSearch": "Moderate",
         "setLang": "en",
         "mkt": "en-US",
-        "sortBy": "Relevance"
+        "sortBy": "Relevance",
     }
 
     try:

@@ -1,14 +1,41 @@
-
 from x_content.wrappers.knowledge_base.base import KnowledgeBase
-from x_content.wrappers.magic import get_response_content, helpful_raise_for_status, sync2async
-from x_content.wrappers.api.twitter_v2.models.response import ExtendedTweetInfoDto, GenerateActionDto, GetRecentOwnTweetDto, InscribeTweetByIdDto, Response, ExtendedTweetInfosDto, SearchTweetDto, StructuredInformationDto, TweetInfosDto, TweetsDto, TwitterUserObjectDto, TwitterUsersDto, UsernamesDto
-from x_content.wrappers.api.twitter_v2.models.objects import ExtendedTweetInfo, ExtendedTweetObject, MentionData, TweetInfo, TweetObject, TweetType, TwitterRequestAuthorization, TwitterUserObject
+from x_content.wrappers.magic import (
+    get_response_content,
+    helpful_raise_for_status,
+    sync2async,
+)
+from x_content.wrappers.api.twitter_v2.models.response import (
+    ExtendedTweetInfoDto,
+    GenerateActionDto,
+    GetRecentOwnTweetDto,
+    InscribeTweetByIdDto,
+    Response,
+    ExtendedTweetInfosDto,
+    SearchTweetDto,
+    StructuredInformationDto,
+    TweetInfosDto,
+    TweetsDto,
+    TwitterUserObjectDto,
+    TwitterUsersDto,
+    UsernamesDto,
+)
+from x_content.wrappers.api.twitter_v2.models.objects import (
+    ExtendedTweetInfo,
+    ExtendedTweetObject,
+    MentionData,
+    StructuredInformation,
+    TweetInfo,
+    TweetObject,
+    TweetType,
+    TwitterRequestAuthorization,
+    TwitterUserObject,
+)
 from x_content.wrappers.log_decorators import log_function_call
+from x_content.wrappers.vision_tasks import get_image_description
 
 # BAD IMPORT HERE
-from ...junk_tasks import (
+from x_content.wrappers.llm_tasks import (
     generate_retrieval_query,
-    get_image_description,
 )
 
 from typing import Any, List
@@ -19,37 +46,39 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 import re
 import string
-from .... import constants as const
+from x_content import constants as const
 from x_content.cache.entity_cache import (
-    ConversationRedisCache, 
+    ConversationRedisCache,
     FollowingListRedisCache,
     ShadowReplyRedisCache,
-    TweetInscriptionRedisCache
+    TweetInscriptionRedisCache,
 )
-from ...browsing import get_cleaned_text
+from x_content.wrappers.browsing import get_cleaned_text
 from functools import lru_cache
 import traceback
 import json
 import random
 
-from ...bing_search import search_from_bing
-from ...rag_search import get_random_from_collections, search_from_db
+from x_content.wrappers.bing_search import search_from_bing
+from x_content.wrappers.rag_search import get_random_from_collections, search_from_db
 
 from datetime import timezone, timedelta
 
+
 @lru_cache(maxsize=1)
 def _get_api_headers():
-    return {
-        'api-key': const.TWITTER_API_KEY
-    }
-    
+    return {"api-key": const.TWITTER_API_KEY}
+
+
 @lru_cache(maxsize=1)
 def _get_conversation_redis_cache():
     return ConversationRedisCache()
 
+
 @lru_cache(maxsize=1)
 def _get_following_list_redis_cache():
     return FollowingListRedisCache()
+
 
 @lru_cache(maxsize=1)
 def _get_shadow_reply_redis_cache():
@@ -86,71 +115,76 @@ def is_valid_tweet_id(tweet_id):
 def _image_descriptions_from_tweet_id(tweet_id: str):
     url = f"{const.TWITTER_API_URL}/tweets"
     resp = requests.get(
-        url, 
-        params={"ids": tweet_id}, 
-        headers=_get_api_headers()
+        url, params={"ids": tweet_id}, headers=_get_api_headers()
     )
-    
+
     if resp.status_code != 200:
         logger.error(f"Error occurred when calling api: {resp.text}")
         return []
 
     resp = resp.json()
-    data = resp['result'][tweet_id]
+    data = resp["result"][tweet_id]
 
-    media = data['AttachmentMedia']
+    media = data["AttachmentMedia"]
 
-    urls = [
-        m['url'] for m in media 
-        if m['type'] == "photo" and m['url']
-    ]
-    
+    urls = [m["url"] for m in media if m["type"] == "photo" and m["url"]]
+
     image_descriptions = []
 
     for url in urls:
-        description = get_image_description(url)
-
-        if description is not None:
+        try:
+            description = get_image_description(url)
             image_descriptions.append(description)
-    
+        except Exception as err:
+            logger.error(
+                f"[_image_descriptions_from_tweet_id] Failed to get image description at {url}: {err}"
+            )
+
     return image_descriptions
+
 
 def _image_urls_from_tweet_id(tweet_id: str):
     try:
         url = f"{const.TWITTER_API_URL}/tweets"
         resp = requests.get(
-            url, 
-            params={"ids": tweet_id}, 
-            headers=_get_api_headers()
+            url, params={"ids": tweet_id}, headers=_get_api_headers()
         )
         helpful_raise_for_status(resp)
 
         resp = resp.json()
-        data = resp['result'][tweet_id]
+        data = resp["result"][tweet_id]
 
-        media = data['AttachmentMedia']
+        media = data["AttachmentMedia"]
 
-        urls = [m['url'] for m in media if m['type'] == "photo" and m['url']]            
+        urls = [m["url"] for m in media if m["type"] == "photo" and m["url"]]
         return urls
     except Exception as e:
         traceback.print_exc()
-        logger.error(f"[image_urls_from_tweet_id] An unexpected error occured: {e}")
+        logger.error(
+            f"[image_urls_from_tweet_id] An unexpected error occured: {e}"
+        )
         return []
-    
-def optimize_twitter_query(query: str, remove_punctuations=False, token_limit=-1, pat:re.Pattern=None, length_limit=30) -> str:
-    and_token = re.compile(r'\bAND\b', flags=re.IGNORECASE)
-    spacing = re.compile(r'\s+')
 
-    query = and_token.sub(' ', query)
-    query = spacing.sub(' ', query)
 
-    tokenized_query = re.split(r'\bor\b', query, flags=re.IGNORECASE)
+def optimize_twitter_query(
+    query: str,
+    remove_punctuations=False,
+    token_limit=-1,
+    pat: re.Pattern = None,
+    length_limit=30,
+) -> str:
+    and_token = re.compile(r"\bAND\b", flags=re.IGNORECASE)
+    spacing = re.compile(r"\s+")
+
+    query = and_token.sub(" ", query)
+    query = spacing.sub(" ", query)
+
+    tokenized_query = re.split(r"\bor\b", query, flags=re.IGNORECASE)
     filtered_tokenized_query = []
 
     if pat is not None:
         tokenized_query = [
-            i.strip() for i in tokenized_query 
-            if pat.fullmatch(i.strip())
+            i.strip() for i in tokenized_query if pat.fullmatch(i.strip())
         ]
 
     # sort and remove duplicates
@@ -160,31 +194,31 @@ def optimize_twitter_query(query: str, remove_punctuations=False, token_limit=-1
         i = i.strip(" '\"")
 
         if remove_punctuations:
-            i = ''.join([c for c in i if c not in string.punctuation])
-        
+            i = "".join([c for c in i if c not in string.punctuation])
+
         if len(filtered_tokenized_query) == 0:
             filtered_tokenized_query.append(i)
         else:
             if any([i.lower() in x.lower() for x in filtered_tokenized_query]):
                 continue
             else:
-                filtered_tokenized_query.append(i)                
-    
+                filtered_tokenized_query.append(i)
+
     random.shuffle(filtered_tokenized_query)
 
     if token_limit != -1:
         filtered_tokenized_query = filtered_tokenized_query[:token_limit]
-    
-    if len(filtered_tokenized_query) == 0:
-        return ''
 
-    res = ''
+    if len(filtered_tokenized_query) == 0:
+        return ""
+
+    res = ""
     for item in filtered_tokenized_query:
         if len(res) + len(item) > length_limit:
             break
 
         if len(res) > 0:
-            res += ' OR '
+            res += " OR "
 
         res += item
 
@@ -194,42 +228,42 @@ def optimize_twitter_query(query: str, remove_punctuations=False, token_limit=-1
         for ee in e:
             if len(res) + len(ee) > length_limit:
                 break
-            
+
             if len(res) > 0:
-                res += ' '
+                res += " "
 
             res += ee
 
     return res
 
+
+@log_function_call
 def search_twitter_news(
-    query: str, 
-    impression_count_limit=100, 
-    limit_api_results=50, 
-    use_raw=False, 
-    no_duplication=True
+    query: str,
+    impression_count_limit=100,
+    limit_api_results=50,
+    use_raw=False,
+    no_duplication=True,
 ) -> Response[TweetsDto]:
     try:
         if not use_raw:
-            query = optimize_twitter_query(query, remove_punctuations=True, token_limit=5, length_limit=30)
+            query = optimize_twitter_query(
+                query, remove_punctuations=True, token_limit=5, length_limit=30
+            )
             logger.info(f"[search_twitter_news] Optimized query: {query}")
-            
-        if query.strip() == '':
+
+        if query.strip() == "":
             logger.error("[search_twitter_news] Empty query")
             return Response(error="Empty query")
 
-        url = f'{const.TWITTER_API_URL}/tweets/search/recent'
-        
+        url = f"{const.TWITTER_API_URL}/tweets/search/recent"
+
         params = {
-            'query': f"{query} -is:retweet -is:reply -is:quote is:verified",
-            'max_results': limit_api_results
+            "query": f"{query} -is:retweet -is:reply -is:quote is:verified",
+            "max_results": limit_api_results,
         }
-        
-        resp = requests.get(
-            url, 
-            headers=_get_api_headers(), 
-            params=params
-        )
+
+        resp = requests.get(url, headers=_get_api_headers(), params=params)
 
         resp = resp.json()
         data = resp["result"]
@@ -237,7 +271,10 @@ def search_twitter_news(
         json.dumps(2)
 
         if resp["error"] is not None:
-            logger.error("[search_twitter_news] Error occurred when calling api: " + resp["error"]["message"])
+            logger.error(
+                "[search_twitter_news] Error occurred when calling api: "
+                + resp["error"]["message"]
+            )
             return Response(
                 error="Error occurred when calling api",
             )
@@ -252,7 +289,10 @@ def search_twitter_news(
             if user is None:
                 continue
 
-            if tweet["public_metrics"]["impression_count"] < impression_count_limit:
+            if (
+                tweet["public_metrics"]["impression_count"]
+                < impression_count_limit
+            ):
                 continue
 
             content_hash = hash(tweet["text"])
@@ -265,30 +305,48 @@ def search_twitter_news(
             tweets.append(
                 TweetObject(
                     tweet_id=tweet["id"],
-                    twitter_username=user.get("username", "Anonymous") if user is not None else "Anonymous",
+                    twitter_username=(
+                        user.get("username", "Anonymous")
+                        if user is not None
+                        else "Anonymous"
+                    ),
                     twitter_id=tweet["author_id"],
                     like_count=tweet["public_metrics"]["like_count"],
                     retweet_count=tweet["public_metrics"]["retweet_count"],
                     reply_count=tweet["public_metrics"]["reply_count"],
-                    impression_count=tweet["public_metrics"]["impression_count"],
+                    impression_count=tweet["public_metrics"][
+                        "impression_count"
+                    ],
                     full_text=tweet["text"],
                     posted_at=tweet["created_at"],
                 )
             )
 
-        return Response(data=TweetsDto(
-            tweets=tweets,
-        ))
+        return Response(
+            data=TweetsDto(
+                tweets=tweets,
+            )
+        )
     except Exception as err:
-        logger.error(f"[search_twitter_news] An unexpected error occured: {err}")
+        logger.error(
+            f"[search_twitter_news] An unexpected error occured: {err}"
+        )
         return Response(error="An unexpected error occured")
+
 
 def search_for_token_news(tokens: list) -> Response[TweetsDto]:
     if isinstance(tokens, str):
         tokens = [tokens]
 
-    query = ' OR '.join([f'${x}' for x in tokens])
-    return search_twitter_news(query, impression_count_limit=100, limit_api_results=50, use_raw=True, no_duplication=True)
+    query = " OR ".join([f"${x}" for x in tokens])
+    return search_twitter_news(
+        query,
+        impression_count_limit=100,
+        limit_api_results=50,
+        use_raw=True,
+        no_duplication=True,
+    )
+
 
 from ... import telegram
 
@@ -301,22 +359,27 @@ def _get_username_by_id(user_id: str):
         user_resp_json = user_resp.json()
 
         if user_resp_json["result"] == None:
-            raise Exception(f"[_get_username_by_id] User not found, url={user_url}")
+            raise Exception(
+                f"[_get_username_by_id] User not found, url={user_url}"
+            )
 
         username = user_resp_json["result"]["username"]
         return username
 
     except Exception as err:
-        raise Exception(f"[_get_username_by_id] An unexpected error occurred: {err}")
+        raise Exception(
+            f"[_get_username_by_id] An unexpected error occurred: {err}"
+        )
+
 
 # TODO: Combine this and get_recent_mentioned_tweets_by_username
 def get_recent_mentioned_tweets_by_username_v2(
-    auth: TwitterRequestAuthorization, 
-    num_tweets=1, 
+    auth: TwitterRequestAuthorization,
+    num_tweets=1,
     replied=0,
     max_num_tweets_in_conversation=3,
     preserve_img=False,
-    get_all=False
+    get_all=False,
 ) -> Response[ExtendedTweetInfosDto]:
     try:
         conversation_redis_cache = _get_conversation_redis_cache()
@@ -327,11 +390,7 @@ def get_recent_mentioned_tweets_by_username_v2(
             url = f"{const.TWITTER_API_URL}/user/by/username/{auth.twitter_username}/mentions"
             params = {"replied": replied}
 
-        resp = requests.get(
-            url, 
-            params=params,
-            headers=_get_api_headers()
-        )
+        resp = requests.get(url, params=params, headers=_get_api_headers())
 
         if resp.status_code != 200:
             logger.error(
@@ -366,19 +425,16 @@ def get_recent_mentioned_tweets_by_username_v2(
 
         tweets = resp_json["result"]["data"]
         if not tweets:
-            logger.info(f"[get_recent_mentioned_tweets_by_username_v2] No tweets found")
-            return Response(data=ExtendedTweetInfosDto(
-                tweet_infos=[]
-            ))
+            logger.info(
+                f"[get_recent_mentioned_tweets_by_username_v2] No tweets found"
+            )
+            return Response(data=ExtendedTweetInfosDto(tweet_infos=[]))
 
         tweets_with_media = [
-            tweet for tweet in tweets 
-            if tweet['attachments']['media_keys']
+            tweet for tweet in tweets if tweet["attachments"]["media_keys"]
         ]
 
-        tweets_with_media_ids = [
-            tweet['id'] for tweet in tweets_with_media
-        ]
+        tweets_with_media_ids = [tweet["id"] for tweet in tweets_with_media]
 
         res = []
 
@@ -386,13 +442,14 @@ def get_recent_mentioned_tweets_by_username_v2(
             root_conversation_id = tweet["conversation_id"]
 
             if conversation_redis_cache.is_threshold_exceeded(
-                auth.twitter_username, 
-                root_conversation_id, 
-                max_num_tweets_in_conversation
+                auth.twitter_username,
+                root_conversation_id,
+                max_num_tweets_in_conversation,
             ):
                 continue
 
-            reference_tweets = ([]
+            reference_tweets = (
+                []
                 if tweet["referenced_tweets"] is None
                 else tweet["referenced_tweets"]
             )
@@ -416,24 +473,30 @@ def get_recent_mentioned_tweets_by_username_v2(
             if _username == auth.twitter_username:
                 continue
 
-            if tweet['id'] in tweets_with_media_ids:
+            if tweet["id"] in tweets_with_media_ids:
                 if preserve_img:
-                    tweet['image_urls'] = _image_urls_from_tweet_id(tweet['id'])
+                    tweet["image_urls"] = _image_urls_from_tweet_id(
+                        tweet["id"]
+                    )
                 else:
-                    image_descriptions = _image_descriptions_from_tweet_id(tweet['id'])
-                    logger.info(f"Image description of tweet {tweet['id']}: {image_descriptions}")
-                    tweet['text'] += "\n\n".join(image_descriptions)
+                    image_descriptions = _image_descriptions_from_tweet_id(
+                        tweet["id"]
+                    )
+                    logger.info(
+                        f"Image description of tweet {tweet['id']}: {image_descriptions}"
+                    )
+                    tweet["text"] += "\n\n".join(image_descriptions)
 
             full_text = get_cleaned_text(tweet.get("text", ""))
             mentions = tweet["entities"].get("mentions", []) or []
             tweet_object = ExtendedTweetObject(
                 twitter_id=author_id,
                 tweet_id=tweet["id"],
-                twitter_username=auth.twitter_username,
+                twitter_username=_username,
                 full_text=full_text,
                 posted_at=tweet["created_at"],
                 image_urls=tweet.get("image_urls", []) or [],
-                mentions=[MentionData.from_dict(x) for x in mentions]
+                mentions=[MentionData.from_dict(x) for x in mentions],
             )
 
             tweet_info = ExtendedTweetInfo(
@@ -447,17 +510,22 @@ def get_recent_mentioned_tweets_by_username_v2(
             if len(res) >= num_tweets:
                 break
 
-        return Response(data=ExtendedTweetInfosDto(
-            tweet_infos=res,
-        ))
-    except Exception as err:
-        logger.error(f"[get_recent_mentioned_tweets_by_username_v2] An unexpected error occured: {err}")
         return Response(
-            error=f"An unexpected error occured"
+            data=ExtendedTweetInfosDto(
+                tweet_infos=res,
+            )
         )
+    except Exception as err:
+        logger.error(
+            f"[get_recent_mentioned_tweets_by_username_v2] An unexpected error occured: {err}"
+        )
+        return Response(error=f"An unexpected error occured")
+
 
 # TODO: Is this function really unused?
-def get_user_info_by_twitter_id(twitter_id: str) -> Response[TwitterUserObjectDto]:
+def get_user_info_by_twitter_id(
+    twitter_id: str,
+) -> Response[TwitterUserObjectDto]:
     try:
         twitter_id = _preprocess_twitter_id(twitter_id)
 
@@ -465,7 +533,9 @@ def get_user_info_by_twitter_id(twitter_id: str) -> Response[TwitterUserObjectDt
         resp = requests.get(url, headers=_get_api_headers())
 
         if resp.status_code != 200:
-            logger.error(f"[get_user_info_by_twitter_id] Something went wrong (status code: {resp.status_code}, resp: {resp.json()}, url: {resp.url})")
+            logger.error(
+                f"[get_user_info_by_twitter_id] Something went wrong (status code: {resp.status_code}, resp: {resp.json()}, url: {resp.url})"
+            )
             return Response(
                 error=f"Something went wrong (status code: {resp.status_code})"
             )
@@ -473,15 +543,21 @@ def get_user_info_by_twitter_id(twitter_id: str) -> Response[TwitterUserObjectDt
         resp = resp.json()
 
         if resp["error"] is not None:
-            logger.error("[get_user_info_by_twitter_id] Error occurred when calling api: " + resp["error"]["message"])
+            logger.error(
+                "[get_user_info_by_twitter_id] Error occurred when calling api: "
+                + resp["error"]["message"]
+            )
             return Response(
                 error="Error occurred when calling api",
             )
-        
+
         info = resp["result"]
 
         if info["id"] == "":
-            logger.error("[get_user_info_by_twitter_id] No user found with id: " + twitter_id)
+            logger.error(
+                "[get_user_info_by_twitter_id] No user found with id: "
+                + twitter_id
+            )
             return Response(
                 error="No user found with id: " + twitter_id,
             )
@@ -494,14 +570,13 @@ def get_user_info_by_twitter_id(twitter_id: str) -> Response[TwitterUserObjectDt
             followings_count=info["public_metrics"]["following_count"],
             is_blue_verified=info["verified"],
         )
-        return Response(data=TwitterUserObjectDto(
-            user=user
-        ))
+        return Response(data=TwitterUserObjectDto(user=user))
     except Exception as err:
-        logger.error(f"[get_user_info_by_twitter_id] An unexpected error occured: {err}")
-        return Response(
-            error=f"An unexpected error occured"
+        logger.error(
+            f"[get_user_info_by_twitter_id] An unexpected error occured: {err}"
         )
+        return Response(error=f"An unexpected error occured")
+
 
 # TODO: Combine this and get_tweets_by_username_v2
 def get_tweets_by_username(
@@ -515,16 +590,18 @@ def get_tweets_by_username(
         username = _preprocess_username(username)
 
         if len(username) == 0:
-            logger.error("[get_tweets_by_username] get_tweets_by_username requires a valid username, an empty string is not")
+            logger.error(
+                "[get_tweets_by_username] get_tweets_by_username requires a valid username, an empty string is not"
+            )
             return Response(
                 error="get_tweets_by_username requires a valid username, an empty string is not",
             )
 
         url = f"{const.TWITTER_API_URL}/tweets/by/username/{username}"
         resp = requests.get(
-            url, 
+            url,
             params={"max_results": max(5, top_k)},
-            headers=_get_api_headers()
+            headers=_get_api_headers(),
         )
 
         if resp.status_code != 200:
@@ -533,7 +610,9 @@ def get_tweets_by_username(
                 f"```bash\nSomething went wrong (status code: {resp.status_code}; resp: {resp.json()}; url: {url})\n```",
                 room=telegram.TELEGRAM_ALERT_ROOM,
             )
-            logger.error(f"[get_tweets_by_username] Something went wrong (status code: {resp.status_code}; resp: {resp.json()}; url: {url})")
+            logger.error(
+                f"[get_tweets_by_username] Something went wrong (status code: {resp.status_code}; resp: {resp.json()}; url: {url})"
+            )
             return Response(
                 error=f"Something went wrong (status code: {resp.status_code})",
             )
@@ -546,17 +625,22 @@ def get_tweets_by_username(
                 f"```bash\nError occurred when calling api (msg: {resp['error']['message']}; url: {url})\n```",
                 room=telegram.TELEGRAM_ALERT_ROOM,
             )
-            logger.error("[get_tweets_by_username] Error occurred when calling api: " + resp["error"]["message"])
+            logger.error(
+                "[get_tweets_by_username] Error occurred when calling api: "
+                + resp["error"]["message"]
+            )
             return Response(
                 error="Error occurred when calling api",
             )
-        
+
         tweets = resp["result"]["data"]
         if not tweets:
             logger.error("No tweets found")
-            return Response(data=TweetsDto(
-                tweets=[],
-            ))
+            return Response(
+                data=TweetsDto(
+                    tweets=[],
+                )
+            )
 
         conversation_redis_cache = _get_conversation_redis_cache()
 
@@ -564,9 +648,9 @@ def get_tweets_by_username(
             tweets = list(
                 filter(
                     lambda x: not conversation_redis_cache.is_threshold_exceeded(
-                        owner_username, 
-                        x["conversation_id"], 
-                        max_num_tweets_in_conversation=max_num_tweets_in_conversation
+                        owner_username,
+                        x["conversation_id"],
+                        max_num_tweets_in_conversation=max_num_tweets_in_conversation,
                     ),
                     tweets,
                 )
@@ -584,34 +668,34 @@ def get_tweets_by_username(
                 full_text=x["text"],
                 posted_at=x["created_at"],
                 media=[
-                    e['expanded_url'] 
-                    for e in x.get('entities', {}).get('urls', []) or []
+                    e["expanded_url"]
+                    for e in x.get("entities", {}).get("urls", []) or []
                 ],
                 reference=x.get("referenced_tweets", []),
             )
             for x in tweets
         ]
-        
+
         # reorder by posted time
         tweets = sorted(tweets, key=lambda x: x.posted_at, reverse=True)
 
-        return Response(data=TweetsDto(
-            tweets=tweets
-        ))
+        return Response(data=TweetsDto(tweets=tweets))
     except Exception as err:
         traceback.print_exc()
         return Response(
             error="An unexpected error occured",
         )
 
+
 from typing import Any, List, Dict
-        
+
+
 def _get_following_by_username(
     username: str, minimum_followers=None
 ) -> Response[List[Dict[str, str]]]:
     username = _preprocess_username(username)
 
-    key = f'{username}_followings'
+    key = f"{username}_followings"
 
     followings_list_redis_cache = _get_following_list_redis_cache()
     cached_list = followings_list_redis_cache.get(key)
@@ -624,7 +708,9 @@ def _get_following_by_username(
         resp = requests.get(url, headers=_get_api_headers())
 
         if resp.status_code != 200:
-            logger.error(f"Something went wrong (status code: {resp.status_code})")
+            logger.error(
+                f"Something went wrong (status code: {resp.status_code})"
+            )
             return Response(
                 error=f"Something went wrong (status code: {resp.status_code})",
             )
@@ -632,7 +718,9 @@ def _get_following_by_username(
         resp = resp.json()
 
         if resp["error"] is not None:
-            logger.error(f'Error occurred when calling api: {resp["error"]["message"]}')
+            logger.error(
+                f'Error occurred when calling api: {resp["error"]["message"]}'
+            )
             return Response(
                 error="Error occurred when calling api",
             )
@@ -647,24 +735,20 @@ def _get_following_by_username(
         followings = [x for x in followings if x["rest_id"] != ""]
         if len(followings) >= 100:
             followings_list_redis_cache.commit(key, followings)
-        
+
     return Response(data=followings)
+
 
 def get_following_by_username(
     username: str, max_users=10, minimum_followers=None
 ) -> Response[UsernamesDto]:
     try:
-        response = _get_following_by_username(
-            username, 
-            minimum_followers
-        )
-        
+        response = _get_following_by_username(username, minimum_followers)
+
         followings = response.data
 
         if len(followings) == 0:
-            return Response(data=UsernamesDto(
-                usernames=[]
-            ))
+            return Response(data=UsernamesDto(usernames=[]))
 
         if minimum_followers:
             followings = [
@@ -675,50 +759,32 @@ def get_following_by_username(
 
         usernames = list(map(lambda x: x["screen_name"], followings))
         usernames = usernames[:max_users]
-        return Response(data=UsernamesDto(
-            usernames=usernames
-        ))
+        return Response(data=UsernamesDto(usernames=usernames))
     except Exception as err:
-        logger.error(f"[get_following_by_username] An unexpected error occured: {err}")
+        logger.error(
+            f"[get_following_by_username] An unexpected error occured: {err}"
+        )
         return Response(
             error="An unexpected error occured",
         )
 
-# TODO: Combine this and get_full_context_from_a_tweet 
-def react_get_tweet_full_context(tweet_id: str) -> Response[TweetsDto]:
-    try:
-        tweets = []
 
-        while tweet_id is not None and len(tweets) < 20:
-            resp = get_tweet_info_from_tweet_id(tweet_id)
-            if resp.is_error():
-                break
-            tweet_info = resp.data.tweet_info
-
-            tweet_object = tweet_info.tweet_object
-            tweet_object.full_text = get_cleaned_text(tweet_object.full_text)
-            tweets.insert(0, tweet_object)
-            tweet_id = tweet_info.parent_tweet_id
-        return Response(data=TweetsDto(
-            tweets=tweets,
-        ))
-    except Exception as err:
-        traceback.print_exc()
-        logger.error(f"[react_get_tweet_full_context] An unexpected error occurred: {err}")
-        return Response(
-            error="An unexpected error occured",
-        )
-
-async def get_relevent_information_v2(kn_base: KnowledgeBase, tweet_id: str = None, tweets: List[TweetObject] = None) -> Response[StructuredInformationDto]:
+async def get_relevent_information_v2(
+    kn_base: KnowledgeBase,
+    tweet_id: str = None,
+    tweets: List[TweetObject] = None,
+) -> Response[StructuredInformationDto]:
     if tweets is None:
         if tweet_id is None:
             return Response(error="Either tweet_id or tweets must be provided")
-        
-        resp: Response[TweetsDto] = await sync2async(react_get_tweet_full_context)(tweet_id)
+
+        resp: Response[ExtendedTweetInfosDto] = await sync2async(
+            get_full_context_by_tweet_id
+        )(tweet_id)
         if resp.is_error():
             return Response(error="Retrieving full context failed")
-        
-        tweets = resp.data.tweets
+
+        tweets = [x.tweet_object for x in resp.data.tweet_infos]
 
     chat_history = [
         {
@@ -728,33 +794,58 @@ async def get_relevent_information_v2(kn_base: KnowledgeBase, tweet_id: str = No
         for x in tweets
     ]
 
-    logger.info(f"[get_relevent_information_v2] chat history: {json.dumps(chat_history, indent=2)}")
+    logger.info(
+        f"[get_relevent_information_v2] chat history: {json.dumps(chat_history)}"
+    )
 
-    retrieval_query = await sync2async(generate_retrieval_query)(chat_history)
-    if retrieval_query == "":
-        return Response(error="Generate retrieval query failed")
+    try:
+        retrieval_query = await sync2async(generate_retrieval_query)(
+            chat_history
+        )
+        if retrieval_query == "":
+            return Response(error="Generate retrieval query failed")
+    except Exception as err:
+        return Response(error=f"Generate retrieval query failed: {err}")
 
-    knowledge = await search_from_db(kn_base, retrieval_query, top_k = 5, threshold=0.85)
-    news = await sync2async(search_from_bing)(retrieval_query, top_k = 10)
-    structured_information = StructuredInformationDto(
+    knowledge = await search_from_db(
+        kn_base, retrieval_query, top_k=5, threshold=0.85
+    )
+    bing_news = await sync2async(search_from_bing)(retrieval_query, top_k=10)
+    twitter_resp: Response[TweetsDto] = await sync2async(search_twitter_news)(
+        retrieval_query,
+        limit_api_results=10,
+        use_raw=True,
+    )
+    if not twitter_resp.is_error():
+        twitter_news = [x.full_text for x in twitter_resp.data.tweets]
+    else:
+        twitter_news = []
+
+    news = bing_news + twitter_news
+
+    structured_information = StructuredInformation(
         knowledge=knowledge,
         news=news,
     )
 
-    return Response(data=structured_information)
+    return Response(
+        data=StructuredInformationDto(
+            structured_information=structured_information
+        )
+    )
 
 
 @lru_cache(maxsize=128)
-def _get_tweet_info_from_tweet_id(tweet_id: str, preserve_img=False) -> ExtendedTweetInfo:
+def _get_tweet_info_from_tweet_id(
+    tweet_id: str, preserve_img=False
+) -> ExtendedTweetInfo:
     try:
         if not is_valid_tweet_id(tweet_id):
             raise Exception(f"'{tweet_id}' is not a valid tweet id")
 
         url = f"{const.TWITTER_API_URL}/tweets"
         resp = requests.get(
-            url, 
-            params={"ids": tweet_id},
-            headers=_get_api_headers()
+            url, params={"ids": tweet_id}, headers=_get_api_headers()
         )
 
         helpful_raise_for_status(resp)
@@ -766,25 +857,33 @@ def _get_tweet_info_from_tweet_id(tweet_id: str, preserve_img=False) -> Extended
         key, value = list(result.items())[0]
         tweet = value["Tweet"]
         user = value["User"]
-        media = value['AttachmentMedia']
+        media = value["AttachmentMedia"]
 
         image_descriptions = []
         if media is not None:
-            urls = [m['url'] for m in media if m['type'] == "photo" and m['url']]
+            urls = [
+                m["url"] for m in media if m["type"] == "photo" and m["url"]
+            ]
 
-            if preserve_img:                    
-                tweet['image_urls'] = urls
+            if preserve_img:
+                tweet["image_urls"] = urls
             else:
                 for url in urls:
-                    description = get_image_description(url)
-                    if description:
-                        image_descriptions.append("\n\n"+description)                    
-                logger.info(f"Image description of tweet {tweet['id']}: {image_descriptions}")
-                tweet['text'] += "".join(image_descriptions)
+                    try:
+                        description = get_image_description(url)
+                        image_descriptions.append("\n\n" + description)
+                    except Exception as err:
+                        logger.error(
+                            f"[_get_tweet_info_from_tweet_id] Failed to get image description at {url}: {err}"
+                        )
+                logger.info(
+                    f"Image description of tweet {tweet['id']}: {image_descriptions}"
+                )
+                tweet["text"] += "".join(image_descriptions)
 
         user = user or {}
 
-        mentions = tweet["entities"].get("mentions", []) or []        
+        mentions = tweet["entities"].get("mentions", []) or []
         tweet_object = ExtendedTweetObject(
             tweet_id=tweet["id"],
             twitter_id=user.get("id", "N/A"),
@@ -792,7 +891,7 @@ def _get_tweet_info_from_tweet_id(tweet_id: str, preserve_img=False) -> Extended
             full_text=tweet["text"],
             posted_at=tweet["created_at"],
             image_urls=tweet.get("image_urls", []) or [],
-            mentions=[MentionData.from_dict(x) for x in mentions]
+            mentions=[MentionData.from_dict(x) for x in mentions],
         )
 
         parent_tweet_id = None
@@ -826,11 +925,15 @@ def _get_tweet_info_from_tweet_id(tweet_id: str, preserve_img=False) -> Extended
             f"""```bash\n{traceback.format_exc()}\n```""",
             room=telegram.TELEGRAM_ALERT_ROOM,
         )
-        logger.error(f"[get_tweet_info_from_tweet_id] (tweet_id={tweet_id}) An unexpected error occurred: {e}")
+        logger.error(
+            f"[get_tweet_info_from_tweet_id] (tweet_id={tweet_id}) An unexpected error occurred: {e}"
+        )
         raise Exception("An unexpected error occurred")
 
 @log_function_call
-def get_tweet_info_from_tweet_id(tweet_id: str, preserve_img=False) -> Response[ExtendedTweetInfoDto]:
+def get_tweet_info_from_tweet_id(
+    tweet_id: str, preserve_img=False
+) -> Response[ExtendedTweetInfoDto]:
     try:
         data = _get_tweet_info_from_tweet_id(tweet_id, preserve_img)
         return Response(data=data)
@@ -838,7 +941,7 @@ def get_tweet_info_from_tweet_id(tweet_id: str, preserve_img=False) -> Response[
         return Response(error=str(e))
 
 
-template_msg = '''
+template_msg = """
 <strong>{agent_name} has made a {action_type}!</strong>
 <i><strong>Ref-ID</strong> {ref_id};
 <strong>Request-ID</strong> {nav};
@@ -849,22 +952,27 @@ template_msg = '''
 {line_str}
 <strong>Success</strong>: {success}
 {additional_info}
-'''
+"""
+
 
 def notify_agent_action(
-    auth: TwitterRequestAuthorization, 
-    action_type: str, 
-    action_input: dict, 
-    success: bool, 
-    response: dict = None
+    auth: TwitterRequestAuthorization,
+    action_type: str,
+    action_input: dict,
+    success: bool,
+    response: dict = None,
 ):
-    additional_info = ''
+    additional_info = ""
 
     if not success:
-        additional_info = '<strong>Response</strong>:\n<pre>{}</pre>'.format(json.dumps(response, indent=2))
+        additional_info = "<strong>Response</strong>:\n<pre>{}</pre>".format(
+            json.dumps(response, indent=2)
+        )
 
-    action_input = '<strong>Input</strong>:\n<pre>{}</pre>'.format(json.dumps(action_input, indent=2)) 
-    line_str = '-' * 25
+    action_input = "<strong>Input</strong>:\n<pre>{}</pre>".format(
+        json.dumps(action_input, indent=2)
+    )
+    line_str = "-" * 25
 
     msg = template_msg.format(
         agent_name=auth.twitter_username,
@@ -876,18 +984,19 @@ def notify_agent_action(
         action_input=action_input,
         success=success,
         additional_info=additional_info,
-        line_str=line_str
+        line_str=line_str,
     )
 
     telegram.send_message(
-        "junk_nofitications", 
-        msg, room=telegram.TELEGRAM_ROOM, 
-        fmt='HTML'
+        "junk_nofitications", msg, room=telegram.TELEGRAM_ROOM, fmt="HTML"
     )
+
 
 def generate_action(
     auth: TwitterRequestAuthorization,
-    action_type: str, action_input: dict, tx_hash=""
+    action_type: str,
+    action_input: dict,
+    tx_hash="",
 ) -> Response[GenerateActionDto]:
     try:
         url = f"{const.TWITTER_API_URL}/user/action"
@@ -904,15 +1013,23 @@ def generate_action(
         response = requests.post(url, json=payload, headers=_get_api_headers())
         success = response.status_code == 200
         if success:
-            logger.info(f"[generate_action] User {auth.twitter_username} performing action with payload {json.dumps(payload)}")
+            logger.info(
+                f"[generate_action] User {auth.twitter_username} performing action with payload {json.dumps(payload)}"
+            )
         else:
-            logger.error(f"[generate_action] User {auth.twitter_username} performing action failed, status_code={response.status_code}, payload={json.dumps(payload)}, response={get_response_content(response)}")
-        
-        notify_agent_action(auth, action_type, action_input, success, get_response_content(response))
-        
-        return Response(
-            data=GenerateActionDto(success=success)
+            logger.error(
+                f"[generate_action] User {auth.twitter_username} performing action failed, status_code={response.status_code}, payload={json.dumps(payload)}, response={get_response_content(response)}"
+            )
+
+        notify_agent_action(
+            auth,
+            action_type,
+            action_input,
+            success,
+            get_response_content(response),
         )
+
+        return Response(data=GenerateActionDto(success=success))
     except Exception as err:
         traceback.print_exc()
         telegram.send_message(
@@ -923,7 +1040,10 @@ def generate_action(
         logger.error(f"[generate_action] An unexpected error occurred: {err}")
         return Response(error="An unexpected error occurred")
 
-def follow(auth: TwitterRequestAuthorization, target_username: str) -> Response[GenerateActionDto]:
+
+def follow(
+    auth: TwitterRequestAuthorization, target_username: str
+) -> Response[GenerateActionDto]:
     resp = generate_action(
         auth=auth,
         action_type="follow",
@@ -934,30 +1054,33 @@ def follow(auth: TwitterRequestAuthorization, target_username: str) -> Response[
     if resp.is_error():
         return Response(error="Generate follow action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
+
 
 def reply(
     auth: TwitterRequestAuthorization,
     tweet_id: str,
     reply_content: str,
     tx_hash="",
-    max_num_tweets_in_conversation=3
+    max_num_tweets_in_conversation=3,
 ) -> Response[GenerateActionDto]:
     try:
         resp = get_tweet_info_from_tweet_id(tweet_id)
         if resp.is_error():
             return Response(error="Failed to get tweet info")
-        
+
         tweet_info = resp.data.tweet_info.to_dict()
         conversation_id = tweet_info["conversation_id"]
         conversation_redis = _get_conversation_redis_cache()
 
         if conversation_redis.is_threshold_exceeded(
-            auth.twitter_username, 
-            conversation_id, 
-            max_num_tweets_in_conversation=max_num_tweets_in_conversation
+            auth.twitter_username,
+            conversation_id,
+            max_num_tweets_in_conversation=max_num_tweets_in_conversation,
         ):
             return Response(error="Conversation is already replied")
 
@@ -968,18 +1091,17 @@ def reply(
         resp = generate_action(
             auth=auth,
             action_type="reply",
-            action_input={
-                "tweet_id": tweet_id, 
-                "comment": reply_content
-            },
+            action_input={"tweet_id": tweet_id, "comment": reply_content},
             tx_hash=tx_hash,
         )
         if resp.is_error():
             return Response(error="Generate reply action failed")
 
-        return Response(data=GenerateActionDto(
-            success=resp.data.success,
-        ))
+        return Response(
+            data=GenerateActionDto(
+                success=resp.data.success,
+            )
+        )
     except Exception as err:
         traceback.print_exc()
         telegram.send_message(
@@ -990,48 +1112,64 @@ def reply(
         logger.error(f"[reply] An unexpected error occurred: {err}")
         return Response(error="An unexpected error occurred")
 
-def reply_multi(auth: TwitterRequestAuthorization, tweet_id: str, reply_content: str, tx_hash=""):
+
+def reply_multi(
+    auth: TwitterRequestAuthorization,
+    tweet_id: str,
+    reply_content: str,
+    tx_hash="",
+):
     resp = generate_action(
         auth=auth,
         action_type="reply_multi",
-        action_input={
-            "tweet_id": tweet_id, 
-            "comment": reply_content
-        },
+        action_input={"tweet_id": tweet_id, "comment": reply_content},
         tx_hash=tx_hash,
     )
 
     if resp.is_error():
         return Response(error="Generate reply_multi action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
 
     # if success:
     #     return f"Schedule to reply {tweet_id}", None
 
     # return f"Failed to reply {tweet_id}", Exception("Failed to reply")
 
-def reply_multi_unlimited(auth: TwitterRequestAuthorization, tweet_id: str, reply_content: str, tx_hash=""):
+
+def reply_multi_unlimited(
+    auth: TwitterRequestAuthorization,
+    tweet_id: str,
+    reply_content: str,
+    tx_hash="",
+):
     resp = generate_action(
         auth=auth,
         action_type="reply_multi_unlimited",
-        action_input={
-            "tweet_id": tweet_id, 
-            "comment": reply_content
-        },
+        action_input={"tweet_id": tweet_id, "comment": reply_content},
         tx_hash=tx_hash,
     )
 
     if resp.is_error():
         return Response(error="Generate reply_multi_unlimited action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
 
-def shadow_reply(auth: TwitterRequestAuthorization, tweet_id: str, reply_content: str, tx_hash=""):
+
+def shadow_reply(
+    auth: TwitterRequestAuthorization,
+    tweet_id: str,
+    reply_content: str,
+    tx_hash="",
+):
     try:
         shadow_reply_redis = _get_shadow_reply_redis_cache()
 
@@ -1056,16 +1194,21 @@ def shadow_reply(auth: TwitterRequestAuthorization, tweet_id: str, reply_content
     if resp.is_error():
         return Response(error="Generate shadow_reply action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
 
     # if success:
     #     return f"Schedule to reply {tweet_id}"
 
     # return f"Failed to reply {tweet_id}"
 
-def quote_tweet(auth: TwitterRequestAuthorization, tweet_id: str, comment: str, tx_hash=""):
+
+def quote_tweet(
+    auth: TwitterRequestAuthorization, tweet_id: str, comment: str, tx_hash=""
+):
     resp = generate_action(
         auth=auth,
         action_type="quote_tweet",
@@ -1075,11 +1218,16 @@ def quote_tweet(auth: TwitterRequestAuthorization, tweet_id: str, comment: str, 
     if resp.is_error():
         return Response(error="Generate quote tweet action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
 
-def tweet(auth: TwitterRequestAuthorization, content: str, tx_hash="") -> Response[GenerateActionDto]:
+
+def tweet(
+    auth: TwitterRequestAuthorization, content: str, tx_hash=""
+) -> Response[GenerateActionDto]:
     resp = generate_action(
         auth=auth,
         action_type="tweet",
@@ -1090,23 +1238,28 @@ def tweet(auth: TwitterRequestAuthorization, content: str, tx_hash="") -> Respon
     if resp.is_error():
         return Response(error="Generate tweet action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
+
 
 def tweet_multi(auth: TwitterRequestAuthorization, content: List[str]):
     resp = generate_action(
         auth=auth,
         action_type="tweet_multi",
-        action_input={"content": json.dumps(content)}
+        action_input={"content": json.dumps(content)},
     )
-    
+
     if resp.is_error():
         return Response(error="Generate tweet_multi action failed")
 
-    return Response(data=GenerateActionDto(
-        success=resp.data.success,
-    ))
+    return Response(
+        data=GenerateActionDto(
+            success=resp.data.success,
+        )
+    )
 
 
 def inscribe_tweet_by_id(
@@ -1146,25 +1299,31 @@ def inscribe_tweet_by_id(
             "reason": reason,
         }
 
-        action_type = "inscribe_tweet" if tweet_type == TweetType.POST else "inscribe_reply"
+        action_type = (
+            "inscribe_tweet"
+            if tweet_type == TweetType.POST
+            else "inscribe_reply"
+        )
         resp = generate_action(
             auth=auth,
             action_type=action_type,
             action_input=action_input,
-        ) 
-        
+        )
+
         if resp.is_error():
             return Response(error="Generate inscribe tweet action failed")
 
-        return Response(data=InscribeTweetByIdDto(
-            success=resp.data.success,
-            metadata= {
-                "tweet_id": id,
-                "content": content,
-                "price": price,
-                "reason": reason,
-            }
-        ))
+        return Response(
+            data=InscribeTweetByIdDto(
+                success=resp.data.success,
+                metadata={
+                    "tweet_id": id,
+                    "content": content,
+                    "price": price,
+                    "reason": reason,
+                },
+            )
+        )
     except Exception as err:
         traceback.print_exc()
         telegram.send_message(
@@ -1183,24 +1342,31 @@ def is_float(xx: Any):
     except ValueError:
         return False
 
+
 def create_token(
-    auth: TwitterRequestAuthorization, 
-    name: str, symbol: str, description: str, announcement_content: str
+    auth: TwitterRequestAuthorization,
+    name: str,
+    symbol: str,
+    description: str,
+    announcement_content: str,
 ) -> Response[GenerateActionDto]:
     try:
         symbol = symbol.upper()
 
         is_valid_symbol = lambda symbol: len(symbol) <= 8 and all(
-            c.isalnum() or c.isalpha() 
-            for c in symbol
+            c.isalnum() or c.isalpha() for c in symbol
         )
         is_valid_name = lambda name: len(name) <= 20
 
         if not is_valid_symbol(symbol):
-            return Response(error="Invalid symbol. Symbol must be alphanumeric and less or equal to 8 characters")
+            return Response(
+                error="Invalid symbol. Symbol must be alphanumeric and less or equal to 8 characters"
+            )
 
         if not is_valid_name(name):
-            return Response(error="Invalid name. Name must be less or equal to 20 characters")
+            return Response(
+                error="Invalid name. Name must be less or equal to 20 characters"
+            )
 
         create_token_action_input = {
             "name": name,
@@ -1212,15 +1378,17 @@ def create_token(
         resp = generate_action(
             auth=auth,
             action_type="create_token",
-            action_input=create_token_action_input
+            action_input=create_token_action_input,
         )
         
         if resp.is_error():
             return Response(error="Generate create token action failed")
 
-        return Response(data=GenerateActionDto(
-            success=resp.data.success,
-        ))
+        return Response(
+            data=GenerateActionDto(
+                success=resp.data.success,
+            )
+        )
     except Exception as err:
         traceback.print_exc()
         telegram.send_message(
@@ -1231,9 +1399,12 @@ def create_token(
         logger.error(f"[create_token] An unexpected error occurred: {err}")
         return Response(error="An unexpected error occurred")
 
+
 def is_reply(tweet: dict[str, str]) -> bool:
     reference_tweets = (
-        [] if tweet["referenced_tweets"] is None else tweet["referenced_tweets"]
+        []
+        if tweet["referenced_tweets"] is None
+        else tweet["referenced_tweets"]
     )
 
     parent_tweet_id = next(
@@ -1246,12 +1417,16 @@ def is_reply(tweet: dict[str, str]) -> bool:
     )
 
     return parent_tweet_id is not None
-        
+
+
 def is_post(tweet: dict[str, str]) -> bool:
     reference_tweets = (
-        [] if tweet["referenced_tweets"] is None else tweet["referenced_tweets"]
+        []
+        if tweet["referenced_tweets"] is None
+        else tweet["referenced_tweets"]
     )
     return len(reference_tweets) == 0
+
 
 def is_correct_tweet_type(tweet: dict[str, str], type_whitelist):
     if type_whitelist == [] or type_whitelist is None:
@@ -1264,6 +1439,7 @@ def is_correct_tweet_type(tweet: dict[str, str], type_whitelist):
         return True
 
     return False
+
 
 # TODO: Combine with get_tweets_by_username?
 def get_posts_or_reply_by_username(
@@ -1305,7 +1481,8 @@ def get_posts_or_reply_by_username(
         )
 
         return Response(
-            error="Error occurred when calling api: " + resp["error"]["message"]
+            error="Error occurred when calling api: "
+            + resp["error"]["message"]
         )
 
     tweets = resp["result"]["data"]
@@ -1322,7 +1499,10 @@ def get_posts_or_reply_by_username(
         if length_limit != None and len(tweet["text"]) > length_limit:
             continue
 
-        if search_start != None and tweet["created_at"] < search_start.isoformat():
+        if (
+            search_start != None
+            and tweet["created_at"] < search_start.isoformat()
+        ):
             continue
 
         if search_end != None and tweet["created_at"] > search_end.isoformat():
@@ -1354,7 +1534,10 @@ def get_posts_or_reply_by_username(
         data=TweetsDto(tweets=posts),
     )
 
-def get_own_recent_tweets(auth: TwitterRequestAuthorization, type_whitelist = []) -> Response[GetRecentOwnTweetDto]:
+
+def get_own_recent_tweets(
+    auth: TwitterRequestAuthorization, type_whitelist=[]
+) -> Response[GetRecentOwnTweetDto]:
     try:
         search_end = datetime.now(tz=timezone.utc)
         search_start = search_end - timedelta(hours=24)
@@ -1368,7 +1551,9 @@ def get_own_recent_tweets(auth: TwitterRequestAuthorization, type_whitelist = []
         )
 
         if resp.is_error():
-            logger.error(f"[get_own_recent_tweets] Error retrieving tweet by username: {resp.error}")
+            logger.error(
+                f"[get_own_recent_tweets] Error retrieving tweet by username: {resp.error}"
+            )
             return Response(
                 error="Error retrieving tweet by username",
             )
@@ -1376,10 +1561,8 @@ def get_own_recent_tweets(auth: TwitterRequestAuthorization, type_whitelist = []
         tweets = resp.data.tweets
 
         tweet_inscription_redis = _get_tweet_inscription_redis_cache()
-        inscribed_tweet_ids = (
-            tweet_inscription_redis.get_inscribed_tweets_ids(
-                auth.twitter_username
-            )
+        inscribed_tweet_ids = tweet_inscription_redis.get_inscribed_tweets_ids(
+            auth.twitter_username
         )
 
         tweets = list(
@@ -1396,23 +1579,27 @@ def get_own_recent_tweets(auth: TwitterRequestAuthorization, type_whitelist = []
         )
     except Exception as err:
         traceback.print_stack()
-        logger.error(f"[get_own_recent_tweets] An unexpected error occurred: {err}")
+        logger.error(
+            f"[get_own_recent_tweets] An unexpected error occurred: {err}"
+        )
         return Response(
             error="An unexpected error occurred",
         )
 
 # TODO: Combine with get_tweets_by_username
 def get_tweets_by_username_v2(
-    username: str, 
-    num_tweets=1, replied=0, 
-    filter_non_reply=False
+    username: str, num_tweets=1, replied=0, filter_non_reply=False
 ) -> Response[TweetInfosDto]:
     try:
         username = _preprocess_username(username)
 
         if len(username) == 0:
-            logger.error("[get_tweets_by_username_v2] get_tweets_by_username_v2 requires a valid username, an empty string is not")
-            return Response(error="get_tweets_by_username_v2 requires a valid username, an empty string is not")
+            logger.error(
+                "[get_tweets_by_username_v2] get_tweets_by_username_v2 requires a valid username, an empty string is not"
+            )
+            return Response(
+                error="get_tweets_by_username_v2 requires a valid username, an empty string is not"
+            )
 
         token = None
 
@@ -1441,7 +1628,9 @@ def get_tweets_by_username_v2(
                     room=telegram.TELEGRAM_ALERT_ROOM,
                 )
 
-                return Response(error=f"Something went wrong (status code: {resp.status_code})")
+                return Response(
+                    error=f"Something went wrong (status code: {resp.status_code})"
+                )
 
             resp_json = resp.json()
 
@@ -1495,20 +1684,16 @@ def get_tweets_by_username_v2(
                 tweet_info = TweetInfo(
                     tweet_object=tweet_object,
                     parent_tweet_id=parent_tweet_id,
-                    conversation_id=tweet["conversation_id"]
+                    conversation_id=tweet["conversation_id"],
                 )
 
                 res.append(tweet_info)
 
                 if len(res) >= num_tweets:
-                    return Response(
-                        data=TweetInfosDto(tweet_infos=res)
-                    )
+                    return Response(data=TweetInfosDto(tweet_infos=res))
 
             break
-        return Response(
-            data=TweetInfosDto(tweet_infos=res)
-        )
+        return Response(data=TweetInfosDto(tweet_infos=res))
     except Exception as e:
         traceback.print_exc()
         telegram.send_message(
@@ -1516,91 +1701,63 @@ def get_tweets_by_username_v2(
             f"""```bash\n{traceback.format_exc()}\n```""",
             room=telegram.TELEGRAM_ALERT_ROOM,
         )
-        logger.error(f"[get_tweets_by_username_v2] An unexpected error occurred: {e}")
+        logger.error(
+            f"[get_tweets_by_username_v2] An unexpected error occurred: {e}"
+        )
         return Response(error="An unexpected error occurred")
 
-# TODO: Combine with get_recent_mentioned_tweets_by_username_v2 
-def get_recent_mentioned_tweets_by_username(username: str) -> Response[TweetsDto]:
-    username = _preprocess_username(username)
-    url = f"{const.TWITTER_API_URL}/user/by/username/{username}/mentions"
 
-    resp = requests.get(url, headers=_get_api_headers())
-
-    if resp.status_code != 200:
-        telegram.send_message(
-            "junk_nofitications",
-            f"```bash\nSomething went wrong (status code: {resp.status_code}; url: {resp.url}; text: {resp.text})\n```",
-            room=telegram.TELEGRAM_ALERT_ROOM,
-        )
-
-        return Response(
-            error=f"Something went wrong (status code: {resp.status_code})"
-        )
-
-    resp = resp.json()
-
-    if resp["error"] is not None:
-        telegram.send_message(
-            "junk_nofitications",
-            f"```bash\nError occurred when calling api (msg: {resp['error']['message']}; url: {url})\n```",
-            room=telegram.TELEGRAM_ALERT_ROOM,
-        )
-
-        return Response(
-            error=f"Error occurred when calling api: " + resp["error"]["message"]
-        )
-
-    tweets = resp["result"]["data"]
-    if len(tweets) == 0:
-        return Response(
-            "No tweets found"
-        )        
-
-    tweets = [
-        TweetObject(
-            tweet_id=x["id"],
-            twitter_username=username,
-            twitter_id=x["author_id"],
-            like_count=x["public_metrics"]["like_count"],
-            retweet_count=x["public_metrics"]["retweet_count"],
-            reply_count=x["public_metrics"]["reply_count"],
-            impression_count=x["public_metrics"]["impression_count"],
-            full_text=x["text"],
-            posted_at=x["created_at"],
-        )
-        for x in tweets
-    ]
-
-    tweets = tweets[:10]
-    return Response(
-        data=TweetsDto(tweets=tweets),
-    )
-
-# TODO: Combine with react_get_tweet_full_context
-def get_full_context_from_a_tweet(tweet_object: dict | TweetObject, parent_tweet_id: str = None) -> Response[TweetsDto]:
-    if not isinstance(tweet_object, TweetObject):
-        tweet_object = TweetObject.from_dict(tweet_object)
-    tweets = [tweet_object]
-
-    while parent_tweet_id is not None and len(tweets) < 20:
-        resp = get_tweet_info_from_tweet_id(parent_tweet_id)
-        if resp.is_error():
-            break
-        
-        tweet_info = resp.data.tweet_info
-
-        tweet_object = tweet_info.tweet_object
-        tweet_object.full_text = get_cleaned_text(tweet_object.full_text)
-        tweets.insert(0, tweet_object)
+def get_full_context_of_tweet(
+    tweet_info: ExtendedTweetInfo,
+) -> Response[ExtendedTweetInfosDto]:
+    try:
+        tweets = [tweet_info]
         parent_tweet_id = tweet_info.parent_tweet_id
+        while parent_tweet_id is not None and len(tweets) < 20:
+            resp = get_tweet_info_from_tweet_id(parent_tweet_id)
+            if resp.is_error():
+                break
 
-    return Response(
-        data=TweetsDto(tweets=tweets),
-    )
+            tweet_info = resp.data.tweet_info
+
+            tweet_info.tweet_object.full_text = get_cleaned_text(
+                tweet_info.tweet_object.full_text
+            )
+            tweets.insert(0, tweet_info)
+            parent_tweet_id = tweet_info.parent_tweet_id
+
+        return Response(
+            data=ExtendedTweetInfosDto(tweet_infos=tweets),
+        )
+    except Exception as err:
+        traceback.print_exc()
+        logger.error(
+            f"[get_full_context_of_tweet] An unexpected error occurred: {err}"
+        )
+        return Response(error="An unexpected error occured")
+
+
+def get_full_context_by_tweet_id(
+    tweet_id: str,
+) -> Response[ExtendedTweetInfosDto]:
+    try:
+        resp = get_tweet_info_from_tweet_id(tweet_id)
+        if resp.is_error():
+            return Response(error=resp.error)
+        return get_full_context_of_tweet(resp.data.tweet_info)
+    except Exception as err:
+        traceback.print_exc()
+        logger.error(
+            f"[get_full_context_by_tweet_id] An unexpected error occurred: {err}"
+        )
+        return Response(error="An unexpected error occured")
+
 
 def get_full_conversation_from_liked_tweets(
-    auth: TwitterRequestAuthorization, 
-    num_tweets=1, replied=0, ignore_replied_tweets=False
+    auth: TwitterRequestAuthorization,
+    num_tweets=1,
+    replied=0,
+    ignore_replied_tweets=False,
 ) -> Response[TweetInfosDto]:
     try:
         res = []
@@ -1612,9 +1769,7 @@ def get_full_conversation_from_liked_tweets(
         liked_tweet_infos = resp.json()["result"]
 
         if liked_tweet_infos == None:
-            return Response(
-                data=TweetInfosDto(tweet_infos=res)
-            )
+            return Response(data=TweetInfosDto(tweet_infos=res))
 
         for idx, liked_tweet_info in enumerate(liked_tweet_infos):
             tweet_id = liked_tweet_info["tweet_id"]
@@ -1636,9 +1791,7 @@ def get_full_conversation_from_liked_tweets(
                 if liked_tweet_info["in_reply_to_tweet_id"] == ""
                 else liked_tweet_info["in_reply_to_tweet_id"]
             )
-            full_text = get_cleaned_text(
-                liked_tweet_info.get("full_text", "")
-            )
+            full_text = get_cleaned_text(liked_tweet_info.get("full_text", ""))
             tweet_object = TweetObject(
                 twitter_id=twitter_id,
                 tweet_id=tweet_id,
@@ -1654,13 +1807,9 @@ def get_full_conversation_from_liked_tweets(
 
             res.append(tweet_info)
             if len(res) >= num_tweets:
-                return Response(
-                    data=TweetInfosDto(tweet_infos=res)
-                )
+                return Response(data=TweetInfosDto(tweet_infos=res))
 
-        return Response(
-            data=TweetInfosDto(tweet_infos=res)
-        )
+        return Response(data=TweetInfosDto(tweet_infos=res))
     except Exception as e:
         telegram.send_message(
             "junk_nofitications",
@@ -1671,9 +1820,8 @@ def get_full_conversation_from_liked_tweets(
         logger.error(
             f"[get_full_conversation_from_liked_tweets] An unexpected error occurred: {e}"
         )
-        return Response(
-            error=f"An unexpected error occurred"
-        )
+        return Response(error=f"An unexpected error occurred")
+
 
 def search_users(query: str) -> Response[TwitterUsersDto]:
     url = f"{const.TWITTER_API_URL}/user/search/"
@@ -1713,13 +1861,12 @@ def search_users(query: str) -> Response[TwitterUsersDto]:
             room=telegram.TELEGRAM_ALERT_ROOM,
         )
         return Response(
-            error="Error occurred when calling api: " + resp["error"]["message"]
+            error="Error occurred when calling api: "
+            + resp["error"]["message"]
         )
 
     if resp["result"] is None or len(resp["result"]) == 0:
-        return Response(
-            error="No user found with query: " + query
-        )
+        return Response(error="No user found with query: " + query)
 
     users = [
         TwitterUserObject(
@@ -1735,12 +1882,13 @@ def search_users(query: str) -> Response[TwitterUsersDto]:
 
     # Only get 20 top users
     users = users[:10]
-    return Response(
-        data=TwitterUsersDto(users=users)
-    )
+    return Response(data=TwitterUsersDto(users=users))
+
 
 # TODO: add to tool_call
-def search_recent_retweeted_users(query: str, limit_observation=10) -> Response[TwitterUsersDto]:
+def search_recent_retweeted_users(
+    query: str, limit_observation=10
+) -> Response[TwitterUsersDto]:
     if query.strip() == "":
         return Response(
             error="search_recent_tweets requires a valid query, an empty string is not",
@@ -1782,23 +1930,22 @@ def search_recent_retweeted_users(query: str, limit_observation=10) -> Response[
             room=telegram.TELEGRAM_ALERT_ROOM,
         )
         return Response(
-            error="Error occurred when calling api: " + resp["error"]["message"]
+            error="Error occurred when calling api: "
+            + resp["error"]["message"]
         )
 
     if len(data["LookUps"]) == 0:
-        return Response(
-            error="No tweets found with query: " + query
-        )
+        return Response(error="No tweets found with query: " + query)
 
     ids = []
     for id, item in data["LookUps"].items():
         tweet = item["Tweet"]
         user = item["User"]
 
-        if tweet['referenced_tweets']:
-            for t in tweet['referenced_tweets']:
-                if t['type'] == "retweeted":
-                    ids.append(t['id'])
+        if tweet["referenced_tweets"]:
+            for t in tweet["referenced_tweets"]:
+                if t["type"] == "retweeted":
+                    ids.append(t["id"])
 
     url = f"{const.TWITTER_API_URL}/tweets"
     params = {
@@ -1825,9 +1972,7 @@ def search_recent_retweeted_users(query: str, limit_observation=10) -> Response[
             f"```bash\nError occurred when calling api (msg: {resp['error']['message']}; url: {url})\n```",
             room=telegram.TELEGRAM_ALERT_ROOM,
         )
-        return Response(
-            error="No tweets found"
-        )
+        return Response(error="No tweets found")
 
     data = resp["result"]
     res: List[TwitterUserObject] = []
@@ -1850,12 +1995,12 @@ def search_recent_retweeted_users(query: str, limit_observation=10) -> Response[
         )
 
     res = res[:10]
-    return Response(
-        data=TwitterUsersDto(users=res)
-    )
+    return Response(data=TwitterUsersDto(users=res))
 
 
-def search_recent_tweet_by_tweetid(tweet_id: str, limit_observation=10) -> Response[SearchTweetDto]:
+def search_recent_tweet_by_tweetid(
+    tweet_id: str, limit_observation=10
+) -> Response[SearchTweetDto]:
     try:
         query = f"conversation_id:{tweet_id}"
 
@@ -1906,10 +2051,12 @@ def search_recent_tweet_by_tweetid(tweet_id: str, limit_observation=10) -> Respo
 
         if len(data["LookUps"]) == 0:
             logger.info(f"No tweets found with query: {optimized_query}")
-            return Response(data=SearchTweetDto(
-                optimized_query=optimized_query,
-                tweets=[],
-            ))
+            return Response(
+                data=SearchTweetDto(
+                    optimized_query=optimized_query,
+                    tweets=[],
+                )
+            )
 
         tweets: List[TweetObject] = []
         for id, item in data["LookUps"].items():
@@ -1932,12 +2079,18 @@ def search_recent_tweet_by_tweetid(tweet_id: str, limit_observation=10) -> Respo
             tweets.append(
                 TweetObject(
                     tweet_id=tweet["id"],
-                    twitter_username=user.get("username", "Anonymous") if user is not None else "Anonymous",
+                    twitter_username=(
+                        user.get("username", "Anonymous")
+                        if user is not None
+                        else "Anonymous"
+                    ),
                     twitter_id=tweet["author_id"],
                     like_count=tweet["public_metrics"]["like_count"],
                     retweet_count=tweet["public_metrics"]["retweet_count"],
                     reply_count=tweet["public_metrics"]["reply_count"],
-                    impression_count=tweet["public_metrics"]["impression_count"],
+                    impression_count=tweet["public_metrics"][
+                        "impression_count"
+                    ],
                     full_text=tweet["text"],
                     posted_at=tweet["created_at"],
                 )
@@ -1948,19 +2101,24 @@ def search_recent_tweet_by_tweetid(tweet_id: str, limit_observation=10) -> Respo
         tweets = sorted(tweets, key=lambda x: x.posted_at, reverse=True)
         result = random.sample(tweets, min(len(tweets), limit_observation))
 
-        return Response(data=SearchTweetDto(
-            optimized_query=optimized_query,
-            tweets=result,
-        ))
+        return Response(
+            data=SearchTweetDto(
+                optimized_query=optimized_query,
+                tweets=result,
+            )
+        )
     except Exception as err:
-        logger.error(f"[search_recent_tweets] An unexpected error occured: {err}")
+        logger.error(
+            f"[search_recent_tweets] An unexpected error occured: {err}"
+        )
         return Response(
             error="An unexpected error occured",
         )
 
 
-
-def search_recent_tweets(query: str, limit_observation=10) -> Response[SearchTweetDto]:
+def search_recent_tweets(
+    query: str, limit_observation=10
+) -> Response[SearchTweetDto]:
     try:
         if query.strip() == "":
             return Response(
@@ -2010,10 +2168,12 @@ def search_recent_tweets(query: str, limit_observation=10) -> Response[SearchTwe
 
         if len(data["LookUps"]) == 0:
             logger.info(f"No tweets found with query: {optimized_query}")
-            return Response(data=SearchTweetDto(
-                optimized_query=optimized_query,
-                tweets=[],
-            ))
+            return Response(
+                data=SearchTweetDto(
+                    optimized_query=optimized_query,
+                    tweets=[],
+                )
+            )
 
         tweets: List[TweetObject] = []
         for id, item in data["LookUps"].items():
@@ -2023,12 +2183,18 @@ def search_recent_tweets(query: str, limit_observation=10) -> Response[SearchTwe
             tweets.append(
                 TweetObject(
                     tweet_id=tweet["id"],
-                    twitter_username=user.get("username", "Anonymous") if user is not None else "Anonymous",
+                    twitter_username=(
+                        user.get("username", "Anonymous")
+                        if user is not None
+                        else "Anonymous"
+                    ),
                     twitter_id=tweet["author_id"],
                     like_count=tweet["public_metrics"]["like_count"],
                     retweet_count=tweet["public_metrics"]["retweet_count"],
                     reply_count=tweet["public_metrics"]["reply_count"],
-                    impression_count=tweet["public_metrics"]["impression_count"],
+                    impression_count=tweet["public_metrics"][
+                        "impression_count"
+                    ],
                     full_text=tweet["text"],
                     posted_at=tweet["created_at"],
                 )
@@ -2039,25 +2205,34 @@ def search_recent_tweets(query: str, limit_observation=10) -> Response[SearchTwe
         tweets = sorted(tweets, key=lambda x: x.posted_at, reverse=True)
         result = random.sample(tweets, min(len(tweets), limit_observation))
 
-        return Response(data=SearchTweetDto(
-            optimized_query=optimized_query,
-            tweets=result,
-        ))
+        return Response(
+            data=SearchTweetDto(
+                optimized_query=optimized_query,
+                tweets=result,
+            )
+        )
     except Exception as err:
-        logger.error(f"[search_recent_tweets] An unexpected error occured: {err}")
+        logger.error(
+            f"[search_recent_tweets] An unexpected error occured: {err}"
+        )
         return Response(
             error="An unexpected error occured",
         )
 
-def get_popular_following_feed(auth: TwitterRequestAuthorization, top_k=10, minimum_followers=5000) -> Response[TweetsDto]:
+
+def get_popular_following_feed(
+    auth: TwitterRequestAuthorization, top_k=10, minimum_followers=5000
+) -> Response[TweetsDto]:
     try:
         resp = get_following_by_username(
-            auth.twitter_username, max_users=20, minimum_followers=minimum_followers
+            auth.twitter_username,
+            max_users=20,
+            minimum_followers=minimum_followers,
         )
 
         if resp.is_error():
             return Response(error=resp.error)
-        
+
         # random pick for 5
         res: List[TweetObject] = []
         choices = random.sample(
@@ -2066,16 +2241,22 @@ def get_popular_following_feed(auth: TwitterRequestAuthorization, top_k=10, mini
         )
 
         for choice in choices:
-            resp = get_posts_or_reply_by_username(choice, top_k=5, type_whitelist=[TweetType.POST])
+            resp = get_posts_or_reply_by_username(
+                choice, top_k=5, type_whitelist=[TweetType.POST]
+            )
             if resp.is_error():
                 continue
             res.extend(resp.data.tweets)
 
-        return Response(data=TweetsDto(
-            tweets=res,
-        ))
+        return Response(
+            data=TweetsDto(
+                tweets=res,
+            )
+        )
     except Exception as err:
-        logger.error(f"[search_recent_tweets] An unexpected error occured: {err}")
+        logger.error(
+            f"[search_recent_tweets] An unexpected error occured: {err}"
+        )
         return Response(
             error="An unexpected error occured",
         )
@@ -2094,7 +2275,9 @@ def get_user_info_by_username(username: str) -> Response[TwitterUserObjectDto]:
                 room=telegram.TELEGRAM_ALERT_ROOM,
             )
 
-            logger.error(f"[get_user_info_by_username] Something went wrong (status code: {resp.status_code}; url: {url}; text: {resp.text})")
+            logger.error(
+                f"[get_user_info_by_username] Something went wrong (status code: {resp.status_code}; url: {url}; text: {resp.text})"
+            )
 
             return Response(
                 error=f"Something went wrong (status code: {resp.status_code}"
@@ -2107,7 +2290,9 @@ def get_user_info_by_username(username: str) -> Response[TwitterUserObjectDto]:
                 f"```bash\nError occurred when calling api (msg: {resp['error']['message']}; url: {url})\n```",
                 room=telegram.TELEGRAM_ALERT_ROOM,
             )
-            logger.error(f"[get_user_info_by_username] Error occurred when calling api (msg: {resp['error']['message']})")
+            logger.error(
+                f"[get_user_info_by_username] Error occurred when calling api (msg: {resp['error']['message']})"
+            )
 
             return Response(
                 error=f"Error occurred when calling api (msg: {resp['error']['message']})"
@@ -2115,9 +2300,7 @@ def get_user_info_by_username(username: str) -> Response[TwitterUserObjectDto]:
 
         info = resp["result"]
         if info["id"] == "":
-            return Response(
-                error=f"Username not found"
-            )
+            return Response(error=f"Username not found")
 
         user = TwitterUserObject(
             twitter_id=info["id"],
@@ -2128,12 +2311,21 @@ def get_user_info_by_username(username: str) -> Response[TwitterUserObjectDto]:
             is_blue_verified=info["verified"],
         )
 
-        return Response(
-            data=TwitterUserObjectDto(user=user)
-        )
+        return Response(data=TwitterUserObjectDto(user=user))
     except Exception as err:
-        logger.error(f"[get_user_info_by_username] An unexpected error occured: {err}")
+        logger.error(
+            f"[get_user_info_by_username] An unexpected error occured: {err}"
+        )
         return Response(
             error="An unexpected error occured",
         )
 
+
+def get_tweet_with_image_description_appended_to_text(
+    tweet_info: ExtendedTweetInfo,
+) -> ExtendedTweetInfo:
+    tweet_id = tweet_info.tweet_object.tweet_id
+    image_descriptions = _image_descriptions_from_tweet_id(tweet_id)
+    logger.info(f"Image description of tweet {tweet_id}: {image_descriptions}")
+    tweet_info.tweet_object.full_text += "\n\n".join(image_descriptions)
+    return tweet_info

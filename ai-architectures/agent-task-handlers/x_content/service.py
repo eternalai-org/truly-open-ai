@@ -16,70 +16,75 @@ logging.basicConfig(level=logging.INFO if not __debug__ else logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 from .constants import AgentTask
-from .tasks.utils import (
-    create_kn_base, magic_toolset, notify_status, send_alert
-)
+from .tasks.utils import create_kn_base, magic_toolset, notify_status, send_alert
 
 from . import tasks
 from .constants import ToolSet
 import datetime
 import asyncio
 
+
 # TODO: bad designed here, refactor it
 def task_cls_resolver(log: ReasoningLog) -> Optional[MultiStepTaskBase]:
     if log.task == AgentTask.SHADOW_REPLY:
-        return tasks.shadow_reply.ShadowReplyTask
+        return tasks._legacy.shadow_reply.ShadowReplyTask
 
     if log.task == AgentTask.REPLY:
         if log.model in REPLY_MODELS_BLACKLIST:
             return tasks.others.FallbackTask
 
-        return tasks.reply.ReplyTask
+        return tasks.social_agent.social_reply.SocialReplyTask
 
     if log.task == AgentTask.POST_V2:
-        return tasks.post_v2.PostV2
+        return tasks.social_agent.post_v2.PostV2
 
     if log.task == AgentTask.CREATE_GAME:
-        return tasks.create_gamev2.CreateGameTask
+        return tasks.game_agent.create_gamev2.GameReplyTask
 
     if log.task == AgentTask.JUDGE_GAME:
-        return tasks.judge_gamev2.JudgeGameTask
-    
+        return tasks.game_agent.judge_gamev2.JudgeGameTask
+
     if log.task == AgentTask.QUOTE_TWEET:
-        return tasks.quote_tweet.QuoteTweetTask
+        return tasks._legacy.quote_tweet.QuoteTweetTask
 
     if log.task == AgentTask.POST_SEARCH:
-        return tasks.post_search.PostSearchTask
-    
+        return tasks._legacy.post_search.PostSearchTask
+
     if log.task == AgentTask.TRADING:
-        return tasks.react_agent_for_trading.TradingTask
-    
+        return tasks.social_agent.react_agent_for_trading.TradingTask
+
     if log.task == AgentTask.DEFAULT:
-        return tasks.react_agent.ReactAgent
-    
+        return tasks.social_agent.react_agent.ReactAgent
+
     if log.task == AgentTask.POST_V3:
-        return tasks.post_v3.PostV3
-    
+        return tasks.social_agent.post_v3.PostV3
+
     if log.task == AgentTask.REACT_AGENT:
         if log.model in REACT_MODELS_BLACKLIST:
             return tasks.others.FallbackTask
 
         if log.toolset == ToolSet.TRADING:
-            return tasks.react_agent_for_trading.TradingTask
-        return tasks.react_agent.ReactAgent
+            return tasks.social_agent.react_agent_for_trading.TradingTask
+
+        # if log.model == ModelName.DEEPSEEK_R1:
+        #     return tasks.react_agent_use_deepseek_r1.ReactAgentUsingDeepSeekR1
+
+        return tasks.social_agent.react_agent.ReactAgent
 
     return tasks.others.FallbackTask
 
 
 _running_tasks = set([])
 _task_handled_key = "task_handled:{}"
-async def service_v2_handle_request(log: ReasoningLog) -> ReasoningLog:    
+
+
+async def service_v2_handle_request(log: ReasoningLog) -> ReasoningLog:
     global _running_tasks
 
-    do_job = log.id not in _running_tasks 
+    do_job = log.id not in _running_tasks
     # and atomic_check_and_set_flag(
     #     reusable_redis_connection(),
-    #     _task_handled_key.format(log.id), 
+    #     _task_handled_key.format(log.id),
     #     "1", 6 * 3600
     # )
 
@@ -94,7 +99,9 @@ async def service_v2_handle_request(log: ReasoningLog) -> ReasoningLog:
         task_handler_cls = task_cls_resolver(log)
 
         if task_handler_cls is None:
-            raise Exception(f"Bad request: Task handler not found for log {log.id}")
+            raise Exception(
+                f"Bad request: Task handler not found for log {log.id}"
+            )
 
         llm = create_llm(log)
         toolset = magic_toolset(log, llm)
@@ -112,7 +119,11 @@ async def service_v2_handle_request(log: ReasoningLog) -> ReasoningLog:
     except Exception as err:
         traceback_str = traceback.format_exc()
         send_alert(log, traceback_str)
-        log = await tasks.utils.a_move_state(log, MissionChainState.ERROR, f"An error occurred: {err} (unhandled)")
+        log = await tasks.utils.a_move_state(
+            log,
+            MissionChainState.ERROR,
+            f"An error occurred: {err} (unhandled)",
+        )
         MissionStateHandler(reusable_redis_connection()).commit(log)
 
     finally:
@@ -142,14 +153,16 @@ async def scan_db_and_resume_tasks():
         if log.id in _running_tasks:
             continue
 
-        created_dtime = datetime.datetime.strptime(log.created_at, "%Y-%m-%dT%H:%M:%S.%fZ")
+        created_dtime = datetime.datetime.strptime(
+            log.created_at, "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
 
         if (current_time - created_dtime).total_seconds() > 60 * 60 * 6:
             logger.info(f"Task {log.id} is too old, skipping")
             continue
-        
+
         task_cls = task_cls_resolver(log)
-        
+
         if not task_cls.resumable:
             logger.info(f"Task {log.id} is not resumable, skipping")
             continue
@@ -163,7 +176,7 @@ async def scan_db_and_resume_tasks():
         await asyncio.gather(*futures)
 
     logger.info("Scanning DB for resumable tasks completed")
-        
+
 
 def handle_pod_shutdown(signum, frame):
     global _running_tasks, _task_handled_key, logger

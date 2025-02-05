@@ -5,16 +5,36 @@ from json_repair import repair_json
 from x_content.constants import ToolSet
 from x_content.llm.base import OpenAILLMBase
 from x_content.llm.eternal_ai import OnchainInferResult
-from x_content.models import ToolDef, ToolParam, ToolParamDtype, ToolLabel, AgentMetadata
-from x_content.wrappers.conversation import get_enhance_tweet_conversation, get_reply_tweet_conversation
+from x_content.models import (
+    ToolDef,
+    ToolParam,
+    ToolParamDtype,
+    ToolLabel,
+    AgentMetadata,
+)
+from x_content.wrappers.conversation import (
+    get_enhance_tweet_conversation,
+    get_reply_tweet_conversation,
+)
 from x_content.wrappers import bing_search, trading
 from typing import List
 
 from x_content.wrappers.api import twitter_v2
-from x_content.wrappers.api.twitter_v2.models.objects import TweetInfo, TweetObject, TweetType
-from x_content.wrappers.api.twitter_v2.models.response import Response, TweetsDto
-from x_content.wrappers.junk_tasks import postprocess_tweet_by_prompts
+from x_content.wrappers.api.twitter_v2.models.objects import (
+    TweetInfo,
+    TweetObject,
+    TweetType,
+)
+from x_content.wrappers.api.twitter_v2.models.response import (
+    ExtendedTweetInfoDto,
+    ExtendedTweetInfosDto,
+    GenerateActionDto,
+    Response,
+    TweetsDto,
+)
 from x_content.wrappers.magic import retry, sync2async
+from x_content.wrappers.postprocess import postprocess_tweet_by_prompts
+from x_content.wrappers.tweet_specialty import TweetSpecialty, detect_tweet_specialties
 from x_content.wrappers.twin_agent import get_random_example_tweets
 from .toolcall import IToolCall
 
@@ -87,6 +107,7 @@ _map = {
     ],
 }
 
+
 def _tweet_obj_to_observation(tweet: TweetObject) -> dict:
     return {
         "tweet_id": tweet.tweet_id,
@@ -94,9 +115,11 @@ def _tweet_obj_to_observation(tweet: TweetObject) -> dict:
         "full_text": tweet.full_text,
     }
 
+
 class LiveXDB(IToolCall):
+
     def __init__(
-        self, 
+        self,
         auth: twitter_v2.TwitterRequestAuthorization,
         agent_config: AgentMetadata,
         llm: OpenAILLMBase,
@@ -111,26 +134,26 @@ class LiveXDB(IToolCall):
             tweet_id=tweet_id,
             comment=comment,
         )
-        
+
         if resp.is_error():
             return resp.error
-        
+
         if not resp.data.success:
             return f"Failed to quote tweet {tweet_id}"
-        
+
         return f"Schedule to quote tweet {tweet_id}"
 
     def tweet(self, content: str):
         resp = twitter_v2.tweet(self.auth, content)
-        
+
         if resp.is_error():
             return resp.error
-        
+
         if not resp.data.success:
             return "Failed to schedule the tweet"
-        
+
         return "The tweet is scheduled to be posted"
-    
+
     def tweet_multi(self, content: List[str]):
         resp = twitter_v2.tweet_multi(self.auth, content)
 
@@ -146,35 +169,47 @@ class LiveXDB(IToolCall):
         enhance_tweet_conversation = get_enhance_tweet_conversation(
             system_prompt=self.agent_config.persona,
             content=content,
-            example_tweets=get_random_example_tweets(self.auth.knowledge_id)
+            example_tweets=await sync2async(get_random_example_tweets)(
+                self.auth.knowledge_id
+            ),
         )
 
         async def get_enhanced_tweet():
-            result: OnchainInferResult = await self.llm.agenerate(enhance_tweet_conversation, temperature=0.01)
+            result: OnchainInferResult = await self.llm.agenerate(
+                enhance_tweet_conversation, temperature=0.01
+            )
             assistant_message = result.generations[0].message.content
             data = repair_json(assistant_message, return_objects=True)
             return data["tweet"]
 
         try:
-            enhanced_tweet = await retry(get_enhanced_tweet, max_retry=3, first_interval=10, interval_multiply=2)()
+            enhanced_tweet = await retry(
+                get_enhanced_tweet,
+                max_retry=3,
+                first_interval=60,
+                interval_multiply=2,
+            )()
         except Exception as err:
-            logger.error(f"[tweet_with_enhancement] Failed to enhance the tweet {err}")
+            logger.error(
+                f"[tweet_with_enhancement] Failed to enhance the tweet {err}"
+            )
             return "Failed to enhance the tweet"
 
-        async def postprocess_tweet():
-            return await sync2async(postprocess_tweet_by_prompts)(
+        try:
+            postprocessed_tweet = await sync2async(
+                postprocess_tweet_by_prompts
+            )(
                 system_prompt=self.agent_config.persona,
                 task_prompt=self.auth.prompt,
-                tweet=enhanced_tweet
+                tweet=enhanced_tweet,
             )
-        
-        try:
-            postprocessed_tweet = await retry(postprocess_tweet, max_retry=3, first_interval=10, interval_multiply=2)()
         except Exception as err:
-            logger.error(f"[tweet_with_enhancement] Failed to enhance the tweet {err}")
+            logger.error(
+                f"[tweet_with_enhancement] Failed to postprocess the tweet {err}"
+            )
             return "Failed to postprocess the tweet"
-        
-        resp = twitter_v2.tweet(
+
+        resp: Response[GenerateActionDto] = await sync2async(twitter_v2.tweet)(
             auth=self.auth,
             content=postprocessed_tweet,
         )
@@ -192,7 +227,7 @@ class LiveXDB(IToolCall):
             return f"Failed to schedule the tweet", metadata
 
         return "The tweet is scheduled to be posted", metadata
-    
+
     def reply(self, tweet_id: str, reply_content: str):
         resp = twitter_v2.reply(self.auth, tweet_id, reply_content)
 
@@ -203,45 +238,92 @@ class LiveXDB(IToolCall):
             return f"Failed to reply {tweet_id}"
 
         return f"Schedule to reply {tweet_id}"
-        
+
     async def reply_by_tweet_id(self, tweet_id: str):
-        context_resp: Response[TweetsDto] = await sync2async(twitter_v2.react_get_tweet_full_context)(tweet_id)
+        resp: Response[ExtendedTweetInfoDto] = await sync2async(
+            twitter_v2.get_tweet_info_from_tweet_id
+        )(tweet_id)
+        if resp.is_error():
+            return "Error getting tweet by id"
+        tweet_info = resp.data.tweet_info
 
-        if context_resp.is_error() or len(context_resp.data.tweets) == 0:
-            return Response(error="Error getting tweet full context")
+        specialties: List[TweetSpecialty] = await sync2async(
+            detect_tweet_specialties
+        )(tweet_info)
+        if len(specialties) > 0:
+            return "Cannot reply this tweet. Please select another tweet to reply."
 
-        tweets = context_resp.data.tweets
+        context_resp: Response[ExtendedTweetInfosDto] = await sync2async(
+            twitter_v2.get_full_context_of_tweet
+        )(tweet_info)
+
+        if context_resp.is_error() or len(context_resp.data.tweet_infos) == 0:
+            return "Error getting tweet full context"
+
+        tweets = [x.tweet_object for x in context_resp.data.tweet_infos]
+
+        info_resp = await twitter_v2.get_relevent_information_v2(
+            self.auth.kn_base, tweets=tweets
+        )
 
         conversational_chat = await get_reply_tweet_conversation(
             system_prompt=self.agent_config.persona,
+            task_prompt=self.auth.prompt,
             tweets=tweets,
-            kn_base=self.auth.kn_base,
+            structured_info=info_resp.data.structured_information,
         )
 
         async def get_reply_tweet():
-            result: OnchainInferResult = await self.llm.agenerate(conversational_chat, temperature=0.7)
+            result: OnchainInferResult = await self.llm.agenerate(
+                conversational_chat, temperature=0.7
+            )
             assistant_message = result.generations[0].message.content
-            return assistant_message
+            data = repair_json(assistant_message, return_objects=True)
+            return data["tweet"]
 
         try:
-            reply_tweet = await retry(get_reply_tweet, max_retry=3, first_interval=10, interval_multiply=2)()
+            reply_tweet = await retry(
+                get_reply_tweet,
+                max_retry=3,
+                first_interval=60,
+                interval_multiply=2,
+            )()
         except Exception as err:
-            logger.error(f"[reply_by_tweet_id] Failed to get reply tweet {err}")
+            logger.error(
+                f"[reply_by_tweet_id] Failed to get reply tweet {err}"
+            )
             return "Failed to get reply tweet"
-        
+
+        try:
+            postprocessed_reply = await sync2async(
+                postprocess_tweet_by_prompts
+            )(
+                system_prompt=self.agent_config.persona,
+                task_prompt=self.auth.prompt,
+                tweet=reply_tweet,
+            )
+        except Exception as err:
+            logger.error(
+                f"[reply_by_tweet_id] Failed to postprocess the tweet {err}"
+            )
+            return "Failed to postprocess the tweet"
+
         metadata = {
             "tool_name": "reply_by_tweet_id",
             "params": {
                 "tweet_id": tweet_id,
             },
             "metadata": {
-                "reply_content": reply_tweet,
+                "base_reply": reply_tweet,
+                "postprocessed_reply": postprocessed_reply,
             },
         }
 
-        action_resp = twitter_v2.reply(
+        action_resp: Response[GenerateActionDto] = await sync2async(
+            twitter_v2.reply
+        )(
             auth=self.auth,
-            tweet_id=tweet_id, 
+            tweet_id=tweet_id,
             reply_content=reply_tweet,
         )
 
@@ -261,13 +343,19 @@ class LiveXDB(IToolCall):
             return f"Failed to follow {target_username}"
         return f"Decided to follow {target_username}"
 
-    def create_token(self, name: str, symbol: str, description: str, announcement_content: str):
+    def create_token(
+        self,
+        name: str,
+        symbol: str,
+        description: str,
+        announcement_content: str,
+    ):
         resp = twitter_v2.create_token(
             auth=self.auth,
             name=name,
             symbol=symbol,
             description=description,
-            announcement_content=announcement_content
+            announcement_content=announcement_content,
         )
 
         if resp.is_error():
@@ -322,7 +410,7 @@ class LiveXDB(IToolCall):
                 "reason": reason,
             },
             "metadata": resp.data.metadata,
-        }        
+        }
 
         if resp.is_error():
             return resp.error
@@ -334,7 +422,7 @@ class LiveXDB(IToolCall):
 
     def get_tweets_by_username(self, username: str):
         resp = twitter_v2.get_tweets_by_username(
-            username=username, 
+            username=username,
             top_k=10,
             filter_non_replied=True,
             owner_username=self.auth.twitter_username,
@@ -361,7 +449,7 @@ class LiveXDB(IToolCall):
             return "Search your own tweets is not allowed"
 
         resp = twitter_v2.get_tweets_by_username(
-            username=username, 
+            username=username,
             top_k=10,
             filter_non_replied=True,
             owner_username=self.auth.twitter_username,
@@ -377,24 +465,28 @@ class LiveXDB(IToolCall):
 
     def get_your_own_tweets(self):
         resp = twitter_v2.get_tweets_by_username_v2(
-            username=self.auth.twitter_username,
-            num_tweets=30
+            username=self.auth.twitter_username, num_tweets=30
         )
 
         if resp.is_error():
             return resp.error
-        
+
         if len(resp.data.tweet_infos) == 0:
             return "No tweets found"
 
-        return [_tweet_obj_to_observation(x.tweet_object) for x in resp.data.tweet_infos]
+        return [
+            _tweet_obj_to_observation(x.tweet_object)
+            for x in resp.data.tweet_infos
+        ]
 
     def get_recent_posts(self):
-        resp = twitter_v2.get_own_recent_tweets(self.auth, type_whitelist=[TweetType.POST])
-        
+        resp = twitter_v2.get_own_recent_tweets(
+            self.auth, type_whitelist=[TweetType.POST]
+        )
+
         if resp.is_error():
             return resp.error
-        
+
         metadata = {
             "tool_name": "get_recent_posts",
             "params": {},
@@ -405,85 +497,99 @@ class LiveXDB(IToolCall):
             },
         }
 
-        return [_tweet_obj_to_observation(x) for x in resp.data.tweets], metadata
+        return [
+            _tweet_obj_to_observation(x) for x in resp.data.tweets
+        ], metadata
 
     def get_recent_mentioned_tweets_by_username(self, username: str):
-        resp = twitter_v2.get_recent_mentioned_tweets_by_username(username=username)
-        
+        resp = twitter_v2.get_recent_mentioned_tweets_by_username_v2(
+            auth=self.auth
+        )
+
         if resp.is_error():
             return resp.error
-        
-        if resp.data.tweets == []:
+
+        if resp.data.tweet_infos == []:
             return "No tweet found"
-        
-        return [_tweet_obj_to_observation(x) for x in resp.data.tweets]
+
+        return [
+            _tweet_obj_to_observation(x.tweet_object)
+            for x in resp.data.tweet_infos
+        ]
 
     def react_get_tweet_full_context(self, tweet_id: str):
-        resp = twitter_v2.react_get_tweet_full_context(tweet_id=tweet_id)
-        
+        resp = twitter_v2.get_full_context_by_tweet_id(tweet_id=tweet_id)
+
         if resp.is_error():
             return resp.error
-        
-        if resp.data.tweets == []:
+
+        tweets = [x.tweet_object for x in resp.data.tweet_infos]
+        if tweets == []:
             return "Tweet context not found"
-        
-        return [_tweet_obj_to_observation(x) for x in resp.data.tweets]
+
+        return [_tweet_obj_to_observation(x) for x in tweets]
 
     def get_following_by_username(self, username: str):
         resp = twitter_v2.get_following_by_username(username=username)
-        
+
         if resp.is_error():
             return resp.error
-        
+
         if resp.data.usernames == []:
             return "You are not following any user"
-        
+
         return resp.data.usernames
 
     def search_users(self, query: str):
         resp = twitter_v2.search_users(query=query)
-        
+
         if resp.is_error():
             return resp.error
-        
+
         if resp.data.users == []:
             return "No user found"
-        
+
         return [x.to_dict() for x in resp.data.users]
 
     def get_popular_following_feed(self):
         resp = twitter_v2.get_popular_following_feed(auth=self.auth)
-        
+
         if resp.is_error():
             return resp.error
-        
+
         if resp.data.tweets == []:
             return "You are not following any user. Please use another toolcall to retrieve tweet."
-        
+
         return [_tweet_obj_to_observation(x) for x in resp.data.tweets]
 
     def search_recent_tweets(self, query: str):
-        resp = twitter_v2.search_recent_tweets(query=query, limit_observation=10)
-        
+        resp = twitter_v2.search_recent_tweets(
+            query=query, limit_observation=10
+        )
+
         if resp.is_error():
             return resp.error
-        
+
         metadata = {
             "tool_call": "search_recent_tweets",
             "search_query": resp.data.optimized_query,
         }
-        
+
         if resp.data.tweets == []:
             return "No recent tweets found", metadata
-        
-        return [_tweet_obj_to_observation(x) for x in resp.data.tweets], metadata 
-    
+
+        return [
+            _tweet_obj_to_observation(x) for x in resp.data.tweets
+        ], metadata
+
     def get_recent_replies(self):
-        resp = twitter_v2.get_own_recent_tweets(self.auth, type_whitelist=[TweetType.REPLY])
-        
+        resp = twitter_v2.get_own_recent_tweets(
+            self.auth, type_whitelist=[TweetType.REPLY]
+        )
+
         if resp.is_error():
             return resp.error
-        
+
         metadata = {
             "tool_name": "get_recent_replies",
             "params": {},
@@ -494,29 +600,40 @@ class LiveXDB(IToolCall):
             },
         }
 
-        return [_tweet_obj_to_observation(x) for x in resp.data.tweets], metadata
+        return [
+            _tweet_obj_to_observation(x) for x in resp.data.tweets
+        ], metadata
 
     def buy(self, symbol: str, amount: float):
         res = trading.buy(
-            self.auth.chain_id, 
-            self.auth.agent_contract_id, 
-            symbol, amount, self.auth.ref_id
+            self.auth.chain_id,
+            self.auth.agent_contract_id,
+            symbol,
+            amount,
+            self.auth.ref_id,
         )
 
         notify_trading_action(
-            "buy", {
-                "symbol": symbol, 
-                "amount": amount, 
-                "result": res
-            }
+            "buy",
+            {
+                "symbol": symbol,
+                "amount": amount,
+                "result": res,
+            },
+            self.auth.twitter_username,
+            self.auth.ref_id,
+            self.auth.request_id,
         )
 
         return res
 
     def sell(self, symbol: str, amount: float):
         res = trading.sell(
-            self.auth.chain_id, self.auth.agent_contract_id, 
-            symbol, amount, self.auth.ref_id
+            self.auth.chain_id,
+            self.auth.agent_contract_id,
+            symbol,
+            amount,
+            self.auth.ref_id,
         )
 
         notify_trading_action(
@@ -526,6 +643,9 @@ class LiveXDB(IToolCall):
                 "amount": amount,
                 "result": res,
             },
+            self.auth.twitter_username,
+            self.auth.ref_id,
+            self.auth.request_id,
         )
 
         return res
@@ -547,86 +667,98 @@ class LiveXDB(IToolCall):
             ToolDef(
                 name="get_user_info_by_username",
                 description="Get info of a single user by their username, returns user info of a user",
-                params=[ToolParam(name="username", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="username", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.get_user_info_by_username,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_tweets_by_username",
                 description="returns a list of most recent tweets by a specified username",
-                params=[ToolParam(name="username", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="username", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.get_tweets_by_username,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_following_by_username",
                 description="Get the list of twitter user that a user follows, returns a list of username",
-                params=[ToolParam(name="username", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="username", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.get_following_by_username,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_recent_mentioned_tweets_by_username",
                 description="returns a list of most recent tweets mentioning a specified username",
-                params=[ToolParam(name="username", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="username", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.get_recent_mentioned_tweets_by_username,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="search_users",
                 description="search users with one topic keyword, return a list of users",
                 params=[ToolParam(name="query", dtype=ToolParamDtype.STRING)],
                 executor=self.search_users,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="search_recent_tweets",
                 description="search recent tweets by 14-15 topic keywords seperated by OR, separated by spaces",
                 params=[ToolParam(name="query", dtype=ToolParamDtype.STRING)],
                 executor=self.search_recent_tweets,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_popular_following_feed",
                 description="search recent tweets from the most popular users that you are following",
                 params=[],
                 executor=self.get_popular_following_feed,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_tweet_full_context",
                 description="Get full context for a tweet by tweet_id, returning a list of all the ancestor tweets of the given tweet.",
-                params=[ToolParam(name="tweet_id", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="tweet_id", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.react_get_tweet_full_context,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_your_own_tweets",
                 description="returns a list of your own tweets",
                 params=[],
                 executor=self.get_your_own_tweets,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_recent_posts",
                 description="returns a list of your recent posts that is not already inscribed",
                 params=[],
                 executor=self.get_recent_posts,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_recent_replies",
                 description="returns a list of your recent replies that is not already inscribed",
                 params=[],
                 executor=self.get_recent_replies,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
             ToolDef(
                 name="get_tweets_by_username_selfblock",
                 description="returns a list of most recent tweets by a specified username. Don't call it with your own username.",
-                params=[ToolParam(name="username", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="username", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.get_tweets_by_username_selfblock,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
         ]
 
@@ -635,33 +767,43 @@ class LiveXDB(IToolCall):
             ToolDef(
                 name="tweet",
                 description="Post a tweet",
-                params=[ToolParam(name="content", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="content", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.tweet_with_enhancement,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
             ToolDef(
                 name="reply",
                 description="Post a reply to a tweet, specified by the tweet id",
                 params=[
                     ToolParam(name="tweet_id", dtype=ToolParamDtype.STRING),
-                    ToolParam(name="reply_content", dtype=ToolParamDtype.STRING),
+                    ToolParam(
+                        name="reply_content", dtype=ToolParamDtype.STRING
+                    ),
                 ],
                 executor=self.reply,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
             ToolDef(
                 name="reply_by_tweet_id",
                 description="Auto reply a tweet. Only specify the tweet id when using this tool (as the reply will be automatically generated).",
-                params=[ToolParam(name="tweet_id", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(name="tweet_id", dtype=ToolParamDtype.STRING)
+                ],
                 executor=self.reply_by_tweet_id,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
             ToolDef(
                 name="follow",
                 description="Follow a Twitter user that I am not following",
-                params=[ToolParam(name="target_username", dtype=ToolParamDtype.STRING)],
+                params=[
+                    ToolParam(
+                        name="target_username", dtype=ToolParamDtype.STRING
+                    )
+                ],
                 executor=self.follow,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
             ToolDef(
                 name="quote_tweet",
@@ -671,7 +813,7 @@ class LiveXDB(IToolCall):
                     ToolParam(name="comment", dtype=ToolParamDtype.STRING),
                 ],
                 executor=self.quote_tweet,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
             ToolDef(
                 name="create_token",
@@ -680,10 +822,13 @@ class LiveXDB(IToolCall):
                     ToolParam(name="name", dtype=ToolParamDtype.STRING),
                     ToolParam(name="symbol", dtype=ToolParamDtype.STRING),
                     ToolParam(name="description", dtype=ToolParamDtype.STRING),
-                    ToolParam(name="announcement_content", dtype=ToolParamDtype.STRING),
+                    ToolParam(
+                        name="announcement_content",
+                        dtype=ToolParamDtype.STRING,
+                    ),
                 ],
                 executor=self.create_token,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
         ]
 
@@ -698,36 +843,40 @@ class LiveXDB(IToolCall):
                     description="Use SOL to buy token.",
                     params=[
                         ToolParam(name="symbol", dtype=ToolParamDtype.STRING),
-                        ToolParam(name="sol_amount", dtype=ToolParamDtype.NUMBER),
+                        ToolParam(
+                            name="sol_amount", dtype=ToolParamDtype.NUMBER
+                        ),
                     ],
                     executor=self.buy,
                     # allow_multiple=True,
-                    label=ToolLabel.ACTION
+                    label=ToolLabel.ACTION,
                 ),
                 ToolDef(
                     name="sell",
                     description="Sell an amount of token and get SOL back.",
                     params=[
                         ToolParam(name="symbol", dtype=ToolParamDtype.STRING),
-                        ToolParam(name="token_amount", dtype=ToolParamDtype.NUMBER),
+                        ToolParam(
+                            name="token_amount", dtype=ToolParamDtype.NUMBER
+                        ),
                     ],
                     executor=self.sell,
                     # allow_multiple=True,
-                    label=ToolLabel.ACTION
+                    label=ToolLabel.ACTION,
                 ),
                 ToolDef(
                     name="get_wallet_balance",
                     description="Get the wallet balance",
                     params=[],
                     executor=self.get_wallet_balance,
-                    label=ToolLabel.QUERY
+                    label=ToolLabel.QUERY,
                 ),
                 ToolDef(
                     name="get_token_prices",
                     description=f"Get the current price of tradable tokens ({_tradable_symbols_str})",
                     params=[],
                     executor=self.get_token_prices,
-                    label=ToolLabel.QUERY
+                    label=ToolLabel.QUERY,
                 ),
             ]
 
@@ -742,7 +891,7 @@ class LiveXDB(IToolCall):
                     ToolParam(name="reason", dtype=ToolParamDtype.STRING),
                 ],
                 executor=self.inscribe_post_by_id,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
             ToolDef(
                 name="inscribe_reply_by_id",
@@ -753,7 +902,7 @@ class LiveXDB(IToolCall):
                     ToolParam(name="reason", dtype=ToolParamDtype.STRING),
                 ],
                 executor=self.inscribe_reply_by_id,
-                label=ToolLabel.ACTION
+                label=ToolLabel.ACTION,
             ),
         ]
 
@@ -766,14 +915,13 @@ class LiveXDB(IToolCall):
                     ToolParam(name="topic", dtype=ToolParamDtype.STRING),
                 ],
                 executor=self.research_about_topic,
-                label=ToolLabel.QUERY
+                label=ToolLabel.QUERY,
             ),
         ]
 
         return resp
 
     def get_tools_by_toolset(self, toolset: ToolSet) -> List[ToolDef]:
-        
 
         tools = self.tool_list()
         targets = set(_map.get(toolset, []))
