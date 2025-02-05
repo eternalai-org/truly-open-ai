@@ -967,11 +967,14 @@ cd %s/sol || exit
 npm install && npx hardhat run %s/sol/scripts/auto_deploy.ts --network localhost`, pkg.CurrentDir(), pkg.CurrentDir())
 
 	fname := fmt.Sprintf("%s/sol/deploy.sh", pkg.CurrentDir())
-
 	err := pkg.CreateFile(fname, []byte(content))
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		os.Remove(fname)
+	}()
 
 	// Run the Hardhat script
 	err = pkg.CMDWithStream("bash", fname)
