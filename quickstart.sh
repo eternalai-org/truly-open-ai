@@ -7,12 +7,12 @@ cd decentralized-compute/models
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "Running on Linux"
-    apt update && apt upgrade
+    apt update
     bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Running on macOS"
-    sudo -u $SUDO_USER brew update && sudo -u $SUDO_USER brew upgrade && sudo -u $SUDO_USER brew install pigz
+    sudo -u $SUDO_USER brew update && sudo -u $SUDO_USER brew install pigz
     bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 else
     echo "Unknown operating system: $OSTYPE"
