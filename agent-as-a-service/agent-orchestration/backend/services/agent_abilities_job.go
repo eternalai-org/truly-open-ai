@@ -406,7 +406,6 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 					inferFee := agentChainFee.InferFee
 					missionStoreFee := numeric.NewBigFloatFromFloat(big.NewFloat(0))
 					toolList := mission.ToolList
-					userPrompt := inferItems[0].Content
 					if mission.AgentStoreMissionID > 0 {
 						missionStoreFee = mission.AgentStoreMission.Price
 						inferFee = numeric.NewBigFloatFromFloat(models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float))
@@ -430,7 +429,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						if err != nil {
 							return errs.NewError(err)
 						}
-						userPrompt, err = helpers.GenerateTemplateContent(mission.AgentStoreMission.UserPrompt, params)
+						inferItems[0].Content, err = helpers.GenerateTemplateContent(mission.AgentStoreMission.UserPrompt, params)
 						if err != nil {
 							return errs.NewError(err)
 						}
@@ -447,7 +446,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferAt:                helpers.TimeNow(),
 						Status:                 models.AgentSnapshotPostStatusInferSubmitted,
 						Fee:                    inferFee,
-						UserPrompt:             userPrompt,
+						UserPrompt:             inferItems[0].Content,
 						HeadSystemPrompt:       headSystemPrompt,
 						AgentMetaData:          helpers.ConvertJsonString(metaDataReq),
 						ToolList:               toolList,
