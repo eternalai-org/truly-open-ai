@@ -108,7 +108,6 @@ func (s *Service) SaveMissionStore(ctx context.Context, agentStoreID uint, req *
 					Price:        req.Price,
 					ToolList:     req.ToolList,
 					Icon:         req.Icon,
-					OutputType:   models.OutputType(req.OutputType),
 				}
 			}
 			if err != nil {
@@ -175,4 +174,17 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 	}
 
 	return nil
+}
+
+func (s *Service) GetListAgentStoreInstall(ctx context.Context, agentInfoID uint, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
+	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{},
+		map[string][]interface{}{
+			"AgentStore":                    {},
+			"AgentStore.AgentStoreMissions": {},
+		}, []string{"id desc"}, page, limit)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
 }
