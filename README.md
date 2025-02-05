@@ -1,8 +1,8 @@
 # Eternal AI: Build Decentralized Agents
 
-Eternal AI is a Crypto x AI protocol that powers decentralized agents: agents that are written in Solidity, a new language for smart contracts, and run exactly as programmed without any possibility of downtime, censorship, fraud, or third-party interference.
+Eternal AI is a decentralized protocol that powers smart contract agents: agents that run exactly as programmed without downtime, censorship, or third-party interference.
 
-These agents run on a powerful peer-to-peer infrastructure that provides a combination of many unique properties:
+These agents run on a powerful peer-to-peer infrastructure with many unique properties:
 
 * Decentralization at every step: Inference, Compute, Storage
 * State-of-the-art models: DeepSeek, Llama, FLUX, etc.
