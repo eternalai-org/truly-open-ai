@@ -117,6 +117,10 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 	promptKey := "KnowledgeBaseAgent"
 	fee := big.NewInt(0)
 	modelIdUint32, err := strconv.ParseUint(modelId, 10, 32)
+	if err != nil {
+		return fmt.Errorf("failed to parse model id: %v", err)
+	}
+
 	dataBytes, err := instanceABI.Pack(
 		"mint", common.HexToAddress(info.UserAddress),
 		uri,
@@ -126,15 +130,12 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		common.HexToAddress(kbWorkerHubAddress),
 		uint32(modelIdUint32),
 	)
-	//to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
+	// to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
 	if err != nil {
 		return fmt.Errorf("failed to pack ABI data: %v", err)
 	}
 
-	rpc := s.conf.GetConfigKeyString(
-		info.NetworkID,
-		"rpc_url",
-	)
+	rpc := s.conf.GetConfigKeyString(info.NetworkID, "rpc_url")
 	var paymasterAddress, paymasterToken string
 	var paymasterFeeZero bool
 	if s.conf.ExistsedConfigKey(info.NetworkID, "paymaster_address") &&
@@ -147,11 +148,11 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		paymasterFeeZero,
 		paymasterAddress,
 		paymasterToken)
-
 	tx, err := aiZkClient.Transact(priKey, *pubKey, common.HexToAddress(tokenContractAddress), big.NewInt(0), dataBytes)
 	if err != nil {
 		return fmt.Errorf("failed to transact: %v", err)
 	}
+
 	if tx == nil {
 		return fmt.Errorf("not found tx receipt after send tx mint")
 	}
@@ -228,23 +229,22 @@ func (s *Service) UpdateKnowledgeBaseInContractWithSignature(ctx context.Context
 	if !ok {
 		return nil, fmt.Errorf("updateKnowledgeBaseInContractWithSignature error: knowledge_base_id is nnot big int")
 	}
-	//agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte
-	signature := request.SignatureData
-	if strings.HasPrefix(signature, "0x") {
-		signature = strings.TrimPrefix(signature, "0x")
-	}
+	// agentId *big.Int, sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte
+	signature := strings.TrimPrefix(request.SignatureData, "0x")
 	dataBytes, err := instanceABI.Pack(
-		"updateAgentDataWithSignature", kbId,
+		"updateAgentDataWithSignature",
+		kbId,
 		[]byte(request.HashData),
 		request.PromptKeyData,
 		big.NewInt(0),
 		request.RandomNonceData,
 		common.Hex2Bytes(signature),
 	)
-	//to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
+	// to common.Address, data []byte,   promptScheduler common.Address, modelId uint32
 	if err != nil {
 		return nil, fmt.Errorf("updateKnowledgeBaseInContractWithSignature error: failed to pack ABI data: %v", err)
 	}
+
 	networkId, _ := strconv.ParseUint(request.NetworkID, 10, 64)
 	client := s.GetEVMClient(ctx, networkId)
 	tx, err := client.Transact(tokenContractAddress, priKey, dataBytes, big.NewInt(0))
