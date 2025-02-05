@@ -1,8 +1,8 @@
-import {dagentLogger, IENV, IGetAccessTokenParams} from "@eternal-ai/core";
+import {dagentLogger, IENV, IGetAccessTokenParams} from "@eternalai-dagent/core";
 import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
-import { DagentFarcaster } from "@eternal-ai/client-dagent";
+import { DagentFarcaster } from "@eternalai-dagent/client-dagent";
 
 class AgentFarcaster {
   protected environment: IENV;

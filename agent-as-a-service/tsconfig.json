@@ -9,7 +9,7 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@eternal-ai/*": ["packages/*/src"]
+      "@eternalai-dagent/*": ["packages/*/src"]
     }
   }
 }

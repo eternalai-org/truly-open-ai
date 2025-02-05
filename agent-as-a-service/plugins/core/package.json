@@ -1,6 +1,6 @@
 {
-  "name": "@eternal-ai/core",
-  "version": "1.0.3",
+  "name": "@eternalai-dagent/core",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/eternalai-org/eternal-ai"

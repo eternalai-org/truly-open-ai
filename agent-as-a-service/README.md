@@ -49,7 +49,7 @@ yarn && yarn build && yarn start:dagent
 
 ```bash
 import express, { Router } from "express";
-import { dagentLogger } from "@eternal-ai/core";
+import { dagentLogger } from "@eternalai-dagent/core";
 import cors from "cors";
 
 export function createApiCustomRouter() {
@@ -72,9 +72,9 @@ export function createApiCustomRouter() {
 ### Run your server
 
 ```bash
-add "@eternal-ai/direct", to your package.json
+add "@eternalai-dagent/direct", to your package.json
 
-import { createApiRouter, Direct } from "@eternal-ai/direct";
+import { createApiRouter, Direct } from "@eternalai-dagent/direct";
 
 const direct = new Direct({
   routers: [

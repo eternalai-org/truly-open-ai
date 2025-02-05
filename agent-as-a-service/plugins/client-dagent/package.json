@@ -1,5 +1,5 @@
 {
-  "name": "@eternal-ai/client-dagent",
+  "name": "@eternalai-dagent/client-dagent",
   "version": "1.0.1",
   "repository": {
     "type": "git",
@@ -18,9 +18,9 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@eternal-ai/plugin-twitter": "*",
-    "@eternal-ai/plugin-farcaster": "*",
-    "@eternal-ai/core": "*",
+    "@eternalai-dagent/plugin-twitter": "*",
+    "@eternalai-dagent/plugin-farcaster": "*",
+    "@eternalai-dagent/core": "*",
     "ethers": "5.7.2"
   },
   "devDependencies": {

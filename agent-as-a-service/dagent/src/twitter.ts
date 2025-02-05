@@ -1,9 +1,9 @@
-import {dagentLogger, IENV, IGetAccessTokenParams} from "@eternal-ai/core";
+import {dagentLogger, IENV, IGetAccessTokenParams} from "@eternalai-dagent/core";
 import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
-import { DagentTwitter } from "@eternal-ai/client-dagent";
-import {createApiRouter, Direct} from "@eternal-ai/direct";
+import { DagentTwitter } from "@eternalai-dagent/client-dagent";
+import {createApiRouter, Direct} from "@eternalai-dagent/direct";
 
 class AgentTwitter {
   protected environment: IENV;

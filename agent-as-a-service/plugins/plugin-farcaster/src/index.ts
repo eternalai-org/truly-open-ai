@@ -1,4 +1,4 @@
-import { AgentClient, IAgent, IAgentClient } from "@eternal-ai/core";
+import { AgentClient, IAgent, IAgentClient } from "@eternalai-dagent/core";
 import { IConnectFarcasterParams } from "./types";
 
 export * from "./types";

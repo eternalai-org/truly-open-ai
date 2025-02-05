@@ -2,8 +2,8 @@ import {
   dagentLogger,
   BaseDagent,
   InitAgent, IGetAccessTokenParams,
-} from "@eternal-ai/core";
-import { TwitterAgentClient } from "@eternal-ai/plugin-twitter";
+} from "@eternalai-dagent/core";
+import { TwitterAgentClient } from "@eternalai-dagent/plugin-twitter";
 import { ILinkTwitterParams } from "./types";
 
 class DagentTwitter extends BaseDagent {

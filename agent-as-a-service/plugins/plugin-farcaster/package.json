@@ -1,5 +1,5 @@
 {
-  "name": "@eternal-ai/plugin-farcaster",
+  "name": "@eternalai-dagent/plugin-farcaster",
   "version": "1.0.0",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@eternal-ai/core": "*"
+    "@eternalai-dagent/core": "*"
   },
   "devDependencies": {
     "tsup": "^8.3.5"
