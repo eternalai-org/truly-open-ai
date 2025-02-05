@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"solo/internal/contracts/erc20"
 	"solo/internal/contracts/v1/hybrid_model"
 	"solo/internal/contracts/v1/worker_hub"
@@ -15,9 +19,6 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -62,7 +63,7 @@ func (c *CMD_Local_ChainV1) DeployContracts(rpc, chainID, prvkey string) (*model
 		env += row
 	}
 
-	env += "HARDHAT_L2_OWNER_ADDRESS=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65\n" //account 4 of Hardhat
+	env += "HARDHAT_L2_OWNER_ADDRESS=0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65\n" // account 4 of Hardhat
 	env += "HARDHAT_TREASURY_ADDRESS=\n"
 	env += "HARDHAT_COLLECTION_ADDRESS=\n"
 	env += "HARDHAT_GPU_MANAGER_ADDRESS=\n"
@@ -71,13 +72,11 @@ func (c *CMD_Local_ChainV1) DeployContracts(rpc, chainID, prvkey string) (*model
 	env += "HARDHAT_MODEL_LOAD_BALANCER_ADDRESS=\n"
 	env += "HARDHAT_WEAI=\n"
 
-	err := pkg.CreateFile(fmt.Sprintf(pkg.ENV_CONTRACT_V1_ENV, pkg.CurrentDir()), []byte(env))
-	if err != nil {
+	if err := pkg.CreateFile(fmt.Sprintf(pkg.ENV_CONTRACT_V1_ENV, pkg.CurrentDir()), []byte(env)); err != nil {
 		return nil, err
 	}
 
-	err = c.ContractDeployment()
-	if err != nil {
+	if err := c.ContractDeployment(); err != nil {
 		return nil, err
 	}
 
@@ -87,8 +86,7 @@ func (c *CMD_Local_ChainV1) DeployContracts(rpc, chainID, prvkey string) (*model
 	}
 
 	resp := make(map[string]map[string]string)
-	err = json.Unmarshal(_b, &resp)
-	if err != nil {
+	if err := json.Unmarshal(_b, &resp); err != nil {
 		return nil, err
 	}
 
@@ -103,8 +101,7 @@ func (c *CMD_Local_ChainV1) DeployContracts(rpc, chainID, prvkey string) (*model
 		return nil, err
 	}
 
-	err = pkg.CreateFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()), _b1)
-	if err != nil {
+	if err = pkg.CreateFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()), _b1); err != nil {
 		return nil, err
 	}
 
@@ -140,12 +137,7 @@ npm install && npx hardhat run %s --network localhost`, solV2Folder, solV2AutoDe
 	}()
 
 	// Run the Hardhat script
-	err = pkg.CMDWithStream("bash", fname)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return pkg.CMDWithStream("bash", fname)
 }
 
 func (c *CMD_Local_ChainV1) DeployContractLogic() error {
@@ -160,7 +152,7 @@ func (c *CMD_Local_ChainV1) DeployContractLogic() error {
 		return err
 	}
 
-	//3. Mint WEAI.
+	// 3. Mint WEAI.
 	_, err = c.MintWrappedEAI(rpc, chainID, "100000", privKey)
 	if err != nil {
 		fmt.Println("Mint WEAI error: ", err)
@@ -183,7 +175,7 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 	numberOfMiners := 3
 	names := ""
 
-	//clear the created miners
+	// clear the created miners
 	cnf.Miners = make(map[string]model.Miners)
 	_b, err := json.Marshal(cnf)
 	if err == nil {
@@ -192,7 +184,7 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 
 	for i := 1; i <= numberOfMiners; i++ {
 		fmt.Print(pkg.Line)
-		//5. Create a miner's private key (3 miner)
+		// 5. Create a miner's private key (3 miner)
 		minerAddress, minerPrvKey, err := c.CreateMinerAddress(rpc, chainID, privKey)
 		if err != nil {
 			continue
@@ -201,7 +193,7 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d address", i), *minerAddress))
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d private key", i), *minerPrvKey))
 
-		//send WEAI
+		// send WEAI
 		tx, _, err := c.SendWEIToMiner(rpc, *minerAddress)
 		if err != nil {
 			fmt.Println("SendWEIToMiner error", err)
@@ -209,7 +201,7 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 		}
 		fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d received WEAI TX", i), tx.Hash().Hex()))
 
-		//send fee
+		// send fee
 		txFee := new(types.Transaction)
 		gas := pkg.LOCAL_CHAIN_GAS_LIMIT
 
@@ -251,13 +243,10 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 				fmt.Print(pkg.PrintText("SendFeeToMiner error", err))
 				continue
 			}
-			//there is no error
+			// there is no error
 			fmt.Print(pkg.PrintText(fmt.Sprintf("Miner %d gas limit", i), gas))
-
 			_loop++
-
 			break
-
 		}
 
 		err = c.CreateConfigENV(*minerAddress, i)
@@ -288,9 +277,9 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 }
 
 func (c *CMD_Local_ChainV1) CreateConfigENV(minerAddress string, index int) error {
-	//sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
+	// sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
 	envFile := fmt.Sprintf(pkg.ENV_LOCAL_MINERS_FILE, pkg.CurrentDir(), index)
-	//config.ReadConfig(sample)
+	// config.ReadConfig(sample)
 
 	f, _ := os.Stat(envFile)
 	if f != nil {
@@ -397,7 +386,7 @@ func (c *CMD_Local_ChainV1) SendWEIToMiner(rpc, minerAddress string) (*types.Tra
 		return nil, nil, err
 	}
 
-	//6. Owner transfer to miner 25k EAI for staking
+	// 6. Owner transfer to miner 25k EAI for staking
 	erc20Contract, err := erc20.NewErc20(common.HexToAddress(weaiAddress), client)
 	if err != nil {
 		fmt.Println("CreateMinerAddress error: ", err)
@@ -484,8 +473,8 @@ func (c *CMD_Local_ChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.
 		}
 	}
 
-	var inferId = inferIdBig.Uint64()
-	//wait for result
+	inferId := inferIdBig.Uint64()
+	// wait for result
 	chatCompletion := &model.LLMInferResponse{}
 	index := 0
 

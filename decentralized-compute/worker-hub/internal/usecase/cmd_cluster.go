@@ -3,13 +3,15 @@ package usecase
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"os"
-	"solo/internal/port"
-	"solo/pkg"
 	"strconv"
 	"strings"
+
+	"solo/internal/port"
+	"solo/pkg"
+
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type CMD_CLUSTER struct {
@@ -47,10 +49,8 @@ func (c *CMD_CLUSTER) SetWatcher(w port.IMiner) error {
 
 func (c *CMD_CLUSTER) verifyMiner() error {
 	errStr := fmt.Sprintf("%s not found. \n%s", c.configFileName, pkg.ErrorFillOut)
-	var err error
 	fName := c.configFileName
-	_, err = os.Stat(fName)
-	if err != nil {
+	if _, err := os.Stat(fName); err != nil {
 		return errors.New(errStr)
 	}
 
@@ -62,7 +62,6 @@ func (c *CMD_CLUSTER) verifyMiner() error {
 	if len(_b) == 0 {
 		return errors.New(errStr)
 	}
-
 	return nil
 }
 
@@ -84,8 +83,7 @@ func (c *CMD_CLUSTER) CreateCluster(input map[string]string) (*types.Transaction
 
 	modelName, ok := input[pkg.COMMAND_CLUSTER_CREATE_MODEL_NAME]
 	if !ok {
-		err := errors.New("model name is required")
-		return nil, nil, err
+		return nil, nil, errors.New("model name is required")
 	}
 
 	versionInt, err := strconv.Atoi(version)
@@ -100,30 +98,25 @@ func (c *CMD_CLUSTER) CreateCluster(input map[string]string) (*types.Transaction
 
 	cnf := c.taskWatcher.GetConfig()
 	if cnf.ModelLoadBalancerAddress == "" {
-		err = errors.New("`MODEL_LOAD_BALANCER_ADDRESS` is empty. \n" + pkg.ErrorFillOut)
-		return nil, nil, err
+		return nil, nil, errors.New("`MODEL_LOAD_BALANCER_ADDRESS` is empty. \n" + pkg.ErrorFillOut)
 	}
 
 	if cnf.ModelCollectionAddress == "" {
-		err = errors.New("`COLLECTION_ADDRESS` is empty. \n" + pkg.ErrorFillOut)
-		return nil, nil, err
+		return nil, nil, errors.New("`COLLECTION_ADDRESS` is empty. \n" + pkg.ErrorFillOut)
 	}
 
 	return c.taskWatcher.GetCluster().CreateCluster(versionInt, minHardwareInt, modelName, ctype)
-
 }
 
 func (c *CMD_CLUSTER) clusterGroupData(input map[string]string) (*clusterGroupData, error) {
 	groupName, ok := input[pkg.COMMAND_CREATE_GROUP_NAME]
 	if !ok {
-		err := errors.New("`group name` is required")
-		return nil, err
+		return nil, errors.New("`group name` is required")
 	}
 
 	cids, ok := input[pkg.COMMAND_CREATE_GROUP_CLUSTER_IDS]
 	if !ok {
-		err := errors.New("`clusterIDs` is required")
-		return nil, err
+		return nil, errors.New("`clusterIDs` is required")
 	}
 
 	_cids := strings.Split(cids, ",")
@@ -162,8 +155,7 @@ func (c *CMD_CLUSTER) AddClustersToGroup(input map[string]string) (*types.Transa
 }
 
 func (c *CMD_CLUSTER) JoinCluster() (*types.Transaction, *types.Transaction, error) {
-	err := c.verifyMiner()
-	if err != nil {
+	if err := c.verifyMiner(); err != nil {
 		return nil, nil, err
 	}
 
