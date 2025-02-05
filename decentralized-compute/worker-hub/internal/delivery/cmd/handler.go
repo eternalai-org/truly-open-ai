@@ -659,7 +659,7 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	cnf := c.localChainCMD.ReadLocalChainCnf()
 
 	var err error
-	input[pkg.COMMAND_LOCAL_PRIV_KEY] = c.getArch()
+	input[pkg.PLATFORM] = c.getArch()
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
