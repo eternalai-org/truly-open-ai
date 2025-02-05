@@ -884,3 +884,31 @@ func NewAgentReportRespArr(arr []*models.AgentInfo) []*AgentReportResp {
 	}
 	return resps
 }
+
+type AgentChainFeeResp struct {
+	NetworkID uint64           `json:"network_id"`
+	InferFee  numeric.BigFloat `json:"infer_fee"`
+	MintFee   numeric.BigFloat `json:"mint_fee"`
+	TokenFee  numeric.BigFloat `json:"token_fee"`
+}
+
+func NewAgentChainFeeResp(m *models.AgentChainFee) *AgentChainFeeResp {
+	if m == nil {
+		return nil
+	}
+	resp := &AgentChainFeeResp{
+		NetworkID: m.NetworkID,
+		InferFee:  m.InferFee,
+		MintFee:   m.MintFee,
+		TokenFee:  m.TokenFee,
+	}
+	return resp
+}
+
+func NewAgentChainFeeRespArr(arr []*models.AgentChainFee) []*AgentChainFeeResp {
+	resps := []*AgentChainFeeResp{}
+	for _, m := range arr {
+		resps = append(resps, NewAgentChainFeeResp(m))
+	}
+	return resps
+}

@@ -115,8 +115,7 @@ func (s *Server) SaveAgentStore(c *gin.Context) {
 func (s *Server) GetListAgentStore(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	search := s.stringFromContextQuery(c, "user_address")
-	res, count, err := s.nls.GetListAgentStore(ctx, search, page, limit)
+	res, count, err := s.nls.GetListAgentStore(ctx, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -136,13 +135,31 @@ func (s *Server) GetAgentStoreDetail(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreResp(res)})
 }
 
-func (s *Server) AddMissionStore(c *gin.Context) {
+func (s *Server) SaveMissionStore(c *gin.Context) {
 	ctx := s.requestContext(c)
+	var req serializers.AgentStoreMissionReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
 	idStr := s.stringFromContextParam(c, "id")
 	id, _ := strconv.ParseUint(idStr, 10, 64)
-	missionIDStr := s.stringFromContextParam(c, "mission_id")
-	missionID, _ := strconv.ParseUint(missionIDStr, 10, 64)
-	err := s.nls.AddMissionStore(ctx, uint(id), uint(missionID))
+	err := s.nls.SaveMissionStore(ctx, uint(id), &req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
+
+func (s *Server) AuthenAgentStoreCallback(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.AuthenAgentStoreCallback
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err := s.nls.SaveAgentStoreCallback(ctx, &req)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
