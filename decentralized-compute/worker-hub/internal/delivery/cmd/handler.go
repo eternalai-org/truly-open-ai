@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"math/big"
 	"runtime"
-	"solo/internal/model"
-	"solo/pkg"
-	"solo/pkg/eth"
 	"strconv"
 	"strings"
 	"time"
+
+	"solo/internal/model"
+	"solo/pkg"
+	"solo/pkg/eth"
 )
 
 func (c *CMD) cliCommand() []*pkg.Command {
@@ -89,7 +90,7 @@ func (c *CMD) cliCommand() []*pkg.Command {
 					Key:  pkg.COMMAND_SETUP_MANUAL,
 					Name: "Manual",
 					Help: `The manual command lets you set up step-by-step, giving you full control.`,
-					//Function: c.handleMinerReadConfig,
+					// Function: c.handleMinerReadConfig,
 					Children: []*pkg.Command{
 						{
 							Key:      pkg.COMMAND_LOCAL_START_CONFIG,
@@ -231,7 +232,7 @@ func (c *CMD) handleLocalConfig(reader *bufio.Reader, node *pkg.Command) {
 
 func (c *CMD) handleDeployContracts(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -280,7 +281,7 @@ func (c *CMD) handleDeployContracts(reader *bufio.Reader, node *pkg.Command) {
 
 func (c *CMD) handleDeployContract(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -331,12 +332,11 @@ func (c *CMD) handleDeployContract(reader *bufio.Reader, node *pkg.Command) {
 
 	_ = resp
 	fmt.Println("deployed contract success")
-
 }
 
 func (c *CMD) handleMintWEAI(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -385,7 +385,7 @@ func (c *CMD) handleMintWEAI(reader *bufio.Reader, node *pkg.Command) {
 
 func (c *CMD) handleSetWEAIForGpuManager(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -439,7 +439,7 @@ func (c *CMD) handleSetWEAIForGpuManager(reader *bufio.Reader, node *pkg.Command
 
 func (c *CMD) handleCreateMinerInfo(reader *bufio.Reader, node *pkg.Command) {
 	input := c.buildInputData(reader, node)
-	//env := ``
+	// env := ``
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -484,10 +484,10 @@ func (c *CMD) _setupAutomaticallyLogic(input map[string]string) error {
 	}
 
 	time.Sleep(2 * time.Second)
-	//deploy all needed contracts
-	//c.localChainCMD.ContractDeployment()
+	// deploy all needed contracts
+	// c.localChainCMD.ContractDeployment()
 
-	//1. Deploy all contracts
+	// 1. Deploy all contracts
 	err = c._deployContractLogic()
 	if err != nil {
 		fmt.Println("_deployContractLogic error: ", err)
@@ -515,7 +515,7 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	fmt.Println("Setup cluster")
 	input := c.buildInputData(reader, node)
 
-	//env := ``
+	// env := ``
 	err = c._setupAutomaticallyLogic(input)
 	if err != nil {
 		return
@@ -525,8 +525,7 @@ func (c *CMD) SetUpAutomatically(reader *bufio.Reader, node *pkg.Command) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Done!!!")
 	fmt.Print(pkg.Line)
-	//ALL done!!!
-
+	// ALL done!!!
 }
 
 // setup automatically
@@ -545,12 +544,11 @@ func (c *CMD) SetUpAutomaticallyOneStep() {
 	fmt.Print(pkg.Line)
 	fmt.Println("Done!!!")
 	fmt.Print(pkg.Line)
-	//ALL done!!!
+	// ALL done!!!
 }
 
 func (c *CMD) handleCreateInfer(reader *bufio.Reader, node *pkg.Command) {
 	contextMsg := []model.LLMInferMessage{}
-
 	for {
 		input := c.buildInputData(reader, node)
 		_prompt, ok := input[pkg.COMMAND_INFER_PROMPT]
@@ -659,7 +657,7 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	cnf := c.localChainCMD.ReadLocalChainCnf()
 
 	var err error
-	input[pkg.COMMAND_LOCAL_PRIV_KEY] = c.getArch()
+	input[pkg.PLATFORM] = c.getArch()
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
@@ -670,15 +668,15 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 
 	rpc, ok := input[pkg.COMMAND_LOCAL_CHAIN_RPC]
 	if !ok {
-		//err = errors.New("deployed contracts error: rpc is required")
-		//return err
+		// err = errors.New("deployed contracts error: rpc is required")
+		// return err
 		rpc = "http://localhost:8545"
 	}
 
 	chainID, ok := input[pkg.COMMAND_LOCAL_CHAIN_ID]
 	if !ok {
-		//err = errors.New("deployed contracts error: chainID is required")
-		//return err
+		// err = errors.New("deployed contracts error: chainID is required")
+		// return err
 		chainID = "31337"
 	}
 

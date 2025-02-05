@@ -104,12 +104,12 @@ func (s *Server) SaveAgentStore(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.SaveAgentStore(ctx, &req)
+	obj, err := s.nls.SaveAgentStore(ctx, &req)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreResp(obj)})
 }
 
 func (s *Server) GetListAgentStore(c *gin.Context) {
@@ -178,4 +178,16 @@ func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
 		return
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreRespArrayFromInstall(res), Count: &count})
+}
+
+func (s *Server) GetAgentStoreInstallCode(c *gin.Context) {
+	ctx := s.requestContext(c)
+	agentStoreID := s.uintFromContextParam(c, "id")
+	agentInfoID := s.uintFromContextParam(c, "agent_info_id")
+	res, err := s.nls.CreateAgentStoreInstallCode(ctx, agentStoreID, agentInfoID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: res.Code})
 }

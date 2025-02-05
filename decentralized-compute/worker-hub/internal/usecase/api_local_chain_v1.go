@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"time"
+
 	"solo/internal/contracts/v1/hybrid_model"
 	"solo/internal/contracts/v1/worker_hub"
 
@@ -16,7 +18,6 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -36,7 +37,6 @@ type API_Local_Chain_V1 struct {
 }
 
 func NewAPILocalChainV1() (*API_Local_Chain_V1, error) {
-
 	gasPrice := big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
 	c := &API_Local_Chain_V1{
 		gasPrice: gasPrice,
@@ -82,21 +82,15 @@ func (c *API_Local_Chain_V1) ReadLocalChainCnf() *model.LocalChain {
 	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
 	_b, err := os.ReadFile(path)
 	if err != nil {
-		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
-		if err1 == nil {
-			err2 := pkg.CreateFile(path, []byte{})
-			if err2 != nil {
+		if err := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm); err == nil {
+			if err := pkg.CreateFile(path, []byte{}); err != nil {
 				return nil
 			}
 		}
 		return resp
 	}
 
-	err = json.Unmarshal(_b, resp)
-	if err != nil {
-		return resp
-	}
-
+	_ = json.Unmarshal(_b, resp)
 	return resp
 }
 
@@ -117,6 +111,10 @@ func (c *API_Local_Chain_V1) CreateInfer(ctx context.Context, request model.LLMI
 	}
 
 	_b, err := json.Marshal(request)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	tx, err := p.Infer(auth, _b, true)
 	if err != nil {
 		fmt.Println("wkHubAddress:", cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1])
@@ -126,7 +124,7 @@ func (c *API_Local_Chain_V1) CreateInfer(ctx context.Context, request model.LLMI
 
 	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
 	if err != nil {
-		return nil, nil, nil, errors.Join(err, errors.New("Error while waiting for tx"))
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
 	}
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
@@ -147,8 +145,8 @@ func (c *API_Local_Chain_V1) CreateInfer(ctx context.Context, request model.LLMI
 		}
 	}
 
-	var inferId = inferIdBig.Uint64()
-	//wait for result
+	inferId := inferIdBig.Uint64()
+	// wait for result
 	chatCompletion := &model.LLMInferResponse{}
 	index := 0
 

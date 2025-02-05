@@ -2,16 +2,7 @@
 
 echo "Deploy and start decentralized agents in one step"
 
-# Step 0: Start Ollama
-cd decentralized-compute/models && ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
-cd ../..
-
-# Step 1: Deploy a local AI-powered blockchain on your computer
-./install.sh
-
-eai miner-fast setup
-
-# Step 2: Deploy Decentralized Comput
+# Step 1: Deploy Decentralized Compute
 cd decentralized-compute/models
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -27,7 +18,14 @@ else
     echo "Unknown operating system: $OSTYPE"
 fi
 
+ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+
 cd ../..
+
+# Step 2: Deploy a local AI-powered blockchain on your computer
+./install.sh
+
+eai miner-fast setup
 
 # Step 3: Deploy your production-grade Agent as a Service infrastructure
 eai aaas start
