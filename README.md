@@ -10,8 +10,6 @@ These agents run on a powerful peer-to-peer infrastructure with many unique prop
 
 This enables developers to create SocialFi agents that interact on Twitter, DeFi agents that trade crypto for you, GameFi agents that play onchain games, and many other decentralized agents that have not been invented yet — all without a middleman or counterparty risk.
 
-Join us in building the decentralized AI layer of the new internet.
-
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
 # Get started
