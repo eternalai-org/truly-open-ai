@@ -16,6 +16,9 @@ import (
 )
 
 func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode string) (string, error) {
+	if installCode == "" {
+		return "", errs.NewError(errs.ErrBadRequest)
+	}
 	redirectUri := s.conf.SampleTwitterApp.RedirectUri + "?install_code=" + installCode
 	return fmt.Sprintf(
 		"https://twitter.com/i/oauth2/authorize?redirect_uri=%s&client_id=%s&state=state&response_type=code&code_challenge=challenge&code_challenge_method=plain&scope=offline.access+tweet.read+tweet.write+users.read",
@@ -25,6 +28,9 @@ func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode
 }
 
 func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCode string, code string) (string, error) {
+	if installCode == "" || code == "" {
+		return "", errs.NewError(errs.ErrBadRequest)
+	}
 	apiKey, err := func() (string, error) {
 		redirectUri := s.conf.SampleTwitterApp.RedirectUri + "?install_code=" + installCode
 		respOauth, err := s.twitterAPI.TwitterOauthCallbackForSampleApp(
@@ -112,6 +118,9 @@ func (s *Service) SampleTwitterAppGetBTCPrice(ctx context.Context) string {
 }
 
 func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey string, content string) error {
+	if apiKey == "" || content == "" {
+		return errs.NewError(errs.ErrBadRequest)
+	}
 	sampleTwitterApp, err := s.dao.FirstSampleTwitterApp(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
