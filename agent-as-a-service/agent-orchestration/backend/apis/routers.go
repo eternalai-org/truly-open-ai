@@ -358,5 +358,13 @@ func (s *Server) Routers() {
 			knowledgeBasePublicApi.POST("/retrieve", s.retrieveKnowledge)
 		}
 
+		sampleTwitterApp := rootAPI.Group("/sample-twitter-app")
+		{
+			sampleTwitterApp.GET("/install", s.SampleTwitterAppAuthenInstall)
+			sampleTwitterApp.GET("/callback", s.SampleTwitterAppAuthenCallback)
+			sampleTwitterApp.GET("/get-bitcoin-price", s.SampleTwitterAppGetBTCPrice)
+			sampleTwitterApp.POST("/tweet-message", s.SampleTwitterAppTweetMessage)
+		}
+
 	}
 }
