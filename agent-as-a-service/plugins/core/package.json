@@ -1,5 +1,5 @@
 {
-  "name": "@eternal-dagent/core",
+  "name": "@eternal-ai/core",
   "version": "1.0.3",
   "repository": {
     "type": "git",
@@ -27,7 +27,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "tsup": "^8.3.5"
   }
 }

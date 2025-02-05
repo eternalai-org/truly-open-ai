@@ -19,7 +19,7 @@ import {
   TokenSetupMode,
   TwitterAgentSnapshotMission,
   IAgent,
-} from "@eternal-dagent/core";
+} from "@eternal-ai/core";
 import { BaseXFormData } from "../../../categories/x/renders/onflow/custom-base/types";
 import { getSecondsFromHour } from "../../../utils/time";
 import {

@@ -5,7 +5,7 @@ import { useParams } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import useStudioAgentStore from "../../stores/useStudioAgentStore";
 import { getAgentInstance } from "../../utils/agent";
-import { IAgent } from "@eternal-dagent/core";
+import { IAgent } from "@eternal-ai/core";
 import agentDatabase from "../../services/agent-database";
 import { createGraphDataFromAgentDetail } from "../../utils/data";
 

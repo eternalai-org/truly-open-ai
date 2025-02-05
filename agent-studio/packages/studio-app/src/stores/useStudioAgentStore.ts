@@ -1,5 +1,5 @@
 import { StudioDataNode } from "@agent-studio/studio-dnd";
-import { IAgent } from "@eternal-dagent/core";
+import { IAgent } from "@eternal-ai/core";
 import { create } from "zustand";
 
 interface IStore {

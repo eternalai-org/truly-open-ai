@@ -1,4 +1,4 @@
-import { IAgent } from "@eternal-dagent/core";
+import { IAgent } from "@eternal-ai/core";
 import getAgentModelCategories from "../categories";
 import {
   createNodeData,

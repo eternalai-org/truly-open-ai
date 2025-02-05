@@ -1,5 +1,5 @@
 {
-  "name": "@eternal-dagent/direct",
+  "name": "@eternal-ai/direct",
   "version": "1.0.0",
   "main": "src/index.ts",
   "module": "dist/index.js",
@@ -14,7 +14,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "multer": "1.4.5-lts.1",
-    "@eternal-dagent/core": "*",
+    "@eternal-ai/core": "*",
     "body-parser": "^1.19.0"
   },
   "license": "ISC",
@@ -23,7 +23,6 @@
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "ts-node": "^10.4.0",
-    "typescript": "^4.4.4",
     "@types/node": "^16.11.15",
     "tsup": "8.3.5",
     "@types/multer": "^1.4.12"
