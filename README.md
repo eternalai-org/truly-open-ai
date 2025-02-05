@@ -10,7 +10,31 @@ These agents run on a powerful peer-to-peer infrastructure with many unique prop
 
 This enables developers to create SocialFi agents that interact on Twitter, DeFi agents that trade crypto for you, GameFi agents that play onchain games, and many other decentralized agents that have not been invented yet — all without a middleman or counterparty risk.
 
+# Protocol Architecture
+
+Eternal AI is an end-to-end decentralized protocol created for a wide array of decentralized agents and blockchains.
+
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
+
+Here are the major components of the Eternal AI software stack.
+
+| Component | Description |
+|:--------------------------|--------------------------|
+| [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that trustlessly coordinate user space, onchain space, and offchain space. |
+| [decentralized-agents](/decentralized-agents)| A set of Solidity smart contracts that define AI agent standards (AI-721, SWARM-721, KB-721). |
+| [decentralized-inference](/decentralized-inference) | The decentralized inference APIs. |
+| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration protocol. |
+| [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
+| [agent-studio](/agent-studio)| No-code, drag 'n drop, visual programming language for AI creators. |
+| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI. |
+
+Here are the key ongoing research projects.
+
+| Component | Description |
+|:--------------------------|--------------------------|
+| [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra library. |
+| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs. |
+| [physical-ai](/research/physical-ai)| AI-powered hardware devices. |
 
 # Get started
 
@@ -185,32 +209,6 @@ We have a little gift for you: share your agent character file to be entered int
 
 It's simple. Create a pull request and add your agent character file to the folder `decentralized-agents/characters/` folder. Name the file in this format `<agent-name>-by-<your-name>.txt`.
 
-<br>
-<br>
-
-# Platform Architecture
-
-Eternal AI is an end-to-end decentralized infrastructure created for a wide array of AI agents and blockchains.
-
-Here are the major components of the Eternal AI software stack.
-
-| Component | Description |
-|:--------------------------|--------------------------|
-| [ai-kernel](/ai-kernel)| A set of Solidity smart contracts that trustlessly coordinate user space, onchain space, and offchain space. |
-| [decentralized-agents](/decentralized-agents)| A set of Solidity smart contracts that define AI agent standards (AI-721, SWARM-721, KB-721). |
-| [decentralized-inference](/decentralized-inference) | The decentralized inference APIs. |
-| [decentralized-compute](/decentralized-compute) | The peer-to-peer GPU clustering and orchestration protocol. |
-| [agent-as-a-service](/agent-as-a-service)| The production-grade agent launchpad and management. |
-| [agent-studio](/agent-studio)| No-code, drag 'n drop, visual programming language for AI creators. |
-| [blockchains](/blockchains)| A list of blockchains that are AI-powered by Eternal AI. |
-
-Here are the key ongoing research projects.
-
-| Component | Description |
-|:--------------------------|--------------------------|
-| [cuda-evm](/research/cuda-evm)| The GPU-accelerated EVM and its Solidity tensor linear algebra library. |
-| [nft-ai](/research/nft-ai)| AI-powered fully-onchain NFTs. |
-| [physical-ai](/research/physical-ai)| AI-powered hardware devices. |
 
 # Design Principles
 
