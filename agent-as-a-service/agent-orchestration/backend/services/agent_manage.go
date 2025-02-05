@@ -825,7 +825,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 					}
 				case "blockchain":
 					{
-						chainName := fmt.Sprintf("%v", item.Data["chainId"])
+						chainName := helpers.GetStringValueFromMap(item.Data, "chainId")
 						agent.NetworkID = models.GetChainID(chainName)
 						agent.NetworkName = models.GetChainName(agent.NetworkID)
 					}
@@ -864,97 +864,108 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 					}
 				case "mission_on_x":
 					{
-						frequency := int(2)
-						switch v := item.Data["frequency"].(type) {
-						case int:
-							frequency = v
-							frequency = frequency * 3600
-						case float64:
-							{
-								frequencyF := v
-								frequency = int(frequencyF * 3600)
-							}
-						case string:
-							frequency, _ = strconv.Atoi(v)
-							frequency = frequency * 3600
-						default:
-							frequency = int(2)
-							frequency = frequency * 3600
-						}
+						frequency := helpers.GetFrequencyFromMap(item.Data)
 
-						userPrompt := fmt.Sprintf("%v", item.Data["details"])
+						userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
+						agentModels := helpers.GetStringValueFromMap(item.Data, "model")
 
 						switch item.Idx {
 						case "mission_on_x_post":
 							{
 								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-									ToolSet:    models.ToolsetTypePost,
-									UserPrompt: userPrompt,
-									Interval:   frequency,
+									ToolSet:        models.ToolsetTypePost,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
+								})
+							}
+						case "mission_on_x_post_news":
+							{
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:        models.ToolsetTypePostSearchV2,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
 								})
 							}
 						case "mission_on_x_reply":
 							{
 								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-									ToolSet:    models.ToolsetTypeReplyMentions,
-									UserPrompt: userPrompt,
-									Interval:   frequency,
+									ToolSet:        models.ToolsetTypeReplyMentions,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
 								})
 							}
 						case "mission_on_x_engage":
 							{
 								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-									ToolSet:    models.ToolsetTypeReplyNonMentions,
-									UserPrompt: userPrompt,
-									Interval:   frequency,
+									ToolSet:        models.ToolsetTypeReplyNonMentions,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
 								})
 							}
 						case "mission_on_x_follow":
 							{
 								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-									ToolSet:    models.ToolsetTypeFollow,
-									UserPrompt: userPrompt,
-									Interval:   frequency,
+									ToolSet:        models.ToolsetTypeFollow,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
 								})
 							}
 						}
 					}
 				case "mission_on_farcaster":
 					{
-						frequency := int(2)
-						switch v := item.Data["frequency"].(type) {
-						case int:
-							frequency = v
-							frequency = frequency * 3600
-						case float64:
-							{
-								frequencyF := v
-								frequency = int(frequencyF * 3600)
-							}
-						case string:
-							frequency, _ = strconv.Atoi(v)
-							frequency = frequency * 3600
-						default:
-							frequency = int(2)
-							frequency = frequency * 3600
-						}
+						frequency := helpers.GetFrequencyFromMap(item.Data)
 
-						userPrompt := fmt.Sprintf("%v", item.Data["details"])
+						userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
+						agentModels := helpers.GetStringValueFromMap(item.Data, "model")
 						switch item.Idx {
 						case "mission_on_farcaster_post":
 							{
 								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-									ToolSet:    models.ToolsetTypePostFarcaster,
-									UserPrompt: userPrompt,
-									Interval:   frequency,
+									ToolSet:        models.ToolsetTypePostFarcaster,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
 								})
 							}
 						case "mission_on_farcaster_reply":
 							{
 								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-									ToolSet:    models.ToolsetTypeReplyMentionsFarcaster,
-									UserPrompt: userPrompt,
+									ToolSet:        models.ToolsetTypeReplyMentionsFarcaster,
+									UserPrompt:     userPrompt,
+									Interval:       frequency,
+									AgentBaseModel: agentModels,
+								})
+							}
+						}
+					}
+				case "mission_on_defi":
+					{
+						frequency := helpers.GetFrequencyFromMap(item.Data)
+
+						switch item.Idx {
+						case "mission_on_defi_trade_analytics":
+							{
+								tokens := helpers.GetStringValueFromMap(item.Data, "token")
+								toolList := s.conf.ToolLists.TradeAnalytic
+								if tokens == "" {
+									return nil, errs.NewError(errs.ErrBadRequest)
+								}
+								userPrompt := fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, tokens)
+								toolList = strings.ReplaceAll(toolList, "{api_key}", s.conf.InternalApiKey)
+								toolList = strings.ReplaceAll(toolList, "{token_symbol}", tokens)
+
+								listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+									ToolSet:    models.ToolsetTypeTradeAnalyticsOnTwitter,
+									Tokens:     tokens,
 									Interval:   frequency,
+									UserPrompt: userPrompt,
+									ToolList:   toolList,
 								})
 							}
 						}
@@ -1157,94 +1168,105 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							}
 						case "mission_on_x":
 							{
-								frequency := int(2)
-								switch v := item.Data["frequency"].(type) {
-								case int:
-									frequency = v
-									frequency = frequency * 3600
-								case float64:
-									{
-										frequencyF := v
-										frequency = int(frequencyF * 3600)
-									}
-								case string:
-									frequency, _ = strconv.Atoi(v)
-									frequency = frequency * 3600
-								default:
-									frequency = int(2)
-									frequency = frequency * 3600
-								}
-								userPrompt := fmt.Sprintf("%v", item.Data["details"])
+								frequency := helpers.GetFrequencyFromMap(item.Data)
+								userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
+								agentModels := helpers.GetStringValueFromMap(item.Data, "model")
 								switch item.Idx {
 								case "mission_on_x_post":
 									{
 										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-											ToolSet:    models.ToolsetTypePost,
-											UserPrompt: userPrompt,
-											Interval:   frequency,
+											ToolSet:        models.ToolsetTypePost,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
+										})
+									}
+								case "mission_on_x_post_news":
+									{
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:        models.ToolsetTypePostSearchV2,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
 										})
 									}
 								case "mission_on_x_reply":
 									{
 										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-											ToolSet:    models.ToolsetTypeReplyMentions,
-											UserPrompt: userPrompt,
-											Interval:   frequency,
+											ToolSet:        models.ToolsetTypeReplyMentions,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
 										})
 									}
 								case "mission_on_x_engage":
 									{
 										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-											ToolSet:    models.ToolsetTypeReplyNonMentions,
-											UserPrompt: userPrompt,
-											Interval:   frequency,
+											ToolSet:        models.ToolsetTypeReplyNonMentions,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
 										})
 									}
 								case "mission_on_x_follow":
 									{
 										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-											ToolSet:    models.ToolsetTypeFollow,
-											UserPrompt: userPrompt,
-											Interval:   frequency,
+											ToolSet:        models.ToolsetTypeFollow,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
 										})
 									}
 								}
 							}
 						case "mission_on_farcaster":
 							{
-								frequency := int(2)
-								switch v := item.Data["frequency"].(type) {
-								case int:
-									frequency = v
-									frequency = frequency * 3600
-								case float64:
-									{
-										frequencyF := v
-										frequency = int(frequencyF * 3600)
-									}
-								case string:
-									frequency, _ = strconv.Atoi(v)
-									frequency = frequency * 3600
-								default:
-									frequency = int(2)
-									frequency = frequency * 3600
-								}
-								userPrompt := fmt.Sprintf("%v", item.Data["details"])
+								frequency := helpers.GetFrequencyFromMap(item.Data)
+								userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
+								agentModels := helpers.GetStringValueFromMap(item.Data, "model")
+
 								switch item.Idx {
 								case "mission_on_farcaster_post":
 									{
 										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-											ToolSet:    models.ToolsetTypePostFarcaster,
-											UserPrompt: userPrompt,
-											Interval:   frequency,
+											ToolSet:        models.ToolsetTypePostFarcaster,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
 										})
 									}
 								case "mission_on_farcaster_reply":
 									{
 										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
-											ToolSet:    models.ToolsetTypeReplyMentionsFarcaster,
-											UserPrompt: userPrompt,
+											ToolSet:        models.ToolsetTypeReplyMentionsFarcaster,
+											UserPrompt:     userPrompt,
+											Interval:       frequency,
+											AgentBaseModel: agentModels,
+										})
+									}
+								}
+							}
+						case "mission_on_defi":
+							{
+								frequency := helpers.GetFrequencyFromMap(item.Data)
+								switch item.Idx {
+								case "mission_on_defi_trade_analytics":
+									{
+										tokens := helpers.GetStringValueFromMap(item.Data, "token")
+										toolList := s.conf.ToolLists.TradeAnalytic
+										if tokens == "" {
+											return errs.NewError(errs.ErrBadRequest)
+										}
+										userPrompt := fmt.Sprintf(`Conduct a technical analysis of $%s price data. Based on your findings, provide a recommended buy price and sell price to maximize potential returns.`, tokens)
+										toolList = strings.ReplaceAll(toolList, "{api_key}", s.conf.InternalApiKey)
+										toolList = strings.ReplaceAll(toolList, "{token_symbol}", tokens)
+
+										listMission = append(listMission, &serializers.AgentSnapshotMissionInfo{
+											ToolSet:    models.ToolsetTypeTradeAnalyticsOnTwitter,
+											Tokens:     tokens,
 											Interval:   frequency,
+											UserPrompt: userPrompt,
+											ToolList:   toolList,
 										})
 									}
 								}

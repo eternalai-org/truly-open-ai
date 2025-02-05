@@ -173,6 +173,8 @@ func (s *Server) Routers() {
 
 		internalAPI := rootAPI.Group("/internal", s.internalApiMiddleware())
 		{
+			internalAPI.GET("/webtext", s.GetWebpageText)
+
 			twitterAPI := internalAPI.Group("/twitter")
 			{
 				twitterAPI.GET("/user/recent-info", s.GetTwitterDataForLaunchpad)
@@ -274,8 +276,10 @@ func (s *Server) Routers() {
 		{
 			agentStoreAPI.POST("/save", s.SaveAgentStore)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
+			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
 			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)
-			agentStoreAPI.POST("/:id/mission/:mission_id", s.AddMissionStore)
+			agentStoreAPI.POST("/:id/mission", s.SaveMissionStore)
+			agentStoreAPI.POST("/authen/callback", s.AuthenAgentStoreCallback)
 		}
 
 		missionStoreAPI := rootAPI.Group("/mission-store")

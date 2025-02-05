@@ -104,8 +104,12 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.Launchpad)(nil),
 		(*models.LaunchpadMember)(nil),
 		(*models.LaunchpadTransaction)(nil),
-
 		(*models.AbilityLuckyMoney)(nil),
+
+		//
+		(*models.AgentStore)(nil),
+		(*models.AgentStoreMission)(nil),
+		(*models.AgentStoreInstall)(nil),
 	}
 
 	if err := db.AutoMigrate(allTables...).Error; err != nil {

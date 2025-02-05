@@ -143,6 +143,11 @@ interface IPromptScheduler3TX is IInferable {
         address indexed miner,
         uint256 indexed assigmentId
     );
+
+    function assignments(
+        uint256 _assignmentId
+    ) external view returns (Assignment memory);
+
     function getInferenceInfo(
         uint256 _inferenceId
     ) external view returns (Inference memory);
