@@ -187,12 +187,15 @@ type AbilityLuckyMoney struct {
 type ToolsetType string
 
 const (
-	ToolsetTypeDefault                 ToolsetType = "default"
-	ToolsetTypeReplyMentions           ToolsetType = "reply_mentions"
-	ToolsetTypeReplyNonMentions        ToolsetType = "reply_non_mentions"
-	ToolsetTypeShadowReply             ToolsetType = "shadow_reply"
-	ToolsetTypeFollow                  ToolsetType = "follow"
-	ToolsetTypePost                    ToolsetType = "post"
+	ToolsetTypeDefault          ToolsetType = "default"
+	ToolsetTypeReplyMentions    ToolsetType = "reply_mentions"
+	ToolsetTypeReplyNonMentions ToolsetType = "reply_non_mentions"
+	ToolsetTypeShadowReply      ToolsetType = "shadow_reply"
+	ToolsetTypeFollow           ToolsetType = "follow"
+	ToolsetTypePost             ToolsetType = "post"
+	ToolsetTypePostSearchV2     ToolsetType = "post_search_v2"
+	ToolsetTypePostSearchV3     ToolsetType = "post_search_v3"
+
 	ToolsetTypeIssueToken              ToolsetType = "issue_token"
 	ToolsetTypeInscribeTweet           ToolsetType = "inscribe_tweet"
 	ToolsetTypeInscribeTweetNews       ToolsetType = "tweet_news"

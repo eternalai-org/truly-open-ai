@@ -2,12 +2,16 @@
 
 echo "Deploy and start decentralized agents in one step"
 
+# Step 0: Start Ollama
+cd decentralized-compute/models && ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+cd ../..
+
 # Step 1: Deploy a local AI-powered blockchain on your computer
 ./install.sh
 
 eai miner-fast setup
 
-# Step 2: Deploy Decentralized Compute
+# Step 2: Deploy Decentralized Comput
 cd decentralized-compute/models
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -17,17 +21,11 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Running on macOS"
-    brew update && brew upgrade && brew install pigz
-    bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi 
-# elif [[ "$OSTYPE" == "cygwin" ]]; then
-#     echo "Running on Cygwin"
-# elif [[ "$OSTYPE" == "msys" ]]; then
-#     echo "Running on Git Bash"
+    sudo -u $SUDO_USER brew update && sudo -u $SUDO_USER brew upgrade && sudo -u $SUDO_USER brew install pigz
+    bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 else
     echo "Unknown operating system: $OSTYPE"
 fi
-
-ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
 
 cd ../..
 

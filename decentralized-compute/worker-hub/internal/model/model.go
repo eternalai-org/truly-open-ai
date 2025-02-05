@@ -105,6 +105,13 @@ type LLMInferResponse struct {
 		PromptTokensDetails interface{} `json:"prompt_tokens_details"`
 	} `json:"usage"`
 	PromptLogprobs interface{} `json:"prompt_logprobs"`
+	OnchainData    struct {
+		InferId       uint64   `json:"infer_id"`
+		PbftCommittee []string `json:"pbft_committee"`
+		Proposer      string   `json:"proposer"`
+		InferTx       string   `json:"infer_tx"`
+		ProposeTx     string   `json:"propose_tx"`
+	} `json:"onchain_data"`
 }
 
 type Response struct {

@@ -738,12 +738,6 @@ func (s *Service) GetDashboardAgentInfos(ctx context.Context, networkID uint64, 
 			} else {
 				filters["agent_infos.network_id = ? or agent_infos.token_network_id = ?"] = []interface{}{networkID, networkID}
 			}
-		} else {
-			// filters["agent_infos.network_id in (?) or agent_infos.id = 763"] = []interface{}{
-			// 	[]uint64{models.BASE_CHAIN_ID, models.ETHEREUM_NETWORK_ID, models.SHARDAI_CHAIN_ID,
-			// 		models.ARBITRUM_CHAIN_ID, models.SOLANA_CHAIN_ID,
-			// 		models.HERMES_CHAIN_ID, models.BSC_CHAIN_ID},
-			// }
 		}
 	}
 

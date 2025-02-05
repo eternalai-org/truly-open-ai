@@ -7,11 +7,11 @@ import (
 
 type AgentStore struct {
 	gorm.Model
-	Name          string
-	Description   string `gorm:"type:text"`
-	OwnerAddress  string
-	AuthenUrl     string `gorm:"type:longtext"`
-	MissionStores []*MissionStore
+	Name               string
+	Description        string `gorm:"type:text"`
+	OwnerAddress       string
+	AuthenUrl          string `gorm:"type:longtext"`
+	AgentStoreMissions []*AgentStoreMission
 }
 
 type AgentStoreMission struct {
@@ -27,12 +27,12 @@ type AgentStoreMission struct {
 	NumRating    uint
 	NumUsed      uint
 	Icon         string `gorm:"type:text"`
-	OutputType   OutputType
 }
 
 type AgentStoreInstall struct {
 	gorm.Model
-	AgentStoreID   uint   `gorm:"index"`
+	AgentStoreID   uint `gorm:"index"`
+	AgentStore     *AgentStore
 	AgentInfoID    uint   `gorm:"index"`
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
 }

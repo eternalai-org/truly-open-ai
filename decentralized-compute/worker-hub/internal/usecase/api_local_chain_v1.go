@@ -152,6 +152,9 @@ func (c *API_Local_Chain_V1) CreateInfer(ctx context.Context, request model.LLMI
 	chatCompletion := &model.LLMInferResponse{}
 	index := 0
 
+	pBFTCommittee := []string{}
+	_pBFTCommittee := make(map[string]string)
+	proposer := ""
 break_here:
 	for index < 150 {
 		time.Sleep(2 * time.Second)
@@ -161,15 +164,19 @@ break_here:
 		}
 
 		for _, assismentID := range assignmentIDs {
-
 			aInfo, err := wkHub.GetAssignmentInfo(nil, assismentID)
 			if err != nil {
 				return tx, &inferId, nil, err
 			}
+			_pBFTCommittee[aInfo.Worker.Hex()] = aInfo.Worker.Hex()
 
+			fmt.Println(aInfo.Role, "-", aInfo.Worker.String())
 			outByte := aInfo.Output
 			out := string(outByte)
 			if out != "" {
+				if aInfo.Role == 2 {
+					proposer = aInfo.Worker.Hex()
+				}
 
 				response := &model.Response{}
 				err := json.Unmarshal([]byte(out), response)
@@ -205,5 +212,14 @@ break_here:
 	_ = receipt
 	_ = pubkey
 
+	for _, v := range _pBFTCommittee {
+		pBFTCommittee = append(pBFTCommittee, v)
+	}
+
+	chatCompletion.OnchainData.InferTx = tx.Hash().Hex()
+	chatCompletion.OnchainData.InferId = inferId
+	chatCompletion.OnchainData.PbftCommittee = pBFTCommittee
+	chatCompletion.OnchainData.Proposer = proposer
+	chatCompletion.OnchainData.ProposeTx = ""
 	return tx, &inferId, chatCompletion, nil
 }

@@ -135,6 +135,10 @@ npm install && npx hardhat run %s --network localhost`, solV2Folder, solV2AutoDe
 		return err
 	}
 
+	defer func() {
+		os.Remove(fname)
+	}()
+
 	// Run the Hardhat script
 	err = pkg.CMDWithStream("bash", fname)
 	if err != nil {
