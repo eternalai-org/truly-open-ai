@@ -5,7 +5,7 @@ This developer guide shows you how to use Decentralized Inference API with Senti
 
 * **Decentralized**: Use Eternal AI's Decentralized Inference API instead of OpenAI's Centralized API.
 * **Onchain-verifiable AI**: Don't trust AI, verify them. All inferences are recorded onchain and verifiable by anyone.
-* **Unstoppable**: All inference runs exactly as coded on Base without any possibility of censorship, fraud, or third-party interference.
+* **Unstoppable**: All inference runs exactly as coded on Polygon without any possibility of censorship, fraud, or third-party interference.
 * **Permissionless**: Anyone can call the Decentralized Inference API at any time without a KYC or permission.
 
 ## Step 1: Get your Decentralized Inference API key
@@ -114,7 +114,7 @@ https://polygonscan.com/tx/0xd414779c149d08403a25da1626ff8771344d35536d36fedfb40
 
 ## Step 5: Let's verify the onchain response transaction
 
-Now, let's see the onchain response transaction on Base Explorer. You can see the actual response content with the thinking process and the final answer. Everything is onchain and verifiable.
+Now, let's see the onchain response transaction on Polygon Explorer. You can see the actual response content with the thinking process and the final answer. Everything is onchain and verifiable.
 
 https://polygonscan.com/tx/0xd802ae07a929e8ede17ee59f01b7b8276de8e5a1637fd6a0bbaef8a50dcb8ca5
 
