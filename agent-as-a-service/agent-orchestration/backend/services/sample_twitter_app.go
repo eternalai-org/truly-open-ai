@@ -21,7 +21,7 @@ func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode
 	}
 	redirectUri := s.conf.SampleTwitterApp.RedirectUri + "?install_code=" + installCode
 	return fmt.Sprintf(
-		"https://twitter.com/i/oauth2/authorize?redirect_uri=%s&client_id=%s&state=state&response_type=code&code_challenge=challenge&code_challenge_method=plain&scope=offline.access+tweet.read+tweet.write+users.read",
+		"https://twitter.com/i/oauth2/authorize?redirect_uri=%s&client_id=%s&state=state&response_type=code&code_challenge=challenge&code_challenge_method=plain&scope=offline.access+tweet.read+tweet.write+users.read+follows.write+like.write+like.read+users.read",
 		url.QueryEscape(redirectUri),
 		s.conf.SampleTwitterApp.OauthClientId,
 	), nil
