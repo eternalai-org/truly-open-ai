@@ -115,8 +115,7 @@ func (s *Server) SaveAgentStore(c *gin.Context) {
 func (s *Server) GetListAgentStore(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	search := s.stringFromContextQuery(c, "user_address")
-	res, count, err := s.nls.GetListAgentStore(ctx, search, page, limit)
+	res, count, err := s.nls.GetListAgentStore(ctx, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

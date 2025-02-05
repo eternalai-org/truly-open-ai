@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -60,12 +59,12 @@ func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStor
 	return nil
 }
 
-func (s *Service) GetListAgentStore(ctx context.Context, userAddress string, page, limit int) ([]*models.AgentStore, uint, error) {
+func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*models.AgentStore, uint, error) {
 	res, count, err := s.dao.FindAgentStore4Page(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{},
 		map[string][]interface{}{
-			"user_address = ?": {strings.ToLower(userAddress)},
-		},
-		map[string][]interface{}{}, []string{"id desc"}, page, limit)
+			"AgentStoreMissions": {},
+		}, []string{"id desc"}, page, limit)
 	if err != nil {
 		return nil, 0, errs.NewError(err)
 	}
