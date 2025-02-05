@@ -1,5 +1,5 @@
-import { FarcasterAgentClient } from "@eternal-dagent/plugin-farcaster";
-import {BaseDagent, IGetAccessTokenParams, InitAgent} from "@eternal-dagent/core";
+import { FarcasterAgentClient } from "@eternal-ai/plugin-farcaster";
+import {BaseDagent, IGetAccessTokenParams, InitAgent} from "@eternal-ai/core";
 
 interface IDagentFarcaster {
   init: () => Promise<string>;

@@ -15,7 +15,7 @@ import {
   OPTION_MODEL_LLAMA_3_3_70B_INSTECT_KEY,
 } from "../constants/option-values";
 import { CATEGORY_OPTION_KEYS } from "../constants/category-option-keys";
-import { AgentChainId, AgentTokenChainId } from "@eternal-dagent/core";
+import { AgentChainId, AgentTokenChainId } from "@eternal-ai/core";
 import NEW_AGENT_VALIDATES from "./new-agent/validates";
 import { PERSONALITIES_VALIDATES } from "./personalities/validates";
 import { AI_FRAME_WORK_VALIDATES } from "./ai-framework/validates";

@@ -1,5 +1,5 @@
 {
-  "name": "@eternal-dagent/direct",
+  "name": "@eternal-ai/direct",
   "version": "1.0.0",
   "main": "src/index.ts",
   "module": "dist/index.js",
@@ -14,7 +14,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "multer": "1.4.5-lts.1",
-    "@eternal-dagent/core": "*",
+    "@eternal-ai/core": "*",
     "body-parser": "^1.19.0"
   },
   "license": "ISC",

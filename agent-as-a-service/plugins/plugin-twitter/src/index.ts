@@ -1,4 +1,4 @@
-import { AgentClient, IAgent, IAgentClient } from "@eternal-dagent/core";
+import { AgentClient, IAgent, IAgentClient } from "@eternal-ai/core";
 import {
   IConnectTwitterParams,
   IGetTwitterOauthParams,
