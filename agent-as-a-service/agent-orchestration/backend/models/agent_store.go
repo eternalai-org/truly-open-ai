@@ -26,12 +26,12 @@ type AgentStoreMission struct {
 	NumRating    uint
 	NumUsed      uint
 	Icon         string `gorm:"type:text"`
-	OutputType   OutputType
 }
 
 type AgentStoreInstall struct {
 	gorm.Model
-	AgentStoreID   uint   `gorm:"index"`
+	AgentStoreID   uint `gorm:"index"`
+	AgentStore     *AgentStore
 	AgentInfoID    uint   `gorm:"index"`
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
 }

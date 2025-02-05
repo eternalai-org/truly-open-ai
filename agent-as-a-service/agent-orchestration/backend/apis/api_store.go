@@ -166,3 +166,16 @@ func (s *Server) AuthenAgentStoreCallback(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
+
+func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	idStr := s.stringFromContextParam(c, "agent_info_id")
+	id, _ := strconv.ParseUint(idStr, 10, 64)
+	res, count, err := s.nls.GetListAgentStoreInstall(ctx, uint(id), page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreRespArrayFromInstall(res), Count: &count})
+}

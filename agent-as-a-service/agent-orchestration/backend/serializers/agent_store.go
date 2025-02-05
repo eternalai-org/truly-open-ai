@@ -21,7 +21,6 @@ type AgentStoreMissionReq struct {
 	Price       uint   `json:"price"`
 	ToolList    string `json:"tool_list"`
 	Icon        string `json:"icon"`
-	OutputType  string `json:"output_type"`
 }
 
 type AuthenAgentStoreCallback struct {
@@ -70,7 +69,6 @@ type AgentStoreMissionResp struct {
 	Price        uint      `json:"price"`
 	ToolList     string    `json:"tool_list"`
 	Icon         string    `json:"icon"`
-	OutputType   string    `json:"output_type"`
 }
 
 func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionResp {
@@ -87,13 +85,20 @@ func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionRes
 		Price:        m.Price,
 		ToolList:     m.ToolList,
 		Icon:         m.Icon,
-		OutputType:   string(m.OutputType),
 	}
 }
 func NewAgentStoreMissionRespArray(arr []*models.AgentStoreMission) []*AgentStoreMissionResp {
 	resps := []*AgentStoreMissionResp{}
 	for _, r := range arr {
 		resps = append(resps, NewAgentStoreMissionResp(r))
+	}
+	return resps
+}
+
+func NewAgentStoreRespArrayFromInstall(arr []*models.AgentStoreInstall) []*AgentStoreResp {
+	resps := []*AgentStoreResp{}
+	for _, r := range arr {
+		resps = append(resps, NewAgentStoreResp(r.AgentStore))
 	}
 	return resps
 }
