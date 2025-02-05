@@ -46,7 +46,7 @@ func Test_JOB(t *testing.T) {
 	// ts.RetryAgentDeployToken(context.Background(), 51265)
 	// ts.JobUpdateOffchainAutoOutputForMission(context.Background())
 	// ts.JobAgentTwitterPostTA(context.Background())
-	ts.JobLuckyMoneyProcessUserReward(context.Background())
+	// ts.JobLuckyMoneyProcessUserReward(context.Background())
 
 	// fmt.Println(
 	// // ts.DeployDAOTreasuryLogic(context.Background(), models.BASE_CHAIN_ID),
