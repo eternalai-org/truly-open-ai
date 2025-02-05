@@ -1396,31 +1396,33 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						if item.RewardAmount.Cmp(big.NewFloat(0)) <= 0 || item.RewardUser <= 0 {
 							return errs.NewError(errs.ErrBadRequest)
 						}
-					} else if item.MissionStoreID != 0 {
+					} else if item.AgentStoreMissionID > 0 {
 						//
-						missionStore, err := s.dao.FirstMissionStoreByID(tx, item.MissionStoreID, map[string][]interface{}{}, false)
+						agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
+							tx,
+							map[string][]interface{}{
+								"agent_store_id = ?": {mission.AgentStoreID},
+								"agent_info_id = ?":  {mission.AgentInfoID},
+							},
+							map[string][]interface{}{},
+							true,
+						)
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if missionStore == nil {
+						if agentStoreInstall == nil {
 							return errs.NewError(errs.ErrBadRequest)
 						}
-						toolList := missionStore.ToolList
-						if missionStore.OutputType == models.OutputTypeTwitter {
-							twitterTool := fmt.Sprintf(s.conf.ToolLists.PostTwitter, s.conf.InternalApiKey, agentInfo.ID)
-							toolList, err = s.addToolPostTwitter(toolList, twitterTool)
-							if err != nil {
-								return errs.NewError(err)
-							}
+						agentStoreMission, err := s.dao.FirstAgentStoreMissionByID(tx, item.AgentStoreMissionID, map[string][]interface{}{}, false)
+						if err != nil {
+							return errs.NewError(err)
 						}
-						//assign value
-						for key, value := range item.MissionStoreParams {
-							placeholder := fmt.Sprintf("<%s>", key)
-							toolList = strings.ReplaceAll(toolList, placeholder, value)
+						if agentStoreMission == nil {
+							return errs.NewError(errs.ErrBadRequest)
 						}
-						mission.UserPrompt = missionStore.UserPrompt
-						mission.MissionStoreID = item.MissionStoreID
-						mission.ToolList = toolList
+						mission.AgentStoreMissionID = agentStoreMission.ID
+						mission.AgentStoreID = agentStoreMission.AgentStoreID
+						mission.ReactMaxSteps = 5
 					} else if item.ToolList != "" {
 						mission.ToolList = item.ToolList
 					}
@@ -1433,7 +1435,6 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						return errs.NewError(err)
 					}
 				}
-
 				if defataulUserPromp != "" {
 					updateAgentFields := map[string]interface{}{
 						"user_prompt": defataulUserPromp,

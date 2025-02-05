@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
 type AgentStoreReq struct {
@@ -14,14 +15,14 @@ type AgentStoreReq struct {
 }
 
 type AgentStoreMissionReq struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Prompt      string `json:"prompt"`
-	Price       uint   `json:"price"`
-	ToolList    string `json:"tool_list"`
-	Icon        string `json:"icon"`
-	OutputType  string `json:"output_type"`
+	ID          uint             `json:"id"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	Prompt      string           `json:"prompt"`
+	Price       numeric.BigFloat `json:"price"`
+	ToolList    string           `json:"tool_list"`
+	Icon        string           `json:"icon"`
+	OutputType  string           `json:"output_type"`
 }
 
 type AuthenAgentStoreCallback struct {
