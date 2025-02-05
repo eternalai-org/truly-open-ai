@@ -179,3 +179,15 @@ func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreRespArrayFromInstall(res), Count: &count})
 }
+
+func (s *Server) GetAgentStoreInstallCode(c *gin.Context) {
+	ctx := s.requestContext(c)
+	agentStoreID := s.uintFromContextParam(c, "id")
+	agentInfoID := s.uintFromContextParam(c, "agent_info_id")
+	res, err := s.nls.CreateAgentStoreInstallCode(ctx, agentStoreID, agentInfoID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: res.Code})
+}
