@@ -6,11 +6,11 @@ import (
 
 type AgentStore struct {
 	gorm.Model
-	Name          string
-	Description   string `gorm:"type:text"`
-	OwnerAddress  string
-	AuthenUrl     string `gorm:"type:longtext"`
-	MissionStores []*MissionStore
+	Name               string
+	Description        string `gorm:"type:text"`
+	OwnerAddress       string
+	AuthenUrl          string `gorm:"type:longtext"`
+	AgentStoreMissions []*AgentStoreMission
 }
 
 type AgentStoreMission struct {
