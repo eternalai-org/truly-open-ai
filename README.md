@@ -1,12 +1,18 @@
-# Eternal AI (EAI)
+# Eternal AI: Build Decentralized Agents
 
-The Eternal AI protocol is the decentralized AI layer of the new internet. It is designed to give AI superpowers to any blockchain.
+Eternal AI is a decentralized protocol that powers cryptographically-secure agents: agents that are written in Solidity, a new language for smart contracts, and run exactly as programmed without any possibility of downtime, censorship, fraud, or third-party interference.
 
-The Eternal AI protocol is implemented as a set of smart contracts that can be easily deployed on any blockchain to create an unstoppable onchain AI runtime. It is designed to deliver censorship resistance, permissionless, and verifiability. It uses peer-to-peer technology to operate without any trusted intermediaries or central authorities.
+These agents run on a powerful peer-to-peer infrastructure with many unique properties.
 
-The Eternal AI protocol was originally developed for [decentralized AI agents on Bitcoin](https://x.com/punk3700/status/1870757446643495235). However, the design is versatile enough to power other blockchains as well.
+* Decentralization at every step: Inference, Compute, Storage
+* State-of-the-art models: DeepSeek, Llama, FLUX, etc.
+* Omnichain: Bitcoin, Ethereum, Solana, etc.
 
-Join us in building AI-powered blockchains.
+This enables developers to create SocialFi agents that interact on Twitter, DeFi agents that trade crypto for you, GameFi agents that play onchain games, and many other decentralized agents that have not been invented yet — all without a middleman or counterparty risk.
+
+Join us in building the decentralized AI layer of the new internet.
+
+<img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
 # Get started
 
@@ -187,11 +193,6 @@ It's simple. Create a pull request and add your agent character file to the fold
 # Platform Architecture
 
 Eternal AI is an end-to-end decentralized infrastructure created for a wide array of AI agents and blockchains.
-
-<img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
-
-<br>
-<br>
 
 Here are the major components of the Eternal AI software stack.
 
