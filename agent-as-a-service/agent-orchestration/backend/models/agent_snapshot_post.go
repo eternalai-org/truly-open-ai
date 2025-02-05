@@ -60,9 +60,9 @@ type AgentSnapshotPost struct {
 	AgentSnapshotPostAction []*AgentSnapshotPostAction
 	OrgTweetID              string
 	Token                   string
-	MissionStoreID          uint
+	AgentStoreMissionID     uint
 	IsRated                 bool
-	MissionStoreFee         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	AgentStoreMissionFee    numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 type (
@@ -216,35 +216,37 @@ const (
 
 type AgentSnapshotMission struct {
 	gorm.Model
-	NetworkID         uint64
-	AgentInfoID       uint `gorm:"index"`
-	AgentInfo         *AgentInfo
-	UserPrompt        string `gorm:"type:longtext"`
-	IntervalSec       int    `gorm:"default:0"`
-	LookupInterval    int    `gorm:"default:0"`
-	Enabled           bool   `gorm:"default:0"`
-	ReplyEnabled      bool   `gorm:"default:0"`
-	IsTesting         bool   `gorm:"default:0"`
-	ToolSet           ToolsetType
-	AgentType         AgentInfoAgentType `gorm:"default:0"`
-	InferAt           *time.Time
-	SkipThough        bool   `gorm:"default:0"`
-	ToolList          string `gorm:"type:longtext"`
-	UserTwitterIds    string `gorm:"type:longtext"`
-	TeleChatID        string
-	Tokens            string `gorm:"type:longtext"`
-	ReactMaxSteps     int    `gorm:"default:0"`
-	NotDelay          bool   `gorm:"default:0"`
-	AgentBaseModel    string
-	MissionStoreID    uint
-	MissionStore      *MissionStore
-	Topics            string           `gorm:"type:longtext"`
-	IsTwitterSearch   bool             `gorm:"default:0"`
-	IsBingSearch      bool             `gorm:"default:0"`
-	RewardAmount      numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	RewardUser        int
-	MinTokenHolding   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	LaunchpadMemberID uint
+	NetworkID           uint64
+	AgentInfoID         uint `gorm:"index"`
+	AgentInfo           *AgentInfo
+	UserPrompt          string `gorm:"type:longtext"`
+	IntervalSec         int    `gorm:"default:0"`
+	LookupInterval      int    `gorm:"default:0"`
+	Enabled             bool   `gorm:"default:0"`
+	ReplyEnabled        bool   `gorm:"default:0"`
+	IsTesting           bool   `gorm:"default:0"`
+	ToolSet             ToolsetType
+	AgentType           AgentInfoAgentType `gorm:"default:0"`
+	InferAt             *time.Time
+	SkipThough          bool   `gorm:"default:0"`
+	ToolList            string `gorm:"type:longtext"`
+	UserTwitterIds      string `gorm:"type:longtext"`
+	TeleChatID          string
+	Tokens              string `gorm:"type:longtext"`
+	ReactMaxSteps       int    `gorm:"default:0"`
+	NotDelay            bool   `gorm:"default:0"`
+	AgentBaseModel      string
+	Topics              string           `gorm:"type:longtext"`
+	IsTwitterSearch     bool             `gorm:"default:0"`
+	IsBingSearch        bool             `gorm:"default:0"`
+	RewardAmount        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	RewardUser          int
+	MinTokenHolding     numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	LaunchpadMemberID   uint
+	AgentStoreID        uint
+	AgentStore          *AgentStore
+	AgentStoreMissionID uint
+	AgentStoreMission   *AgentStoreMission
 }
 
 type TeleMsgStatus string

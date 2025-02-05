@@ -85,6 +85,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 								)
 							)
 							or (agent_infos.farcaster_id is not null and agent_infos.farcaster_id != '' and agent_snapshot_mission_configs.platform = 'farcaster')
+							or agent_snapshot_missions.agent_store_mission_id > 0
 						)
 						and agent_infos.network_id in (?)
 					)`: {
@@ -339,8 +340,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						tx,
 						missionID,
 						map[string][]interface{}{
-							"AgentInfo":    {},
-							"MissionStore": {},
+							"AgentInfo":         {},
+							"AgentStore":        {},
+							"AgentStoreMission": {},
 						},
 						false,
 					)
@@ -402,10 +404,39 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						return errs.NewError(err)
 					}
 					inferFee := agentChainFee.InferFee
-					missionStoreFee := numeric.BigFloat{*big.NewFloat(0)}
-					if mission.MissionStore != nil {
-						missionStoreFee = numeric.BigFloat{*big.NewFloat(float64(mission.MissionStore.Price))}
-						inferFee = numeric.BigFloat{*models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float)}
+					missionStoreFee := numeric.NewBigFloatFromFloat(big.NewFloat(0))
+					toolList := mission.ToolList
+					if mission.AgentStoreMissionID > 0 {
+						missionStoreFee = mission.AgentStoreMission.Price
+						inferFee = numeric.NewBigFloatFromFloat(models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float))
+						agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
+							tx,
+							map[string][]interface{}{
+								"agent_store_id = ?": {mission.AgentStoreID},
+								"agent_info_id = ?":  {mission.AgentInfoID},
+							},
+							map[string][]interface{}{},
+							true,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if agentStoreInstall == nil {
+							return errs.NewError(errs.ErrBadRequest)
+						}
+						params := map[string]interface{}{}
+						err = helpers.ConvertJsonObject(agentStoreInstall.CallbackParams, &params)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						inferItems[0].Content, err = helpers.GenerateTemplateContent(mission.AgentStoreMission.UserPrompt, params)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						toolList, err = helpers.GenerateTemplateContent(mission.AgentStoreMission.ToolList, params)
+						if err != nil {
+							return errs.NewError(err)
+						}
 					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,
@@ -418,7 +449,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						UserPrompt:             inferItems[0].Content,
 						HeadSystemPrompt:       headSystemPrompt,
 						AgentMetaData:          helpers.ConvertJsonString(metaDataReq),
-						ToolList:               mission.ToolList,
+						ToolList:               toolList,
 						SystemPrompt:           agentInfo.SystemPrompt,
 						SystemReminder:         agentInfo.SystemReminder,
 						Toolset:                string(mission.ToolSet),
@@ -427,9 +458,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						InferTxHash:            inferTxHash,
 						OrgTweetID:             orgTweetID,
 						Token:                  tokenSymbol,
-						MissionStoreID:         mission.MissionStoreID,
+						AgentStoreMissionID:    mission.AgentStoreMissionID,
 						IsRated:                false,
-						MissionStoreFee:        missionStoreFee,
+						AgentStoreMissionFee:   missionStoreFee,
 					}
 					if inferPost.AgentBaseModel == "" {
 						inferPost.AgentBaseModel = agentInfo.AgentBaseModel
