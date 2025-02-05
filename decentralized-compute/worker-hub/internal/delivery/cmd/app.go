@@ -5,17 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
+
 	"solo/config"
 	"solo/internal/factory"
 	"solo/internal/port"
 	"solo/internal/usecase"
 	"solo/pkg"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
 
-var separator = " > "
+var separator string = " > "
 
 type CMD struct {
 	rootCmd       *cobra.Command
@@ -29,8 +30,8 @@ type CMD struct {
 
 func NewCMD() (*CMD, error) {
 	clusterCMD, _ := usecase.NewCmdCluster()
-	//localChainCMD, _ := usecase.NewCMDLocalChain() New, but we are back to the v1 one.
-	//localChainCMD, _ := usecase.NewCMDLocalChainV1()
+	// localChainCMD, _ := usecase.NewCMDLocalChain() New, but we are back to the v1 one.
+	// localChainCMD, _ := usecase.NewCMDLocalChainV1()
 	localChainCMD := factory.NewLocalChain("v1")
 	c := &CMD{
 		clusterCMD: clusterCMD,
@@ -62,7 +63,6 @@ func (c *CMD) Run() {
 	commands := c.cliCommand()
 	c.rootNodeCmd.Children = commands
 	c.rootCmd.Run = func(cmd *cobra.Command, args []string) {
-
 		fmt.Printf("%sWelcome to Neurons/Solo CLI!\n", pkg.Line)
 		c.interactiveMode(commands, nil)
 	}
@@ -81,12 +81,10 @@ func (c *CMD) buildBreadcrumb(parentNode *pkg.Command) string {
 
 	parentTxt := c.buildBreadcrumb(parentNode.Parent)
 	if parentNode.Name == "" {
-		txt := parentTxt
-		return txt
+		return parentTxt
 	}
 
-	txt := parentTxt + separator + parentNode.Name
-	return txt
+	return parentTxt + separator + parentNode.Name
 }
 
 func (c *CMD) interactiveMode(commands []*pkg.Command, parentNode *pkg.Command) {
@@ -129,7 +127,6 @@ func (c *CMD) interactiveMode(commands []*pkg.Command, parentNode *pkg.Command) 
 			default:
 				fmt.Println(ac)
 			}
-
 		} else {
 			if node.Function != nil {
 				node.Function(reader, node)
@@ -212,7 +209,7 @@ func (c *CMD) buildTree(commands []*pkg.Command, parent *pkg.Command) {
 }
 
 // processCommand handles user input commands
-func (c *CMD) findCommand(command string, commands []*pkg.Command, reader *bufio.Reader) *pkg.Command {
+func (c *CMD) findCommand(command string, commands []*pkg.Command, _ *bufio.Reader) *pkg.Command {
 	for _, val := range commands {
 		if strings.EqualFold(val.Key, command) {
 			return val
@@ -250,9 +247,9 @@ func (c *CMD) buildCommand(conf *pkg.Command, reader *bufio.Reader, verifyIn []s
 	}
 
 	if required == "" && defaultText == "" {
-		fmt.Print(fmt.Sprintf("> %s: ", conf.Help))
+		fmt.Printf("> %s: ", conf.Help)
 	} else {
-		fmt.Print(fmt.Sprintf("> %s (%s%s): ", conf.Help, required, defaultText))
+		fmt.Printf("> %s (%s%s): ", conf.Help, required, defaultText)
 	}
 
 	str := ""
