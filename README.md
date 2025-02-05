@@ -1,6 +1,6 @@
 # Eternal AI: Build Decentralized Agents
 
-Eternal AI is a decentralized protocol that powers smart contract agents: agents that run exactly as programmed without downtime, censorship, or third-party interference.
+Eternal AI is an end-to-end decentralized protocol that powers smart contract agents: AI agents that run exactly as programmed without censorship, downtime, or interference.
 
 These agents run on a powerful peer-to-peer infrastructure with many unique properties:
 
