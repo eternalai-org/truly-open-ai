@@ -486,6 +486,27 @@ func (c *Client) TwitterOauthCallbackForInternalData(clientID, clientSecret, cod
 	return &resp, nil
 }
 
+func (c *Client) TwitterOauthCallbackForSampleApp(clientID, clientSecret, code, redirectUri string) (*TwitterTokenResponse, error) {
+	var resp TwitterTokenResponse
+	postData := map[string]interface{}{
+		"client_id":     clientID,
+		"code_verifier": "challenge",
+		"redirect_uri":  redirectUri,
+		"grant_type":    "authorization_code",
+		"code":          code,
+	}
+	err := c.postJSONWithKey(
+		TWITTER_OAUTH_TOKEN_URL, clientID, clientSecret,
+		map[string]string{},
+		postData,
+		&resp,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &resp, nil
+}
+
 func (c *Client) GetTwitterOAuthTokenWithKeyForRelink(clientID, clientSecret, code string, callbackUrl, address string) (*TwitterTokenResponse, error) {
 	var resp TwitterTokenResponse
 	redirectUri := fmt.Sprintf(`%s?callback=%s&address=%s&client_id=%s`, c.RedirectUri, callbackUrl, address, clientID)

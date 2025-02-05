@@ -1,0 +1,50 @@
+import json
+from x_content.constants.utils import get_and_warn
+
+KN_BASE_MODE = get_and_warn("KN_BASE_MODE")
+RAG_API = get_and_warn("RAG_API", "").rstrip()
+RAG_SECRET_TOKEN = get_and_warn("RAG_SECRET_TOKEN")
+
+LLM_MODE = get_and_warn("LLM_MODE")
+
+OPENAI_API_KEY = get_and_warn("OPENAI_API_KEY")
+
+BACKEND_LLM_API = get_and_warn("BACKEND_LLM_API")
+BACKEND_LLM_TOKEN = get_and_warn("BACKEND_LLM_TOKEN")
+BACKEND_LLM_MODEL = get_and_warn("BACKEND_LLM_MODEL")
+
+
+SELF_HOSTED_MODELS = get_and_warn("SELF_HOSTED_MODELS")
+
+if SELF_HOSTED_MODELS is not None and isinstance(SELF_HOSTED_MODELS, str):
+    SELF_HOSTED_MODELS = json.loads(SELF_HOSTED_MODELS)
+
+SELF_HOSTED_LLAMA_405B_MODEL_IDENTITY = get_and_warn(
+    "SELF_HOSTED_LLAMA_405B_MODEL_IDENTITY"
+)
+SELF_HOSTED_MODEL_IDENTITY = get_and_warn("SELF_HOSTED_MODEL_IDENTITY")
+SELF_HOSTED_LLAMA_405B_URL = get_and_warn(
+    "SELF_HOSTED_LLAMA_405B_URL", ""
+).rstrip("/")
+
+SELF_HOSTED_LLAMA_URL = get_and_warn("SELF_HOSTED_LLAMA_URL", "").rstrip("/")
+
+SELF_HOSTED_LLAMA_API_KEY = get_and_warn("SELF_HOSTED_LLAMA_API_KEY")
+
+VISION_API_KEY = get_and_warn("VISION_API_KEY")
+VISION_API_URL = get_and_warn("VISION_API_URL", "").rstrip("/")
+VISION_API_MODEL = get_and_warn("VISION_API_MODEL")
+
+SELF_HOSTED_TEXT_TO_IMAGE_URL = get_and_warn(
+    "SELF_HOSTED_TEXT_TO_IMAGE_URL", ""
+).rstrip("/")
+
+SELF_HOSTED_HERMES_70B_URL = get_and_warn(
+    "SELF_HOSTED_HERMES_70B_URL", ""
+).rstrip("/")
+SELF_HOSTED_HERMES_70B_MODEL_IDENTITY = get_and_warn(
+    "SELF_HOSTED_HERMES_70B_MODEL_IDENTITY"
+)
+
+DEFAULT_MAX_OUTPUT_TOKENS = 1024
+DEFAULT_TEMPERATURE = 0.7

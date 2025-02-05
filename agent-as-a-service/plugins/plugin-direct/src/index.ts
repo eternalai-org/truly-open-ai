@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { dagentLogger } from "@eternal-dagent/core";
+import { dagentLogger } from "@eternalai-dagent/core";
 import cors from "cors";
 
 export function createApiRouter() {

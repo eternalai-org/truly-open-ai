@@ -1,5 +1,5 @@
 {
-  "name": "@eternal-dagent/client-dagent",
+  "name": "@eternalai-dagent/client-dagent",
   "version": "1.0.1",
   "repository": {
     "type": "git",
@@ -18,14 +18,13 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@eternal-dagent/plugin-twitter": "*",
-    "@eternal-dagent/plugin-farcaster": "*",
-    "@eternal-dagent/core": "*",
+    "@eternalai-dagent/plugin-twitter": "*",
+    "@eternalai-dagent/plugin-farcaster": "*",
+    "@eternalai-dagent/core": "*",
     "ethers": "5.7.2"
   },
   "devDependencies": {
-    "tsup": "^8.3.5",
-    "typescript": "^5.7.2"
+    "tsup": "^8.3.5"
   },
   "resolutions": {}
 }

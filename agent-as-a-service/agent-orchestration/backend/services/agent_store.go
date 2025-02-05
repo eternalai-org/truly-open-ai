@@ -148,6 +148,7 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 				return errs.NewError(errs.ErrBadRequest)
 			} else {
 				obj.CallbackParams = string(params)
+				obj.Status = models.InstallStatusDone
 			}
 
 			err = s.dao.Save(tx, obj)
@@ -167,7 +168,9 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 
 func (s *Service) GetListAgentStoreInstall(ctx context.Context, agentInfoID uint, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
 	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{},
+		map[string][]interface{}{
+			"status = ?": {models.InstallStatusDone},
+		},
 		map[string][]interface{}{
 			"AgentStore":                    {},
 			"AgentStore.AgentStoreMissions": {},
@@ -183,6 +186,7 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, agentStoreID,
 		Code:         helpers.RandomReferralCode(32),
 		AgentStoreID: agentStoreID,
 		AgentInfoID:  agentInfoID,
+		Status:       models.InstallStatusNew,
 	}
 	err := s.dao.Create(daos.GetDBMainCtx(ctx), obj)
 	if err != nil {

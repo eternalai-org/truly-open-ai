@@ -5,7 +5,7 @@ import {
   EFarcasterMissionToolSet,
   IAgentCharacter,
   TokenSetupMode
-} from "@eternal-dagent/core";
+} from "@eternalai-dagent/core";
 
 export const dagentCharacter: IAgentCharacter = {
   character: {

@@ -12,9 +12,9 @@
     "run:farcaster": "node --loader ts-node/esm src/farcaster.ts"
   },
   "dependencies": {
-    "@eternal-dagent/client-dagent": "*",
-    "@eternal-dagent/core": "*",
-    "@eternal-dagent/direct": "*",
+    "@eternalai-dagent/client-dagent": "*",
+    "@eternalai-dagent/core": "*",
+    "@eternalai-dagent/direct": "*",
     "ethers": "5.7.2"
   },
   "devDependencies": {

@@ -25,7 +25,7 @@ type AgentStoreMissionReq struct {
 }
 
 type AuthenAgentStoreCallback struct {
-	Code           uint              `json:"code"`
+	Code           string            `json:"code"`
 	CallbackParams map[string]string `json:"callback_params"`
 }
 

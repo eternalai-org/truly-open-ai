@@ -5,7 +5,7 @@ import {
   ETwitterMissionToolSet,
   IAgentCharacter,
   TokenSetupMode
-} from "@eternal-dagent/core";
+} from "@eternalai-dagent/core";
 
 const LunaDagentCharacter: IAgentCharacter = {
   character: {

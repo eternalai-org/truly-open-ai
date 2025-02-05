@@ -1,4 +1,4 @@
-import { AgentSnapshotMission } from "@eternal-dagent/core";
+import { AgentSnapshotMission } from "@eternalai-dagent/core";
 
 /** Twitter params */
 export interface IConnectTwitterParams {
