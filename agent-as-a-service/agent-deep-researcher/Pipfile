@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+flask-restful = "==0.3.10"
+nest-asyncio = "==1.6.0"
+gradio = "==5.14.0"
+aiohttp = "==3.11.11"
+celery = "*"
+redis = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"

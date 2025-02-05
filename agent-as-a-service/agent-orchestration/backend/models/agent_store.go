@@ -5,6 +5,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type (
+	InstallStatus string
+)
+
+const (
+	InstallStatusNew  InstallStatus = "new"
+	InstallStatusDone InstallStatus = "donw"
+)
+
 type AgentStore struct {
 	gorm.Model
 	Name               string
@@ -36,4 +45,5 @@ type AgentStoreInstall struct {
 	AgentInfoID    uint   `gorm:"index"`
 	AgentStore     *AgentStore
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
+	Status         InstallStatus
 }
