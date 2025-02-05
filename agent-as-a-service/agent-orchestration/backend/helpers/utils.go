@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -748,4 +749,25 @@ func GetStringValueFromMap(mapInfo map[string]interface{}, key string) string {
 		return fmt.Sprintf("%v", v)
 	}
 	return ""
+}
+
+func GetFrequencyFromMap(mapInfo map[string]interface{}) int {
+	frequency := int(2)
+	switch v := mapInfo["frequency"].(type) {
+	case int:
+		frequency = v
+		frequency = frequency * 3600
+	case float64:
+		{
+			frequencyF := v
+			frequency = int(frequencyF * 3600)
+		}
+	case string:
+		frequency, _ = strconv.Atoi(v)
+		frequency = frequency * 3600
+	default:
+		frequency = int(2)
+		frequency = frequency * 3600
+	}
+	return frequency
 }
