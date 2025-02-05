@@ -11,7 +11,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStoreReq) error {
+func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStoreReq) (*models.AgentStore, error) {
 
 	var agentStore *models.AgentStore
 	var err error
@@ -53,10 +53,10 @@ func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStor
 		},
 	)
 	if err != nil {
-		return errs.NewError(err)
+		return nil, errs.NewError(err)
 	}
 
-	return nil
+	return agentStore, nil
 }
 
 func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*models.AgentStore, uint, error) {

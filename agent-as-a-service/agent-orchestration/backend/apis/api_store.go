@@ -104,12 +104,12 @@ func (s *Server) SaveAgentStore(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.SaveAgentStore(ctx, &req)
+	obj, err := s.nls.SaveAgentStore(ctx, &req)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreResp(obj)})
 }
 
 func (s *Server) GetListAgentStore(c *gin.Context) {
