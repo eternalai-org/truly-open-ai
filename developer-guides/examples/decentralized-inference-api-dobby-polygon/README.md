@@ -47,7 +47,7 @@ curl --location 'https://api.eternalai.org/v1/chat/completions' --header 'Author
 
 For those curious about how decentralized inference works: once the prompt is sent onchain, miners are randomly selected into a pBFT committee. They will first fetch the [Dobby model stored on Filecoin](https://gateway.lighthouse.storage/ipfs/bafkreietbqazyzzxg26hnhy5lsa2d3nfxl3tkps4p53f4stxfydfmgonx4), a decentralized storage network, and then run inference. ```2/3+1``` of the miners must provide the same deterministic response.
 
-## Step 3: Receive the Onchain DeepSeek-R1 response
+## Step 3: Receive the Onchain SentientAGI Dobby response
 
 You'll find the following info in the response.
 
