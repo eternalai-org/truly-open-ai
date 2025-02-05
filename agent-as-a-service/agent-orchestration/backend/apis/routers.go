@@ -277,7 +277,8 @@ func (s *Server) Routers() {
 			agentStoreAPI.POST("/save", s.SaveAgentStore)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
 			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)
-			agentStoreAPI.POST("/:id/mission/:mission_id", s.AddMissionStore)
+			agentStoreAPI.POST("/:id/mission", s.SaveMissionStore)
+			agentStoreAPI.POST("/authen/callback", s.AuthenAgentStoreCallback)
 		}
 
 		missionStoreAPI := rootAPI.Group("/mission-store")

@@ -13,6 +13,23 @@ type AgentStoreReq struct {
 	AuthenUrl   string `json:"authen_url"`
 }
 
+type AgentStoreMissionReq struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Prompt      string `json:"prompt"`
+	Price       uint   `json:"price"`
+	ToolList    string `json:"tool_list"`
+	Icon        string `json:"icon"`
+	OutputType  string `json:"output_type"`
+}
+
+type AuthenAgentStoreCallback struct {
+	AgentStoreID       uint              `json:"agent_store_id"`
+	InstallAgentInfoID uint              `json:"install_agent_info_id"`
+	CallbackParams     map[string]string `json:"callback_params"`
+}
+
 type AgentStoreResp struct {
 	ID            uint                `json:"id"`
 	CreatedAt     time.Time           `json:"created_at"`

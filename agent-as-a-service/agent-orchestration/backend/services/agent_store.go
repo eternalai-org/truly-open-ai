@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -81,14 +82,98 @@ func (s *Service) GetAgentStoreDetail(ctx context.Context, id uint) (*models.Age
 	return res, nil
 }
 
-func (s *Service) AddMissionStore(ctx context.Context, agentStoreID uint, missionStoreID uint) error {
-	agentStoreMission := &models.AgentStoreMission{
-		AgentStoreID:   agentStoreID,
-		MissionStoreID: missionStoreID,
-	}
-	err := s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreMission)
+func (s *Service) SaveMissionStore(ctx context.Context, agentStoreID uint, req *serializers.AgentStoreMissionReq) error {
+	var mission *models.AgentStoreMission
+	var err error
+	err = daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			if req.ID > 0 {
+				mission, err = s.dao.FirstAgentStoreMissionByID(tx, req.ID, map[string][]interface{}{}, true)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if mission == nil {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				mission.Name = req.Name
+				mission.Description = req.Description
+				mission.UserPrompt = req.Prompt
+				mission.ToolList = req.ToolList
+			} else {
+				mission = &models.AgentStoreMission{
+					AgentStoreID: agentStoreID,
+					Name:         req.Name,
+					Description:  req.Description,
+					UserPrompt:   req.Prompt,
+					Price:        req.Price,
+					ToolList:     req.ToolList,
+					Icon:         req.Icon,
+					OutputType:   models.OutputType(req.OutputType),
+				}
+			}
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if mission.ID > 0 {
+				err = s.dao.Save(tx, mission)
+			} else {
+				err = s.dao.Create(tx, mission)
+			}
+
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return errs.NewError(err)
 	}
+
+	return nil
+}
+
+func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.AuthenAgentStoreCallback) error {
+	err := daos.WithTransaction(
+		daos.GetDBMainCtx(ctx),
+		func(tx *gorm.DB) error {
+			obj, err := s.dao.FirstAgentStoreInstall(tx, map[string][]interface{}{
+				"agent_store_id = ?": {req.AgentStoreID},
+				"agent_info_id = ?":  {req.InstallAgentInfoID},
+			}, map[string][]interface{}{}, true)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			params, _ := json.Marshal(req.CallbackParams)
+			if obj == nil {
+				obj = &models.AgentStoreInstall{
+					AgentStoreID:   req.AgentStoreID,
+					AgentInfoID:    req.InstallAgentInfoID,
+					CallbackParams: string(params),
+				}
+			} else {
+				obj.CallbackParams = string(params)
+			}
+
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if obj.ID > 0 {
+				err = s.dao.Save(tx, obj)
+			} else {
+				err = s.dao.Create(tx, obj)
+			}
+
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+
 	return nil
 }
