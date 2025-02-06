@@ -154,7 +154,7 @@ func (c *API_Local_Chain_V1) CreateInfer(ctx context.Context, request model.LLMI
 	_pBFTCommittee := make(map[string]string)
 	proposer := ""
 break_here:
-	for index < 150 {
+	for index < 15000 {
 		time.Sleep(2 * time.Second)
 		assignmentIDs, err := wkHub.GetAssignmentsByInference(nil, inferIdBig)
 		if err != nil {
