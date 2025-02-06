@@ -4,15 +4,17 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"decentralized-inference/internal/config"
-	"decentralized-inference/internal/libs/http_client"
-	"decentralized-inference/internal/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"decentralized-inference/internal/config"
+	"decentralized-inference/internal/libs/http_client"
+	"decentralized-inference/internal/models"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -40,7 +42,19 @@ func AgentTerminalChat(ctx context.Context, agentID string) error {
 			continue
 		}
 
-		userInput = strings.TrimSpace(userInput)
+		agentIDInt, err := strconv.Atoi(agentID)
+		if err != nil {
+			fmt.Println("Error converting agent ID to int:", err)
+			continue
+		}
+
+		systemPromt, err := GetSysPrompt(ctx, agentIDInt)
+		if err != nil {
+			fmt.Println("Error getting system prompt:", err)
+			continue
+		}
+
+		userInput = strings.TrimSpace(systemPromt + userInput)
 		if strings.ToLower(userInput) == "exit" {
 			fmt.Println("Goodbye!")
 			break
@@ -78,7 +92,7 @@ func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool
 		return false
 	}
 	if statusCode != http.StatusOK {
-		//fmt.Println("Error getting result from server: status code", statusCode)
+		// fmt.Println("Error getting result from server: status code", statusCode)
 		return false
 	}
 
@@ -94,13 +108,13 @@ func getResult(inferID uint64, chatConfig *config.ChatConfig, stopChan chan bool
 
 	// Display response
 	if response.Data.Output == "" {
-		//fmt.Println("No result yet. Please try again later.")
+		// fmt.Println("No result yet. Please try again later.")
 		return false
 	}
 
 	stopChan <- true
 
-	//respBytes, _ = json.MarshalIndent(response, "", "  ")
+	// respBytes, _ = json.MarshalIndent(response, "", "  ")
 	fmt.Printf("Your agent: %s\n\n", response.Data.Output)
 	return true
 }

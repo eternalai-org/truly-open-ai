@@ -3,19 +3,21 @@ package chat
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"net/http"
+	"os"
+	"strings"
+
 	"decentralized-inference/internal/abi"
 	"decentralized-inference/internal/client"
 	"decentralized-inference/internal/config"
 	"decentralized-inference/internal/libs/http_client"
 	"decentralized-inference/internal/models"
 	"decentralized-inference/internal/rest"
-	"encoding/json"
-	"fmt"
+
 	"github.com/ethereum/go-ethereum/common"
-	"math/big"
-	"net/http"
-	"os"
-	"strings"
 )
 
 func collectChatConfigInformation() *config.ChatConfig {
@@ -84,7 +86,7 @@ func collectChatConfigInformation() *config.ChatConfig {
 }
 
 func AgentTerminalChatConfig(ctx context.Context) error {
-	var chatConfig = collectChatConfigInformation()
+	chatConfig := collectChatConfigInformation()
 
 	// Confirm before saving
 	fmt.Println("\nReview chat config information:")
@@ -122,6 +124,32 @@ func AgentTerminalChatConfig(ctx context.Context) error {
 
 	fmt.Println("Chat configuration saved to chat_config.json")
 	return nil
+}
+
+func GetSysPrompt(ctx context.Context, agentId int) (string, error) {
+	chatConfig, err := LoadChatConfig()
+	if err != nil {
+		return "", fmt.Errorf("failed to load config.json: %v", err)
+	}
+
+	ethClient, err := client.NewClient(chatConfig.Rpc, models.ChainTypeEth, false, "", "")
+	if err != nil {
+		return "", fmt.Errorf("init ethClient err: %w", err)
+	}
+
+	agentContract, err := abi.NewAI721Contract(common.HexToAddress(chatConfig.AgentContractAddress), ethClient.ETHClient)
+	if err != nil {
+		return "", err
+	}
+
+	systemPromptContract, err := agentContract.GetAgentSystemPrompt(nil, big.NewInt(int64(agentId)))
+	if err != nil {
+		return "", err
+	}
+	if len(systemPromptContract) == 0 {
+		return "", fmt.Errorf("agent system prompt contract is empty")
+	}
+	return string(systemPromptContract[0]), nil
 }
 
 func GetSystemPromptFromContract(ctx context.Context, agentId int) error {
