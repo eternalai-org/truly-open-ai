@@ -36,12 +36,12 @@ type cmdLocalChainV1 struct {
 }
 
 func NewCMDLocalChainV1() port.ICMDLocalChainV1 {
-	gasPrice := big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
 	c := &cmdLocalChainV1{
-		gasPrice: gasPrice,
-		gasLimit: pkg.LOCAL_CHAIN_GAS_LIMIT,
+		ICMDLocalChain: NewCMDLocalChainV2(),
 	}
-	c.ICMDLocalChain = NewCMDLocalChainV2()
+
+	c.gasPrice = big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
+	c.gasLimit = pkg.LOCAL_CHAIN_GAS_LIMIT
 
 	localCnf := c.ReadLocalChainCnf()
 	if localCnf != nil {
