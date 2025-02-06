@@ -1295,7 +1295,7 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 							daos.GetDBMainCtx(ctx),
 							snapshotPostID,
 							map[string][]interface{}{
-								"AgentInfo": {},
+								"AgentStore": {},
 							},
 							false,
 						)
