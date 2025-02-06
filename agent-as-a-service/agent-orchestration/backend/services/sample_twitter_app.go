@@ -12,7 +12,6 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
-	"github.com/google/uuid"
 )
 
 func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode string) (string, error) {
@@ -90,7 +89,7 @@ func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCod
 			if sampleTwitterApp == nil {
 				sampleTwitterApp = &models.SampleTwitterApp{
 					InstallCode:   installCode,
-					ApiKey:        uuid.NewString(),
+					ApiKey:        helpers.RandomStringWithLength(64),
 					TwitterInfoID: twitterInfo.ID,
 				}
 				err = s.dao.Create(daos.GetDBMainCtx(ctx), sampleTwitterApp)
