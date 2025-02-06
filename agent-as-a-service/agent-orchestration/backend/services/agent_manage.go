@@ -867,7 +867,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 						frequency := helpers.GetFrequencyFromMap(item.Data)
 
 						userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
-						agentModels := helpers.GetStringValueFromMap(item.Data, "model")
+						agentModels := helpers.GetStringValueFromMap(item.Data, "modelName")
 
 						switch item.Idx {
 						case "mission_on_x_post":
@@ -922,7 +922,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 						frequency := helpers.GetFrequencyFromMap(item.Data)
 
 						userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
-						agentModels := helpers.GetStringValueFromMap(item.Data, "model")
+						agentModels := helpers.GetStringValueFromMap(item.Data, "modelName")
 						switch item.Idx {
 						case "mission_on_farcaster_post":
 							{
@@ -1170,7 +1170,7 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							{
 								frequency := helpers.GetFrequencyFromMap(item.Data)
 								userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
-								agentModels := helpers.GetStringValueFromMap(item.Data, "model")
+								agentModels := helpers.GetStringValueFromMap(item.Data, "modelName")
 								switch item.Idx {
 								case "mission_on_x_post":
 									{
@@ -1223,7 +1223,7 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 							{
 								frequency := helpers.GetFrequencyFromMap(item.Data)
 								userPrompt := helpers.GetStringValueFromMap(item.Data, "details")
-								agentModels := helpers.GetStringValueFromMap(item.Data, "model")
+								agentModels := helpers.GetStringValueFromMap(item.Data, "modelName")
 
 								switch item.Idx {
 								case "mission_on_farcaster_post":
