@@ -31,11 +31,13 @@ func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStor
 				agentStore.Name = req.Name
 				agentStore.Description = req.Description
 				agentStore.AuthenUrl = req.AuthenUrl
+				agentStore.Icon = req.Icon
 			} else {
 				agentStore = &models.AgentStore{
 					Name:        req.Name,
 					Description: req.Description,
 					AuthenUrl:   req.AuthenUrl,
+					Icon:        req.Icon,
 				}
 			}
 			if err != nil {
