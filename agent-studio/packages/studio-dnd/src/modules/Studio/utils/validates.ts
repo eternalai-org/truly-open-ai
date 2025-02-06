@@ -5,28 +5,32 @@ import useStudioFlowStore from '../stores/useStudioFlowStore';
 import { StudioNode } from '../types';
 
 const getOptionInLinkedNode = (nodeId: string, optionKey: string) => {
-  const nodes = useStudioFlowStore.getState().nodes;
-  const linkedNodes = useStudioFlowStore.getState().linkedNodes;
-  const linkedNodesId = linkedNodes[nodeId] || [];
+  try {
+    const nodes = useStudioFlowStore.getState().nodes;
+    const linkedNodes = useStudioFlowStore.getState().linkedNodes;
+    const linkedNodesId = linkedNodes[nodeId] || [];
 
-  if (linkedNodesId.length) {
-    const linkedChildrenNodes = nodes.filter((node) => linkedNodesId.includes(node.id));
-    const linkedChildrenOption = linkedChildrenNodes
-      .map((linkedNode) => {
-        // check children
-        const directlyChildrenOptions = linkedNode.data.metadata.children.filter((node) => node.data.metadata.idx === optionKey);
+    if (linkedNodesId.length) {
+      const linkedChildrenNodes = nodes.filter((node) => linkedNodesId.includes(node.id));
+      const linkedChildrenOption = linkedChildrenNodes
+        .map((linkedNode) => {
+          // check children
+          const directlyChildrenOptions = linkedNode.data.metadata.children.filter((node) => node.data.metadata.idx === optionKey);
 
-        // check in linked node
-        const linkedChildrenOptions = getOptionInLinkedNode(linkedNode.id, optionKey) as StudioNode[];
+          // check in linked node
+          const linkedChildrenOptions = getOptionInLinkedNode(linkedNode.id, optionKey) as StudioNode[];
 
-        return [...directlyChildrenOptions, ...linkedChildrenOptions];
-      })
-      .flat();
+          return [...directlyChildrenOptions, ...linkedChildrenOptions];
+        })
+        .flat();
 
-    return linkedChildrenOption;
+      return linkedChildrenOption;
+    }
+
+    return [] as StudioNode[];
+  } catch (e) {
+    return [];
   }
-
-  return [] as StudioNode[];
 };
 
 export const getOptionNodesExistInNode = (nodeId: string, optionKey: string, checkAncestor: boolean = false) => {
@@ -98,10 +102,14 @@ export const getOptionNodesSameCategoryExistInNode = (nodeId: string, optionKey:
 };
 
 export const getRelatedNodes = (nodeId: string) => {
-  const linkedNodes = useStudioFlowStore.getState().linkedNodes;
-  const relatedNodes = linkedNodes[nodeId] || [];
+  try {
+    const linkedNodes = useStudioFlowStore.getState().linkedNodes;
+    const relatedNodes = linkedNodes[nodeId] || [];
 
-  const nodes = useStudioFlowStore.getState().nodes;
+    const nodes = useStudioFlowStore.getState().nodes;
 
-  return nodes.filter((node) => relatedNodes.includes(node.id));
+    return nodes.filter((node) => relatedNodes.includes(node.id));
+  } catch (e) {
+    return [];
+  }
 };

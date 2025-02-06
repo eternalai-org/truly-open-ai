@@ -38,7 +38,7 @@ export const createNewBaseEdge = (source: string, target: string, animated: bool
     target,
     targetHandle: 'a',
     type: EdgeType.EDGE_BASE,
-    selectable: false,
+    selectable: true,
     selected: false,
     focusable: false,
     label: '',
@@ -47,12 +47,6 @@ export const createNewBaseEdge = (source: string, target: string, animated: bool
       type: MarkerType.Arrow,
       width: 20,
       height: 20,
-      strokeWidth: 1,
-      color: '#AAAAAA',
-    },
-    style: {
-      stroke: '#AAAAAA',
-      strokeWidth: 2,
     },
   } satisfies Edge;
 };

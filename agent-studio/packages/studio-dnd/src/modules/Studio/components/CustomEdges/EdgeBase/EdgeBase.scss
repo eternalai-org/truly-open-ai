@@ -1,15 +1,30 @@
 .edge {
+  --color: #aaaaaa;
   position: absolute;
-  background-color: #fff;
-  padding: 5px;
+  background-color: var(--color);
+  stroke: var(--color);
+  color: var(--color);
 }
 
-.edge__line {
-  stroke: #aaaaaa;
-  color: #aaaaaa;
+.edge__actions {
+  width: max-content;
+  padding: 5px 10px;
+  background-color: #fff;
+  opacity: 0;
+}
+
+.edge__actions__button {
+  padding: 4px 8px;
+  border-radius: 7px;
+  border: 1px solid #393939;
+  background-color: #fff;
+  color: #393939;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .arrow {
-  width: 40px !important;
-  height: 40px !important;
+  width: 20px !important;
+  height: 20px !important;
 }

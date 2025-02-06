@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useCallback, useMemo } from 'react';
 
 import FormRender from '../../../DataFields/FormRender';
@@ -57,7 +58,7 @@ const LegoRenderBase = <T,>({ background, icon, id, schemaData, title, idx, read
   );
 };
 
-const LegoRenderCustomization = <T,>({ background, icon, id, idx, render }: Props<T>) => {
+const LegoRenderCustomization = <T,>({ background, id, idx, render }: Props<T>) => {
   const categoryOptionMap = useStudioCategoryStore((state) => state.categoryOptionMap);
   const allFormData = useStudioFormStore((state) => state.formMap);
   const setFormFields = useStudioFormStore((state) => state.setFormFields);
@@ -83,24 +84,31 @@ const LegoRenderCustomization = <T,>({ background, icon, id, idx, render }: Prop
     return <></>;
   }
 
+  const childrenRender = render({
+    id,
+    option,
+    formData: (formData || {}) as T,
+    setFormFields: specifyFormFields,
+    allFormData,
+    data,
+    resetFormData,
+  });
+
+  const legoStyle = ((childrenRender as any)?.props as any)?.['data-lego-style'] || {};
+  const legoClassName = ((childrenRender as any)?.props as any)?.['data-lego-class'] || {};
+
   return (
     <Lego
       background={background}
-      icon={!!render ? undefined : icon}
+      icon={undefined}
       fixedHeight={false}
+      className={legoClassName}
       style={{
         width: '100%',
+        ...legoStyle,
       }}
     >
-      {render({
-        id,
-        option,
-        formData: (formData || {}) as T,
-        setFormFields: specifyFormFields,
-        allFormData,
-        data,
-        resetFormData,
-      })}
+      {childrenRender}
     </Lego>
   );
 };

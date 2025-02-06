@@ -1,4 +1,4 @@
-import { BaseDagent, IAgentCharacter, InitAgent } from "@eternal-ai/core";
+import { BaseDagent, IAgentCharacter, InitAgent } from "@eternalai-dagent/core";
 import {
   ETERNAL_AI_URL,
   FARCASTER_CLIENT_ID,

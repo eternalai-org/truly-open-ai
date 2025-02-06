@@ -7,7 +7,7 @@
     content: '';
     position: absolute;
     top: 0;
-    left: 42.75px;
+    left: 42px;
     // transform: translateY(-0.65px);
     width: calc(100% - 42.75px);
     height: 100%;
@@ -17,6 +17,7 @@
     background-color: var(--background-color);
     pointer-events: none;
     user-select: none;
+    box-sizing: unset !important;
   }
 
   &.lego--disabled {
@@ -33,11 +34,11 @@
     &:after {
       content: '';
       position: absolute;
-      top: 50%;
+      top: 7px;
       left: 0;
-      transform: translateY(-50%) translateX(0.55px);
+      transform: translateX(0.55px);
       width: 43px;
-      height: calc(100% - 20px);
+      height: calc(100% - 7.75px);
       border-left: 1px solid var(--border-color);
       background-color: var(--background-color);
       pointer-events: none;
@@ -49,11 +50,53 @@
     }
 
     .lego__content {
-      padding-top: 0.1em;
+      // padding-top: 0.1em;
     }
 
     .lego__stud.lego__stud--bottom {
       display: block;
+
+      .lego__stud__mask {
+        content: '';
+        position: absolute;
+        top: 10.75%;
+        left: 1.5px;
+        width: 13px;
+        height: 10px;
+        transform: translate(-0.5px, -50%);
+        border-radius: 2px;
+        background-color: var(--background-color);
+        pointer-events: none;
+        user-select: none;
+
+        &:nth-child(2) {
+          left: auto;
+          right: 0;
+          transform: translate(0, -50%);
+          width: 6px;
+          border-radius: 1px;
+        }
+      }
+
+      &:before,
+      &::after {
+        content: '';
+        position: absolute;
+        top: 4%;
+        left: 12px;
+        width: 5px;
+        height: 5px;
+        background-color: var(--background-color);
+        pointer-events: none;
+        user-select: none;
+        z-index: 2;
+        border-radius: 50%;
+      }
+
+      &::after {
+        left: auto;
+        right: 3px;
+      }
     }
   }
 
@@ -63,10 +106,12 @@
     left: 0;
     height: 50px;
     transform: translateY(-0.5px);
+    pointer-events: none;
+    user-select: none;
 
     &.lego__stud--bottom {
       top: auto;
-      bottom: -8px;
+      bottom: -9px;
       display: none;
     }
 
