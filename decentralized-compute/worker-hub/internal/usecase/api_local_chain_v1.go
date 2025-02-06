@@ -221,3 +221,7 @@ break_here:
 	chatCompletion.OnchainData.ProposeTx = ""
 	return tx, &inferId, chatCompletion, nil
 }
+
+func (c *API_Local_Chain_V1) HealthCheck(ctx context.Context) (bool, error) {
+	return true, nil
+}

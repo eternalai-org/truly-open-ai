@@ -1371,24 +1371,14 @@ func (c *cmdLocalChainV2) PingApi() bool {
 
 func (c *cmdLocalChainV2) ApiHealthCheck() ([]byte, bool) {
 	url := pkg.API_URL
-	cnf := c.ReadLocalChainCnf()
+	url = strings.ReplaceAll(url, "chat/completions", "health-check")
+	//cnf := c.ReadLocalChainCnf()
 
 	headers := make(map[string]string)
 	headers["Content-Type"] = "application/json"
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", "1")
 
-	request := model.LLMInferRequest{
-		Model:    cnf.ModelName,
-		MaxToken: 5,
-		Messages: []model.LLMInferMessage{
-			{
-				Role:    "user",
-				Content: "hello",
-			},
-		},
-	}
-
-	_b, _, st, err := pkg.HttpRequest(url, "POST", headers, request)
+	_b, _, st, err := pkg.HttpRequest(url, "GET", headers, nil)
 	if err != nil {
 		return nil, false
 	}
