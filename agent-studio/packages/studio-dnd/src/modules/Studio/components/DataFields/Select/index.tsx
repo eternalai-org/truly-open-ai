@@ -73,6 +73,7 @@ function Select({
   }, [name, value]);
 
   const fieldData = schemaData?.[name];
+
   return (
     <NoDraggable>
       <select

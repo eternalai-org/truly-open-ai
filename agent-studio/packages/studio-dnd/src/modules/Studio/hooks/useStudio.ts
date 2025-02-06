@@ -11,88 +11,189 @@ import useStudioDndStore from '../stores/useStudioDndStore';
 import useStudioFlowStore from '../stores/useStudioFlowStore';
 import useStudioFlowViewStore from '../stores/useStudioFlowViewStore';
 import useStudioFormStore from '../stores/useStudioFormStore';
-import { StudioDataNode } from '../types/graph';
+import { GraphData } from '../types/graph';
 import { getFieldDataFromRawData } from '../utils/data';
 import { transformDataToNodes } from '../utils/node';
 
+import useStudioConfigStore from '@/modules/Studio/stores/useStudioConfigStore';
+
 export const useStudio = () => {
   const cleanup = useCallback(() => {
-    useStudioCategoryStore.getState().clear();
     useStudioFlowStore.getState().clear();
     useStudioFormStore.getState().clear();
     useStudioDataStore.getState().clear();
     useStudioFlowViewStore.getState().clear();
     useStudioDndStore.getState().clear();
     useMultipleStore.getState().clear();
+    // useStudioCategoryStore.getState().clear();
   }, []);
 
-  const redraw = useCallback((data: StudioDataNode[]) => {
-    useStudioDataStore.getState().setData(data);
+  const redraw = useCallback((graphData: GraphData) => {
+    // scan all categories and push if not exist
+    useStudioCategoryStore.getState().scanFromData(graphData.data);
+    useStudioDataStore.getState().setData(graphData.data);
+    useStudioDataStore.getState().setViewport(graphData.viewport);
+    useStudioFlowViewStore.getState().setView(graphData.viewport);
 
-    const initNodes = transformDataToNodes(data);
+    const initNodes = transformDataToNodes(graphData.data);
     useStudioFlowStore.getState().addNodes(initNodes);
 
-    const formData = getFieldDataFromRawData(data);
+    const formData = getFieldDataFromRawData(graphData.data);
     useStudioFormStore.getState().initDataForms(formData);
+
+    useStudioFlowStore.getState().reloadFlow();
   }, []);
 
-  const getFormDataById = useCallback((id: string) => {
-    return useStudioFormStore.getState().getFormById(id);
+  const getFormDataById = useCallback(<T>(id: string): T => {
+    return (useStudioFormStore.getState().getFormById(id) || {}) as T;
   }, []);
 
-  const getOptionPlaceQuantity = useCallback((optionId: string): number => {
-    let quantity = 0;
-
-    const nodes = useStudioFlowStore.getState().nodes;
-    const formMap = useStudioFormStore.getState().formMap;
-
-    nodes.forEach((node) => {
-      const formId = node.id;
-      const formData = formMap[formId];
-
-      if (formData[optionId]) {
-        quantity++;
-      }
-    });
-
-    return quantity;
-  }, []);
-
-  const checkOptionIsPlaced = useCallback((optionId: string): boolean => {
-    return getOptionPlaceQuantity(optionId) > 0;
-  }, []);
-
-  const changeFormFields = useCallback((id: string, fields: Record<string, unknown>) => {
+  const setFormFields = useCallback(<T>(id: string, fields: Partial<T> & Record<string, unknown>) => {
     return useStudioFormStore.getState().setFormFields(id, fields);
   }, []);
 
-  // const focusNode = useCallback((id: string) => {
-  //   const node = useStudioFlowStore.getState().nodes.find((node) => node.id === id);
-  //   if (!node) return;
+  const draggingData = useStudioDndStore((state) => state.draggingData);
 
-  //   const { position, measured } = node;
-  //   if (!measured) return;
+  const isDragging = !!draggingData;
 
-  //   const { x, y } = position;
-  //   const { width = 0, height = 0 } = measured;
+  const enableZoom = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledZoom: false,
+      },
+    });
+  }, []);
 
-  //   const centerX = x + width / 2;
-  //   const centerY = y + height / 2;
+  const disableZoom = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledZoom: true,
+      },
+    });
+  }, []);
 
-  //   setCenter(centerX, centerY);
-  // }, []);
+  const disableDrag = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledDrag: true,
+      },
+    });
+  }, []);
 
+  const enableDrag = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledDrag: false,
+      },
+    });
+  }, []);
+
+  const enableBackground = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledBackground: false,
+      },
+    });
+  }, []);
+
+  const disableBackground = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledBackground: true,
+      },
+    });
+  }, []);
+
+  const enableMiniMap = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledMiniMap: false,
+      },
+    });
+  }, []);
+
+  const disableMiniMap = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledMiniMap: true,
+      },
+    });
+  }, []);
+
+  const enableControls = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledControls: false,
+      },
+    });
+  }, []);
+
+  const disableControls = useCallback(() => {
+    return useStudioConfigStore.getState().setConfig({
+      ...useStudioConfigStore.getState().config,
+      board: {
+        ...useStudioConfigStore.getState().config.board,
+        disabledControls: true,
+      },
+    });
+  }, []);
+
+  const data = useStudioDataStore((state) => state.data);
   const memorizedValue = useMemo(() => {
     return {
       cleanup,
       redraw,
       getFormDataById,
-      changeFormFields,
-      getOptionPlaceQuantity,
-      checkOptionIsPlaced,
-      // focusNode,
+      setFormFields,
+      data,
+      isDragging,
+      enableZoom,
+      disableZoom,
+      enableDrag,
+      disableDrag,
+      enableBackground,
+      disableBackground,
+      enableMiniMap,
+      disableMiniMap,
+      enableControls,
+      disableControls,
     };
-  }, [cleanup, redraw, getFormDataById, changeFormFields, getOptionPlaceQuantity, checkOptionIsPlaced]);
+  }, [
+    cleanup,
+    redraw,
+    getFormDataById,
+    setFormFields,
+    data,
+    isDragging,
+    enableZoom,
+    disableZoom,
+    enableDrag,
+    disableDrag,
+    enableBackground,
+    disableBackground,
+    enableMiniMap,
+    disableMiniMap,
+    enableControls,
+    disableControls,
+  ]);
 
   return memorizedValue;
 };

@@ -1,3 +1,4 @@
+import { Viewport } from '@xyflow/react';
 import { v4 } from 'uuid';
 import { create } from 'zustand';
 
@@ -10,10 +11,14 @@ type Store = {
 
   data: StudioDataNode[];
   setData: (data: StudioDataNode[]) => void;
-  clear: () => void;
+
+  viewport: Viewport;
+  setViewport: (viewport: Viewport) => void;
 
   disabledConnection?: boolean;
   setDisabledConnection: (disabledConnection: boolean) => void;
+
+  clear: () => void;
 };
 
 const useStudioDataStore = create<Store>((set) => ({
@@ -36,13 +41,21 @@ const useStudioDataStore = create<Store>((set) => ({
     });
     set({ data: processingData });
   },
-  clear: () => {
-    set({ data: [], entry: null });
+
+  viewport: {
+    x: 0,
+    y: 0,
+    zoom: 1,
   },
+  setViewport: (viewport) => set({ viewport }),
 
   disabledConnection: DEFAULT_DISABLED_CONNECTION,
   setDisabledConnection: (disabledConnection) => {
     set({ disabledConnection });
+  },
+
+  clear: () => {
+    set({ data: [], entry: null });
   },
 }));
 

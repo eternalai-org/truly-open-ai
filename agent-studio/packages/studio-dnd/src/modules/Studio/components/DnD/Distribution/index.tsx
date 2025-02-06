@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 
 import StaticDroppable from '../base/StaticDroppable';
 
@@ -9,13 +9,12 @@ type Props = Omit<React.HTMLAttributes<HTMLDivElement>, 'id'> & {
 };
 
 const Distribution = ({ children, className, ...props }: Props) => {
+  const data = useMemo(() => {
+    return { type: StudioZone.ZONE_DISTRIBUTION };
+  }, []);
+
   return (
-    <StaticDroppable
-      id={StudioZone.ZONE_DISTRIBUTION}
-      data={{ type: StudioZone.ZONE_DISTRIBUTION }}
-      className={className}
-      {...props}
-    >
+    <StaticDroppable id={StudioZone.ZONE_DISTRIBUTION} data={data} className={className} {...props}>
       {children}
     </StaticDroppable>
   );

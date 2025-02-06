@@ -1,5 +1,8 @@
 .studio-tooltip-trigger {
   display: inline-block;
+  &:hover {
+    cursor: pointer;
+  }
 }
 
 .studio-tooltip-content {

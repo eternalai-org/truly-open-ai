@@ -2,10 +2,10 @@ import { HTMLAttributes, memo, useCallback, useMemo } from 'react';
 
 import Draggable from '../base/Draggable';
 
+import useStudioConfigStore from '@/modules/Studio/stores/useStudioConfigStore';
 import useStudioDndStore from '@/modules/Studio/stores/useStudioDndStore';
 import { DraggableData, StudioZone } from '@/modules/Studio/types/dnd';
 import { DomRect } from '@/modules/Studio/types/ui';
-import useStudioConfigStore from '@/modules/Studio/stores/useStudioConfigStore';
 
 type Props = HTMLAttributes<HTMLDivElement> & {
   id: string;
@@ -42,6 +42,7 @@ const Source = ({ id, data, disabled = false, children, ...props }: Props) => {
       disabled={disabled || disabledDrag}
       handleOnDrag={handleOnDrag}
       handleOnDrop={handleOnDrop}
+      data-draggable-type="source"
     >
       {children}
     </Draggable>
