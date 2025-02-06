@@ -17,6 +17,7 @@ import (
 	"solo/internal/contracts/v1/worker_hub"
 	"solo/internal/contracts/w_eai"
 	"solo/internal/model"
+	"solo/internal/port"
 	"solo/pkg"
 	"solo/pkg/eth"
 
@@ -24,9 +25,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-type CMD_Local_ChainV1 struct {
-	CMD_Local_Chain_V2
-
+type cmdLocalChainV1 struct {
+	port.ICMDLocalChain
 	gasPrice *big.Int
 	gasLimit uint64
 
@@ -35,12 +35,14 @@ type CMD_Local_ChainV1 struct {
 	prvKey  string
 }
 
-func NewCMDLocalChainV1() (*CMD_Local_ChainV1, error) {
-	gasPrice := big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
-	c := &CMD_Local_ChainV1{
-		gasPrice: gasPrice,
-		gasLimit: pkg.LOCAL_CHAIN_GAS_LIMIT,
+func NewCMDLocalChainV1() port.ICMDLocalChainV1 {
+	c := &cmdLocalChainV1{
+		ICMDLocalChain: NewCMDLocalChainV2(),
 	}
+
+	c.gasPrice = big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
+	c.gasLimit = pkg.LOCAL_CHAIN_GAS_LIMIT
+
 	localCnf := c.ReadLocalChainCnf()
 	if localCnf != nil {
 		c.rpc = localCnf.Rpc
@@ -48,12 +50,12 @@ func NewCMDLocalChainV1() (*CMD_Local_ChainV1, error) {
 		c.prvKey = localCnf.PrivateKey
 	}
 
-	return c, nil
+	return c
 }
 
-func (c *CMD_Local_ChainV1) DeployContracts(rpc, chainID, prvkey string) (*model.LocalChain, error) {
+func (c *cmdLocalChainV1) DeployContracts(rpc, chainID, prvkey string) (*model.LocalChain, error) {
 	fmt.Print(pkg.Line)
-	fmt.Println("Deploying contracts")
+	fmt.Println("Deploying contracts v1")
 
 	cnf := c.ReadLocalChainCnf()
 
@@ -108,7 +110,7 @@ func (c *CMD_Local_ChainV1) DeployContracts(rpc, chainID, prvkey string) (*model
 	return nil, nil
 }
 
-func (c *CMD_Local_ChainV1) ContractDeployment() error {
+func (c *cmdLocalChainV1) ContractDeployment() error {
 	_, ok := c.RpcHealthCheck()
 	if !ok {
 		err := errors.New("rpc is not started")
@@ -140,7 +142,7 @@ npm install && npx hardhat run %s --network localhost`, solV2Folder, solV2AutoDe
 	return pkg.CMDWithStream("bash", fname)
 }
 
-func (c *CMD_Local_ChainV1) DeployContractLogic() error {
+func (c *cmdLocalChainV1) DeployContractLogic() error {
 	cnf := c.ReadLocalChainCnf()
 	rpc := cnf.Rpc
 	chainID := cnf.ChainID
@@ -162,7 +164,7 @@ func (c *CMD_Local_ChainV1) DeployContractLogic() error {
 	return nil
 }
 
-func (c *CMD_Local_ChainV1) StartMinerLogic() error {
+func (c *cmdLocalChainV1) StartMinerLogic() error {
 	fmt.Print(pkg.Line)
 	fmt.Println("Start miners")
 
@@ -276,7 +278,7 @@ func (c *CMD_Local_ChainV1) StartMinerLogic() error {
 	return nil
 }
 
-func (c *CMD_Local_ChainV1) CreateConfigENV(minerAddress string, index int) error {
+func (c *cmdLocalChainV1) CreateConfigENV(minerAddress string, index int) error {
 	// sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
 	envFile := fmt.Sprintf(pkg.ENV_LOCAL_MINERS_FILE, pkg.CurrentDir(), index)
 	// config.ReadConfig(sample)
@@ -315,14 +317,14 @@ func (c *CMD_Local_ChainV1) CreateConfigENV(minerAddress string, index int) erro
 	return nil
 }
 
-func (c *CMD_Local_ChainV1) MintWrappedEAI(rpc, chainID, mintAmount, prvkey string) (*types.Transaction, error) {
+func (c *cmdLocalChainV1) MintWrappedEAI(rpc, chainID, mintAmount, prvkey string) (*types.Transaction, error) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Minting WEAI")
 
 	cnf := c.ReadLocalChainCnf()
 	ctx := context.Background()
 
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, err
 	}
@@ -367,16 +369,16 @@ func (c *CMD_Local_ChainV1) MintWrappedEAI(rpc, chainID, mintAmount, prvkey stri
 	return tx, nil
 }
 
-func (c *CMD_Local_ChainV1) MintCollection(rpc, prvkey string, modelName string) (*types.Transaction, *big.Int, error) {
+func (c *cmdLocalChainV1) MintCollection(rpc, prvkey string, modelName string) (*types.Transaction, *big.Int, error) {
 	return nil, nil, nil
 }
 
-func (c *CMD_Local_ChainV1) SendWEIToMiner(rpc, minerAddress string) (*types.Transaction, *string, error) {
+func (c *cmdLocalChainV1) SendWEIToMiner(rpc, minerAddress string) (*types.Transaction, *string, error) {
 	cnf := c.ReadLocalChainCnf()
 	prvkey := cnf.PrivateKey
 	ctx := context.Background()
 
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -409,7 +411,7 @@ func (c *CMD_Local_ChainV1) SendWEIToMiner(rpc, minerAddress string) (*types.Tra
 	return transferTX, &minerAddress, nil
 }
 
-func (c *CMD_Local_ChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.Transaction, *uint64, *string, error) {
+func (c *cmdLocalChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.Transaction, *uint64, *string, error) {
 	ctx := context.Background()
 	cnf := c.ReadLocalChainCnf()
 	privKey := cnf.PrivateKey
@@ -438,7 +440,9 @@ func (c *CMD_Local_ChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.
 		Messages: prompt,
 	}
 	_b, err := json.Marshal(request)
-
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	tx, err := p.Infer(auth, _b, true)
 	if err != nil {
 		fmt.Println("wkHubAddress:", cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1])
@@ -448,7 +452,7 @@ func (c *CMD_Local_ChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.
 
 	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
 	if err != nil {
-		return nil, nil, nil, errors.Join(err, errors.New("Error while waiting for tx"))
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
 	}
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
@@ -519,9 +523,9 @@ break_here:
 		index += 1
 	}
 
-	if chatCompletion == nil {
-		return tx, &inferId, nil, errors.New("error while parse response")
-	}
+	// if chatCompletion == nil {
+	// 	return tx, &inferId, nil, errors.New("error while parse response")
+	// }
 
 	if len(chatCompletion.Choices) == 0 {
 		return tx, &inferId, nil, errors.New("error get data")

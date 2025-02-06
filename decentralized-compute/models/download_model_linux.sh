@@ -3,7 +3,7 @@
 # Install pigz using the appropriate package manager
 if command -v apt &> /dev/null; then
     echo "Using apt to install pigz..."
-    apt update && apt install -y pigz
+    apt update -y && DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=low apt install -y pigz
 elif command -v yum &> /dev/null; then
     echo "Using yum to install pigz..."
     yum install -y pigz

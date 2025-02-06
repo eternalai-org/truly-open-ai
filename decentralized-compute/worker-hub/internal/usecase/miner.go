@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -26,7 +25,7 @@ import (
 var TaskChecker = make(map[string]bool)
 
 type miner struct {
-	runnerLock   sync.RWMutex
+	// runnerLock   sync.RWMutex
 	cnf          *config.Config
 	IsStaked     *bool
 	currentBlock uint64
@@ -89,7 +88,7 @@ func (t *miner) ExecueteTasks(ctx context.Context) {
 		}
 
 		s, ok := TaskChecker[task.AssignmentID]
-		if ok && s == true {
+		if ok && s {
 			logger.GetLoggerInstanceFromContext(ctx).Info("executeTasks.done",
 				zap.Any("worker_address", t.common.GetWalletAddres()),
 				zap.Any("assigment_id", task.AssignmentID),
@@ -146,8 +145,7 @@ func (t *miner) ExecueteTasks(ctx context.Context) {
 }
 
 func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.TaskResult, error) {
-	res := &model.TaskResult{}
-	result := []byte{}
+	res := &model.TaskResult{Storage: model.LightHouseStorageType}
 	if len(task.BatchInfers) > 0 && task.IsBatch {
 		for _, b := range task.BatchInfers {
 			seed := pkg.CreateSeed(b.PromptInput, task.TaskID)
@@ -166,9 +164,7 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 		if err != nil {
 			return nil, err
 		}
-
-		result = objJson
-
+		res.Data = objJson
 	} else {
 		seed := pkg.CreateSeed(task.Params, task.TaskID)
 		obj, err := t.inferChatCompletions(ctx, task.Params, "", seed)
@@ -181,25 +177,18 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 			return nil, err
 		}
 
-		result = objJson
-
+		res.Data = objJson
 	}
 
-	res.Storage = model.LightHouseStorageType
-	res.Data = result
-	ext := "txt"
-	url, err := lighthouse.UploadData(t.cnf.LighthouseKey, fmt.Sprintf("%v_result.%v", task.TaskID, ext), res.Data)
+	url, err := lighthouse.UploadData(t.cnf.LighthouseKey, fmt.Sprintf("%v_result.%v", task.TaskID, "txt"), res.Data)
 	if err != nil {
-
 		url = "lighthouse-error"
-		//return nil, err
 	}
 	res.ResultURI = "ipfs://" + url
-	// logger.GetLoggerInstanceFromContext(ctx).Info("executeTasks", zap.Any("res", res))
 	return res, nil
 }
 
-func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelName string, seed uint64) (*model.LLMInferResponse, error) {
+func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelName string, _ uint64) (*model.LLMInferResponse, error) {
 	var err error
 	key := "InferChatCompletions"
 	logs := new([]zap.Field)
@@ -257,7 +246,7 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		return nil, err
 	}
 
-	//res.Model = oldModel
+	// res.Model = oldModel
 	return res, nil
 }
 
@@ -299,7 +288,6 @@ func (t *miner) StakeForWorker() (*types.Transaction, error) {
 }
 
 func (t *miner) MakeVerify() (*types.Transaction, *types.Transaction, error) {
-
 	tx1, err := t.StakeForWorker()
 	if err != nil {
 		return nil, nil, err
@@ -338,7 +326,7 @@ func (t *miner) Info() (*model.MinerInfo, error) {
 	currentBlock := t.common.CurrentBlock()
 
 	logFile := fmt.Sprintf(pkg.LOG_INFO_FILE, pkg.CurrentDir())
-	stat, err := os.Stat(logFile)
+	stat, _ := os.Stat(logFile)
 	if stat != nil {
 		if stat.ModTime().UTC().Add(time.Minute * 5).Before(time.Now().UTC()) {
 			os.Remove(logFile)
@@ -366,7 +354,6 @@ func (t *miner) Info() (*model.MinerInfo, error) {
 	rewardChan := make(chan string)
 
 	go func(processedChan chan int) {
-
 		processed := 0
 		input := make(chan uint64)
 		out := make(chan *model.InferInfoChan)
@@ -393,7 +380,6 @@ func (t *miner) Info() (*model.MinerInfo, error) {
 		}
 
 		processedChan <- processed
-
 	}(proccesedChan)
 
 	go func(balanceChan chan string) {
@@ -437,7 +423,6 @@ func (t *miner) Info() (*model.MinerInfo, error) {
 }
 
 func (t *miner) taskInfo(input chan uint64, out chan *model.InferInfoChan) {
-
 	for i := range input {
 		inferInfo, err := t.chain.GetInferenceInfo(nil, i)
 		out <- &model.InferInfoChan{
@@ -445,7 +430,6 @@ func (t *miner) taskInfo(input chan uint64, out chan *model.InferInfoChan) {
 			Data: inferInfo,
 		}
 	}
-
 }
 
 func (t *miner) ClaimReward() (*types.Transaction, error) {

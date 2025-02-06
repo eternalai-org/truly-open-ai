@@ -97,6 +97,16 @@ type ICMDLocalChain interface {
 	DeployContractLogic() error
 	ReadLocalChainCnf() *model.LocalChain
 	StartApiLogic() error
+
+	RpcHealthCheck() ([]byte, bool)
+	SendFeeToMiner(rpc, minerAddress string, gasLimit uint64) (*types.Transaction, *string, error)
+	BuildContainers(string) error
+	StartContainersNoBuild(string) error
+	NewClient(rpc string) (*ethclient.Client, error)
+}
+
+type ICMDLocalChainV1 interface {
+	ICMDLocalChain
 }
 
 type IServer interface {

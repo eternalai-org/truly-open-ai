@@ -21,6 +21,7 @@ import (
 	"solo/internal/contracts/proxy"
 	"solo/internal/contracts/w_eai"
 	"solo/internal/model"
+	"solo/internal/port"
 	"solo/pkg"
 	"solo/pkg/eth"
 
@@ -29,7 +30,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-type CMD_Local_Chain_V2 struct {
+type cmdLocalChainV2 struct {
 	gasPrice *big.Int
 	gasLimit uint64
 
@@ -38,9 +39,9 @@ type CMD_Local_Chain_V2 struct {
 	prvKey  string
 }
 
-func NewCMDLocalChainV2() (*CMD_Local_Chain_V2, error) {
+func NewCMDLocalChainV2() port.ICMDLocalChain {
 	gasPrice := big.NewInt(pkg.LOCAL_CHAIN_GAS_PRICE)
-	c := &CMD_Local_Chain_V2{
+	c := &cmdLocalChainV2{
 		gasPrice: gasPrice,
 		gasLimit: pkg.LOCAL_CHAIN_GAS_LIMIT,
 	}
@@ -51,22 +52,22 @@ func NewCMDLocalChainV2() (*CMD_Local_Chain_V2, error) {
 		c.prvKey = localCnf.PrivateKey
 	}
 
-	return c, nil
+	return c
 }
 
-func (c *CMD_Local_Chain_V2) GetPrivateKey() string {
+func (c *cmdLocalChainV2) GetPrivateKey() string {
 	return c.prvKey
 }
 
-func (c *CMD_Local_Chain_V2) SetGasPrice(gp *big.Int) {
+func (c *cmdLocalChainV2) SetGasPrice(gp *big.Int) {
 	c.gasPrice = gp
 }
 
-func (c *CMD_Local_Chain_V2) SetGasLimit(gl uint64) {
+func (c *cmdLocalChainV2) SetGasLimit(gl uint64) {
 	c.gasLimit = gl
 }
 
-func (c *CMD_Local_Chain_V2) newClient(rpc string) (*ethclient.Client, error) {
+func (c *cmdLocalChainV2) NewClient(rpc string) (*ethclient.Client, error) {
 	client, err := eth.NewEthClient(rpc)
 	if err != nil {
 		return nil, err
@@ -75,33 +76,33 @@ func (c *CMD_Local_Chain_V2) newClient(rpc string) (*ethclient.Client, error) {
 	return client, nil
 }
 
-func (c *CMD_Local_Chain_V2) BuildMiner(minerIndex int) error {
+func (c *cmdLocalChainV2) BuildMiner(minerIndex int) error {
 	folderPath := pkg.CurrentDir()
 	cnf := c.ReadLocalChainCnf()
 	return pkg.DockerCommand(fmt.Sprintf("%s_%d", pkg.MINER_SERVICE_NAME, minerIndex), folderPath, cnf.Platform, "build", "-local")
 }
 
-func (c *CMD_Local_Chain_V2) BuildContainers(names string) error {
+func (c *cmdLocalChainV2) BuildContainers(names string) error {
 	folderPath := pkg.CurrentDir()
 	cnf := c.ReadLocalChainCnf()
 	return pkg.DockerCommand(names, folderPath, cnf.Platform, "build", "-local")
 }
 
-func (c *CMD_Local_Chain_V2) StartContainers(names string) error {
+func (c *cmdLocalChainV2) StartContainers(names string) error {
 	folderPath := pkg.CurrentDir()
 	cnf := c.ReadLocalChainCnf()
 	return pkg.DockerCommand(names, folderPath, cnf.Platform, "up -d", "-local")
 }
 
-func (c *CMD_Local_Chain_V2) StartContainersNoBuild(names string) error {
+func (c *cmdLocalChainV2) StartContainersNoBuild(names string) error {
 	folderPath := pkg.CurrentDir()
 	cnf := c.ReadLocalChainCnf()
 	return pkg.DockerCommand(names, folderPath, cnf.Platform, "up -d --no-build", "-local")
 }
 
-func (c *CMD_Local_Chain_V2) DeployContracts(rpc, chainID, prvkey string) (*model.LocalChain, error) {
+func (c *cmdLocalChainV2) DeployContracts(rpc, chainID, prvkey string) (*model.LocalChain, error) {
 	fmt.Print(pkg.Line)
-	fmt.Println("Deploying contracts")
+	fmt.Println("Deploying contracts v2")
 
 	cnf := c.ReadLocalChainCnf()
 
@@ -159,9 +160,9 @@ func (c *CMD_Local_Chain_V2) DeployContracts(rpc, chainID, prvkey string) (*mode
 	return nil, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployContract(rpc, chainID, prvkey, contractName string) (*model.LocalChain, error) {
+func (c *cmdLocalChainV2) DeployContract(rpc, chainID, prvkey, contractName string) (*model.LocalChain, error) {
 	var err error
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +199,7 @@ func (c *CMD_Local_Chain_V2) DeployContract(rpc, chainID, prvkey, contractName s
 	return resp, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployContractPromptScheduler(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
+func (c *cmdLocalChainV2) DeployContractPromptScheduler(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
 	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
@@ -227,7 +228,7 @@ func (c *CMD_Local_Chain_V2) DeployContractPromptScheduler(client *ethclient.Cli
 	return pContract, tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployContractGpuManager(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
+func (c *cmdLocalChainV2) DeployContractGpuManager(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
 	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
@@ -255,7 +256,7 @@ func (c *CMD_Local_Chain_V2) DeployContractGpuManager(client *ethclient.Client, 
 	return pContract, tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployContractModelCollection(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
+func (c *cmdLocalChainV2) DeployContractModelCollection(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
 	//deploy contracts here
 	/*
 		ctx := context.Background()
@@ -328,7 +329,7 @@ func (c *CMD_Local_Chain_V2) DeployContractModelCollection(client *ethclient.Cli
 	return &address, tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
+func (c *cmdLocalChainV2) DeployContractLoadBalancer(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
 	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
@@ -339,13 +340,12 @@ func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client
 
 	auth.GasPrice = c.gasPrice
 	auth.GasLimit = c.gasLimit
-	contractAddress, tx, _p, err := load_balancer.DeployLoadBalancer(auth, client)
+	contractAddress, tx, _, err := load_balancer.DeployLoadBalancer(auth, client)
 	if err != nil {
 		fmt.Println(pkg.PrintText("Load balancer was deployed with err: ", err))
 		return nil, nil, err
 	}
 
-	_ = _p
 	pContract, _, err := c.DeployProxy(ctx, client, prvkey, contractAddress)
 	if err != nil {
 		fmt.Println(pkg.PrintText("Load balancer was deployed with err: ", err))
@@ -376,17 +376,14 @@ func (c *CMD_Local_Chain_V2) DeployContractLoadBalancer(client *ethclient.Client
 	intializeTX, err := contract.Initialize(auth, *pContract, pC, wEAI, modelCollectionC, big.NewInt(1))
 	if err != nil {
 		fmt.Print(pkg.PrintText("Load balancer with err: ", err))
-		// return nil, nil, err
 	} else {
 		fmt.Print(pkg.PrintText("Initialize tx: ", intializeTX))
 	}
-	_ = contract
-	_ = cnf
 
 	return pContract, tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployProxy(ctx context.Context, client *ethclient.Client, prvkey string, contractAddress common.Address) (*common.Address, *types.Transaction, error) {
+func (c *cmdLocalChainV2) DeployProxy(ctx context.Context, client *ethclient.Client, prvkey string, contractAddress common.Address) (*common.Address, *types.Transaction, error) {
 	// re-auth
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
@@ -403,7 +400,7 @@ func (c *CMD_Local_Chain_V2) DeployProxy(ctx context.Context, client *ethclient.
 	return &pContractAddress, tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) DeployContractWrappedEAI(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
+func (c *cmdLocalChainV2) DeployContractWrappedEAI(client *ethclient.Client, prvkey string) (*common.Address, *types.Transaction, error) {
 	// deploy contracts here
 	ctx := context.Background()
 	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
@@ -431,14 +428,14 @@ func (c *CMD_Local_Chain_V2) DeployContractWrappedEAI(client *ethclient.Client, 
 	return &contractAddress, tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) MintWrappedEAI(rpc, chainID, mintAmount, prvkey string) (*types.Transaction, error) {
+func (c *cmdLocalChainV2) MintWrappedEAI(rpc, chainID, mintAmount, prvkey string) (*types.Transaction, error) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Minting WEAI")
 
 	cnf := c.ReadLocalChainCnf()
 	ctx := context.Background()
 
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, err
 	}
@@ -483,14 +480,14 @@ func (c *CMD_Local_Chain_V2) MintWrappedEAI(rpc, chainID, mintAmount, prvkey str
 	return tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) MintCollection(rpc, prvkey string, modelName string) (*types.Transaction, *big.Int, error) {
+func (c *cmdLocalChainV2) MintCollection(rpc, prvkey string, modelName string) (*types.Transaction, *big.Int, error) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Minting Collection")
 
 	cnf := c.ReadLocalChainCnf()
 	ctx := context.Background()
 
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -501,7 +498,7 @@ func (c *CMD_Local_Chain_V2) MintCollection(rpc, prvkey string, modelName string
 		return nil, nil, err
 	}
 
-	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
+	_, err = eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
 		fmt.Print(pkg.PrintText("MintCollection with err: ", err))
 		return nil, nil, err
@@ -531,7 +528,7 @@ func (c *CMD_Local_Chain_V2) MintCollection(rpc, prvkey string, modelName string
 		return nil, nil, err
 	}
 
-	auth, err = eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
+	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
 		fmt.Print(pkg.PrintText("MintCollection with err: ", err))
 		return nil, nil, err
@@ -566,7 +563,7 @@ func (c *CMD_Local_Chain_V2) MintCollection(rpc, prvkey string, modelName string
 	return tx, tokenID, nil
 }
 
-func (c *CMD_Local_Chain_V2) SetWEAIForStakingHub(client *ethclient.Client, prvkey string) (*types.Transaction, error) {
+func (c *cmdLocalChainV2) SetWEAIForStakingHub(client *ethclient.Client, prvkey string) (*types.Transaction, error) {
 	cnf := c.ReadLocalChainCnf()
 	ctx := context.Background()
 
@@ -616,7 +613,7 @@ func (c *CMD_Local_Chain_V2) SetWEAIForStakingHub(client *ethclient.Client, prvk
 	return tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) CreateMinerAddress(rpc, chainID, prvkey string) (*string, *string, error) {
+func (c *cmdLocalChainV2) CreateMinerAddress(rpc, chainID, prvkey string) (*string, *string, error) {
 	cnf := c.ReadLocalChainCnf()
 
 	minerPrivateKey, _, minerAddress, err := eth.GenerateAddress()
@@ -643,16 +640,15 @@ func (c *CMD_Local_Chain_V2) CreateMinerAddress(rpc, chainID, prvkey string) (*s
 	cnf.ChainID = chainID
 	cnf.PrivateKey = prvkey
 	pkg.CreateFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()), _b)
-
 	return &minerAddress, &minerPrivateKey, nil
 }
 
-func (c *CMD_Local_Chain_V2) SendWEIToMiner(rpc, minerAddress string) (*types.Transaction, *string, error) {
+func (c *cmdLocalChainV2) SendWEIToMiner(rpc, minerAddress string) (*types.Transaction, *string, error) {
 	cnf := c.ReadLocalChainCnf()
 	prvkey := cnf.PrivateKey
 	ctx := context.Background()
 
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -685,12 +681,12 @@ func (c *CMD_Local_Chain_V2) SendWEIToMiner(rpc, minerAddress string) (*types.Tr
 	return transferTX, &minerAddress, nil
 }
 
-func (c *CMD_Local_Chain_V2) SendFeeToMiner(rpc, minerAddress string, gasLimit uint64) (*types.Transaction, *string, error) {
+func (c *cmdLocalChainV2) SendFeeToMiner(rpc, minerAddress string, gasLimit uint64) (*types.Transaction, *string, error) {
 	cnf := c.ReadLocalChainCnf()
 	ctx := context.Background()
 	prvkey := cnf.PrivateKey
 
-	client, err := c.newClient(rpc)
+	client, err := c.NewClient(rpc)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -703,32 +699,26 @@ func (c *CMD_Local_Chain_V2) SendFeeToMiner(rpc, minerAddress string, gasLimit u
 	return sendTX, &minerAddress, nil
 }
 
-func (c *CMD_Local_Chain_V2) ReadLocalChainCnf() *model.LocalChain {
-	resp := new(model.LocalChain)
+func (c *cmdLocalChainV2) ReadLocalChainCnf() *model.LocalChain {
+	resp := &model.LocalChain{}
 	resp.Contracts = make(map[string]string)
 	resp.Miners = make(map[string]model.Miners)
 	path := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
 	_b, err := os.ReadFile(path)
 	if err != nil {
-		err1 := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm)
-		if err1 == nil {
-			err2 := pkg.CreateFile(path, []byte{})
-			if err2 != nil {
+		if err := os.Mkdir(fmt.Sprintf(pkg.ENV_FOLDER, pkg.CurrentDir()), os.ModePerm); err == nil {
+			if err := pkg.CreateFile(path, []byte{}); err != nil {
 				return nil
 			}
 		}
 		return resp
 	}
 
-	err = json.Unmarshal(_b, resp)
-	if err != nil {
-		return resp
-	}
-
+	_ = json.Unmarshal(_b, resp)
 	return resp
 }
 
-func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types.Transaction, *uint64, *string, error) {
+func (c *cmdLocalChainV2) CreateInfer(prompt []model.LLMInferMessage) (*types.Transaction, *uint64, *string, error) {
 	ctx := context.Background()
 	cnf := c.ReadLocalChainCnf()
 	privKey := cnf.PrivateKey
@@ -802,7 +792,6 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 		out := string(infer.Output)
 
 		if out != "" {
-
 			response := &model.Response{}
 			err := json.Unmarshal([]byte(out), response)
 			if err != nil {
@@ -823,9 +812,9 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 		index += 1
 	}
 
-	if chatCompletion == nil {
-		return tx, &inferId, nil, errors.New("error while parse response")
-	}
+	// if chatCompletion == nil {
+	// 	return tx, &inferId, nil, errors.New("error while parse response")
+	// }
 
 	if len(chatCompletion.Choices) == 0 {
 		return tx, &inferId, nil, errors.New("error get data")
@@ -834,7 +823,7 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 	return tx, &inferId, &chatCompletion.Choices[0].Message.Content, nil
 }
 
-func (c *CMD_Local_Chain_V2) SetGPUAddressRegisterModel(rpc string, modelID uint32, prvkey string) (*types.Transaction, error) {
+func (c *cmdLocalChainV2) SetGPUAddressRegisterModel(rpc string, modelID uint32, prvkey string) (*types.Transaction, error) {
 	fmt.Print(pkg.Line)
 	fmt.Println("Register modelID")
 
@@ -871,7 +860,7 @@ func (c *CMD_Local_Chain_V2) SetGPUAddressRegisterModel(rpc string, modelID uint
 	return tx, nil
 }
 
-func (c *CMD_Local_Chain_V2) StartHardHat() error {
+func (c *cmdLocalChainV2) StartHardHat() error {
 	cnf := c.ReadLocalChainCnf()
 	err := pkg.DockerCommand(pkg.MINER_SERVICE_HARDHAT, pkg.CurrentDir(), cnf.Platform, "down", "-local")
 	if err != nil {
@@ -892,7 +881,7 @@ func (c *CMD_Local_Chain_V2) StartHardHat() error {
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) StartOllama() error {
+func (c *cmdLocalChainV2) StartOllama() error {
 	// 	cnf := c.ReadLocalChainCnf()
 	// 	modelName := cnf.ModelName
 	// 	if modelName == "" {
@@ -954,7 +943,7 @@ func (c *CMD_Local_Chain_V2) StartOllama() error {
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) ContractDeployment() error {
+func (c *cmdLocalChainV2) ContractDeployment() error {
 	_, ok := c.RpcHealthCheck()
 	if !ok {
 		err := errors.New("rpc is not started")
@@ -988,7 +977,7 @@ npm install && npx hardhat run %s/sol/scripts/auto_deploy.ts --network localhost
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) OllamaHealthCheck() ([]byte, bool) {
+func (c *cmdLocalChainV2) OllamaHealthCheck() ([]byte, bool) {
 	cnf := c.ReadLocalChainCnf()
 
 	url := cnf.RunPodExternal
@@ -1019,9 +1008,12 @@ func (c *CMD_Local_Chain_V2) OllamaHealthCheck() ([]byte, bool) {
 	return _b, true
 }
 
-func (c *CMD_Local_Chain_V2) PingOllam() model.LLMInferResponse {
-	isReady := false
-	_resp := []byte{}
+func (c *cmdLocalChainV2) PingOllam() model.LLMInferResponse {
+	var (
+		isReady bool
+		_resp   []byte
+	)
+
 	ping := 1
 	for {
 
@@ -1056,7 +1048,7 @@ func (c *CMD_Local_Chain_V2) PingOllam() model.LLMInferResponse {
 	return resp
 }
 
-func (c *CMD_Local_Chain_V2) RpcHealthCheck() ([]byte, bool) {
+func (c *cmdLocalChainV2) RpcHealthCheck() ([]byte, bool) {
 	cnf := c.ReadLocalChainCnf()
 
 	url := cnf.Rpc
@@ -1089,12 +1081,14 @@ func (c *CMD_Local_Chain_V2) RpcHealthCheck() ([]byte, bool) {
 	return _b, true
 }
 
-func (c *CMD_Local_Chain_V2) PingRpc() interface{} {
-	isReady := false
-	_resp := []byte{}
+func (c *cmdLocalChainV2) PingRpc() interface{} {
+	var (
+		isReady bool
+		_resp   []byte
+	)
+
 	ping := 1
 	for {
-
 		if ping >= 1000 {
 			return nil
 		}
@@ -1116,7 +1110,7 @@ func (c *CMD_Local_Chain_V2) PingRpc() interface{} {
 	return _resp
 }
 
-func (c *CMD_Local_Chain_V2) DeployContractLogic() error {
+func (c *cmdLocalChainV2) DeployContractLogic() error {
 	cnf := c.ReadLocalChainCnf()
 	rpc := cnf.Rpc
 	chainID := cnf.ChainID
@@ -1153,7 +1147,7 @@ func (c *CMD_Local_Chain_V2) DeployContractLogic() error {
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) CreateConfigENV(minerAddress string, index int) error {
+func (c *cmdLocalChainV2) CreateConfigENV(minerAddress string, index int) error {
 	sample := fmt.Sprintf(pkg.ENV_SAMPLE_FILE, pkg.CurrentDir())
 	envFile := fmt.Sprintf(pkg.ENV_LOCAL_MINERS_FILE, pkg.CurrentDir(), index)
 
@@ -1193,7 +1187,7 @@ func (c *CMD_Local_Chain_V2) CreateConfigENV(minerAddress string, index int) err
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
+func (c *cmdLocalChainV2) StartMinerLogic() error {
 	fmt.Print(pkg.Line)
 	fmt.Println("Start miners")
 
@@ -1310,7 +1304,7 @@ func (c *CMD_Local_Chain_V2) StartMinerLogic() error {
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) StartApiLogic() error {
+func (c *cmdLocalChainV2) StartApiLogic() error {
 	fmt.Print(pkg.Line)
 	fmt.Println("Start api")
 	cnf := c.ReadLocalChainCnf()
@@ -1350,7 +1344,7 @@ func (c *CMD_Local_Chain_V2) StartApiLogic() error {
 	return nil
 }
 
-func (c *CMD_Local_Chain_V2) PingApi() bool {
+func (c *cmdLocalChainV2) PingApi() bool {
 	isReady := false
 	ping := 1
 	for {
@@ -1375,7 +1369,7 @@ func (c *CMD_Local_Chain_V2) PingApi() bool {
 	return isReady
 }
 
-func (c *CMD_Local_Chain_V2) ApiHealthCheck() ([]byte, bool) {
+func (c *cmdLocalChainV2) ApiHealthCheck() ([]byte, bool) {
 	url := pkg.API_URL
 	cnf := c.ReadLocalChainCnf()
 
