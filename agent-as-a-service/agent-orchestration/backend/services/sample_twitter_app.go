@@ -136,9 +136,27 @@ func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey strin
 	if sampleTwitterApp == nil {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	_, err = helpers.PostTweetByToken(sampleTwitterApp.TwitterInfo.AccessToken, content, "")
+	me, err := helpers.GetTwitterUserMe(sampleTwitterApp.TwitterInfo.AccessToken)
 	if err != nil {
 		return errs.NewError(err)
+	}
+	maxChars := 280
+	if me.Data.Verified {
+		maxChars = 4000
+	}
+	contentLines := helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(content, maxChars)
+	if len(contentLines) <= 0 {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	refId, err := helpers.PostTweetByToken(sampleTwitterApp.TwitterInfo.AccessToken, contentLines[0], "")
+	if err != nil {
+		return errs.NewError(err)
+	}
+	for i := 1; i < len(contentLines); i++ {
+		refIdTmp, _ := helpers.ReplyTweetByToken(sampleTwitterApp.TwitterInfo.AccessToken, contentLines[i], refId, "")
+		if refIdTmp != "" {
+			refId = refIdTmp
+		}
 	}
 	return nil
 }
