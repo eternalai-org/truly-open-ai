@@ -145,8 +145,7 @@ func (t *miner) ExecueteTasks(ctx context.Context) {
 }
 
 func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.TaskResult, error) {
-	res := &model.TaskResult{}
-	result := []byte{}
+	res := &model.TaskResult{Storage: model.LightHouseStorageType}
 	if len(task.BatchInfers) > 0 && task.IsBatch {
 		for _, b := range task.BatchInfers {
 			seed := pkg.CreateSeed(b.PromptInput, task.TaskID)
@@ -165,8 +164,7 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 		if err != nil {
 			return nil, err
 		}
-
-		result = objJson
+		res.Data = objJson
 	} else {
 		seed := pkg.CreateSeed(task.Params, task.TaskID)
 		obj, err := t.inferChatCompletions(ctx, task.Params, "", seed)
@@ -179,19 +177,14 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 			return nil, err
 		}
 
-		result = objJson
+		res.Data = objJson
 	}
 
-	res.Storage = model.LightHouseStorageType
-	res.Data = result
-	ext := "txt"
-	url, err := lighthouse.UploadData(t.cnf.LighthouseKey, fmt.Sprintf("%v_result.%v", task.TaskID, ext), res.Data)
+	url, err := lighthouse.UploadData(t.cnf.LighthouseKey, fmt.Sprintf("%v_result.%v", task.TaskID, "txt"), res.Data)
 	if err != nil {
 		url = "lighthouse-error"
-		// return nil, err
 	}
 	res.ResultURI = "ipfs://" + url
-	// logger.GetLoggerInstanceFromContext(ctx).Info("executeTasks", zap.Any("res", res))
 	return res, nil
 }
 
@@ -333,7 +326,7 @@ func (t *miner) Info() (*model.MinerInfo, error) {
 	currentBlock := t.common.CurrentBlock()
 
 	logFile := fmt.Sprintf(pkg.LOG_INFO_FILE, pkg.CurrentDir())
-	stat, err := os.Stat(logFile)
+	stat, _ := os.Stat(logFile)
 	if stat != nil {
 		if stat.ModTime().UTC().Add(time.Minute * 5).Before(time.Now().UTC()) {
 			os.Remove(logFile)
