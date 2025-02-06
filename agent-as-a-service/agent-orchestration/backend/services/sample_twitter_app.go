@@ -3,8 +3,6 @@ package services
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
-	"net/url"
 	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -18,11 +16,22 @@ func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode
 	if installCode == "" {
 		return "", errs.NewError(errs.ErrBadRequest)
 	}
-	redirectUri := s.conf.SampleTwitterApp.RedirectUri + "?install_code=" + installCode
-	return fmt.Sprintf(
-		"https://twitter.com/i/oauth2/authorize?redirect_uri=%s&client_id=%s&state=state&response_type=code&code_challenge=challenge&code_challenge_method=plain&scope=offline.access+tweet.read+tweet.write+users.read+follows.write+like.write+like.read+users.read",
-		url.QueryEscape(redirectUri),
-		s.conf.SampleTwitterApp.OauthClientId,
+	redirectUri := helpers.BuildUri(
+		s.conf.SampleTwitterApp.RedirectUri,
+		map[string]string{
+			"install_code": installCode,
+		},
+	)
+	return helpers.BuildUri(
+		"https://twitter.com/i/oauth2/authorize",
+		map[string]string{
+			"state":                 "state",
+			"response_type":         "code",
+			"code_challenge":        "challenge",
+			"code_challenge_method": "plain",
+			"scope":                 "offline.access+tweet.read+tweet.write+users.read+follows.write+like.write+like.read+users.read",
+			"redirect_uri":          redirectUri,
+		},
 	), nil
 }
 
@@ -31,7 +40,12 @@ func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCod
 		return "", errs.NewError(errs.ErrBadRequest)
 	}
 	apiKey, err := func() (string, error) {
-		redirectUri := s.conf.SampleTwitterApp.RedirectUri + "?install_code=" + installCode
+		redirectUri := helpers.BuildUri(
+			s.conf.SampleTwitterApp.RedirectUri,
+			map[string]string{
+				"install_code": installCode,
+			},
+		)
 		respOauth, err := s.twitterAPI.TwitterOauthCallbackForSampleApp(
 			s.conf.SampleTwitterApp.OauthClientId, s.conf.SampleTwitterApp.OauthClientSecret, code, redirectUri)
 		if err != nil {

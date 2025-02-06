@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -187,4 +188,17 @@ func RemoveURLs(text string) string {
 	mediaURLPattern := `https?://t\.co/\S+`
 	re := regexp.MustCompile(mediaURLPattern)
 	return re.ReplaceAllString(text, "")
+}
+
+func BuildUri(urlString string, queries map[string]string) string {
+	u, err := url.Parse(urlString)
+	if err != nil {
+		panic(err)
+	}
+	q := u.Query()
+	for k, v := range queries {
+		q.Add(k, v)
+	}
+	u.RawQuery = q.Encode()
+	return u.String()
 }
