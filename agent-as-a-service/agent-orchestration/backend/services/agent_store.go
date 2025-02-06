@@ -88,12 +88,21 @@ func (s *Service) GetAgentStoreDetail(ctx context.Context, id uint) (*models.Age
 	return res, nil
 }
 
-func (s *Service) SaveMissionStore(ctx context.Context, agentStoreID uint, req *serializers.AgentStoreMissionReq) error {
+func (s *Service) SaveMissionStore(ctx context.Context, userAddress string, agentStoreID uint, req *serializers.AgentStoreMissionReq) error {
 	var mission *models.AgentStoreMission
-	var err error
-	err = daos.WithTransaction(
+	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
+			agentStore, err := s.dao.FirstAgentStoreByID(tx, req.ID, map[string][]interface{}{}, true)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if agentStore == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if !strings.EqualFold(agentStore.OwnerAddress, userAddress) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			if req.ID > 0 {
 				mission, err = s.dao.FirstAgentStoreMissionByID(tx, req.ID, map[string][]interface{}{}, true)
 				if err != nil {
@@ -187,14 +196,24 @@ func (s *Service) GetListAgentStoreInstall(ctx context.Context, agentInfoID uint
 	return res, count, nil
 }
 
-func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, agentStoreID, agentInfoID uint) (*models.AgentStoreInstall, error) {
+func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress string, agentStoreID, agentInfoID uint) (*models.AgentStoreInstall, error) {
+	agentInfo, err := s.dao.FirstAgentInfoByID(daos.GetDBMainCtx(ctx), agentInfoID, map[string][]interface{}{}, true)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if agentInfo == nil {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
+	if !strings.EqualFold(agentInfo.Creator, userAddress) {
+		return nil, errs.NewError(errs.ErrBadRequest)
+	}
 	obj := &models.AgentStoreInstall{
 		Code:         helpers.RandomReferralCode(32),
 		AgentStoreID: agentStoreID,
 		AgentInfoID:  agentInfoID,
 		Status:       models.InstallStatusNew,
 	}
-	err := s.dao.Create(daos.GetDBMainCtx(ctx), obj)
+	err = s.dao.Create(daos.GetDBMainCtx(ctx), obj)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}

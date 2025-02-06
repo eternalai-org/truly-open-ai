@@ -130,9 +130,7 @@ func (s *Server) GetListAgentStore(c *gin.Context) {
 
 func (s *Server) GetAgentStoreDetail(c *gin.Context) {
 	ctx := s.requestContext(c)
-	idStr := s.stringFromContextParam(c, "id")
-	id, _ := strconv.ParseUint(idStr, 10, 64)
-	res, err := s.nls.GetAgentStoreDetail(ctx, uint(id))
+	res, err := s.nls.GetAgentStoreDetail(ctx, s.uintFromContextParam(c, "id"))
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -147,9 +145,12 @@ func (s *Server) SaveMissionStore(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	idStr := s.stringFromContextParam(c, "id")
-	id, _ := strconv.ParseUint(idStr, 10, 64)
-	err := s.nls.SaveMissionStore(ctx, uint(id), &req)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	err = s.nls.SaveMissionStore(ctx, userAddress, s.uintFromContextParam(c, "id"), &req)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -175,9 +176,7 @@ func (s *Server) AuthenAgentStoreCallback(c *gin.Context) {
 func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	idStr := s.stringFromContextParam(c, "agent_info_id")
-	id, _ := strconv.ParseUint(idStr, 10, 64)
-	res, count, err := s.nls.GetListAgentStoreInstall(ctx, uint(id), page, limit)
+	res, count, err := s.nls.GetListAgentStoreInstall(ctx, s.uintFromContextParam(c, "agent_info_id"), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -189,7 +188,12 @@ func (s *Server) GetAgentStoreInstallCode(c *gin.Context) {
 	ctx := s.requestContext(c)
 	agentStoreID := s.uintFromContextParam(c, "id")
 	agentInfoID := s.uintFromContextParam(c, "agent_info_id")
-	res, err := s.nls.CreateAgentStoreInstallCode(ctx, agentStoreID, agentInfoID)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	res, err := s.nls.CreateAgentStoreInstallCode(ctx, userAddress, agentStoreID, agentInfoID)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
