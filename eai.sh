@@ -119,8 +119,8 @@ handle_api_commands() {
           echo $api_folder
           cd $api_folder  &&  \
           go build -o eai-chat main.go  && \
-          cp config.json.example config.json && \
-          cp "$api_folder/eai-chat"  "$current_dir/eai-chat" && \
+          cp -i config.json.example config.json && \
+          cp -i "$api_folder/eai-chat"  "$current_dir/eai-chat" && \
           cd "$current_dir"  && \
           ./eai-chat server &
         ;;
