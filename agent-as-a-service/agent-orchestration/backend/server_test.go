@@ -42,6 +42,8 @@ func init() {
 }
 
 func Test_JOB(t *testing.T) {
+	// ts.JobAgentSnapshotPostCreate(context.Background())
+	// ts.AgentSnapshotPostCreate(context.Background(), 59166, "", "")
 	// ts.JobScanAgentTwitterPostForTA(context.Background())
 	// ts.RetryAgentDeployToken(context.Background(), 51265)
 	// ts.JobUpdateOffchainAutoOutputForMission(context.Background())
