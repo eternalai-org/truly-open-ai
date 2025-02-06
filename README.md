@@ -1,8 +1,8 @@
-# Eternal AI: Build Decentralized Agents
+# Eternal AI: A Peer-to-Peer Agentic AI System
 
-The Eternal AI protocol is a peer-to-peer AI system designed for building decentralized agents: AI agents that are written as Solidity smart contracts and run exactly as programmed without censorship, downtime, or interference.
+The Eternal AI protocol is a peer-to-peer agentic AI system designed for building decentralized agents: AI agents that are written as Solidity smart contracts and run exactly as programmed without censorship, downtime, or interference.
 
-These agents run on a powerful omnichain infrastructure with many unique properties:
+These agents run on a powerful decentralized infrastructure with many unique properties:
 
 * End-to-end decentralization: Inference, Compute, Storage
 * State-of-the-art models: DeepSeek, Llama, FLUX, etc.
