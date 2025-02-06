@@ -4,7 +4,7 @@ The Eternal AI protocol is a peer-to-peer agentic AI system designed for buildin
 
 These agents run on a powerful decentralized infrastructure with many unique properties:
 
-* End-to-end decentralization: Inference, Compute, Storage
+* End-to-end decentralization: Inference, Compute, Storage, etc.
 * State-of-the-art models: DeepSeek, Llama, FLUX, etc.
 * Omnichain: Bitcoin, Ethereum, Solana, etc.
 
