@@ -6,11 +6,13 @@
     "node": ">=23.3.0"
   },
   "scripts": {
+    "build-pre": "lerna run build-pre --stream",
     "build": "lerna run build --stream",
     "clean": "lerna clean && rimraf node_modules plugins/**/node_modules plugins/**/dist",
     "start": "lerna run start --stream",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "storybook": "lerna run storybook --stream"
   },
   "keywords": [],
   "author": "",

@@ -21,6 +21,7 @@ type AgentStore struct {
 	OwnerAddress       string
 	AuthenUrl          string           `gorm:"type:longtext"`
 	EaiBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Icon               string           `gorm:"type:text"`
 	AgentStoreMissions []*AgentStoreMission
 }
 

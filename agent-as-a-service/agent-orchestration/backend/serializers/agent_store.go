@@ -12,6 +12,7 @@ type AgentStoreReq struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	AuthenUrl   string `json:"authen_url"`
+	Icon        string `json:"icon"`
 }
 
 type AgentStoreMissionReq struct {
@@ -35,6 +36,7 @@ type AgentStoreResp struct {
 	Name               string                   `json:"name"`
 	Description        string                   `json:"description"`
 	AuthenUrl          string                   `json:"authen_url"`
+	Icon               string                   `json:"icon"`
 	AgentStoreMissions []*AgentStoreMissionResp `json:"agent_store_missions"`
 }
 
@@ -48,6 +50,7 @@ func NewAgentStoreResp(m *models.AgentStore) *AgentStoreResp {
 		Name:               m.Name,
 		Description:        m.Description,
 		AuthenUrl:          m.AuthenUrl,
+		Icon:               m.Icon,
 		AgentStoreMissions: NewAgentStoreMissionRespArray(m.AgentStoreMissions),
 	}
 }

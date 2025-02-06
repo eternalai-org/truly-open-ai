@@ -53,6 +53,40 @@ const useDndAction = () => {
     return newNodeInfo;
   }, []);
 
+  const link = useCallback((fromNode?: StudioNode, toNode?: StudioNode) => {
+    if (!fromNode || !toNode) return;
+
+    const newEdge = createNewBaseEdge(toNode.id, fromNode.id, true);
+
+    toNode.data.sourceHandles.push(generateSourceHandleId(toNode.id, fromNode.id));
+
+    useStudioFlowStore.getState().addEdge(newEdge);
+    useStudioFlowStore.getState().addLinkedNode(toNode.id, fromNode.id);
+  }, []);
+
+  const unlink = useCallback((fromNode?: StudioNode, toNode?: StudioNode) => {
+    if (!fromNode || !toNode) return;
+
+    toNode.data.sourceHandles = toNode.data.sourceHandles.filter((handle) => handle !== generateSourceHandleId(toNode.id, fromNode.id));
+
+    const edge = useStudioFlowStore.getState().edges.find((edge) => edge.source === fromNode.id && edge.target === toNode.id);
+
+    if (edge) {
+      useStudioFlowStore.getState().removeEdge(edge.id);
+      useStudioFlowStore.getState().removeLinkedNode(fromNode.id, toNode.id);
+    }
+  }, []);
+
+  const unlinkAll = useCallback((node?: StudioNode) => {
+    if (!node) return;
+
+    const edges = useStudioFlowStore.getState().edges.filter((edge) => edge.source === node.id || edge.target === node.id);
+    edges.forEach((edge) => {
+      useStudioFlowStore.getState().removeEdge(edge.id);
+      useStudioFlowStore.getState().removeLinkedNode(edge.source, edge.target);
+    });
+  }, []);
+
   const removePartOfPackage = useCallback((node?: StudioNode, index?: number) => {
     if (!node) return {};
 
@@ -87,6 +121,12 @@ const useDndAction = () => {
     };
   }, []);
 
+  const removeProductAndAllBelong = useCallback((nodeId?: string) => {
+    if (!nodeId) return;
+
+    useStudioFlowStore.getState().removeNodeAndAllBelong(nodeId);
+  }, []);
+
   const removeProduct = useCallback((nodeId?: string) => {
     if (!nodeId) return;
 
@@ -100,15 +140,13 @@ const useDndAction = () => {
     if (!newNode) return {};
 
     if (rootNode) {
-      const newEdge = createNewBaseEdge(rootNode.id, newNode.id, true);
-
-      rootNode.data.sourceHandles.push(generateSourceHandleId(rootNode.id, newNode.id));
-
-      useStudioFlowStore.getState().addLinkedNode(rootNode.id, newNode.id);
-      useStudioFlowStore.getState().addEdge(newEdge);
+      link(newNode, rootNode);
     }
 
-    useStudioFlowStore.getState().addNode(newNode);
+    useStudioFlowStore.getState().addNode({
+      ...newNode,
+      zIndex: fromOption?.zIndex || 0,
+    });
 
     return { rootNode, targetNode: newNode };
   }, []);
@@ -128,15 +166,13 @@ const useDndAction = () => {
           .filter((child) => !!child);
 
         if (rootNode) {
-          const newEdge = createNewBaseEdge(rootNode.id, newNode.id, true);
-
-          rootNode.data.sourceHandles.push(generateSourceHandleId(rootNode.id, newNode.id));
-
-          useStudioFlowStore.getState().addEdge(newEdge);
-          useStudioFlowStore.getState().addLinkedNode(rootNode.id, newNode.id);
+          link(rootNode, newNode);
         }
 
-        useStudioFlowStore.getState().addNode(newNode);
+        useStudioFlowStore.getState().addNode({
+          ...newNode,
+          zIndex: fromOption?.zIndex || 0,
+        });
       }
 
       fromNode.data.metadata.children = fromNode.data.metadata.children.filter((_, index) => index < (fromData?.childIndex || 0));
@@ -156,8 +192,17 @@ const useDndAction = () => {
     const clonedFromNode = cloneData(fromNode);
     clonedFromNode.data.metadata.children = [];
 
+    const fromNodeLinkedNodes = useStudioFlowStore.getState().linkedNodes[fromNode.id];
+
     addToPackage(toNode, [clonedFromNode, ...fromNode.data.metadata.children]);
     removeProduct(fromNode.id);
+
+    fromNodeLinkedNodes?.forEach((linkedNodeId) => {
+      link(
+        useStudioFlowStore.getState().nodes.find((node) => node.id === linkedNodeId),
+        toNode,
+      );
+    });
 
     return {
       sourceNode: fromNode,
@@ -173,6 +218,7 @@ const useDndAction = () => {
   );
 
   return {
+    removeProductAndAllBelong,
     removeProduct,
     addProduct,
     removePartOfPackage,
@@ -182,6 +228,9 @@ const useDndAction = () => {
     mergeProducts,
     getNewNodeInfo,
     updateFieldValidate,
+    link,
+    unlink,
+    unlinkAll,
   };
 };
 

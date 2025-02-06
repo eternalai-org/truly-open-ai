@@ -32,7 +32,10 @@ type Store = {
   usedKeyCollection: Record<string, string>;
   setUsedKeyCollection: (collection: Record<string, string>) => void;
 
+  findCategoryByOptionKey: (optionKey: string) => StudioCategory | null;
+
   clear: () => void;
+  scanFromData: (data: StudioDataNode[]) => void;
 };
 
 let colorUsedCollection: Record<string, string> = {};
@@ -94,6 +97,7 @@ const useStudioCategoryStore = create<Store>((set, get) => ({
 
             return {
               ...option,
+              zIndex: option.zIndex ?? 0,
               color: option.color || item.color,
               order: option.order ?? Number.MAX_SAFE_INTEGER,
               type: option.type ?? DEFAULT_CATEGORY_TYPE,
@@ -223,7 +227,76 @@ const useStudioCategoryStore = create<Store>((set, get) => ({
     set({ usedKeyCollection: collection });
   },
 
+  findCategoryByOptionKey: (optionKey: string) => {
+    const { categoryOptionMap } = get();
+
+    return categoryOptionMap[optionKey]?.parent;
+  },
+
   clear: () => set(DEFAULT_VALUE),
+
+  scanFromData: (data) => {
+    try {
+      const { categoryMap, categoryOptionMap } = get();
+      const addNewCategories: Record<string, StudioCategory> = {};
+      const addNewOptions: Record<string, StudioCategoryOptionMapValue> = {};
+
+      const addNewCategoryAndOption = (optionIdx: string, categoryIdx?: string) => {
+        if (categoryIdx) {
+          const existedCategory = categoryMap[categoryIdx];
+          if (!existedCategory) {
+            // add new category
+            addNewCategories[categoryIdx] = {
+              idx: categoryIdx,
+              title: '',
+              options: [],
+              disabled: true,
+              hidden: true,
+            } satisfies StudioCategory;
+          }
+
+          if (optionIdx) {
+            const parentCategory = categoryMap[categoryIdx] || addNewCategories[categoryIdx];
+            const existedOption = categoryOptionMap[optionIdx];
+            if (!existedOption) {
+              // add new option
+              addNewOptions[optionIdx] = {
+                idx: optionIdx,
+                title: '',
+                disabled: true,
+                hidden: true,
+                parent: parentCategory,
+              } satisfies StudioCategoryOptionMapValue;
+
+              parentCategory.options.push(addNewOptions[optionIdx]);
+            }
+          }
+        }
+      };
+
+      const runLoopData = (dataNodes: StudioDataNode[]) => {
+        dataNodes.forEach((item) => {
+          addNewCategoryAndOption(item.idx, item.categoryIdx);
+
+          if (item.children.length) {
+            runLoopData(item.children);
+          }
+        });
+      };
+
+      if (data) {
+        runLoopData(data);
+
+        set({
+          categories: [...get().categories, ...Object.values(addNewCategories)],
+          categoryMap: { ...categoryMap, ...addNewCategories },
+          categoryOptionMap: { ...categoryOptionMap, ...addNewOptions },
+        });
+      }
+    } catch (error) {
+      console.error('Error while scanning data', error);
+    }
+  },
 }));
 
 export default useStudioCategoryStore;

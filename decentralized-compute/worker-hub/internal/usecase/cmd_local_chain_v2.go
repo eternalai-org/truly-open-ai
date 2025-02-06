@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"solo/config"
 	"solo/internal/contracts/erc20"
@@ -20,9 +23,6 @@ import (
 	"solo/internal/model"
 	"solo/pkg"
 	"solo/pkg/eth"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -760,6 +760,9 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 		Messages: prompt,
 	}
 	_b, err := json.Marshal(request)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 
 	tx, err := p.Infer(auth, uint32(modelIDInt), _b, *pubkey, true)
 	if err != nil {
@@ -768,7 +771,7 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 
 	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
 	if err != nil {
-		return nil, nil, nil, errors.Join(err, errors.New("Error while waiting for tx"))
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
 	}
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
