@@ -10,6 +10,7 @@ gradio = "==5.14.0"
 aiohttp = "==3.11.11"
 celery = "*"
 redis = "*"
+gunicorn = "*"
 
 [dev-packages]
 
