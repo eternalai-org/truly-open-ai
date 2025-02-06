@@ -229,14 +229,15 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		return nil, err
 	}
 
-	infer.MaxToken = 512
-	infer.Temperature = 0.001
-	oldModel := infer.Model
-	if t.common.GetConfig().ModelName == "" {
-		infer.Model = "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S"
-	} else {
-		infer.Model = t.common.GetConfig().ModelName
-	}
+	//infer.MaxToken = 512
+	//infer.Temperature = 0.001
+	/*
+		oldModel := infer.Model
+		if t.common.GetConfig().ModelName == "" {
+			infer.Model = "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S"
+		} else {
+			infer.Model = t.common.GetConfig().ModelName
+		}*/
 
 	url := t.cnf.ApiUrl
 	headers := make(map[string]string)
@@ -256,7 +257,7 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		return nil, err
 	}
 
-	res.Model = oldModel
+	//res.Model = oldModel
 	return res, nil
 }
 
