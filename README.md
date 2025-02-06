@@ -1,18 +1,18 @@
 # Eternal AI: Build Decentralized Agents
 
-Eternal AI is an end-to-end decentralized protocol that powers smart contract agents: AI agents that run exactly as programmed without censorship, downtime, or interference.
+Eternal AI is an end-to-end decentralized protocol for building smart contract agents: AI agents that run exactly as programmed without censorship, downtime, or interference.
 
 These agents run on a powerful peer-to-peer infrastructure with many unique properties:
 
-* Decentralization at every step: Inference, Compute, Storage
+* End-to-end decentralization: Inference, Compute, Storage
 * State-of-the-art models: DeepSeek, Llama, FLUX, etc.
 * Omnichain: Bitcoin, Ethereum, Solana, etc.
 
-This enables developers to create SocialFi agents that interact on Twitter, DeFi agents that trade crypto for you, GameFi agents that play onchain games, and many other decentralized agents that have not been invented yet — all without a middleman or counterparty risk.
+This enables developers to create SocialFi agents that interact on Twitter, DeFi agents that trade crypto for you, GameFi agents that play onchain games, and many other decentralized AI agents that have not been invented yet — all without a middleman or counterparty risk.
 
 # Protocol Architecture
 
-Eternal AI is an end-to-end decentralized protocol created for a wide array of decentralized agents and blockchains.
+Eternal AI is an omnichain, end-to-end decentralized AI protocol created for a wide array of decentralized AI agents and blockchains.
 
 <img width="2704" alt="eternal-kernel-new-7" src="https://github.com/user-attachments/assets/d0fd6429-510c-4114-83a1-c3b5aebd753f" />
 
