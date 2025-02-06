@@ -61,6 +61,8 @@ type AgentSnapshotPost struct {
 	OrgTweetID              string
 	Token                   string
 	AgentStoreMissionID     uint
+	AgentStoreID            uint
+	AgentStore              *AgentStore
 	IsRated                 bool
 	AgentStoreMissionFee    numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }

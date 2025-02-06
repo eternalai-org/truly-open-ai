@@ -459,6 +459,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						OrgTweetID:             orgTweetID,
 						Token:                  tokenSymbol,
 						AgentStoreMissionID:    mission.AgentStoreMissionID,
+						AgentStoreID:           mission.AgentStoreID,
 						IsRated:                false,
 						AgentStoreMissionFee:   missionStoreFee,
 					}
@@ -1290,7 +1291,9 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 						agentSnapshotPost, err := s.dao.FirstAgentSnapshotPostByID(
 							daos.GetDBMainCtx(ctx),
 							snapshotPostID,
-							map[string][]interface{}{},
+							map[string][]interface{}{
+								"AgentInfo": {},
+							},
 							false,
 						)
 						if err != nil {
@@ -1352,10 +1355,40 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 									state, ok := aiOutput["state"]
 									if ok {
 										if state.(string) == "done" {
-											err = daos.GetDBMainCtx(ctx).
-												Model(agentSnapshotPost).
-												UpdateColumn("status", models.AgentSnapshotPostStatusInferResolved).
-												Error
+											err = daos.WithTransaction(
+												daos.GetDBMainCtx(ctx),
+												func(tx *gorm.DB) error {
+													err = tx.
+														Model(agentSnapshotPost).
+														UpdateColumn("status", models.AgentSnapshotPostStatusInferResolved).
+														Error
+													if err != nil {
+														return errs.NewError(err)
+													}
+													if agentSnapshotPost.AgentStore != nil &&
+														agentSnapshotPost.AgentStoreMissionFee.Float.Cmp(big.NewFloat(0)) > 0 {
+														err = tx.Model(agentSnapshotPost.AgentStore).
+															UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", agentSnapshotPost.AgentStoreMissionFee)).
+															Error
+														if err != nil {
+															return errs.NewError(err)
+														}
+														_ = s.dao.Create(
+															tx,
+															&models.AgentStoreTransaction{
+																NetworkID:    agentSnapshotPost.NetworkID,
+																EventId:      fmt.Sprintf("trigger_fee_%d", agentSnapshotPost.ID),
+																AgentStoreID: agentSnapshotPost.AgentStoreID,
+																Type:         models.AgentStoreTransactionTypeFee,
+																Amount:       agentSnapshotPost.AgentStoreMissionFee,
+																Status:       models.AgentStoreTransactionStatusDone,
+																Toolset:      agentSnapshotPost.Toolset,
+															},
+														)
+													}
+													return nil
+												},
+											)
 											if err != nil {
 												return errs.NewError(err)
 											}

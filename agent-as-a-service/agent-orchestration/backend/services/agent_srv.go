@@ -1397,11 +1397,17 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 							return errs.NewError(errs.ErrBadRequest)
 						}
 					} else if item.AgentStoreMissionID > 0 {
-						//
+						agentStoreMission, err := s.dao.FirstAgentStoreMissionByID(tx, item.AgentStoreMissionID, map[string][]interface{}{}, false)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if agentStoreMission == nil {
+							return errs.NewError(errs.ErrBadRequest)
+						}
 						agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
 							tx,
 							map[string][]interface{}{
-								"agent_store_id = ?": {mission.AgentStoreID},
+								"agent_store_id = ?": {agentStoreMission.AgentStoreID},
 								"agent_info_id = ?":  {mission.AgentInfoID},
 							},
 							map[string][]interface{}{},
@@ -1411,13 +1417,6 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 							return errs.NewError(err)
 						}
 						if agentStoreInstall == nil {
-							return errs.NewError(errs.ErrBadRequest)
-						}
-						agentStoreMission, err := s.dao.FirstAgentStoreMissionByID(tx, item.AgentStoreMissionID, map[string][]interface{}{}, false)
-						if err != nil {
-							return errs.NewError(err)
-						}
-						if agentStoreMission == nil {
 							return errs.NewError(errs.ErrBadRequest)
 						}
 						mission.AgentStoreMissionID = agentStoreMission.ID

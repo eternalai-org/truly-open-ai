@@ -19,7 +19,8 @@ type AgentStore struct {
 	Name               string
 	Description        string `gorm:"type:text"`
 	OwnerAddress       string
-	AuthenUrl          string `gorm:"type:longtext"`
+	AuthenUrl          string           `gorm:"type:longtext"`
+	EaiBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	AgentStoreMissions []*AgentStoreMission
 }
 
@@ -46,4 +47,26 @@ type AgentStoreInstall struct {
 	AgentStore     *AgentStore
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
 	Status         InstallStatus
+}
+
+type (
+	AgentStoreTransactionType   string
+	AgentStoreTransactionStatus string
+)
+
+const (
+	AgentStoreTransactionTypeFee AgentStoreTransactionType = "fee"
+
+	AgentStoreTransactionStatusDone AgentStoreTransactionStatus = "done"
+)
+
+type AgentStoreTransaction struct {
+	gorm.Model
+	NetworkID    uint64
+	AgentStoreID uint   `gorm:"index"`
+	EventId      string `gorm:"unique_index"`
+	Type         AgentStoreTransactionType
+	Amount       numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Toolset      string
+	Status       AgentStoreTransactionStatus
 }
