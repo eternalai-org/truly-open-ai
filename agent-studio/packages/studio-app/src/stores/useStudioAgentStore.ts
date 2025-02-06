@@ -1,13 +1,13 @@
-import { StudioDataNode } from "@agent-studio/studio-dnd";
-import { IAgent } from "@eternal-ai/core";
+import { GraphData } from "@agent-studio/studio-dnd";
+import { IAgent } from "@eternalai-dagent/core";
 import { create } from "zustand";
 
 interface IStore {
   isDetail: boolean;
   setIsDetail: (isDetail: boolean) => void;
 
-  data: StudioDataNode[];
-  setData: (data: StudioDataNode[]) => void;
+  graphData: GraphData;
+  setGraphData: (data: GraphData) => void;
 
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
@@ -23,8 +23,13 @@ const useStudioAgentStore = create<IStore>((set) => ({
   isDetail: false,
   setIsDetail: (isDetail) => set({ isDetail }),
 
-  data: [],
-  setData: (data) => set({ data }),
+  graphData: {
+    data: [],
+    viewport: { x: 0, y: 0, zoom: 1 },
+  },
+  setGraphData: (data) => {
+    set({ graphData: data });
+  },
 
   isLoading: false,
   setIsLoading: (isLoading) => set({ isLoading }),

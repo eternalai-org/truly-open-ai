@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import Package from '../../../DnD/Package';
 import Product from '../../../DnD/Product';
+import ProductPlaceholder from '../../../DnD/ProductPlaceholder';
 import DraggingFloating from '../DraggingFloating';
 import LegoRender from '../LegoRender';
 import NodeBaseChild from '../NodeBaseChild';
@@ -10,6 +10,7 @@ import NodeBaseReadOnly from '../NodeBaseReadOnly';
 import NodeBaseWrapper from '../NodeBaseWrapper';
 import { NodeBaseProps } from '../types';
 
+import useNodeSelected from '@/modules/Studio/hooks/useNodeSelected';
 import useStudioCategoryStore from '@/modules/Studio/stores/useStudioCategoryStore';
 import useStudioDndStore from '@/modules/Studio/stores/useStudioDndStore';
 import { StudioCategoryOption } from '@/modules/Studio/types';
@@ -19,6 +20,8 @@ import './NodeStacks.scss';
 type Props = NodeBaseProps;
 
 const NodeStacks = ({ data, ...rest }: Props) => {
+  const { isSelected } = useNodeSelected({ id: data.id });
+
   const draggingData = useStudioDndStore((state) => state.draggingData);
   const categoryMap = useStudioCategoryStore((state) => state.categoryMap);
   const categoryOptionMap = useStudioCategoryStore((state) => state.categoryOptionMap);
@@ -40,6 +43,11 @@ const NodeStacks = ({ data, ...rest }: Props) => {
     return children.slice(0, draggingData.childIndex + 1);
   }, [draggingData, data.id, children]);
 
+  const highlightColor = useMemo(
+    () => option?.highlightColor || category?.highlightColor || option?.color,
+    [option, category],
+  );
+
   return (
     <NodeBaseWrapper data={data} id={data.id} option={option}>
       <div className="node-base">
@@ -56,7 +64,7 @@ const NodeStacks = ({ data, ...rest }: Props) => {
           }
         >
           <LegoRender
-            background={option.color}
+            background={isSelected ? highlightColor : option.color}
             icon={option.icon}
             title={option.title}
             id={data.id}
@@ -73,10 +81,11 @@ const NodeStacks = ({ data, ...rest }: Props) => {
             data={item}
             items={children}
             belongsTo={data.id}
+            isHidden={draggingData?.belongsTo === data.id && draggingData?.optionKey === option?.idx}
           />
         ))}
 
-        <Package id={data.id} data={productData} />
+        <ProductPlaceholder id={data.id} data={productData} />
         <NodeBaseConnection />
       </div>
     </NodeBaseWrapper>

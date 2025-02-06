@@ -6,41 +6,49 @@ import { StudioCategoryOption } from '../types/category';
 import { StudioDataNode } from '../types/graph';
 
 export const getFormDataFromCategoryOption = (category: StudioCategoryOption) => {
-  const categoryData = category?.data || {};
+  try {
+    const categoryData = category?.data || {};
 
-  const defaultValues = Object.keys(categoryData).reduce(
-    (acc, key) => ({
-      ...acc,
-      [key]: categoryData[key].defaultValue,
-    }),
-    {},
-  );
+    const defaultValues = Object.keys(categoryData).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: categoryData[key].defaultValue,
+      }),
+      {},
+    );
 
-  return defaultValues;
+    return defaultValues;
+  } catch (e) {
+    return {};
+  }
 };
 
 export const getFieldDataFromRawData = (data: StudioDataNode[]) => {
-  let formData: Record<string, FormDataMap> = {};
-  const categoryMap = useStudioCategoryStore.getState().categoryMap;
-  const categoryOptionMap = useStudioCategoryStore.getState().categoryOptionMap;
+  try {
+    let formData: Record<string, FormDataMap> = {};
+    const categoryMap = useStudioCategoryStore.getState().categoryMap;
+    const categoryOptionMap = useStudioCategoryStore.getState().categoryOptionMap;
 
-  data.forEach((item) => {
-    const defaultValues = getFormDataFromCategoryOption(categoryOptionMap[item.idx] || categoryMap[item.idx] || {});
+    data.forEach((item) => {
+      const defaultValues = getFormDataFromCategoryOption(categoryOptionMap[item.idx] || categoryMap[item.idx] || {});
 
-    formData[item.id] = {
-      ...defaultValues,
-      ...(item.data || {}),
-    };
-
-    if (item.children.length) {
-      formData = {
-        ...formData,
-        ...getFieldDataFromRawData(item.children),
+      formData[item.id] = {
+        ...defaultValues,
+        ...(item.data || {}),
       };
-    }
-  });
 
-  return formData;
+      if (item.children.length) {
+        formData = {
+          ...formData,
+          ...getFieldDataFromRawData(item.children),
+        };
+      }
+    });
+
+    return formData;
+  } catch (e) {
+    return {};
+  }
 };
 
 export const cloneData = <T>(data: T): T => JSON.parse(JSON.stringify(data));
@@ -92,36 +100,40 @@ export const findDataByOptionKey = (optionKey: string, data: StudioDataNode[], n
 };
 
 export const findDataByCategoryKey = (categoryKey: string, data: StudioDataNode[], nodeId?: string) => {
-  const categoryMap = useStudioCategoryStore.getState().categoryMap;
+  try {
+    const categoryMap = useStudioCategoryStore.getState().categoryMap;
 
-  let matchedNode;
-  if (nodeId) {
-    matchedNode = findDataById(nodeId, data);
+    let matchedNode;
+    if (nodeId) {
+      matchedNode = findDataById(nodeId, data);
 
-    if (!matchedNode) {
-      return [];
+      if (!matchedNode) {
+        return [];
+      }
     }
-  }
 
-  const dataShouldBeFind = matchedNode ? [matchedNode] : data;
+    const dataShouldBeFind = matchedNode ? [matchedNode] : data;
 
-  const returnVal: StudioDataNode[] = [];
+    const returnVal: StudioDataNode[] = [];
 
-  const categoryOptionKeys = categoryMap[categoryKey].options.map((option) => option.idx);
-  categoryOptionKeys.forEach((optionKey) => {
-    dataShouldBeFind.forEach((dataNode) => {
-      if (dataNode.idx === optionKey) {
-        returnVal.push(dataNode);
-      }
-      if (dataNode.children.length) {
-        dataNode.children.forEach((child) => {
-          returnVal.push(...findDataByOptionKey(optionKey, [child], child.id));
-        });
-      }
+    const categoryOptionKeys = categoryMap[categoryKey].options.map((option) => option.idx);
+    categoryOptionKeys?.forEach((optionKey) => {
+      dataShouldBeFind.forEach((dataNode) => {
+        if (dataNode.idx === optionKey) {
+          returnVal.push(dataNode);
+        }
+        if (dataNode.children.length) {
+          dataNode.children.forEach((child) => {
+            returnVal.push(...findDataByOptionKey(optionKey, [child], child.id));
+          });
+        }
+      });
     });
-  });
 
-  return returnVal;
+    return returnVal;
+  } catch (e) {
+    return [];
+  }
 };
 
 export const createNodeData = (
@@ -133,9 +145,10 @@ export const createNodeData = (
     x: 0,
     y: 0,
   },
+  categoryIdx?: string,
 ): StudioDataNode => {
   return {
-    id: id,
+    id,
     idx: option.idx,
     title: option.title || 'Untitled',
     children: [...children],
@@ -143,7 +156,24 @@ export const createNodeData = (
       ...data,
     },
     rect: {
-      position: position,
+      position,
     },
+    categoryIdx,
   } satisfies StudioDataNode;
+};
+
+export const getAllItemData = (data: StudioDataNode[]) => {
+  try {
+    const allData: FormDataMap[] = [];
+    data.forEach((item) => {
+      allData.push(item.data || {});
+      if (item.children.length) {
+        allData.push(...getAllItemData(item.children));
+      }
+    });
+
+    return allData;
+  } catch (e) {
+    return [];
+  }
 };

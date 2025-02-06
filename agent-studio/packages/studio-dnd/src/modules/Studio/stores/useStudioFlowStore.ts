@@ -31,7 +31,11 @@ type Store = {
   addEdge: (edge: Edge) => void;
   addEdges: (edges: Edge[]) => void;
 
+  removeEdge: (edgeId: string) => void;
   removeNode: (id: string) => void;
+  removeNodeAndAllBelong: (id: string) => void;
+
+  removeLinkedNode: (nodeId: string, linkedNodeId: string) => void;
 
   onNodesChange: OnNodesChange<StudioNode>;
   onEdgesChange: OnEdgesChange;
@@ -90,6 +94,29 @@ const useStudioFlowStore = create<Store>((set, get) => ({
 
   removeNode: (id: string) => {
     set((state) => {
+      // Filter out removed nodes
+      const updatedNodes = state.nodes.filter((node) => node.id !== id);
+
+      // Filter out edges connected to removed nodes
+      const updatedEdges = state.edges.filter((edge) => edge.source !== id && edge.target !== id);
+
+      // Clean up linked nodes references
+      const updatedLinkedNodes = Object.fromEntries(
+        Object.entries(state.linkedNodes)
+          .filter(([nodeId]) => nodeId !== id)
+          .map(([nodeId, linkedIds]) => [nodeId, linkedIds.filter((linkedId) => linkedId !== id)])
+          .filter(([, linkedIds]) => linkedIds.length > 0),
+      );
+
+      return {
+        nodes: updatedNodes,
+        edges: updatedEdges,
+        linkedNodes: updatedLinkedNodes,
+      };
+    });
+  },
+  removeNodeAndAllBelong: (id: string) => {
+    set((state) => {
       const nodesToRemove = new Set<string>();
 
       // Recursive function to collect all related nodes
@@ -133,6 +160,19 @@ const useStudioFlowStore = create<Store>((set, get) => ({
         edges: updatedEdges,
         linkedNodes: updatedLinkedNodes,
       };
+    });
+  },
+
+  removeEdge: (edgeId: string) => {
+    set({ edges: get().edges.filter((edge) => edge.id !== edgeId) });
+  },
+
+  removeLinkedNode: (nodeId: string, linkedNodeId: string) => {
+    set({
+      linkedNodes: {
+        ...get().linkedNodes,
+        [nodeId]: get().linkedNodes[nodeId].filter((id) => id !== linkedNodeId),
+      },
     });
   },
 

@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  closestCenter,
+  // closestCenter,
   DndContext,
   DragAbortEvent,
   DragCancelEvent,
@@ -8,19 +9,21 @@ import {
   DragOverEvent,
   DragPendingEvent,
   DragStartEvent,
+  MeasuringConfiguration,
   MouseSensor,
-  rectIntersection,
+  pointerWithin,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import { applyNodeChanges, XYPosition } from '@xyflow/react';
-import { PropsWithChildren, useCallback, useRef } from 'react';
+import { applyNodeChanges, useReactFlow, XYPosition } from '@xyflow/react';
+import { PropsWithChildren, useCallback, useMemo, useRef } from 'react';
 
 import { StudioCategoryType } from '@/modules/Studio/enums/category';
 import useDndAction from '@/modules/Studio/hooks/useDndAction';
 import useDndInteraction from '@/modules/Studio/hooks/useDndInteraction';
 import useStudioCategoryStore from '@/modules/Studio/stores/useStudioCategoryStore';
 import useStudioDataStore from '@/modules/Studio/stores/useStudioDataStore';
+import useStudioDndStore from '@/modules/Studio/stores/useStudioDndStore';
 import useStudioFlowStore from '@/modules/Studio/stores/useStudioFlowStore';
 import useStudioFormStore from '@/modules/Studio/stores/useStudioFormStore';
 import { StudioCategory, StudioCategoryMapValue, StudioCategoryOptionMapValue } from '@/modules/Studio/types/category';
@@ -28,6 +31,7 @@ import { DraggableData, StudioZone } from '@/modules/Studio/types/dnd';
 import { StudioNode } from '@/modules/Studio/types/graph';
 
 function DndFlow({ children }: PropsWithChildren) {
+  const { getZoom } = useReactFlow();
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 5 } }));
 
   const movingNodeRef = useRef<StudioNode>(null);
@@ -35,12 +39,14 @@ function DndFlow({ children }: PropsWithChildren) {
   const {
     addProduct,
     movePartOfPackage,
-    removeProduct,
+    removeProductAndAllBelong,
     removePartOfPackage,
     addToPackage,
     splitPackage,
     mergeProducts,
     getNewNodeInfo,
+    link,
+    unlinkAll,
     updateFieldValidate,
   } = useDndAction();
   const { updateNodes } = useDndInteraction();
@@ -50,10 +56,12 @@ function DndFlow({ children }: PropsWithChildren) {
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
-    console.log('[DndContainer] handleDragEnd', {
-      categoryMap: useStudioCategoryStore.getState().categoryMap,
-      categoryOptionMap: useStudioCategoryStore.getState().categoryOptionMap,
-    });
+    if ((window as any)?.studioLogger) {
+      console.log('[DndContainer] handleDragEnd', {
+        categoryMap: useStudioCategoryStore.getState().categoryMap,
+        categoryOptionMap: useStudioCategoryStore.getState().categoryOptionMap,
+      });
+    }
 
     const { active, over } = event;
 
@@ -92,41 +100,43 @@ function DndFlow({ children }: PropsWithChildren) {
 
     const parentOption = fromOption?.parent;
 
-    console.log('[DndContainer] handleDragEnd from to', {
-      from,
-      to,
-    });
+    if ((window as any)?.studioLogger) {
+      console.log('[DndContainer] handleDragEnd from to', {
+        from,
+        to,
+      });
 
-    console.log('[DndContainer] handleDragEnd option', {
-      fromOption,
-      toOption,
-    });
+      console.log('[DndContainer] handleDragEnd option', {
+        fromOption,
+        toOption,
+      });
 
-    console.log('[DndContainer] handleDragEnd data', {
-      fromData,
-      toData,
-    });
+      console.log('[DndContainer] handleDragEnd data', {
+        fromData,
+        toData,
+      });
 
-    console.log('[DndContainer] handleDragEnd category', {
-      fromCategory,
-      toCategory,
-    });
+      console.log('[DndContainer] handleDragEnd category', {
+        fromCategory,
+        toCategory,
+      });
 
-    console.log('[DndContainer] handleDragEnd root', {
-      rootCategory,
-      rootNode,
-      rootData,
-      parentOption,
-    });
+      console.log('[DndContainer] handleDragEnd root', {
+        rootCategory,
+        rootNode,
+        rootData,
+        parentOption,
+      });
 
-    console.log('[DndContainer] handleDragEnd node', {
-      fromNode,
-      toNode,
-    });
+      console.log('[DndContainer] handleDragEnd node', {
+        fromNode,
+        toNode,
+      });
+    }
 
     if (to === StudioZone.ZONE_DISTRIBUTION) {
       // Create
-      if (from === StudioZone.ZONE_SOURCE && fromOption?.type !== StudioCategoryType.LINK) {
+      if (from === StudioZone.ZONE_SOURCE) {
         const isValid =
           fromOption?.onDropInValidate?.({
             option: fromOption,
@@ -174,14 +184,8 @@ function DndFlow({ children }: PropsWithChildren) {
     }
 
     if (to === StudioZone.ZONE_PACKAGE && toNode) {
-      // Link
+      // Link directly
       if (from === StudioZone.ZONE_SOURCE && fromOption?.type === StudioCategoryType.LINK) {
-        console.log('[DndContainer] handleDragEnd link', {
-          fromOption,
-          toOption,
-          toNode,
-        });
-
         if (!toOption || !toNode) return;
 
         const isValid =
@@ -201,6 +205,31 @@ function DndFlow({ children }: PropsWithChildren) {
         // toNode become a root for now
         addProduct(toNode, fromData, fromOption);
         updateNodes([toNode]);
+
+        return;
+      }
+
+      // Link manually
+      if (from === StudioZone.ZONE_PRODUCT && fromOption?.type === StudioCategoryType.LINK) {
+        if (!toOption || !toNode) return;
+
+        const isValid =
+          fromOption.onLinkValidate?.({
+            option: fromOption,
+            parentOption,
+            formData: currentFormData,
+            allFormData,
+            data,
+            toNode,
+            toOption,
+            toCategory,
+          }) ?? true;
+
+        if (!isValid) return;
+
+        unlinkAll(fromNode);
+        link(fromNode, toNode);
+        updateNodes([fromNode, toNode]);
 
         return;
       }
@@ -242,7 +271,7 @@ function DndFlow({ children }: PropsWithChildren) {
       ) {
         if (!fromData.belongsTo || !fromNode || !toNode) return;
 
-        const isValid =
+        let isValid =
           fromOption.onMergeValidate?.({
             id: fromData.belongsTo,
             option: fromOption,
@@ -255,6 +284,43 @@ function DndFlow({ children }: PropsWithChildren) {
             toOption,
             toCategory,
           }) ?? true;
+
+        if (!isValid) return;
+
+        // check children in fromNode
+        const categoryOptionMap = useStudioCategoryStore.getState().categoryOptionMap;
+        const nodes = useStudioFlowStore.getState().nodes;
+        isValid = fromNode.data.metadata.children.every((item) => {
+          const optionIdx = item.data.metadata.idx;
+          const option = categoryOptionMap[optionIdx];
+          const fromItemNode = nodes.find(
+            (node) => node.id === item.id || node.data.metadata.children.find((child) => child.id === item.id),
+          );
+          const itemFormData = allFormData[item.id || ''];
+          const itemFromData = {
+            categoryKey: option.parent?.idx,
+            optionKey: option.idx,
+            belongsTo: item.id,
+            type: StudioZone.ZONE_PRODUCT,
+          } satisfies DraggableData;
+
+          if (!itemFromData.belongsTo || !fromItemNode || !toNode) return true;
+
+          return (
+            option?.onMergeValidate?.({
+              id: item.id,
+              option,
+              parentOption: option.parent,
+              formData: itemFormData,
+              allFormData,
+              data,
+              fromNode: fromItemNode,
+              toNode,
+              toOption,
+              toCategory,
+            }) ?? true
+          );
+        });
 
         if (!isValid) return;
 
@@ -309,7 +375,7 @@ function DndFlow({ children }: PropsWithChildren) {
 
         if (!isValid) return;
 
-        removeProduct(fromData?.belongsTo);
+        removeProductAndAllBelong(fromData?.belongsTo);
 
         return;
       }
@@ -348,50 +414,63 @@ function DndFlow({ children }: PropsWithChildren) {
     });
   }, []);
 
-  const handleDragMove = useCallback((event: DragMoveEvent) => {
-    const { active, delta } = event;
+  const handleDragMove = useCallback(
+    (event: DragMoveEvent) => {
+      const { active, delta } = event;
 
-    if (active) {
-      const id = active.id as string;
-      let movingNode = movingNodeRef.current;
+      if (active) {
+        const id = active.id as string;
+        let movingNode = movingNodeRef.current;
 
-      if (!movingNode) {
-        const nodes = useStudioFlowStore.getState().nodes;
-        const movingNodeIndex = nodes.findIndex((node) => node.id === id);
+        if (!movingNode) {
+          const nodes = useStudioFlowStore.getState().nodes;
+          const movingNodeIndex = nodes.findIndex((node) => node.id === id);
 
-        movingNode = movingNodeRef.current || nodes[movingNodeIndex];
+          movingNode = movingNodeRef.current || nodes[movingNodeIndex];
 
-        movingNodeRef.current = movingNode;
+          movingNodeRef.current = movingNode;
+        }
+
+        if (movingNode) {
+          movingNodeRef.current = movingNode;
+          const zoom = getZoom();
+          const transform = useStudioDndStore.getState().transform;
+
+          const x = transform?.x || 0;
+          const y = transform?.y || 0;
+
+          const normalizedX = ((1 - zoom) * x) / zoom;
+          const normalizedY = ((1 - zoom) * y) / zoom;
+
+          const newPosition: XYPosition = {
+            x: movingNode.position.x + delta.x + normalizedX,
+            y: movingNode.position.y + delta.y + normalizedY,
+          };
+
+          const updatedNode = applyNodeChanges(
+            [
+              {
+                id,
+                type: 'position',
+                position: newPosition,
+                positionAbsolute: newPosition,
+                dragging: true,
+              },
+            ],
+            [movingNode],
+          );
+
+          useStudioFlowStore.getState().updateNode(updatedNode[0]);
+        }
       }
-
-      if (movingNode) {
-        movingNodeRef.current = movingNode;
-
-        const newPosition: XYPosition = {
-          x: movingNode.position.x + delta.x,
-          y: movingNode.position.y + delta.y,
-        };
-
-        const updatedNode = applyNodeChanges(
-          [
-            {
-              id,
-              type: 'position',
-              position: newPosition,
-              positionAbsolute: newPosition,
-              dragging: true,
-            },
-          ],
-          [movingNode],
-        );
-
-        useStudioFlowStore.getState().updateNode(updatedNode[0]);
-      }
-    }
-  }, []);
+    },
+    [getZoom],
+  );
 
   const handleDragOver = useCallback((_event: DragOverEvent) => {
-    console.log('[DndContainer] handleDragOver', _event.over?.id);
+    if ((window as any)?.studioLogger) {
+      console.log('[DndContainer] handleDragOver', _event.over?.id);
+    }
   }, []);
 
   const handleDragCancel = useCallback((_event: DragCancelEvent) => {}, []);
@@ -400,10 +479,20 @@ function DndFlow({ children }: PropsWithChildren) {
 
   const handleDragPending = useCallback((_event: DragPendingEvent) => {}, []);
 
+  const measuring = useMemo((): MeasuringConfiguration => {
+    return {
+      draggable: {
+        measure: (node) => {
+          return node.getBoundingClientRect();
+        },
+      },
+    };
+  }, []);
+
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={rectIntersection}
+      collisionDetection={pointerWithin}
       onDragStart={handleDragStart}
       onDragMove={handleDragMove}
       onDragOver={handleDragOver}
@@ -411,6 +500,7 @@ function DndFlow({ children }: PropsWithChildren) {
       onDragCancel={handleDragCancel}
       onDragAbort={handleDragAbort}
       onDragPending={handleDragPending}
+      measuring={measuring}
     >
       {children}
     </DndContext>

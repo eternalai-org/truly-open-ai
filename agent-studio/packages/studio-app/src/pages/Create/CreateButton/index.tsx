@@ -19,7 +19,7 @@ import {
   TokenSetupMode,
   TwitterAgentSnapshotMission,
   IAgent,
-} from "@eternal-ai/core";
+} from "@eternalai-dagent/core";
 import { BaseXFormData } from "../../../categories/x/renders/onflow/custom-base/types";
 import { getSecondsFromHour } from "../../../utils/time";
 import {
@@ -40,194 +40,194 @@ import agentDatabase from "../../../services/agent-database";
 import { NEW_AGENT_ID } from "../../../constants/agent";
 
 function CreateButton() {
-  let navigate = useNavigate();
-  const {
-    data,
-    isDisabled,
-    setIsDisabled,
-    isLoading,
-    setIsLoading,
-    setAgentDetail,
-  } = useStudioAgentStore();
+  // let navigate = useNavigate();
+  // const {
+  //   data,
+  //   isDisabled,
+  //   setIsDisabled,
+  //   isLoading,
+  //   setIsLoading,
+  //   setAgentDetail,
+  // } = useStudioAgentStore();
 
-  useEffect(() => {
-    const runDateValidate = () => {
-      try {
-        let updatedDisabled = true;
-        if (data.length) {
-          // find tree has agent_new
-          const treeWithNewAgent = data.find((item) =>
-            findDataByOptionKey(
-              CATEGORY_OPTION_KEYS.agent.agent_new,
-              data,
-              item.id
-            )
-          );
+  // useEffect(() => {
+  //   const runDateValidate = () => {
+  //     try {
+  //       let updatedDisabled = true;
+  //       if (data.length) {
+  //         // find tree has agent_new
+  //         const treeWithNewAgent = data.find((item) =>
+  //           findDataByOptionKey(
+  //             CATEGORY_OPTION_KEYS.agent.agent_new,
+  //             data,
+  //             item.id
+  //           )
+  //         );
 
-          if (
-            treeWithNewAgent &&
-            (treeWithNewAgent?.data?.agentName as string)?.trim()
-          ) {
-            // check agent has any personality
-            const personalities = findDataByCategoryKey(
-              CATEGORY_KEYS.personalities,
-              [treeWithNewAgent],
-              treeWithNewAgent.id
-            );
+  //         if (
+  //           treeWithNewAgent &&
+  //           (treeWithNewAgent?.data?.agentName as string)?.trim()
+  //         ) {
+  //           // check agent has any personality
+  //           const personalities = findDataByCategoryKey(
+  //             CATEGORY_KEYS.personalities,
+  //             [treeWithNewAgent],
+  //             treeWithNewAgent.id
+  //           );
 
-            if (personalities.length) {
-              // create personality
-              const firstPersonality = personalities[0];
-              if ((firstPersonality?.data?.personality as string)?.trim()) {
-                updatedDisabled = false;
-              }
-            }
-          }
-        }
-        setIsDisabled(updatedDisabled);
-      } catch (error) {
-        setIsDisabled(true);
-      }
-    };
+  //           if (personalities.length) {
+  //             // create personality
+  //             const firstPersonality = personalities[0];
+  //             if ((firstPersonality?.data?.personality as string)?.trim()) {
+  //               updatedDisabled = false;
+  //             }
+  //           }
+  //         }
+  //       }
+  //       setIsDisabled(updatedDisabled);
+  //     } catch (error) {
+  //       setIsDisabled(true);
+  //     }
+  //   };
 
-    runDateValidate();
-  }, [data]);
+  //   runDateValidate();
+  // }, [data]);
 
-  const getMissionOnX = (nodeData: StudioDataNode) => {
-    const missions = findDataByCategoryKey(
-      CATEGORY_KEYS.missionOnX,
-      [nodeData],
-      nodeData.id
-    );
-    return missions.map(
-      (item) =>
-        ({
-          user_prompt: (item.data as BaseXFormData).details,
-          interval: getSecondsFromHour(
-            Number((item.data as BaseXFormData).frequency)
-          ),
-          tool_set: MISSION_X_MAPPING[item.idx] as ETwitterMissionToolSet,
-          agent_type: MissionTypeEnum.CHAT,
-        }) as TwitterAgentSnapshotMission
-    );
-  };
+  // const getMissionOnX = (nodeData: StudioDataNode) => {
+  //   const missions = findDataByCategoryKey(
+  //     CATEGORY_KEYS.missionOnX,
+  //     [nodeData],
+  //     nodeData.id
+  //   );
+  //   return missions.map(
+  //     (item) =>
+  //       ({
+  //         user_prompt: (item.data as BaseXFormData).details,
+  //         interval: getSecondsFromHour(
+  //           Number((item.data as BaseXFormData).frequency)
+  //         ),
+  //         tool_set: MISSION_X_MAPPING[item.idx] as ETwitterMissionToolSet,
+  //         agent_type: MissionTypeEnum.CHAT,
+  //       } as TwitterAgentSnapshotMission)
+  //   );
+  // };
 
-  const getMissionOnFarcaster = (nodeData: StudioDataNode) => {
-    const missions = findDataByCategoryKey(
-      CATEGORY_KEYS.missionOnFarcaster,
-      [nodeData],
-      nodeData.id
-    );
+  // const getMissionOnFarcaster = (nodeData: StudioDataNode) => {
+  //   const missions = findDataByCategoryKey(
+  //     CATEGORY_KEYS.missionOnFarcaster,
+  //     [nodeData],
+  //     nodeData.id
+  //   );
 
-    return missions.map(
-      (item) =>
-        ({
-          user_prompt: (item.data as BaseFarcasterFormData).details,
-          interval: getSecondsFromHour(
-            Number((item.data as BaseFarcasterFormData).frequency)
-          ),
-          tool_set: MISSION_FARCASTER_MAPPING[
-            item.idx
-          ] as EFarcasterMissionToolSet,
-          agent_type: MissionTypeEnum.CHAT,
-        }) as FarcasterAgentSnapshotMission
-    );
-  };
+  //   return missions.map(
+  //     (item) =>
+  //       ({
+  //         user_prompt: (item.data as BaseFarcasterFormData).details,
+  //         interval: getSecondsFromHour(
+  //           Number((item.data as BaseFarcasterFormData).frequency)
+  //         ),
+  //         tool_set: MISSION_FARCASTER_MAPPING[
+  //           item.idx
+  //         ] as EFarcasterMissionToolSet,
+  //         agent_type: MissionTypeEnum.CHAT,
+  //       } as FarcasterAgentSnapshotMission)
+  //   );
+  // };
 
-  const handleOnClick = async () => {
-    if (isDisabled) {
-      return;
-    }
+  // const handleOnClick = async () => {
+  //   if (isDisabled) {
+  //     return;
+  //   }
 
-    if (isLoading) return;
-    try {
-      setIsLoading(true);
-      const treeWithNewAgent = data.find((item) =>
-        findDataByOptionKey(CATEGORY_OPTION_KEYS.agent.agent_new, data, item.id)
-      );
-      if (!treeWithNewAgent?.data?.agentName) {
-        return;
-      }
-      const agentName = treeWithNewAgent.data.agentName as string;
-      const personalities = findDataByCategoryKey(
-        CATEGORY_KEYS.personalities,
-        [treeWithNewAgent],
-        treeWithNewAgent.id
-      );
+  //   if (isLoading) return;
+  //   try {
+  //     setIsLoading(true);
+  //     const treeWithNewAgent = data.find((item) =>
+  //       findDataByOptionKey(CATEGORY_OPTION_KEYS.agent.agent_new, data, item.id)
+  //     );
+  //     if (!treeWithNewAgent?.data?.agentName) {
+  //       return;
+  //     }
+  //     const agentName = treeWithNewAgent.data.agentName as string;
+  //     const personalities = findDataByCategoryKey(
+  //       CATEGORY_KEYS.personalities,
+  //       [treeWithNewAgent],
+  //       treeWithNewAgent.id
+  //     );
 
-      if (!personalities?.[0].data?.personality) {
-        return;
-      }
+  //     if (!personalities?.[0].data?.personality) {
+  //       return;
+  //     }
 
-      let systemPrompt = (personalities?.[0].data?.personality as string) || "";
+  //     let systemPrompt = (personalities?.[0].data?.personality as string) || "";
 
-      const tokens = findDataByCategoryKey(
-        CATEGORY_KEYS.tokens,
-        [treeWithNewAgent],
-        treeWithNewAgent.id
-      );
+  //     const tokens = findDataByCategoryKey(
+  //       CATEGORY_KEYS.tokens,
+  //       [treeWithNewAgent],
+  //       treeWithNewAgent.id
+  //     );
 
-      const tokenId = tokens?.[0]?.data?.tokenId as AgentTokenChainId;
+  //     const tokenId = tokens?.[0]?.data?.tokenId as AgentTokenChainId;
 
-      const blockchains = findDataByCategoryKey(
-        CATEGORY_KEYS.blockchains,
-        [treeWithNewAgent],
-        treeWithNewAgent.id
-      );
+  //     const blockchains = findDataByCategoryKey(
+  //       CATEGORY_KEYS.blockchains,
+  //       [treeWithNewAgent],
+  //       treeWithNewAgent.id
+  //     );
 
-      const chainId = blockchains?.[0]?.data?.chainId as AgentChainId;
+  //     const chainId = blockchains?.[0]?.data?.chainId as AgentChainId;
 
-      const dagentCharacter: IAgentCharacter = {
-        character: {
-          chain_id: chainId,
-          agent_name: agentName,
-          system_content: systemPrompt,
-          bio: [],
-          lore: [],
-          knowledge: [],
-          postExamples: [],
-          topics: [],
-        },
-        deployToken: {
-          agent_id: "",
-          ticker: "",
-          create_token_mode: TokenSetupMode.CREATE_TOKEN,
-          chain_id: chainId,
-          token_chain_id: tokenId,
-        },
-        twitterMissions: getMissionOnX(treeWithNewAgent),
-        farcasterMissions: getMissionOnFarcaster(treeWithNewAgent),
-      };
+  //     const dagentCharacter: IAgentCharacter = {
+  //       character: {
+  //         chain_id: chainId,
+  //         agent_name: agentName,
+  //         system_content: systemPrompt,
+  //         bio: [],
+  //         lore: [],
+  //         knowledge: [],
+  //         postExamples: [],
+  //         topics: [],
+  //       },
+  //       deployToken: {
+  //         agent_id: "",
+  //         ticker: "",
+  //         create_token_mode: TokenSetupMode.CREATE_TOKEN,
+  //         chain_id: chainId,
+  //         token_chain_id: tokenId,
+  //       },
+  //       twitterMissions: getMissionOnX(treeWithNewAgent),
+  //       farcasterMissions: getMissionOnFarcaster(treeWithNewAgent),
+  //     };
 
-      const baseAgent = await getAgentInstance({ dagentCharacter });
-      const res: IAgent = (await baseAgent.createAgent()) as IAgent;
+  //     const baseAgent = await getAgentInstance({ dagentCharacter });
+  //     const res: IAgent = (await baseAgent.createAgent()) as IAgent;
 
-      if (res) {
-        agentDatabase.deleteItem(NEW_AGENT_ID);
-        agentDatabase.upsertItem({
-          id: res.id,
-          data: JSON.stringify([treeWithNewAgent]),
-        });
-        agentDatabase.deleteItem(NEW_AGENT_ID);
-        useStudioAgentStore.getState().setAgentDetail(res);
-        // await baseAgent.deployToken(res.id);
-        navigate(`/${res?.id}`);
-      }
-      toast.success("Agent created successfully");
-    } catch (error) {
-      toast.error("Failed to create agent");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (res) {
+  //       agentDatabase.deleteItem(NEW_AGENT_ID);
+  //       agentDatabase.upsertItem({
+  //         id: res.id,
+  //         data: JSON.stringify([treeWithNewAgent]),
+  //       });
+  //       agentDatabase.deleteItem(NEW_AGENT_ID);
+  //       useStudioAgentStore.getState().setAgentDetail(res);
+  //       // await baseAgent.deployToken(res.id);
+  //       navigate(`/${res?.id}`);
+  //     }
+  //     toast.success("Agent created successfully");
+  //   } catch (error) {
+  //     toast.error("Failed to create agent");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <Box position={"absolute"} top={4} right={4} zIndex={1}>
       <Button
         colorScheme="blue"
-        disabled={isDisabled}
-        onClick={handleOnClick}
-        isLoading={isLoading}
+        // disabled={isDisabled}
+        // onClick={handleOnClick}
+        // isLoading={isLoading}
       >
         Create
       </Button>

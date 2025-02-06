@@ -14,9 +14,10 @@ type Props = {
   items: StudioNode[];
   index: number;
   belongsTo: string;
+  isHidden?: boolean;
 };
 
-const NodeBaseChild = ({ data, items, index, belongsTo }: Props) => {
+const NodeBaseChild = ({ data, items, index, belongsTo, isHidden }: Props) => {
   const categoryOptionMap = useStudioCategoryStore((state) => state.categoryOptionMap);
 
   const idx = data.data.metadata.idx;
@@ -33,6 +34,7 @@ const NodeBaseChild = ({ data, items, index, belongsTo }: Props) => {
     <ProductAddon
       id={data.id}
       data={productData}
+      isHidden={isHidden}
       draggingFloating={
         <div>
           {floatingItems.map((item) => (

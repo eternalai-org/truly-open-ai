@@ -1,7 +1,7 @@
 import {
   EFarcasterMissionToolSet,
   ETwitterMissionToolSet,
-} from "@eternal-ai/core";
+} from "@eternalai-dagent/core";
 import { CATEGORY_OPTION_KEYS } from "./category-option-keys";
 
 export type MissionXSupport =

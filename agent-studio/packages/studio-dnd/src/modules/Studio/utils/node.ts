@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { XYPosition } from '@xyflow/react';
 
 import { createNewBaseEdge, generateSourceHandleId } from './edge';
@@ -68,7 +69,7 @@ export const transformDataToNodes = (data: StudioDataNode[]) => {
       const childrenNode: StudioNode[] = [];
       if (item.children.length) {
         // for directly children
-        const directlyChildren = item.children.filter((child) => categoryOptionMap[child.idx].type === StudioCategoryType.INLINE);
+        const directlyChildren = item.children.filter((child) => (categoryOptionMap[child.idx].type as any) === StudioCategoryType.INLINE);
 
         childrenNode.push(...transformDataToNodes(directlyChildren));
       }
@@ -79,7 +80,10 @@ export const transformDataToNodes = (data: StudioDataNode[]) => {
       } satisfies StudioNodeMetadata;
 
       const node = createNewNodeBase(item.id, position, metadata);
-      nodes.push(node);
+      nodes.push({
+        ...node,
+        zIndex: categoryOptionMap?.[item.idx]?.zIndex || 0,
+      });
 
       if (item.children.length) {
         // for linked children
@@ -113,7 +117,7 @@ export const findAncestorNodeIdOfNodeId = (graph: StudioDataNode[], nodeId: stri
 };
 
 export const updateNodeFormData = (nodeId: string, formData: FormDataMap) => {
-  if (!!nodeId) {
+  if (nodeId) {
     useStudioFormStore.getState().editForm(nodeId, formData);
   }
 };
