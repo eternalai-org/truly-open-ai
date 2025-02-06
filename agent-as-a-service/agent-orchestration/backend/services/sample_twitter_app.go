@@ -116,13 +116,25 @@ func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCod
 		return "", errs.NewError(errs.ErrBadRequest)
 	}()
 	if err != nil {
-		return s.conf.SampleTwitterApp.ReturnUri + "?" + "install_code=" + installCode + "&error=" + err.Error(), nil
+		return helpers.BuildUri(
+			s.conf.SampleTwitterApp.ReturnUri,
+			map[string]string{
+				"install_code": installCode,
+				"error":        err.Error(),
+			},
+		), nil
 	}
 	params := map[string]string{
 		"api_key": apiKey,
 	}
 	returnData := base64.StdEncoding.EncodeToString([]byte(helpers.ConvertJsonString(params)))
-	return s.conf.SampleTwitterApp.ReturnUri + "?" + "install_code=" + installCode + "&return_data=" + returnData, nil
+	return helpers.BuildUri(
+		s.conf.SampleTwitterApp.ReturnUri,
+		map[string]string{
+			"install_code": installCode,
+			"return_data":  returnData,
+		},
+	), nil
 }
 
 func (s *Service) SampleTwitterAppGetBTCPrice(ctx context.Context) string {
