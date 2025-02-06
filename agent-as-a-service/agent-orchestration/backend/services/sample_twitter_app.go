@@ -136,12 +136,12 @@ func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey strin
 	if sampleTwitterApp == nil {
 		return errs.NewError(errs.ErrBadRequest)
 	}
-	me, err := helpers.GetTwitterUserMe(sampleTwitterApp.TwitterInfo.AccessToken)
+	userMe, err := helpers.GetTwitterUserMe(sampleTwitterApp.TwitterInfo.AccessToken)
 	if err != nil {
 		return errs.NewError(err)
 	}
 	maxChars := 280
-	if me.Data.Verified {
+	if userMe.Data.Verified {
 		maxChars = 4000
 	}
 	contentLines := helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(content, maxChars)
