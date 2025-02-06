@@ -25,6 +25,7 @@ func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode
 	return helpers.BuildUri(
 		"https://twitter.com/i/oauth2/authorize",
 		map[string]string{
+			"client_id":             s.conf.SampleTwitterApp.OauthClientId,
 			"state":                 "state",
 			"response_type":         "code",
 			"code_challenge":        "challenge",
