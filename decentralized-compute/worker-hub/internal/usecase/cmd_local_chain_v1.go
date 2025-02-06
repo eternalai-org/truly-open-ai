@@ -438,7 +438,9 @@ func (c *CMD_Local_ChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.
 		Messages: prompt,
 	}
 	_b, err := json.Marshal(request)
-
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	tx, err := p.Infer(auth, _b, true)
 	if err != nil {
 		fmt.Println("wkHubAddress:", cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1])
@@ -448,7 +450,7 @@ func (c *CMD_Local_ChainV1) CreateInfer(prompt []model.LLMInferMessage) (*types.
 
 	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
 	if err != nil {
-		return nil, nil, nil, errors.Join(err, errors.New("Error while waiting for tx"))
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
 	}
 
 	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
@@ -519,9 +521,9 @@ break_here:
 		index += 1
 	}
 
-	if chatCompletion == nil {
-		return tx, &inferId, nil, errors.New("error while parse response")
-	}
+	// if chatCompletion == nil {
+	// 	return tx, &inferId, nil, errors.New("error while parse response")
+	// }
 
 	if len(chatCompletion.Choices) == 0 {
 		return tx, &inferId, nil, errors.New("error get data")

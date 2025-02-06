@@ -501,7 +501,7 @@ func (c *CMD_Local_Chain_V2) MintCollection(rpc, prvkey string, modelName string
 		return nil, nil, err
 	}
 
-	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
+	_, err = eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
 		fmt.Print(pkg.PrintText("MintCollection with err: ", err))
 		return nil, nil, err
@@ -531,7 +531,7 @@ func (c *CMD_Local_Chain_V2) MintCollection(rpc, prvkey string, modelName string
 		return nil, nil, err
 	}
 
-	auth, err = eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
+	auth, err := eth.CreateBindTransactionOpts(ctx, client, prvkey, 0)
 	if err != nil {
 		fmt.Print(pkg.PrintText("MintCollection with err: ", err))
 		return nil, nil, err
@@ -643,7 +643,6 @@ func (c *CMD_Local_Chain_V2) CreateMinerAddress(rpc, chainID, prvkey string) (*s
 	cnf.ChainID = chainID
 	cnf.PrivateKey = prvkey
 	pkg.CreateFile(fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir()), _b)
-
 	return &minerAddress, &minerPrivateKey, nil
 }
 
@@ -802,7 +801,6 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 		out := string(infer.Output)
 
 		if out != "" {
-
 			response := &model.Response{}
 			err := json.Unmarshal([]byte(out), response)
 			if err != nil {
@@ -823,9 +821,9 @@ func (c *CMD_Local_Chain_V2) CreateInfer(prompt []model.LLMInferMessage) (*types
 		index += 1
 	}
 
-	if chatCompletion == nil {
-		return tx, &inferId, nil, errors.New("error while parse response")
-	}
+	// if chatCompletion == nil {
+	// 	return tx, &inferId, nil, errors.New("error while parse response")
+	// }
 
 	if len(chatCompletion.Choices) == 0 {
 		return tx, &inferId, nil, errors.New("error get data")
@@ -1020,8 +1018,11 @@ func (c *CMD_Local_Chain_V2) OllamaHealthCheck() ([]byte, bool) {
 }
 
 func (c *CMD_Local_Chain_V2) PingOllam() model.LLMInferResponse {
-	isReady := false
-	_resp := []byte{}
+	var (
+		isReady bool
+		_resp   []byte
+	)
+
 	ping := 1
 	for {
 
@@ -1090,11 +1091,13 @@ func (c *CMD_Local_Chain_V2) RpcHealthCheck() ([]byte, bool) {
 }
 
 func (c *CMD_Local_Chain_V2) PingRpc() interface{} {
-	isReady := false
-	_resp := []byte{}
+	var (
+		isReady bool
+		_resp   []byte
+	)
+
 	ping := 1
 	for {
-
 		if ping >= 1000 {
 			return nil
 		}

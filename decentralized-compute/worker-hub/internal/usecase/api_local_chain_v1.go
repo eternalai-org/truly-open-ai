@@ -198,9 +198,9 @@ break_here:
 		index += 1
 	}
 
-	if chatCompletion == nil {
-		return tx, &inferId, nil, errors.New("error while parse response")
-	}
+	// if chatCompletion == nil {
+	// 	return tx, &inferId, nil, errors.New("error while parse response")
+	// }
 
 	if len(chatCompletion.Choices) == 0 {
 		return tx, &inferId, nil, errors.New("error get data")
