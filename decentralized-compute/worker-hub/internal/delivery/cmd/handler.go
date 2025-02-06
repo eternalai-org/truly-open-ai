@@ -655,74 +655,55 @@ func (c *CMD) _startAPILogic() error {
 
 func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	cnf := c.localChainCMD.ReadLocalChainCnf()
-
-	var err error
 	input[pkg.PLATFORM] = c.getArch()
 
 	privKey, ok := input[pkg.COMMAND_LOCAL_PRIV_KEY]
 	if !ok {
 		privKey = "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-		// err = errors.New("deployed contracts error: private key is required")
-		// return err
 	}
 
 	rpc, ok := input[pkg.COMMAND_LOCAL_CHAIN_RPC]
 	if !ok {
-		// err = errors.New("deployed contracts error: rpc is required")
-		// return err
 		rpc = "http://localhost:8545"
 	}
 
 	chainID, ok := input[pkg.COMMAND_LOCAL_CHAIN_ID]
 	if !ok {
-		// err = errors.New("deployed contracts error: chainID is required")
-		// return err
 		chainID = "31337"
 	}
 
-	gasPrice, ok := input[pkg.COMMAND_LOCAL_GAS_PRICE]
-	if ok {
-		gasPriceBigInt, ok1 := big.NewInt(1).SetString(gasPrice, 10)
-		if ok1 {
+	c.localChainCMD.SetGasPrice(big.NewInt(int64(pkg.LOCAL_CHAIN_GAS_PRICE)))
+	if gasPrice, ok := input[pkg.COMMAND_LOCAL_GAS_PRICE]; ok {
+		if gasPriceBigInt, ok := big.NewInt(1).SetString(gasPrice, 10); ok {
 			c.localChainCMD.SetGasPrice(gasPriceBigInt)
 		}
-	} else {
-		c.localChainCMD.SetGasPrice(big.NewInt(int64(pkg.LOCAL_CHAIN_GAS_PRICE)))
 	}
 
-	gasLimit, ok := input[pkg.COMMAND_LOCAL_GAS_LIMIT]
-	if ok {
-		gasLimitUint64, err1 := strconv.Atoi(gasLimit)
-		if err1 == nil {
+	c.localChainCMD.SetGasLimit(uint64(pkg.LOCAL_CHAIN_GAS_LIMIT))
+	if gasLimit, ok := input[pkg.COMMAND_LOCAL_GAS_LIMIT]; ok {
+		if gasLimitUint64, err := strconv.Atoi(gasLimit); err == nil {
 			c.localChainCMD.SetGasLimit(uint64(gasLimitUint64))
 		}
-	} else {
-		c.localChainCMD.SetGasLimit(uint64(pkg.LOCAL_CHAIN_GAS_LIMIT))
 	}
 
 	modelName, ok := input[pkg.COMMAND_LOCAL_MODEL_NAME]
 	if !ok {
 		modelName = "DeepSeek-R1-Distill-Qwen-1.5B-Q8"
-		// err = errors.New("deployed contracts error: modelName is required")
-		// return err
 	}
 
 	runPod, ok := input[pkg.COMMAND_LOCAL_RUN_POD_URL]
 	if !ok {
 		runPod = "1"
-		// return err
 	}
 
 	runPodAPIKey, ok := input[pkg.COMMAND_LOCAL_RUN_POD_API_KEY]
 	if !ok {
 		runPodAPIKey = "1"
-		// return err
 	}
 
 	platform, ok := input[pkg.PLATFORM]
 	if !ok {
-		err = errors.New("deployed contracts error: platform is required")
-		return err
+		return errors.New("deployed contracts error: platform is required")
 	}
 
 	cnf.Platform = platform
@@ -754,21 +735,13 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	}
 
 	envFile := fmt.Sprintf(pkg.LOCAL_CHAIN_INFO, pkg.CurrentDir())
-	err = pkg.CreateFile(envFile, _b)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return pkg.CreateFile(envFile, _b)
 }
 
 func (c *CMD) getArch() string {
-	arch := runtime.GOARCH
-
-	switch arch {
+	switch runtime.GOARCH {
 	case "amd64", "386":
 		return pkg.PLATFROM_INTEL
-
 	case "arm", "arm64":
 		return pkg.PLATFROM_APPLE_SILLICON
 	}

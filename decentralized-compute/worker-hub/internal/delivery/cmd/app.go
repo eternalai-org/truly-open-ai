@@ -182,9 +182,6 @@ func (c *CMD) loadWatcher() {
 	}
 
 	taskWatcher, err := factory.NewMiner(c.cnf)
-	//if err != nil {
-	//logger.AtLog.Fatal(err)
-	//}
 	if err == nil && taskWatcher != nil {
 		c.taskWatcher = taskWatcher
 	}
