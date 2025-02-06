@@ -392,10 +392,6 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 							Content: strings.TrimSpace(mission.UserPrompt),
 						},
 					}
-					inferData, err := json.Marshal(inferItems)
-					if err != nil {
-						return errs.NewError(err)
-					}
 					agentChainFee, err := s.GetAgentChainFee(
 						tx,
 						agentInfo.NetworkID,
@@ -416,7 +412,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 								"agent_info_id = ?":  {mission.AgentInfoID},
 							},
 							map[string][]interface{}{},
-							true,
+							false,
 						)
 						if err != nil {
 							return errs.NewError(err)
@@ -437,6 +433,10 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						if err != nil {
 							return errs.NewError(err)
 						}
+					}
+					inferData, err := json.Marshal(inferItems)
+					if err != nil {
+						return errs.NewError(err)
 					}
 					inferPost := &models.AgentSnapshotPost{
 						NetworkID:              agentInfo.NetworkID,
@@ -467,6 +467,9 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						inferPost.AgentBaseModel = agentInfo.AgentBaseModel
 					}
 					if inferPost.Fee.Float.Cmp(big.NewFloat(0)) <= 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if agentInfo.EaiBalance.Float.Cmp(&inferPost.Fee.Float) < 0 {
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					err = tx.Model(agentInfo).
