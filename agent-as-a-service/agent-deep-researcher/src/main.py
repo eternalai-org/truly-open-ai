@@ -14,18 +14,19 @@ api = Api(app)
   
 class Hello(Resource): 
     def get(self): 
-        return jsonify({'message': 'hello world'}) 
+        return jsonify({'result': 'hello world'}) 
   
 class DeepResearch(Resource): 
-    def get(self): 
-        query = request.args.get('query')
-        run_id = request.args.get('id')
+    def post(self): 
+        req_data = request.get_json()
+        query = req_data.get('query')
+        req_id = req_data.get('req_id')
         try:
-            p = Process(target=run_deep_research, args=(run_id, query, 1))
+            p = Process(target=run_deep_research, args=(req_id, query, 1))
             p.start()
-            return jsonify({'message': 'ok'}) 
+            return jsonify({'result': 'ok'}) 
         except Exception as ex:
-            return jsonify({'message': 'failed'})
+            return jsonify({'result': 'failed'})
          
         
 api.add_resource(Hello, '/') 

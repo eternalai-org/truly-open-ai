@@ -137,6 +137,9 @@ type Config struct {
 	BlockchainUtils struct {
 		Url string `json:"url"`
 	} `json:"blockchain_util"`
+	DeepResearch struct {
+		Url string `json:"url"`
+	} `json:"deep_research"`
 	Btc struct {
 		Network  string `json:"network"`
 		BcyToken string `json:"bcy_token"`
