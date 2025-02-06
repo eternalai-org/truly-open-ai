@@ -299,7 +299,7 @@ func (c *CMD_Local_ChainV1) CreateConfigENV(minerAddress string, index int) erro
 	env += fmt.Sprintf("CLUSTER_ID=%v\n", cnf.ModelID)
 	env += fmt.Sprintf("MODEL_ID=%v\n", cnf.ModelID)
 	env += fmt.Sprintf("CHAIN_ID=%v\n", cnf.ChainID)
-	env += fmt.Sprintf("CHAIN_RPC=%v\n", fmt.Sprintf(`http://%s:8545`, pkg.MINER_SERVICE_HARDHAT))
+	env += fmt.Sprintf("CHAIN_RPC=%v\n", fmt.Sprintf(`http://%s:8545`, "localhost"))
 	env += fmt.Sprintf("ACCOUNT_PRIV=%v\n", cnf.Miners[strings.ToLower(minerAddress)].PrivateKey)
 	env += fmt.Sprintf("MODEL_NAME=%v\n", cnf.ModelName)
 	env += fmt.Sprintf("STAKING_HUB_ADDRESS=%v\n", cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_GPU_MANAGER_V1])

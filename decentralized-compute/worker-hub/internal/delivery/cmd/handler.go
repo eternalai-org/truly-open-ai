@@ -737,7 +737,9 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 		cnf.RunPodExternal = runPod
 		cnf.UseExternalRunPod = true
 	} else if runPod == "1" {
-		cnf.RunPodInternal = "http://host.docker.internal:11434/v1/chat/completions"
+		//cnf.RunPodInternal = "http://host.docker.internal:11434/v1/chat/completions"
+		//we are using docker network_mode=host
+		cnf.RunPodInternal = "http://localhost:11434/v1/chat/completions"
 		cnf.RunPodExternal = "http://localhost:11434/v1/chat/completions"
 		cnf.UseExternalRunPod = true
 	} else {
