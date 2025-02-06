@@ -30,6 +30,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/coingecko"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/coinmarketcap"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/core"
+	deepresearch "github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/deep_research"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/dexscreener"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/ethapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/googlestorage"
@@ -62,6 +63,7 @@ type Service struct {
 	trxApi          *trxapi.Client
 	rapid           *rapid.Rapid
 	blockchainUtils *blockchainutils.Client
+	deepResearch    *deepresearch.Client
 	btcAPI          *btcapi.Client
 	pumfunAPI       *pumfun.Client
 	cmc             *coinmarketcap.CoinMarketCap
@@ -112,6 +114,9 @@ func NewService(conf *configs.Config) *Service {
 		rapid: rapid.NewRapid(conf.RapidApiKey),
 		blockchainUtils: &blockchainutils.Client{
 			BaseURL: conf.BlockchainUtils.Url,
+		},
+		deepResearch: &deepresearch.Client{
+			BaseURL: conf.DeepResearch.Url,
 		},
 		btcAPI: &btcapi.Client{
 			Chain:             "btc",
