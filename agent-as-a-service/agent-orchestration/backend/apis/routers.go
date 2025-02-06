@@ -274,7 +274,7 @@ func (s *Server) Routers() {
 
 		agentStoreAPI := rootAPI.Group("/agent-store")
 		{
-			agentStoreAPI.POST("/save", s.SaveAgentStore)
+			agentStoreAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.SaveAgentStore)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
 			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
 			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)

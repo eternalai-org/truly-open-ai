@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -12,8 +13,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStoreReq) (*models.AgentStore, error) {
-
+func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *serializers.AgentStoreReq) (*models.AgentStore, error) {
 	var agentStore *models.AgentStore
 	var err error
 	err = daos.WithTransaction(
@@ -27,6 +27,9 @@ func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStor
 				if agentStore == nil {
 					return errs.NewError(errs.ErrBadRequest)
 				}
+				if !strings.EqualFold(agentStore.OwnerAddress, userAddress) {
+					return errs.NewError(errs.ErrBadRequest)
+				}
 				//update name vs description only
 				agentStore.Name = req.Name
 				agentStore.Description = req.Description
@@ -34,10 +37,11 @@ func (s *Service) SaveAgentStore(ctx context.Context, req *serializers.AgentStor
 				agentStore.Icon = req.Icon
 			} else {
 				agentStore = &models.AgentStore{
-					Name:        req.Name,
-					Description: req.Description,
-					AuthenUrl:   req.AuthenUrl,
-					Icon:        req.Icon,
+					OwnerAddress: userAddress,
+					Name:         req.Name,
+					Description:  req.Description,
+					AuthenUrl:    req.AuthenUrl,
+					Icon:         req.Icon,
 				}
 			}
 			if err != nil {
