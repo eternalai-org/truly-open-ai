@@ -116,9 +116,9 @@ func (s *Service) SampleTwitterAppGetBTCPrice(ctx context.Context) string {
 	return numeric.BigFloat2Text(btcPrice)
 }
 
-func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey string, content string) error {
+func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey string, content string) (string, error) {
 	if apiKey == "" || content == "" {
-		return errs.NewError(errs.ErrBadRequest)
+		return "", errs.NewError(errs.ErrBadRequest)
 	}
 	sampleTwitterApp, err := s.dao.FirstSampleTwitterApp(
 		daos.GetDBMainCtx(ctx),
@@ -131,14 +131,14 @@ func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey strin
 		[]string{},
 	)
 	if err != nil {
-		return errs.NewError(err)
+		return "", errs.NewError(err)
 	}
 	if sampleTwitterApp == nil {
-		return errs.NewError(errs.ErrBadRequest)
+		return "", errs.NewError(errs.ErrBadRequest)
 	}
 	userMe, err := helpers.GetTwitterUserMe(sampleTwitterApp.TwitterInfo.AccessToken)
 	if err != nil {
-		return errs.NewError(err)
+		return "", errs.NewError(err)
 	}
 	maxChars := 280
 	if userMe.Data.Verified {
@@ -146,11 +146,11 @@ func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey strin
 	}
 	contentLines := helpers.SplitTextBySentenceAndCharLimitAndRemoveTrailingHashTag(content, maxChars)
 	if len(contentLines) <= 0 {
-		return errs.NewError(errs.ErrBadRequest)
+		return "", errs.NewError(errs.ErrBadRequest)
 	}
 	refId, err := helpers.PostTweetByToken(sampleTwitterApp.TwitterInfo.AccessToken, contentLines[0], "")
 	if err != nil {
-		return errs.NewError(err)
+		return "", errs.NewError(err)
 	}
 	for i := 1; i < len(contentLines); i++ {
 		refIdTmp, _ := helpers.ReplyTweetByToken(sampleTwitterApp.TwitterInfo.AccessToken, contentLines[i], refId, "")
@@ -158,5 +158,5 @@ func (s *Service) SampleTwitterAppTweetMessage(ctx context.Context, apiKey strin
 			refId = refIdTmp
 		}
 	}
-	return nil
+	return refId, nil
 }

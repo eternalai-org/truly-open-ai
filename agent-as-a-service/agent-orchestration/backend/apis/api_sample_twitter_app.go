@@ -43,10 +43,10 @@ func (s *Server) SampleTwitterAppTweetMessage(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	err := s.nls.SampleTwitterAppTweetMessage(ctx, c.GetHeader("api-key"), req.Content)
+	tweetId, err := s.nls.SampleTwitterAppTweetMessage(ctx, c.GetHeader("api-key"), req.Content)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: tweetId})
 }
