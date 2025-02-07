@@ -1422,6 +1422,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 						mission.AgentStoreMissionID = agentStoreMission.ID
 						mission.AgentStoreID = agentStoreMission.AgentStoreID
 						mission.ReactMaxSteps = 5
+						mission.ToolSet = "mission_store"
 					} else if item.ToolList != "" {
 						mission.ToolList = item.ToolList
 					}

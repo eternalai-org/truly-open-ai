@@ -654,7 +654,7 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 						ToolList:             toolList,
 						SystemPrompt:         systemPrompt,
 						SystemReminder:       "",
-						Toolset:              "misstion_store",
+						Toolset:              "mission_store",
 						AgentBaseModel:       agentBaseModel,
 						ReactMaxSteps:        1,
 						InferTxHash:          inferTxHash,
