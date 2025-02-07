@@ -1,3 +1,4 @@
+
 # The binary to build, based on bin
 build_golang_contract = @cat ./internal/contracts/$(1)/$(2) | jq ".abi" > ./internal/contracts/$(1)/build-$(2) && \
 	cat ./internal/contracts/$(1)/$(2) | jq ".bytecode" > ./internal/contracts/$(1)/build-$(1).bin && \
@@ -44,7 +45,7 @@ download: vendor
 	go build -o build/download cmd/download_model/main.go
 
 start_download: download
-	./build/download -hash=bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm -hf_dir={path}/projects/huggingface/hub
+	./build/download -hash=bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm -hf_dir=$(shell pwd)/../models
 
 clean:
 	if [ -f ${BIN} ] ; then rm ${BIN} ; fi
