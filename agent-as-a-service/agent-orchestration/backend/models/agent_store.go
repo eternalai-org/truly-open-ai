@@ -11,7 +11,7 @@ type (
 
 const (
 	InstallStatusNew  InstallStatus = "new"
-	InstallStatusDone InstallStatus = "donw"
+	InstallStatusDone InstallStatus = "done"
 )
 
 type AgentStore struct {
