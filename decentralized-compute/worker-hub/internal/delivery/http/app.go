@@ -60,6 +60,7 @@ func (h *httpDelivery) Run() {
 
 func (h *httpDelivery) registerRoutes() {
 	api := h.router.PathPrefix("/v1").Subrouter()
+	api.HandleFunc("/health-check", h.healthCheck).Methods("GET")
 	api.HandleFunc("/chat/completions", h.createInfer).Methods("POST")
 	h.printRoutes()
 }
@@ -97,6 +98,19 @@ func (h *httpDelivery) createInfer(w http.ResponseWriter, r *http.Request) {
 			}
 
 			_, _, resp, err := h.usecase.CreateInfer(ctx, reqBody)
+			if err != nil {
+				return nil, err
+			}
+
+			return resp, nil
+		},
+	).ServeHTTP(w, r)
+}
+
+func (h *httpDelivery) healthCheck(w http.ResponseWriter, r *http.Request) {
+	response.NewRESTHandlerTemplate(
+		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
+			resp, err := h.usecase.HealthCheck(ctx)
 			if err != nil {
 				return nil, err
 			}

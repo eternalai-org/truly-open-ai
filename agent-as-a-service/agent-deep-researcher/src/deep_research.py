@@ -1,9 +1,3 @@
-'''
-Created on Feb 4, 2025
-
-@author: autonomous
-'''
-
 import nest_asyncio
 nest_asyncio.apply()
 
@@ -67,8 +61,8 @@ INTERNAL_OPENAI_API_KEY = os.getenv('INTERNAL_OPENAI_API_KEY')
 #     except Exception as e:
 #         print("Error calling OpenRouter:", e)
 #         return None
-    
-    
+
+
 async def call_openrouter_async(session, messages, model=INTERNAL_OPENAI_MODEL):
     """
     Asynchronously call the OpenRouter chat completion API with the provided messages.
@@ -83,7 +77,7 @@ async def call_openrouter_async(session, messages, model=INTERNAL_OPENAI_MODEL):
         "messages": messages,
         "stream": False,
     }
-    
+
     try:
         async with session.post(INTERNAL_OPENAI_URL, headers=headers, json=payload) as resp:
             if resp.status == 200:
@@ -181,7 +175,7 @@ async def perform_search_async(session, query):
 #     except Exception as e:
 #         print("Error fetching webpage text with Jina:", e)
 #         return ""
-    
+
 async def fetch_webpage_text_async(session, url):
     """
     Asynchronously retrieve the text content of a webpage using Jina.
@@ -297,7 +291,7 @@ async def generate_final_report_async(session, user_query, all_contexts):
     """
     context_combined = "\n".join(all_contexts)
     print(f"generate_final_report_async: {context_combined}")
-    
+
     prompt = (
         "You are an expert researcher and report writer. Based on the gathered contexts below and the original query, "
         "write a comprehensive, well-structured, and detailed report that addresses the query thoroughly. "
