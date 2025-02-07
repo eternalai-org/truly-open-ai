@@ -2,12 +2,19 @@ import express, { Router } from "express";
 import { dagentLogger } from "@eternalai-dagent/core";
 import cors from "cors";
 
-export function createApiRouter() {
-  const router = express.Router();
+export const getRouter = () => {
+    const router = express.Router();
 
-  router.use(cors());
-  router.use(express.json());
-  router.use(express.urlencoded({ extended: true }));
+    router.use(cors());
+    router.use(express.json());
+    router.use(express.urlencoded({ extended: true }));
+
+    return router;
+}
+
+export function createApiRouter() {
+
+  const router = getRouter();
 
   router.get("/hello", (req, res) => {
     res.send("Welcome, this is the REST API!");

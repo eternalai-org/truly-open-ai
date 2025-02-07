@@ -1,11 +1,11 @@
-# Build unstoppable Zerypy agents with DeepSeek-R1 on Base
+# Build unstoppable Zerepy agents with DeepSeek-R1 on Base
 
 This developer guide teaches you how to build your first decentralized ZerePy agent:
 
 - Decentralized: Use Eternal AI's Decentralized Inference API instead of OpenAI's Centralized API.
 - Onchain-verifiable: Don't trust AI, verify them. All inferences are recorded onchain and verifiable by anyone.
 - Unstoppable: Agents run exactly as coded without any possibility of downtime, censorship, fraud, or third-party interference.
-- Intelligent: Give your ZeryPy agents new superpowers using DeepSeek-R1, the state-of-the-art onchain AI model for reasoning.
+- Intelligent: Give your ZerePy agents new superpowers using DeepSeek-R1, the state-of-the-art onchain AI model for reasoning.
 
 ## Background:
 

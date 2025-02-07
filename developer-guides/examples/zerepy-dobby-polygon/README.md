@@ -1,17 +1,17 @@
-# Build unstoppable Zerypy agents with Dobby on Polygon
+# Build unstoppable Zerepy agents with Dobby on Polygon
 
 This developer guide teaches you how to build your first decentralized ZerePy agent:
 
 - Decentralized: Use Eternal AI's Decentralized Inference API instead of OpenAI's Centralized API.
 - Onchain-verifiable: Don't trust AI, verify them. All inferences are recorded onchain and verifiable by anyone.
 - Unstoppable: Agents run exactly as coded without any possibility of downtime, censorship, fraud, or third-party interference.
-- Intelligent: Give your ZeryPy agents new superpowers using Dobby, the AI model developed by Sentinent that can say what others cannot.
+- Intelligent: Give your ZerePy agents new superpowers using Dobby, the AI model developed by Sentinent that can say what others cannot.
 
 ## Background:
 
 For this guide, we'll use Eternal AI's Decentralized Inference, which has the same interface as OpenAI (so no learning curve for you) — but is decentralized.
 
-The AI model used is onchain DeepSeek-R1, deployed on Base.
+The AI model used is onchain Dobby, deployed on Polygon.
 
 Get the Decentralized Inference API key for Base [here](https://eternalai.org/api). It's free.
 
