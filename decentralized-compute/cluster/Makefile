@@ -44,7 +44,7 @@ download: vendor
 	go build -o build/download cmd/download_model/main.go
 
 start_download: download
-	./build/download -hash=bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm -hf_dir=/Users/macbook_autonomous/projects/huggingface/hub
+	./build/download -hash=bafkreiaycapgbdqpi3lwtjvf5v4dz7v7bbjysbqnndok534fkc5k3b7ekm -hf_dir={path}/projects/huggingface/hub
 
 clean:
 	if [ -f ${BIN} ] ; then rm ${BIN} ; fi
