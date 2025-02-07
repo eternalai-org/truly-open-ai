@@ -226,7 +226,6 @@ func (c *CMD) handleLocalConfig(reader *bufio.Reader, node *pkg.Command) {
 	err := c._startCreateConfigLogic(input)
 	if err != nil {
 		fmt.Println(pkg.PrintText("Config err", err))
-		return
 	}
 }
 
@@ -269,13 +268,12 @@ func (c *CMD) handleDeployContracts(reader *bufio.Reader, node *pkg.Command) {
 	}
 
 	fmt.Println("deploying contracts")
-	resp, err := c.localChainCMD.DeployContracts(rpc, chainID, privKey)
+	_, err := c.localChainCMD.DeployContracts(rpc, chainID, privKey)
 	if err != nil {
 		fmt.Println("deployed contracts error: ", err)
 		return
 	}
 
-	_ = resp
 	fmt.Println("deployed contracts success")
 }
 
@@ -324,13 +322,11 @@ func (c *CMD) handleDeployContract(reader *bufio.Reader, node *pkg.Command) {
 	}
 
 	fmt.Println("deploying contract")
-	resp, err := c.localChainCMD.DeployContract(rpc, chainID, privKey, contractName)
+	_, err := c.localChainCMD.DeployContract(rpc, chainID, privKey, contractName)
 	if err != nil {
 		fmt.Println("deployed contract error: ", err)
 		return
 	}
-
-	_ = resp
 	fmt.Println("deployed contract success")
 }
 
@@ -373,13 +369,11 @@ func (c *CMD) handleMintWEAI(reader *bufio.Reader, node *pkg.Command) {
 	}
 
 	fmt.Println("Minting WEAI")
-	resp, err := c.localChainCMD.MintWrappedEAI(rpc, chainID, "100000", privKey)
+	_, err := c.localChainCMD.MintWrappedEAI(rpc, chainID, "100000", privKey)
 	if err != nil {
 		fmt.Println("deployed contracts error: ", err)
 		return
 	}
-
-	_ = resp
 	fmt.Println("Minting WEAI success")
 }
 
