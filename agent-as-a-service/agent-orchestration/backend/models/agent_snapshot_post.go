@@ -30,6 +30,8 @@ const (
 type AgentSnapshotPost struct {
 	gorm.Model
 	NetworkID               uint64
+	UserID                  uint `gorm:"index"`
+	User                    *User
 	AgentInfoID             uint `gorm:"index"`
 	AgentInfo               *AgentInfo
 	AgentSnapshotMissionID  uint `gorm:"index"`

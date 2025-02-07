@@ -491,7 +491,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						return errs.NewError(errs.ErrBadRequest)
 					}
 					if mission.ToolSet != models.ToolsetTypeLuckyMoneys {
-						inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, mission, inferPost)
+						inferPost, err = s.BatchPromptItemV2(ctx, agentInfo, inferPost)
 						if err != nil {
 							inferPost.Error = err.Error()
 							inferPost.Status = models.AgentSnapshotPostStatusInferError
@@ -561,6 +561,191 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 		return errs.NewError(err)
 	}
 	return nil
+}
+
+func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID uint64, userAddress string, systemPrompt string, agentBaseModel string, agentStoreMissionID uint) (*models.AgentSnapshotPost, error) {
+	var inferPost *models.AgentSnapshotPost
+	err := s.JobRunCheck(
+		ctx,
+		fmt.Sprintf("AgentSnapshotPostCreateForUser_%s", userAddress),
+		func() error {
+			err := daos.WithTransaction(
+				daos.GetDBMainCtx(ctx),
+				func(tx *gorm.DB) error {
+					user, err := s.GetUser(
+						tx,
+						0,
+						userAddress,
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					agentStoreMission, err := s.dao.FirstAgentStoreMissionByID(
+						tx,
+						agentStoreMissionID,
+						map[string][]interface{}{},
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					var headSystemPrompt string
+					metaDataReq := &aidojo.AgentMetadataRequest{}
+					inferTxHash := helpers.RandomBigInt(12).Text(16)
+					inferItems := []*models.UserAgentInferDataItem{
+						{
+							Role:    "user",
+							Content: strings.TrimSpace(agentStoreMission.UserPrompt),
+						},
+					}
+					agentChainFee, err := s.GetAgentChainFee(
+						tx,
+						networkID,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					inferFee := agentChainFee.InferFee
+					missionStoreFee := numeric.NewBigFloatFromFloat(big.NewFloat(0))
+					missionStoreFee = agentStoreMission.Price
+					inferFee = numeric.NewBigFloatFromFloat(models.AddBigFloats(&inferFee.Float, &missionStoreFee.Float))
+					params := map[string]interface{}{}
+					agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
+						tx,
+						map[string][]interface{}{
+							"agent_store_id = ?": {agentStoreMission.AgentStoreID},
+							"user_id = ?":        {user.ID},
+						},
+						map[string][]interface{}{},
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if agentStoreInstall != nil {
+						err = helpers.ConvertJsonObject(agentStoreInstall.CallbackParams, &params)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
+					inferItems[0].Content, err = helpers.GenerateTemplateContent(agentStoreMission.UserPrompt, params)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					toolList, err := helpers.GenerateTemplateContent(agentStoreMission.ToolList, params)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					inferData, err := json.Marshal(inferItems)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					inferPost = &models.AgentSnapshotPost{
+						NetworkID:            networkID,
+						UserID:               user.ID,
+						InferData:            string(inferData),
+						InferAt:              helpers.TimeNow(),
+						Status:               models.AgentSnapshotPostStatusInferSubmitted,
+						Fee:                  inferFee,
+						UserPrompt:           inferItems[0].Content,
+						HeadSystemPrompt:     headSystemPrompt,
+						AgentMetaData:        helpers.ConvertJsonString(metaDataReq),
+						ToolList:             toolList,
+						SystemPrompt:         systemPrompt,
+						SystemReminder:       "",
+						Toolset:              "misstion_store",
+						AgentBaseModel:       agentBaseModel,
+						ReactMaxSteps:        1,
+						InferTxHash:          inferTxHash,
+						AgentStoreMissionID:  agentStoreInstall.ID,
+						AgentStoreID:         agentStoreInstall.AgentStoreID,
+						IsRated:              false,
+						AgentStoreMissionFee: missionStoreFee,
+					}
+					if inferPost.Fee.Float.Cmp(big.NewFloat(0)) <= 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					if user.EaiBalance.Float.Cmp(&inferPost.Fee.Float) < 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					err = tx.Model(user).
+						UpdateColumn("eai_balance", gorm.Expr("eai_balance - ?", inferPost.Fee)).
+						Error
+					if err != nil {
+						return errs.NewError(err)
+					}
+					user, err = s.dao.FirstUserByID(
+						tx,
+						user.ID,
+						map[string][]interface{}{},
+						false,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if user.EaiBalance.Float.Cmp(big.NewFloat(0)) < 0 {
+						return errs.NewError(errs.ErrBadRequest)
+					}
+					inferPost, err = s.BatchPromptItemV2(ctx, nil, inferPost)
+					if err != nil {
+						inferPost.Error = err.Error()
+						inferPost.Status = models.AgentSnapshotPostStatusInferError
+						err = s.dao.Create(
+							tx,
+							inferPost,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						err = tx.Model(user).
+							UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
+							Error
+						if err != nil {
+							return errs.NewError(err)
+						}
+						inferPost.Fee = numeric.NewBigFloatFromString("0")
+						err = s.dao.Save(
+							tx,
+							inferPost,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						return nil
+					}
+					err = s.dao.Create(
+						tx,
+						inferPost,
+					)
+					if err != nil {
+						return errs.NewError(err)
+					}
+					if inferPost.Fee.Cmp(big.NewFloat(0)) > 0 {
+						_ = s.dao.Create(
+							tx,
+							&models.UserTransaction{
+								EventId: fmt.Sprintf("agent_trigger_%d", inferPost.ID),
+								UserID:  user.ID,
+								Type:    models.UserTransactionTypeTriggerFee,
+								Amount:  inferPost.Fee,
+								Status:  models.UserTransactionStatusDone,
+							},
+						)
+					}
+					return nil
+				},
+			)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return inferPost, nil
 }
 
 func (s *Service) AgentSnapshotPostActionExecuted(ctx context.Context, twitterPostID uint) error {
@@ -1830,20 +2015,22 @@ func (s *Service) getTaskToolSet(assistant *models.AgentInfo, taskReq string) (s
 		task = "lucky_moneys"
 		toolset = "lucky_moneys"
 	}
-	if assistant.NetworkID == models.HERMES_CHAIN_ID && assistant.AgentContractID == "2" {
-		// @thetickerisbot
-		switch taskReq {
-		case "quote_tweet":
-			task = "quote_tweet"
-			toolset = ""
+	if assistant != nil {
+		if assistant.NetworkID == models.HERMES_CHAIN_ID && assistant.AgentContractID == "2" {
+			// @thetickerisbot
+			switch taskReq {
+			case "quote_tweet":
+				task = "quote_tweet"
+				toolset = ""
+			}
 		}
-	}
-	if assistant.NetworkID == models.BASE_CHAIN_ID && assistant.AgentContractID == "40" {
-		// @thetickerisbot
-		switch taskReq {
-		case "quote_tweet":
-			task = "quote_tweet"
-			toolset = ""
+		if assistant.NetworkID == models.BASE_CHAIN_ID && assistant.AgentContractID == "40" {
+			// @thetickerisbot
+			switch taskReq {
+			case "quote_tweet":
+				task = "quote_tweet"
+				toolset = ""
+			}
 		}
 	}
 	return task, toolset
@@ -1867,20 +2054,21 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		AgentMetaData: agentMetaDataRequest,
 		ToolList:      logRequest.ToolList,
 		MetaData: models.WakeupRequestMetadata{
-			TwitterId:       assistant.TwitterID,
-			TwitterUsername: assistant.TwitterUsername,
-			AgentContractId: assistant.AgentContractID,
-			ChainId:         strconv.Itoa(int(assistant.NetworkID)),
-			RefID:           logRequest.InferTxHash,
-			SystemReminder:  logRequest.SystemReminder, // DONT USE system reminder from assistant
+			RefID:          logRequest.InferTxHash,
+			SystemReminder: logRequest.SystemReminder, // DONT USE system reminder from assistant
 			Params: models.ParamWakeupRequest{
 				QuoteUsername: "cryptopunksbot",
 				ReactMaxSteps: logRequest.ReactMaxSteps,
 			},
-			KnowledgeBaseId: assistant.KnowledgeBaseID,
 		},
 	}
-
+	if assistant != nil {
+		request.MetaData.TwitterId = assistant.TwitterID
+		request.MetaData.TwitterUsername = assistant.TwitterUsername
+		request.MetaData.AgentContractId = assistant.AgentContractID
+		request.MetaData.ChainId = strconv.Itoa(int(assistant.NetworkID))
+		request.MetaData.KnowledgeBaseId = assistant.KnowledgeBaseID
+	}
 	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(context.Background(), assistant.ID)
 	if len(knowledgeAgentsUsed) > 0 {
 		for _, item := range knowledgeAgentsUsed {
@@ -1918,8 +2106,8 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 	return body, err
 }
 
-func (s *Service) BatchPromptItemV2(ctx context.Context, agentInfo *models.AgentInfo, snapshotMission *models.AgentSnapshotMission, request *models.AgentSnapshotPost) (*models.AgentSnapshotPost, error) {
-	if agentInfo.TwitterUsername == "" && agentInfo.FarcasterID == "" {
+func (s *Service) BatchPromptItemV2(ctx context.Context, agentInfo *models.AgentInfo, request *models.AgentSnapshotPost) (*models.AgentSnapshotPost, error) {
+	if agentInfo != nil && agentInfo.TwitterUsername == "" && agentInfo.FarcasterID == "" {
 		return request, errs.NewError(errs.ErrBadRequest)
 	}
 	if request.ToolList != "" {
@@ -1927,7 +2115,7 @@ func (s *Service) BatchPromptItemV2(ctx context.Context, agentInfo *models.Agent
 	}
 	request.Task, request.Toolset = s.getTaskToolSet(agentInfo, string(request.Toolset))
 	if len(request.HeadSystemPrompt) > 0 {
-		request.SystemPrompt = request.HeadSystemPrompt + "\n\n" + agentInfo.SystemPrompt
+		request.SystemPrompt = request.HeadSystemPrompt + "\n\n" + request.SystemPrompt
 	}
 	if request.InferTxHash == "" {
 		request.InferTxHash = helpers.RandomBigInt(12).Text(16)

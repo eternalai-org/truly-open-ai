@@ -15,8 +15,7 @@ import (
 
 func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *serializers.AgentStoreReq) (*models.AgentStore, error) {
 	var agentStore *models.AgentStore
-	var err error
-	err = daos.WithTransaction(
+	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			user, err := s.GetUser(tx, 0, userAddress, false)
@@ -31,11 +30,10 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 				if agentStore == nil {
 					return errs.NewError(errs.ErrBadRequest)
 				}
-				if !strings.EqualFold(agentStore.OwnerAddress, userAddress) {
+				if agentStore.OwnerID != user.ID {
 					return errs.NewError(errs.ErrBadRequest)
 				}
 				//update name vs description only
-				agentStore.OwnerID = user.ID
 				agentStore.Name = req.Name
 				agentStore.Description = req.Description
 				agentStore.AuthenUrl = req.AuthenUrl
@@ -68,7 +66,6 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-
 	return agentStore, nil
 }
 
