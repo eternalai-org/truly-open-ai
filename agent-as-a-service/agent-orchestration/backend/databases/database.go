@@ -47,6 +47,7 @@ func MigrateDBMain(db *gorm.DB) error {
 		(*models.AppConfig)(nil),
 		(*models.BTCL1InscribeTx)(nil),
 		(*models.User)(nil),
+		(*models.UserTransaction)(nil),
 		(*models.Erc20Holder)(nil),
 		(*models.Erc721Holder)(nil),
 		(*models.Erc1155Holder)(nil),
