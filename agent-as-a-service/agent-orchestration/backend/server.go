@@ -106,6 +106,9 @@ func main() {
 	if jobEnabled {
 		delayTs = 30 * time.Second
 	}
+	if conf.Env == "dev" || conf.Env == "local" {
+		delayTs = 0 * time.Second
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), delayTs)
 	defer cancel()

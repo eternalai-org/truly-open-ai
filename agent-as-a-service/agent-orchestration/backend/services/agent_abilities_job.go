@@ -412,7 +412,7 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 								"agent_info_id = ?":  {mission.AgentInfoID},
 							},
 							map[string][]interface{}{},
-							false,
+							[]string{"id desc"},
 						)
 						if err != nil {
 							return errs.NewError(err)
@@ -618,7 +618,7 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 							"user_id = ?":        {user.ID},
 						},
 						map[string][]interface{}{},
-						false,
+						[]string{"id desc"},
 					)
 					if err != nil {
 						return errs.NewError(err)
@@ -728,7 +728,7 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 								EventId: fmt.Sprintf("agent_trigger_%d", inferPost.ID),
 								UserID:  user.ID,
 								Type:    models.UserTransactionTypeTriggerFee,
-								Amount:  inferPost.Fee,
+								Amount:  numeric.NewBigFloatFromFloat(models.NegativeBigFloat(&inferPost.Fee.Float)),
 								Status:  models.UserTransactionStatusDone,
 							},
 						)

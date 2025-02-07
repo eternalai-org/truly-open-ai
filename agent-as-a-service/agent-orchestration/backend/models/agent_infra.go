@@ -5,13 +5,25 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type AgentInfraStatus string
+
+const (
+	AgentInfraStatusNew     AgentInfraStatus = "new"
+	AgentInfraStatusActived AgentInfraStatus = "actived"
+)
+
 type AgentInfra struct {
 	gorm.Model
+	InfraId      string `gorm:"unique_index"`
+	OwnerID      uint
+	Owner        *User
 	OwnerAddress string
 	Name         string
-	Description  string           `gorm:"type:text"`
-	EaiBalance   numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	Icon         string           `gorm:"type:text"`
+	Description  string `gorm:"type:text"`
+	Icon         string `gorm:"type:text"`
+	Status       AgentInfraStatus
+	ApiUrl       string
+	Price        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
 type AgentInfraInstall struct {
@@ -23,24 +35,12 @@ type AgentInfraInstall struct {
 	User         *User
 }
 
-type (
-	AgentInfraTransactionType   string
-	AgentInfraTransactionStatus string
-)
-
-const (
-	AgentInfraTransactionTypeFee AgentInfraTransactionType = "fee"
-
-	AgentInfraTransactionStatusDone AgentInfraTransactionStatus = "done"
-)
-
-type AgentInfraTransaction struct {
+type AgentInfraLog struct {
 	gorm.Model
-	NetworkID    uint64
-	AgentInfraID uint   `gorm:"index"`
-	EventId      string `gorm:"unique_index"`
-	Type         AgentInfraTransactionType
-	Amount       numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	Toolset      string
-	Status       AgentInfraTransactionStatus
+	AgentInfraInstallID uint
+	UserID              uint
+	AgentInfraID        uint
+	Price               numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	UrlPath             string           `gorm:"type:text"`
+	Status              int
 }

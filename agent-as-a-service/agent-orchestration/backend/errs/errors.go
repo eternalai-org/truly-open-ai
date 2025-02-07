@@ -47,6 +47,7 @@ var (
 	ErrAgentNotFound           = &Error{Code: -2014, Message: "Agent Not Found"}
 	ErrTwitterIDExistsed       = &Error{Code: -2015, Message: "TwitterID Existsed"}
 	ErrTwitterUsernameNotFound = &Error{Code: -2015, Message: "Twitter Username Not Found"}
+	ErrInsufficientBalance     = &Error{Code: -2016, Message: "Insufficient Balance"}
 
 	ErrApiKeyRateLimited = &Error{Code: -2016, Message: "API Key rate limit"}
 )

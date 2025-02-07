@@ -1411,7 +1411,7 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 								"agent_info_id = ?":  {mission.AgentInfoID},
 							},
 							map[string][]interface{}{},
-							true,
+							[]string{"id desc"},
 						)
 						if err != nil {
 							return errs.NewError(err)

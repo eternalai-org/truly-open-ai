@@ -155,9 +155,14 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			obj, err := s.dao.FirstAgentStoreInstall(tx, map[string][]interface{}{
-				"code = ?": {req.Code},
-			}, map[string][]interface{}{}, true)
+			obj, err := s.dao.FirstAgentStoreInstall(
+				tx,
+				map[string][]interface{}{
+					"code = ?": {req.Code},
+				},
+				map[string][]interface{}{},
+				[]string{},
+			)
 			if err != nil {
 				return errs.NewError(err)
 			}

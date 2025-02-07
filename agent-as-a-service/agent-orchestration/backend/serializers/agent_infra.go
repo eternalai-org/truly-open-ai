@@ -3,15 +3,18 @@ package serializers
 import (
 	"time"
 
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
 type AgentInfraReq struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	AuthenUrl   string `json:"authen_url"`
-	Icon        string `json:"icon"`
+	ID          uint                    `json:"id"`
+	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
+	AuthenUrl   string                  `json:"authen_url"`
+	Icon        string                  `json:"icon"`
+	Status      models.AgentInfraStatus `json:"status"`
+	ApiUrl      string                  `json:"api_url"`
 }
 
 type AgentInfraMissionReq struct {
