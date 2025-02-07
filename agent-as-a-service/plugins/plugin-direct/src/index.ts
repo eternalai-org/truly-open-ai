@@ -49,7 +49,7 @@ export class Direct {
   public start(port: number) {
     this.server = this.app.listen(port, () => {
       dagentLogger.success(
-          `REST API bound to 0.0.0.0:${port}. If running locally, access it at http://localhost:${port}.`
+          `Server running at http://localhost:${port}`
       );
     });
 

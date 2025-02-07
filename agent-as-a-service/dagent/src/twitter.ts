@@ -50,7 +50,7 @@ class AgentTwitter {
       twitter_oauth_url: "https://imagine-backend.bvm.network/api/webhook/twitter-oauth"
     });
 
-    // twitter_client_id: "TWlYeVpGTXFRdTQ1WW14aDJkNXk6MTpjaQ",
+    // twitter_client_id: "",
     // twitter_oauth_url: "https://composed-rarely-feline.ngrok-free.app/api/webhook/twitter-oauth"
   };
 
