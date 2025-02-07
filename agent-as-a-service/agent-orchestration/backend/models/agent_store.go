@@ -19,6 +19,8 @@ type AgentStore struct {
 	Name               string
 	Description        string `gorm:"type:text"`
 	OwnerAddress       string
+	OwnerID            uint
+	Owner              *User
 	AuthenUrl          string           `gorm:"type:longtext"`
 	EaiBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Icon               string           `gorm:"type:text"`
