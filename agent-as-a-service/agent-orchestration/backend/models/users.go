@@ -64,7 +64,8 @@ type (
 )
 
 const (
-	UserTransactionTypeDeposit UserTransactionType = "deposit"
+	UserTransactionTypeDeposit       UserTransactionType = "deposit"
+	UserTransactionTypeAgentStoreFee UserTransactionType = "agent_store_fee"
 
 	UserTransactionStatusDone      UserTransactionStatus = "done"
 	UserTransactionStatusCancelled UserTransactionStatus = "cancelled"

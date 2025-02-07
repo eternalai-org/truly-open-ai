@@ -1370,7 +1370,11 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 													}
 													if agentSnapshotPost.AgentStore != nil &&
 														agentSnapshotPost.AgentStoreMissionFee.Float.Cmp(big.NewFloat(0)) > 0 {
-														err = tx.Model(agentSnapshotPost.AgentStore).
+														user, err := s.GetUser(tx, models.GENERTAL_NETWORK_ID, agentSnapshotPost.AgentStore.OwnerAddress, false)
+														if err != nil {
+															return errs.NewError(err)
+														}
+														err = tx.Model(user).
 															UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", agentSnapshotPost.AgentStoreMissionFee)).
 															Error
 														if err != nil {
@@ -1378,14 +1382,13 @@ func (s *Service) UpdateOffchainAutoOutputV2(ctx context.Context, snapshotPostID
 														}
 														_ = s.dao.Create(
 															tx,
-															&models.AgentStoreTransaction{
-																NetworkID:    agentSnapshotPost.NetworkID,
-																EventId:      fmt.Sprintf("trigger_fee_%d", agentSnapshotPost.ID),
-																AgentStoreID: agentSnapshotPost.AgentStoreID,
-																Type:         models.AgentStoreTransactionTypeFee,
-																Amount:       agentSnapshotPost.AgentStoreMissionFee,
-																Status:       models.AgentStoreTransactionStatusDone,
-																Toolset:      agentSnapshotPost.Toolset,
+															&models.UserTransaction{
+																NetworkID: agentSnapshotPost.NetworkID,
+																EventId:   fmt.Sprintf("agent_store_fee_%d", agentSnapshotPost.ID),
+																UserID:    user.ID,
+																Type:      models.UserTransactionTypeAgentStoreFee,
+																Amount:    agentSnapshotPost.AgentStoreMissionFee,
+																Status:    models.UserTransactionStatusDone,
 															},
 														)
 													}
