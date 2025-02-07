@@ -10,9 +10,11 @@ import (
 	"time"
 )
 
-var Line = "----------------------------------------------------------------------------\n"
-var RootNodeTxt = "Neurons/Solo"
-var ErrorFillOut = `Please back to the "` + RootNodeTxt + `" and use "` + COMMAND_CONFIG + `" to fill out all information first.`
+var (
+	Line         = "----------------------------------------------------------------------------\n"
+	RootNodeTxt  = "Neurons/Solo"
+	ErrorFillOut = `Please back to the "` + RootNodeTxt + `" and use "` + COMMAND_CONFIG + `" to fill out all information first.`
+)
 
 const TimeToWating time.Duration = 1
 const (
@@ -102,11 +104,11 @@ const (
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_GPU_MANAGER_V1      = "stakingHubAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1           = "hybridModelAddress"
 	API_URL                                                  = "http://localhost:8004/v1/chat/completions"
-	//staking
+	// staking
 	MIN_STAKE          = 25000
 	BLOCK_PER_EPOCH    = 600
 	REWARD_PER_EPOCH   = 1
-	UNSTAK_DEPLAY_TIME = 907200 //907200 blocks = 21 days (blocktime = 2)
+	UNSTAK_DEPLAY_TIME = 907200 // 907200 blocks = 21 days (blocktime = 2)
 	PENALTY_DURATION   = 0
 	FINE_PERCENTAGE    = 0
 	MIN_FEE_TO_USE     = 0
@@ -134,20 +136,14 @@ type Command struct {
 
 func CreateSeed(params string, requestID string) uint64 {
 	seed := hex.EncodeToString([]byte(params + requestID))
-
 	h := sha256.New()
-
 	h.Write([]byte(seed))
-
 	bs := h.Sum(nil)
-
 	seedHex := hex.EncodeToString(bs)
-
 	i := new(big.Int)
 	i.SetString(seedHex, 16)
 
 	// check if the seed is too large for uint64
-
 	if i.BitLen() > 64 {
 		i = i.Mod(i, new(big.Int).SetUint64(math.MaxUint64))
 	}
@@ -160,11 +156,5 @@ func Copy(in interface{}, out interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	err = json.Unmarshal(_b, &out)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return json.Unmarshal(_b, &out)
 }
