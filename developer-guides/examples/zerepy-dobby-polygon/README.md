@@ -11,7 +11,7 @@ This developer guide teaches you how to build your first decentralized ZerePy ag
 
 For this guide, we'll use Eternal AI's Decentralized Inference, which has the same interface as OpenAI (so no learning curve for you) — but is decentralized.
 
-The AI model used is onchain DeepSeek-R1, deployed on Base.
+The AI model used is onchain Dobby, deployed on Polygon.
 
 Get the Decentralized Inference API key for Base [here](https://eternalai.org/api). It's free.
 
