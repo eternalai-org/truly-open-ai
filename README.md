@@ -6,7 +6,7 @@ Eternal AI agents operate on a powerful peer-to-peer agentic AI infrastructure w
 
 * End-to-end decentralization: Inference, Compute, Storage, etc.
 * State-of-the-art models: DeepSeek, Llama, FLUX, etc.
-* Omnichain interoperability: Bitcoin, Ethereum, Base, etc.
+* Omnichain interoperability: Bitcoin, Ethereum, Solana, etc.
 
 This enables developers to create SocialFi agents that interact on Twitter, DeFi agents that trade crypto, GameFi agents that play onchain games, and many other decentralized AI agents yet to be invented — all without a middleman or counterparty risk.
 
