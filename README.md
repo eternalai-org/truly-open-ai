@@ -1,8 +1,8 @@
 # Eternal AI: Build Decentralized Autonomous Agents
 
-Eternal AI is a Decentralized Autonomous Agent protocol running AI agents on Solidity smart contracts — exactly as programmed — without censorship, interference, or downtime.
+The Eternal AI protocol is a Decentralized Autonomous Agent system for Solidity-based AI agents. These agents are written as smart contracts and run exactly as programmed. They are permissionless, trustless, verifiable, uncensored, and unstoppable.
 
-These agents operate on a powerful decentralized infrastructure with many unique properties:
+These decentralized autonomous agents operate on a powerful peer-to-peer agentic AI infrastructure with many unique properties:
 
 * End-to-end decentralization: Inference, Compute, Storage, etc.
 * State-of-the-art models: DeepSeek, Llama, FLUX, etc.
