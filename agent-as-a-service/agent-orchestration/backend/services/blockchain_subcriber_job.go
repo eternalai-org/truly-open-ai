@@ -148,26 +148,46 @@ func (s *Service) MemeEventsByTransactionEventResp(ctx context.Context, networkI
 			for pool := range poolMap {
 				poolArr = append(poolArr, pool)
 			}
-			agents, err := s.dao.FindAgentInfo(
-				daos.GetDBMainCtx(ctx),
-				map[string][]interface{}{
-					"eth_address in (?)": {poolArr},
-				},
-				map[string][]interface{}{},
-				[]string{},
-				0,
-				999999,
-			)
-			if err != nil {
-				return errs.NewError(err)
-			}
 			poolMap = map[string]bool{}
-			for _, agent := range agents {
-				poolMap[strings.ToLower(agent.ETHAddress)] = true
+			{
+				agents, err := s.dao.FindAgentInfo(
+					daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"eth_address in (?)": {poolArr},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					999999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, agent := range agents {
+					poolMap[strings.ToLower(agent.ETHAddress)] = true
+				}
+			}
+			{
+				users, err := s.dao.FindUser(
+					daos.GetDBMainCtx(ctx),
+					map[string][]interface{}{
+						"eth_address in (?)": {poolArr},
+					},
+					map[string][]interface{}{},
+					[]string{},
+					0,
+					999999,
+				)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				for _, user := range users {
+					poolMap[strings.ToLower(user.EthAddress)] = true
+				}
 			}
 			for _, event := range eventResp.Transfer {
 				if poolMap[strings.ToLower(event.To)] {
-					err = s.CreateErc20TokenTransferEvent(ctx, networkID, event)
+					err := s.CreateErc20TokenTransferEvent(ctx, networkID, event)
 					if err != nil {
 						return errs.NewError(err)
 					}
@@ -674,23 +694,11 @@ func (s *Service) CreateErc20TokenTransferEvent(ctx context.Context, networkID u
 				daos.GetDBMainCtx(ctx),
 				func(tx *gorm.DB) error {
 					var err error
-					agent, err = s.dao.FirstAgentInfo(
-						tx,
-						map[string][]interface{}{
-							"eth_address = ?": {toAddress},
-						},
-						map[string][]interface{}{},
-						[]string{},
-					)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					if agent != nil {
-						eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxHash, event.Index)
-						m, err := s.dao.FirstAgentEaiTopup(
+					{
+						agent, err = s.dao.FirstAgentInfo(
 							tx,
 							map[string][]interface{}{
-								"event_id = ?": {eventId},
+								"eth_address = ?": {toAddress},
 							},
 							map[string][]interface{}{},
 							[]string{},
@@ -698,53 +706,128 @@ func (s *Service) CreateErc20TokenTransferEvent(ctx context.Context, networkID u
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if m == nil {
-							m = &models.AgentEaiTopup{
-								NetworkID:      networkID,
-								EventId:        eventId,
-								AgentInfoID:    agent.ID,
-								Type:           models.AgentEaiTopupTypeDeposit,
-								DepositAddress: strings.ToLower(event.From),
-								DepositTxHash:  event.TxHash,
-								Amount:         numeric.NewBigFloatFromFloat(models.ConvertWeiToBigFloat(event.Value, 18)),
-								Status:         models.AgentEaiTopupStatusDone,
-								ToAddress:      agent.ETHAddress,
-							}
-							if m.NetworkID == models.ABSTRACT_TESTNET_CHAIN_ID && m.NetworkID != agent.NetworkID {
-								m.Status = models.AgentEaiTopupStatusCancelled
-							}
-							err = s.dao.Create(
+						if agent != nil {
+							eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxHash, event.Index)
+							m, err := s.dao.FirstAgentEaiTopup(
 								tx,
-								m,
+								map[string][]interface{}{
+									"event_id = ?": {eventId},
+								},
+								map[string][]interface{}{},
+								[]string{},
 							)
 							if err != nil {
 								return errs.NewError(err)
 							}
-							if m.Status == models.AgentEaiTopupStatusDone {
-								err = tx.Model(agent).
-									UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", m.Amount)).
-									UpdateColumn("eai_wallet_balance", gorm.Expr("eai_wallet_balance + ?", m.Amount)).
-									Error
+							if m == nil {
+								m = &models.AgentEaiTopup{
+									NetworkID:      networkID,
+									EventId:        eventId,
+									AgentInfoID:    agent.ID,
+									Type:           models.AgentEaiTopupTypeDeposit,
+									DepositAddress: strings.ToLower(event.From),
+									DepositTxHash:  event.TxHash,
+									Amount:         numeric.NewBigFloatFromFloat(models.ConvertWeiToBigFloat(event.Value, 18)),
+									Status:         models.AgentEaiTopupStatusDone,
+									ToAddress:      agent.ETHAddress,
+								}
+								if m.NetworkID == models.ABSTRACT_TESTNET_CHAIN_ID && m.NetworkID != agent.NetworkID {
+									m.Status = models.AgentEaiTopupStatusCancelled
+								}
+								err = s.dao.Create(
+									tx,
+									m,
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
+								if m.Status == models.AgentEaiTopupStatusDone {
+									err = tx.Model(agent).
+										UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", m.Amount)).
+										UpdateColumn("eai_wallet_balance", gorm.Expr("eai_wallet_balance + ?", m.Amount)).
+										Error
+									if err != nil {
+										return errs.NewError(err)
+									}
+								}
+							}
+						}
+					}
+					{
+						err = s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					}
+					{
+						switch networkID {
+						case models.ETHEREUM_CHAIN_ID,
+							models.BASE_CHAIN_ID:
+							{
+								eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxHash, event.Index)
+								s.ProcessDeposit(ctx, networkID, eventId, event.TxHash, toAddress, event.Value)
+								err = s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
 								if err != nil {
 									return errs.NewError(err)
 								}
 							}
 						}
 					}
-					err = s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
-					if err != nil {
-						return errs.NewError(err)
-					}
-					//update subscription package
-					switch networkID {
-					case models.ETHEREUM_CHAIN_ID,
-						models.BASE_CHAIN_ID:
-						{
+					{
+						user, err := s.dao.FirstUser(
+							tx,
+							map[string][]interface{}{
+								"eth_address = ?": {toAddress},
+							},
+							map[string][]interface{}{},
+							false,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if user != nil {
 							eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxHash, event.Index)
-							s.ProcessDeposit(ctx, networkID, eventId, event.TxHash, toAddress, event.Value)
-							err = s.LaunchpadErc20TokenTransferEvent(tx, networkID, event)
+							m, err := s.dao.FirstUserTransaction(
+								tx,
+								map[string][]interface{}{
+									"event_id = ?": {eventId},
+								},
+								map[string][]interface{}{},
+								[]string{},
+							)
 							if err != nil {
 								return errs.NewError(err)
+							}
+							if m == nil {
+								m = &models.UserTransaction{
+									NetworkID:   networkID,
+									EventId:     eventId,
+									UserID:      user.ID,
+									Type:        models.UserTransactionTypeDeposit,
+									FromAddress: strings.ToLower(event.From),
+									ToAddress:   strings.ToLower(event.To),
+									TxHash:      event.TxHash,
+									Amount:      numeric.NewBigFloatFromFloat(models.ConvertWeiToBigFloat(event.Value, 18)),
+									Status:      models.UserTransactionStatusDone,
+								}
+								if m.NetworkID == models.ABSTRACT_TESTNET_CHAIN_ID {
+									m.Status = models.UserTransactionStatusCancelled
+								}
+								err = s.dao.Create(
+									tx,
+									m,
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
+								if m.Status == models.UserTransactionStatusDone {
+									err = tx.Model(user).
+										UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", m.Amount)).
+										Error
+									if err != nil {
+										return errs.NewError(err)
+									}
+								}
 							}
 						}
 					}
@@ -792,8 +875,8 @@ func (s *Service) CreateSolanaTokenTransferEvent(ctx context.Context, networkID 
 	switch networkID {
 	case models.SOLANA_CHAIN_ID:
 		{
-			toAddress := strings.ToLower(event.DepositNativeAddress)
-			contractAddress := strings.ToLower(event.Token)
+			toAddress := event.DepositNativeAddress
+			contractAddress := event.Token
 			if s.conf.ExistsedConfigKey(networkID, "eai_contract_address") {
 				eaiAddress := s.conf.GetConfigKeyString(networkID, "eai_contract_address")
 				if strings.EqualFold(contractAddress, eaiAddress) {
@@ -802,23 +885,11 @@ func (s *Service) CreateSolanaTokenTransferEvent(ctx context.Context, networkID 
 						daos.GetDBMainCtx(ctx),
 						func(tx *gorm.DB) error {
 							var err error
-							agent, err = s.dao.FirstAgentInfo(
-								tx,
-								map[string][]interface{}{
-									"sol_address = ?": {toAddress},
-								},
-								map[string][]interface{}{},
-								[]string{},
-							)
-							if err != nil {
-								return errs.NewError(err)
-							}
-							if agent != nil {
-								eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxReceivedDeposit, 0)
-								m, err := s.dao.FirstAgentEaiTopup(
+							{
+								agent, err = s.dao.FirstAgentInfo(
 									tx,
 									map[string][]interface{}{
-										"event_id = ?": {eventId},
+										"sol_address = ?": {toAddress},
 									},
 									map[string][]interface{}{},
 									[]string{},
@@ -826,31 +897,100 @@ func (s *Service) CreateSolanaTokenTransferEvent(ctx context.Context, networkID 
 								if err != nil {
 									return errs.NewError(err)
 								}
-								if m == nil {
-									m = &models.AgentEaiTopup{
-										NetworkID:      networkID,
-										EventId:        eventId,
-										AgentInfoID:    agent.ID,
-										Type:           models.AgentEaiTopupTypeDeposit,
-										DepositAddress: strings.ToLower(event.DepositNativeAddress),
-										DepositTxHash:  event.TxReceivedDeposit,
-										Amount:         numeric.NewBigFloatFromFloat(models.ConvertWeiToBigFloat(&event.Amount.Int, 6)),
-										Status:         models.AgentEaiTopupStatusDone,
-										ToAddress:      agent.ETHAddress,
-									}
-									err = s.dao.Create(
+								if agent != nil {
+									eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxReceivedDeposit, 0)
+									m, err := s.dao.FirstAgentEaiTopup(
 										tx,
-										m,
+										map[string][]interface{}{
+											"event_id = ?": {eventId},
+										},
+										map[string][]interface{}{},
+										[]string{},
 									)
 									if err != nil {
 										return errs.NewError(err)
 									}
-									err = tx.Model(agent).
-										UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", m.Amount)).
-										UpdateColumn("eai_wallet_balance", gorm.Expr("eai_wallet_balance + ?", m.Amount)).
-										Error
+									if m == nil {
+										m = &models.AgentEaiTopup{
+											NetworkID:      networkID,
+											EventId:        eventId,
+											AgentInfoID:    agent.ID,
+											Type:           models.AgentEaiTopupTypeDeposit,
+											DepositAddress: event.DepositNativeAddress,
+											DepositTxHash:  event.TxReceivedDeposit,
+											Amount:         numeric.NewBigFloatFromFloat(models.ConvertWeiToBigFloat(&event.Amount.Int, 6)),
+											Status:         models.AgentEaiTopupStatusDone,
+											ToAddress:      agent.ETHAddress,
+										}
+										err = s.dao.Create(
+											tx,
+											m,
+										)
+										if err != nil {
+											return errs.NewError(err)
+										}
+										err = tx.Model(agent).
+											UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", m.Amount)).
+											UpdateColumn("eai_wallet_balance", gorm.Expr("eai_wallet_balance + ?", m.Amount)).
+											Error
+										if err != nil {
+											return errs.NewError(err)
+										}
+									}
+								}
+							}
+							{
+								user, err := s.dao.FirstUser(
+									tx,
+									map[string][]interface{}{
+										"sol_address = ?": {toAddress},
+									},
+									map[string][]interface{}{},
+									false,
+								)
+								if err != nil {
+									return errs.NewError(err)
+								}
+								if user != nil {
+									eventId := fmt.Sprintf("%d_%s_%d", networkID, event.TxReceivedDeposit, 0)
+									m, err := s.dao.FirstUserTransaction(
+										tx,
+										map[string][]interface{}{
+											"event_id = ?": {eventId},
+										},
+										map[string][]interface{}{},
+										[]string{},
+									)
 									if err != nil {
 										return errs.NewError(err)
+									}
+									if m == nil {
+										m = &models.UserTransaction{
+											NetworkID:   networkID,
+											EventId:     eventId,
+											UserID:      user.ID,
+											Type:        models.UserTransactionTypeDeposit,
+											FromAddress: event.DepositNativeAddress,
+											ToAddress:   toAddress,
+											TxHash:      event.TxReceivedDeposit,
+											Amount:      numeric.NewBigFloatFromFloat(models.ConvertWeiToBigFloat(&event.Amount.Int, 6)),
+											Status:      models.UserTransactionStatusDone,
+										}
+										err = s.dao.Create(
+											tx,
+											m,
+										)
+										if err != nil {
+											return errs.NewError(err)
+										}
+										if m.Status == models.UserTransactionStatusDone {
+											err = tx.Model(user).
+												UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", m.Amount)).
+												Error
+											if err != nil {
+												return errs.NewError(err)
+											}
+										}
 									}
 								}
 							}

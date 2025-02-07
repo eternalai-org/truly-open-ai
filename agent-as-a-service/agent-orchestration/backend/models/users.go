@@ -22,6 +22,10 @@ type User struct {
 	TwitterAvatar   string
 	TwitterUsername string
 	TwitterName     string
+	EthAddress      string           `gorm:"index"`
+	TronAddress     string           `gorm:"index"`
+	SolAddress      string           `gorm:"index"`
+	EaiBalance      numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 
 	Mentions  int64
 	Likes     int64
@@ -52,4 +56,31 @@ type TokenHolder struct {
 	MemePrice           numeric.BigFloat `gorm:"-"`
 	MemePriceUsd        numeric.BigFloat `gorm:"-"`
 	MemeBaseTokenSymbol string           `gorm:"-"`
+}
+
+type (
+	UserTransactionType   string
+	UserTransactionStatus string
+)
+
+const (
+	UserTransactionTypeDeposit UserTransactionType = "deposit"
+
+	UserTransactionStatusDone      UserTransactionStatus = "done"
+	UserTransactionStatusCancelled UserTransactionStatus = "cancelled"
+)
+
+type UserTransaction struct {
+	gorm.Model
+	NetworkID   uint64
+	UserID      uint `gorm:"index"`
+	User        *User
+	EventId     string `gorm:"unique_index"`
+	Type        UserTransactionType
+	FromAddress string
+	ToAddress   string
+	TxHash      string
+	Amount      numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	Status      UserTransactionStatus
+	Error       string `gorm:"type:longtext"`
 }

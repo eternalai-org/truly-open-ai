@@ -14,6 +14,15 @@ type AgentInfra struct {
 	Icon         string           `gorm:"type:text"`
 }
 
+type AgentInfraInstall struct {
+	gorm.Model
+	Code         string `gorm:"unique_index"`
+	AgentInfraID uint   `gorm:"index"`
+	AgentInfra   *AgentInfra
+	UserID       uint `gorm:"index"`
+	User         *User
+}
+
 type (
 	AgentInfraTransactionType   string
 	AgentInfraTransactionStatus string

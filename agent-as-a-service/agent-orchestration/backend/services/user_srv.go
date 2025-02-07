@@ -10,6 +10,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/helpers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/jinzhu/gorm"
@@ -46,6 +47,32 @@ func (s *Service) GetUser(tx *gorm.DB, networkID uint64, address string, forUpda
 		err = s.dao.Save(tx, user)
 		if err != nil {
 			return nil, errs.NewError(err)
+		}
+	}
+	{
+		if user.EthAddress == "" {
+			address, err := s.CreateETHAddress(context.Background())
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			err = tx.Model(user).UpdateColumn("eth_address", address).Error
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			err = tx.Model(user).UpdateColumn("tron_address", trxapi.AddrEvmToTron(address)).Error
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+		}
+		if user.SolAddress == "" {
+			address, err := s.CreateSOLAddress(context.Background())
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
+			err = tx.Model(user).UpdateColumn("sol_address", address).Error
+			if err != nil {
+				return nil, errs.NewError(err)
+			}
 		}
 	}
 	if forUpdate {
