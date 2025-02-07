@@ -3,6 +3,8 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -142,6 +144,16 @@ func (s *Service) SaveAgentInfra(ctx context.Context, userAddress string, req *s
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
+			hostURL, err := url.Parse(req.ApiUrl)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if hostURL.Scheme != "https" {
+				return errs.NewError(errs.ErrBadRequest)
+			}
+			if !strings.Contains(hostURL.Host, ".") {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {
 				return errs.NewError(err)
