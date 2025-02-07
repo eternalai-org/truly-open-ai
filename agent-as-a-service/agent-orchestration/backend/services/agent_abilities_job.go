@@ -658,8 +658,8 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 						AgentBaseModel:       agentBaseModel,
 						ReactMaxSteps:        1,
 						InferTxHash:          inferTxHash,
-						AgentStoreMissionID:  agentStoreInstall.ID,
-						AgentStoreID:         agentStoreInstall.AgentStoreID,
+						AgentStoreMissionID:  agentStoreMission.ID,
+						AgentStoreID:         agentStoreMission.AgentStoreID,
 						IsRated:              false,
 						AgentStoreMissionFee: missionStoreFee,
 					}
