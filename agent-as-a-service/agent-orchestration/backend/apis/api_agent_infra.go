@@ -20,7 +20,7 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 		r := c.Request
 		w := c.Writer
 		infraId := s.stringFromContextParam(c, "infra_id")
-		apiKey := c.GetHeader("api-key")
+		// apiKey := c.GetHeader("api-key")
 		infra, err := s.nls.GetAgentInfra(context.Background(), infraId)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
@@ -30,12 +30,12 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 			return
 		}
-		agentInfraInstall, err := s.nls.ValidateUserInfraFee(context.Background(), apiKey)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-			return
-		}
-		var urlPath string
+		// agentInfraInstall, err := s.nls.ValidateUserInfraFee(context.Background(), apiKey)
+		// if err != nil {
+		// 	c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		// 	return
+		// }
+		// var urlPath string
 		director := func(req *http.Request) {
 			hostURL, err := url.Parse(infra.ApiUrl)
 			if err != nil {
@@ -43,6 +43,10 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 				return
 			}
 			if hostURL.Scheme != "https" {
+				c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
+				return
+			}
+			if !strings.Contains(hostURL.Host, ".") {
 				c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 				return
 			}
@@ -61,12 +65,12 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 			if os.Getenv("DEV") == "true" {
 				fmt.Printf("%s -> %s\n", r.URL.String(), req.URL.String())
 			}
-			urlPath = req.URL.String()
+			// urlPath = req.URL.String()
 		}
 		proxy := &httputil.ReverseProxy{
 			Director: director,
 		}
 		proxy.ServeHTTP(w, r)
-		_ = s.nls.ChargeUserInfraInstall(context.Background(), agentInfraInstall.ID, urlPath, w.Status())
+		// _ = s.nls.ChargeUserInfraInstall(context.Background(), agentInfraInstall.ID, urlPath, w.Status())
 	}
 }
