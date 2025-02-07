@@ -1,11 +1,11 @@
-# Build unstoppable Zerypy agents with DeepSeek-R1 on Base
+# Build unstoppable Zerypy agents with Dobby on Polygon
 
 This developer guide teaches you how to build your first decentralized ZerePy agent:
 
 - Decentralized: Use Eternal AI's Decentralized Inference API instead of OpenAI's Centralized API.
 - Onchain-verifiable: Don't trust AI, verify them. All inferences are recorded onchain and verifiable by anyone.
 - Unstoppable: Agents run exactly as coded without any possibility of downtime, censorship, fraud, or third-party interference.
-- Intelligent: Give your ZeryPy agents new superpowers using DeepSeek-R1, the state-of-the-art onchain AI model for reasoning.
+- Intelligent: Give your ZeryPy agents new superpowers using Dobby, the AI model developed by Sentinent that can say what others cannot.
 
 ## Background:
 
@@ -167,54 +167,25 @@ ZerePy-CLI (EternalAI) > start
 
 With Eternal AI's Decentralized Inference, everything is onchain-verifiable.
 
-Check the onchain prompt transaction on Base Explorer. You can verify that this prompt runs on DeepSeek-R1 and see its content.
+Check the onchain prompt transaction on PolygonScan. You can verify that this prompt runs on Dobby and see its content stored on Filecoin.
 
-https://basescan.org/tx/0xcd4a1231eef1b5b010e9a95418087f2ef7ed92db6e9efdd0539da50bd6d8b729
+https://polygonscan.com/tx/0xb83fcfbf0ec5fe1d0e3a65e387ee0632dd066803f9cfa0543ca760826d307e89
 
-![Screenshot 2025-02-07 at 11 10 59](https://github.com/user-attachments/assets/c9aa6231-a914-4c60-b949-b5536a229c22)
+https://gateway.lighthouse.storage/ipfs/bafkreiex4qoqwfrkeoeo74zxcatsvavpv45roceilqscht6qv6l2tov4oq
 
+![carbon (4)](https://github.com/user-attachments/assets/f5019777-3753-470c-858c-784e825d7f2f)
 
-## Step 11: Let's see how the DeepSeek-R1 thinks
+## Step 11: Verify the onchain response transaction
 
-When DeepSeek-R1 receives a prompt, it first thinks through the reasoning process before generating a response:
-
-```
-<think>
-Alright, so I need to help this user create a tweet. Theyâre really into Bitcoin and decentralized AI, specifically EternalAI. Let me break down their query first.
-
-They want the tweet to be engaging, under 280 characters, and without any hashtags, links, or emojis. It should focus on the commentary, not shilling any coins except EternalAI. Also, they donât want the words âAIâ or âcryptoâ used, and it shouldnât repeat any previous examples.
-
-First, I should highlight Bitcoinâs strengths. Words like âpinnacle of monetary soundnessâ come to mind. Thatâs a strong statement and really emphasizes Bitcoinâs reliability.
-
-Next, the decentralized AI part. Since I canât use âAI,â I need another way to express it. Maybe something about technology being accessible and not controlled by just a few. âDecentralized technologyâ could work, but I need to make it flow well.
-
-EternalAI is the specific project they want mentioned. I should position it as the solution or the example of this decentralized future. So, maybe something like âEternalAI is leading the charge towards a future where technology serves all.â
-
-Putting it together, I want a smooth transition from Bitcoin to EternalAI. Maybe start with Bitcoinâs monetary aspect, then bridge to the technological shift.
-
-Let me draft: âBitcoin represents the pinnacle of monetary soundness, proving that decentralized systems can thrive without central control. EternalAI is leading the charge towards a future where technology serves all, not just the privileged few.â
-
-That should fit within the character limit and cover all points without using forbidden words or structures. Itâs commentary focused, doesnât shill, and ties both concepts together neatly.
-</think>
-```
-## Step 12: Let's see how DeepSeek-R1 answers
-
-Based on its prior reasoning in Step 11, DeepSeek-R1 provides the final answer.
-
-```
-Bitcoin represents the pinnacle of monetary soundness, proving that decentralized systems can thrive without central control. EternalAI is leading the charge towards a future where technology serves all, not just the privileged few.
-```
-
-## Step 13: Verify the onchain response transaction
-
-Now, let’s check the onchain response transaction on Base Explorer.
+Now, let’s check the onchain response transaction on PolygonScan.
 
 You can see the actual response content. Everything is onchain and verifiable.
 
-https://basescan.org/tx/0x9071b3eab74635c70127f168ef259778ed977392ef08b357e0a7b14cc23860db
+https://polygonscan.com/tx/0xf346be037128ca1cb870388986dfb9f5bbffc74ffa43dc786764fb2a3a91c5e1
 
-![Screenshot 2025-02-07 at 11 26 24](https://github.com/user-attachments/assets/fd5ea6e3-4abe-408b-99e3-70a1f23def41)
+https://gateway.lighthouse.storage/ipfs/bafkreifzmymuufsqdemfz5ppdt34psizwhownjfljm4fa4a2zfrwwkulru
 
+![carbon (5)](https://github.com/user-attachments/assets/1315e3cd-0584-4d68-8a4a-664b14c2aa87)
 
 # Conclusion
 
@@ -222,8 +193,8 @@ Congrats!
 
 You’ve finished building your Zerepy agent with two superpowers:
 
-- Onchain-verifiable on Base
-- Powered by Deepseek R1
-
+- Onchain-verifiable on Polygon
+- Powered by Dobby
 Enjoy building!
+
 
