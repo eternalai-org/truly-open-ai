@@ -189,11 +189,17 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 	return nil
 }
 
-func (s *Service) GetListAgentStoreInstall(ctx context.Context, agentInfoID uint, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
+func (s *Service) GetListAgentStoreInstall(ctx context.Context, userAddress string, agentInfoID uint, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
+	filter := map[string][]interface{}{
+		"status = ?": {models.InstallStatusDone},
+	}
+	if agentInfoID > 0 {
+		filter["agent_info_id = ?"] = []interface{}{agentInfoID}
+	} else {
+		filter["user_address = ?"] = []interface{}{strings.ToLower(userAddress)}
+	}
 	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{
-			"status = ?": {models.InstallStatusDone},
-		},
+		filter,
 		map[string][]interface{}{
 			"AgentStore":                    {},
 			"AgentStore.AgentStoreMissions": {},
@@ -205,23 +211,31 @@ func (s *Service) GetListAgentStoreInstall(ctx context.Context, agentInfoID uint
 }
 
 func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress string, agentStoreID, agentInfoID uint) (*models.AgentStoreInstall, error) {
-	agentInfo, err := s.dao.FirstAgentInfoByID(daos.GetDBMainCtx(ctx), agentInfoID, map[string][]interface{}{}, true)
-	if err != nil {
-		return nil, errs.NewError(err)
-	}
-	if agentInfo == nil {
-		return nil, errs.NewError(errs.ErrBadRequest)
-	}
-	if !strings.EqualFold(agentInfo.Creator, userAddress) {
-		return nil, errs.NewError(errs.ErrBadRequest)
+	if agentInfoID > 0 {
+		agentInfo, err := s.dao.FirstAgentInfoByID(daos.GetDBMainCtx(ctx), agentInfoID, map[string][]interface{}{}, true)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+		if agentInfo == nil {
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
+
+		if !strings.EqualFold(agentInfo.Creator, userAddress) {
+			return nil, errs.NewError(errs.ErrBadRequest)
+		}
 	}
 	obj := &models.AgentStoreInstall{
 		Code:         helpers.RandomReferralCode(32),
 		AgentStoreID: agentStoreID,
 		AgentInfoID:  agentInfoID,
 		Status:       models.InstallStatusNew,
+		Type:         models.InstallTypeAgent,
 	}
-	err = s.dao.Create(daos.GetDBMainCtx(ctx), obj)
+	if agentInfoID == 0 {
+		obj.UserAddress = strings.ToLower(userAddress)
+		obj.Type = models.InstallTypeUser
+	}
+	err := s.dao.Create(daos.GetDBMainCtx(ctx), obj)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
