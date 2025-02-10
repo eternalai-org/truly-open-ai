@@ -27,6 +27,13 @@ services:
     ports:
       - "8545:8545"
 
+  redis_pubsub:
+    image: redis
+    restart: always
+    container_name: redis_pubsub
+    ports:
+      - "6380:6379"
+
   service_miner_base: &service_miner_base
     image:  service_miner
     build:

@@ -15,6 +15,7 @@ type LocalChain struct {
 	Platform             string            `json:"platform"`
 	ApiUrl               string            `json:"api_url"`
 	AgentContractAddress string            `json:"agent_contract_address"`
+	PubSubURL            string            `json:"pub_sub_url"`
 }
 
 type Miners struct {
