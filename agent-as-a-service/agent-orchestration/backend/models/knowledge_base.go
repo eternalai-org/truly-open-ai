@@ -20,6 +20,7 @@ const (
 const (
 	KnowledgeBaseFileStatusPending KnowledgeBaseFileStatus = iota + 1
 	KnowledgeBaseFileStatusDone
+	KnowledgeBaseFileStatusNotUsed
 )
 
 type KnowledgeBase struct {

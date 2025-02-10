@@ -17,16 +17,18 @@ type CreateKnowledgeRequest struct {
 }
 
 type UpdateKnowledgeRequest struct {
-	Name        string `json:"name" form:"name"`
-	Description string `json:"description" form:"description"`
-	NetworkID   uint64 `json:"network_id"`
-	UserAddress string `json:"user_address" form:"-"`
+	Name        string  `json:"name" form:"name"`
+	Description string  `json:"description" form:"description"`
+	NetworkID   uint64  `json:"network_id"`
+	UserAddress string  `json:"user_address" form:"-"`
+	Files       []*File `json:"files" form:"files"`
 }
 
 type File struct {
-	Url  string `json:"url" form:"url"`
-	Name string `json:"name" form:"name"`
-	Size uint   `json:"size" form:"size"`
+	Url          string `json:"url" form:"url"`
+	Name         string `json:"name" form:"name"`
+	Size         uint   `json:"size" form:"size"`
+	FilecoinHash string `json:"filecoin_hash"`
 }
 
 type KnowledgeBase struct {

@@ -505,20 +505,23 @@ func (uc *knowledgeUsecase) balanceOfAddress(_ context.Context, address string, 
 
 func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.KnowledgeBase) (*models.InsertRagResponse, error) {
 	resp := &models.InsertRagResponse{}
-	if uc.webhookUrl == "" {
-		uc.webhookUrl = "https://agent.api.eternalai.org/api/knowledge/webhook-file"
+	hash, err := uc.uploadKBFileToLighthouseAndProcess(ctx, kn)
+	if err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return nil, err
 	}
+
 	body := struct {
 		FileUrls []string `json:"file_urls"`
 		Ref      string   `json:"ref"`
 		Hook     string   `json:"hook"`
 	}{
-		FileUrls: kn.FileUrls(),
+		FileUrls: []string{fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", hash)},
 		Ref:      fmt.Sprintf("%d", kn.ID),
 		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
 	logger.Info(categoryNameTracer, "insert_file_to_rag", zap.Any("body", body))
-	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
+	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
 		Post(fmt.Sprintf("%s/api/insert", uc.ragApi))
@@ -548,4 +551,26 @@ func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId str
 
 func (uc *knowledgeUsecase) GetManyKnowledgeBaseByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error) {
 	return uc.knowledgeBaseRepo.GetManyByQuery(ctx, query, orderOption, offset, limit)
+}
+
+func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Context, kn *models.KnowledgeBase) (string, error) {
+	kn.Status = models.KnowledgeBaseStatusProcessing
+	updatedFields := make(map[string]interface{})
+	updatedFields["status"] = kn.Status
+	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf(" uc.knowledgeBaseRepo.UpdateById for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return "", err
+	}
+
+	result := []*lighthouse.FileInLightHouse{}
+	for _, f := range kn.KnowledgeBaseFiles {
+		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
+		if err != nil {
+			uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+			return "", err
+		}
+		result = append(result, r)
+	}
+	data, _ := json.Marshal(result)
+	return lighthouse.UploadData(uc.lighthouseKey, kn.Name, data)
 }
