@@ -86,7 +86,9 @@ func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*mo
 func (s *Service) GetAgentStoreDetail(ctx context.Context, id uint) (*models.AgentStore, error) {
 	res, err := s.dao.FirstAgentStoreByID(daos.GetDBMainCtx(ctx),
 		id,
-		map[string][]interface{}{}, false)
+		map[string][]interface{}{
+			"AgentStoreMissions": {},
+		}, false)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
