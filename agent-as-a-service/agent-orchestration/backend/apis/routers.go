@@ -48,6 +48,9 @@ func (s *Server) Routers() {
 		rootAPI.GET("/", func(c *gin.Context) {
 			ctxJSON(c, http.StatusOK, &serializers.Resp{Error: nil})
 		})
+		rootAPI.GET("/health", func(c *gin.Context) {
+			ctxJSON(c, http.StatusOK, &serializers.Resp{Error: nil})
+		})
 		rootAPI.GET("/configs/explorer", s.GetAllConfigsExplorer)
 		rootAPI.GET("/clear-cache", s.ClearCacheKey)
 		rootAPI.GET("/eai/supply/total", s.GetEAISupplyTotal)
@@ -276,7 +279,7 @@ func (s *Server) Routers() {
 		{
 			agentStoreAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.SaveAgentStore)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
-			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
+			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstallByUser)
 			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)
 			agentStoreAPI.POST("/:id/mission", s.authCheckTK1TokenMiddleware(), s.SaveMissionStore)
 			agentStoreAPI.GET("/:id/install-code/:agent_info_id", s.authCheckTK1TokenMiddleware(), s.GetAgentStoreInstallCode)
@@ -370,6 +373,9 @@ func (s *Server) Routers() {
 			sampleTwitterApp.POST("/tweet-message", s.SampleTwitterAppTweetMessage)
 		}
 
-		// rootAPI.Any("/infra/:infra_id/*path", s.proxyAgentInfraMiddleware("/api/infra"))
+		agentInfraAPI := rootAPI.Group("/infra")
+		{
+			agentInfraAPI.Any("/:infra_id/*path", s.proxyAgentStoreMiddleware("/api/infra"))
+		}
 	}
 }

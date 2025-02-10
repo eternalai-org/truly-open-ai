@@ -6,8 +6,10 @@ import (
 )
 
 type (
-	InstallStatus string
-	InstallType   string
+	InstallStatus    string
+	InstallType      string
+	AgentStoreType   string
+	AgentStoreStatus string
 )
 
 const (
@@ -15,18 +17,29 @@ const (
 	InstallStatusDone InstallStatus = "done"
 	InstallTypeAgent  InstallType   = "agent"
 	InstallTypeUser   InstallType   = "user"
+
+	AgentStoreTypeStore AgentStoreType = "store"
+	AgentStoreTypeInfra AgentStoreType = "infra"
+
+	AgentStoreStatusNew     AgentStoreStatus = "new"
+	AgentStoreStatusActived AgentStoreStatus = "actived"
 )
 
 type AgentStore struct {
 	gorm.Model
+	StoreId            string `gorm:"unique_index"`
+	Type               AgentStoreType
 	Name               string
 	Description        string `gorm:"type:text"`
 	OwnerAddress       string
 	OwnerID            uint
 	Owner              *User
-	AuthenUrl          string           `gorm:"type:longtext"`
-	EaiBalance         numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	Icon               string           `gorm:"type:text"`
+	AuthenUrl          string `gorm:"type:longtext"`
+	Docs               string `gorm:"type:longtext"`
+	ApiUrl             string `gorm:"type:longtext"`
+	Icon               string `gorm:"type:text"`
+	Status             AgentStoreStatus
+	Price              numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	AgentStoreMissions []*AgentStoreMission
 }
 
@@ -48,7 +61,8 @@ type AgentStoreMission struct {
 type AgentStoreInstall struct {
 	gorm.Model
 	Code           string `gorm:"unique_index"`
-	UserAddress    string
+	UserID         uint   `gorm:"index"`
+	User           *User
 	AgentStoreID   uint `gorm:"index"`
 	AgentInfoID    uint `gorm:"index"`
 	AgentStore     *AgentStore
@@ -77,4 +91,14 @@ type AgentStoreTransaction struct {
 	Amount       numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	Toolset      string
 	Status       AgentStoreTransactionStatus
+}
+
+type AgentStoreLog struct {
+	gorm.Model
+	AgentStoreInstallID uint
+	UserID              uint
+	AgentStoreID        uint
+	Price               numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
+	UrlPath             string           `gorm:"type:text"`
+	Status              int
 }

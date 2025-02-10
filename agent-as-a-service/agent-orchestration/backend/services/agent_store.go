@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -24,6 +26,23 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 			if err != nil {
 				return errs.NewError(err)
 			}
+			// validate for alpha
+			if req.ApiUrl != "" {
+				hostURL, err := url.Parse(req.ApiUrl)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if hostURL.Scheme != "https" {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				if !strings.Contains(hostURL.Host, ".") {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				err = helpers.CurlURL(req.ApiUrl+"/health", http.MethodGet, map[string]string{}, nil, nil)
+				if err != nil {
+					return errs.NewError(errs.ErrApiUrlNotHealth)
+				}
+			}
 			if req.ID > 0 {
 				agentStore, err = s.dao.FirstAgentStoreByID(tx, req.ID, map[string][]interface{}{}, true)
 				if err != nil {
@@ -35,30 +54,27 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 				if agentStore.OwnerID != user.ID {
 					return errs.NewError(errs.ErrBadRequest)
 				}
-				//update name vs description only
-				agentStore.Name = req.Name
-				agentStore.Description = req.Description
-				agentStore.AuthenUrl = req.AuthenUrl
-				agentStore.Icon = req.Icon
 			} else {
 				agentStore = &models.AgentStore{
-					OwnerAddress: userAddress,
-					Name:         req.Name,
-					Description:  req.Description,
-					AuthenUrl:    req.AuthenUrl,
-					Icon:         req.Icon,
+					Type:         req.Type,
+					StoreId:      helpers.RandomBigInt(12).Text(16),
 					OwnerID:      user.ID,
+					OwnerAddress: userAddress,
 				}
 			}
-			if err != nil {
-				return errs.NewError(err)
-			}
+			agentStore.Name = req.Name
+			agentStore.Description = req.Description
+			agentStore.AuthenUrl = req.AuthenUrl
+			agentStore.Icon = req.Icon
+			agentStore.Docs = req.Docs
+			agentStore.Status = req.Status
+			agentStore.ApiUrl = req.ApiUrl
+			agentStore.Price = req.Price
 			if agentStore.ID > 0 {
 				err = s.dao.Save(tx, agentStore)
 			} else {
 				err = s.dao.Create(tx, agentStore)
 			}
-
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -72,11 +88,16 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 }
 
 func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*models.AgentStore, uint, error) {
-	res, count, err := s.dao.FindAgentStore4Page(daos.GetDBMainCtx(ctx),
+	res, count, err := s.dao.FindAgentStore4Page(
+		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{},
 		map[string][]interface{}{
 			"AgentStoreMissions": {},
-		}, []string{"id desc"}, page, limit)
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
 	if err != nil {
 		return nil, 0, errs.NewError(err)
 	}
@@ -86,7 +107,11 @@ func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*mo
 func (s *Service) GetAgentStoreDetail(ctx context.Context, id uint) (*models.AgentStore, error) {
 	res, err := s.dao.FirstAgentStoreByID(daos.GetDBMainCtx(ctx),
 		id,
-		map[string][]interface{}{}, false)
+		map[string][]interface{}{
+			"AgentStoreMissions": {},
+		},
+		false,
+	)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
@@ -195,11 +220,7 @@ func (s *Service) GetListAgentStoreInstall(ctx context.Context, userAddress stri
 	filter := map[string][]interface{}{
 		"status = ?": {models.InstallStatusDone},
 	}
-	if agentInfoID > 0 {
-		filter["agent_info_id = ?"] = []interface{}{agentInfoID}
-	} else {
-		filter["user_address = ?"] = []interface{}{strings.ToLower(userAddress)}
-	}
+	filter["user_address = ?"] = []interface{}{strings.ToLower(userAddress)}
 	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
 		filter,
 		map[string][]interface{}{
@@ -221,27 +242,70 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 		if agentInfo == nil {
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
-
 		if !strings.EqualFold(agentInfo.Creator, userAddress) {
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
-	obj := &models.AgentStoreInstall{
-		Code:         helpers.RandomReferralCode(32),
-		AgentStoreID: agentStoreID,
-		AgentInfoID:  agentInfoID,
-		Status:       models.InstallStatusNew,
-		Type:         models.InstallTypeAgent,
-	}
-	if agentInfoID == 0 {
-		obj.UserAddress = strings.ToLower(userAddress)
-		obj.Type = models.InstallTypeUser
-	}
-	err := s.dao.Create(daos.GetDBMainCtx(ctx), obj)
+	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
-	return obj, nil
+	agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"agent_store_id = ?": {agentStoreID},
+			"agent_info_id = ?":  {agentInfoID},
+			"user_id = ?":        {user.ID},
+		},
+		map[string][]interface{}{},
+		[]string{},
+	)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	if agentStoreInstall == nil {
+		agentStoreInstall = &models.AgentStoreInstall{
+			Code:         helpers.RandomStringWithLength(64),
+			AgentStoreID: agentStoreID,
+			AgentInfoID:  agentInfoID,
+			Status:       models.InstallStatusNew,
+			Type:         models.InstallTypeAgent,
+			UserID:       user.ID,
+		}
+		if agentInfoID == 0 {
+			agentStoreInstall.Type = models.InstallTypeUser
+		}
+		err := s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreInstall)
+		if err != nil {
+			return nil, errs.NewError(err)
+		}
+	}
+	return agentStoreInstall, nil
+}
+
+func (s *Service) GetListAgentStoreInstallByUser(ctx context.Context, userAddress string, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
+	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	filter := map[string][]interface{}{
+		"user_id = ?": {user.ID},
+		"status = ?":  {models.InstallStatusDone},
+	}
+	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
+		filter,
+		map[string][]interface{}{
+			"AgentStore":                    {},
+			"AgentStore.AgentStoreMissions": {},
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
 }
 
 func (s *Service) GetMissionStoreResult(ctx context.Context, responseID string) (string, error) {

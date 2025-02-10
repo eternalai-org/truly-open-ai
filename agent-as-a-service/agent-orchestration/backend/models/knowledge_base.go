@@ -14,6 +14,7 @@ const (
 	KnowledgeBaseStatusDone
 	KnowledgeBaseStatusMinted
 	KnowledgeBaseStatusProcessingFailed
+	KnowledgeBaseStatusUpdated
 )
 
 const (

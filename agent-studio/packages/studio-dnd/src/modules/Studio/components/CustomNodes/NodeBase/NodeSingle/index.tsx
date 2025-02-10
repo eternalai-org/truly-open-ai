@@ -28,7 +28,12 @@ const NodeSingle = ({ data }: Props) => {
   const schemaData = option?.data;
 
   const productData: Omit<DraggableData, 'type'> = useMemo(
-    () => ({ optionKey: option?.idx, belongsTo: data.id, categoryKey: category?.idx }),
+    () => ({
+      optionKey: option?.idx,
+      belongsTo: data.id,
+      categoryKey: category?.idx,
+      id: data.id,
+    }),
     [data.id, option?.idx, category?.idx],
   );
 
@@ -54,7 +59,7 @@ const NodeSingle = ({ data }: Props) => {
           </Product>
         </div>
 
-        <ProductPlaceholder id={data.id} data={productData} />
+        <ProductPlaceholder id={data.id} data={productData} hidden={false} />
         <NodeBaseConnection />
       </div>
     </NodeBaseWrapper>

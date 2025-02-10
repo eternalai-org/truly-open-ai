@@ -8,6 +8,7 @@ export type DraggableData = DragAndDropData & {
   belongsTo?: string;
   childIndex?: number;
   isRoot?: boolean;
+  id?: string;
 };
 
 export type DroppableData = DragAndDropData & {};

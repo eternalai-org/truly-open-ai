@@ -4,7 +4,7 @@ import {
   OnMergePayload,
   OnSnapPayload,
 } from "@agent-studio/studio-dnd";
-import { onlyOptionSameCategoryInTree } from "../../../utils/validate";
+import { onlyOptionSameCategoryInTree } from "../../shared/validators";
 
 const onAddValidate = (data: OnAddPayload) => {
   return onlyOptionSameCategoryInTree(data);

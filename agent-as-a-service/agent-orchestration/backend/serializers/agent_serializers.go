@@ -54,6 +54,7 @@ type AgentSnapshotMissionInfo struct {
 	Tokens              string                    `json:"tokens"`
 	AgentBaseModel      string                    `json:"agent_base_model"`
 	AgentStoreMissionID uint                      `json:"agent_store_mission_id"`
+	AgentStoreID        uint                      `json:"agent_store_id"`
 	MissionStoreParams  map[string]string         `json:"mission_store_params"`
 	Topics              string                    `json:"topics"`
 	IsTwitterSearch     bool                      `json:"is_twitter_search"`
@@ -208,7 +209,9 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		MinTokenHolding:     m.MinTokenHolding,
 		LookupInterval:      m.LookupInterval,
 		AgentStoreMissionID: m.AgentStoreMissionID,
+		AgentStoreID:        m.AgentStoreID,
 	}
+
 	if m.AgentStoreMissionID > 0 {
 		resp.ToolList = ""
 	}

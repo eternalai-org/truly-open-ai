@@ -4,18 +4,19 @@ import {
   OnMergePayload,
   OnSnapPayload,
 } from "@agent-studio/studio-dnd";
+import { onlyOptionSameCategoryInTree } from "../../shared/validators";
 
 const onAddValidate = (data: OnAddPayload) => {
-  return false;
+  return onlyOptionSameCategoryInTree(data);
 };
 const onSnapValidate = (data: OnSnapPayload) => {
-  return false;
+  return onlyOptionSameCategoryInTree(data);
 };
 const onSplitValidate = () => {
-  return false;
+  return true;
 };
 const onMergeValidate = (data: OnMergePayload) => {
-  return false;
+  return onlyOptionSameCategoryInTree(data);
 };
 const onDropInValidate = (data: OnCreatePayload) => {
   return false;

@@ -6,20 +6,30 @@ import reportWebVitals from "./reportWebVitals";
 
 import { ChakraProvider } from "@chakra-ui/react";
 import chakraThemes from "./chakra-themes";
-import { Toaster } from "react-hot-toast";
 import { BrowserRouter } from "react-router";
+import GlobalDataProvider from "./providers/GlobalDataProvider";
+import ToastOverlay from "./components/ToastOverlay";
+
+if (process.env.NODE_ENV !== "production") {
+  // @ts-ignore
+  import("hide-cra-error-overlay").then(({ initHideOverlay }) =>
+    initHideOverlay()
+  );
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <ChakraProvider theme={chakraThemes}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ChakraProvider>
-    <Toaster />
+    <GlobalDataProvider>
+      <ChakraProvider theme={chakraThemes}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ChakraProvider>
+    </GlobalDataProvider>
+    <ToastOverlay />
   </React.StrictMode>
 );
 

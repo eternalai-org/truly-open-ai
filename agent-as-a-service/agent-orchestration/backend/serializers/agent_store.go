@@ -8,11 +8,16 @@ import (
 )
 
 type AgentStoreReq struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	AuthenUrl   string `json:"authen_url"`
-	Icon        string `json:"icon"`
+	ID          uint `json:"id"`
+	Type        models.AgentStoreType
+	Name        string                  `json:"name"`
+	Description string                  `json:"description"`
+	AuthenUrl   string                  `json:"authen_url"`
+	Icon        string                  `json:"icon"`
+	Docs        string                  `json:"docs"`
+	ApiUrl      string                  `json:"api_url"`
+	Price       numeric.BigFloat        `json:"price"`
+	Status      models.AgentStoreStatus `json:"status"`
 }
 
 type AgentStoreMissionReq struct {

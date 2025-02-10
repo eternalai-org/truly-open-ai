@@ -30,8 +30,9 @@ function NodeBaseWrapper({ id, data, option, children }: Props) {
       belongsTo: id,
       optionKey: option.idx,
       categoryKey: useStudioCategoryStore.getState().findCategoryByOptionKey(option.idx)?.idx,
+      id: data.id,
     } satisfies Omit<DraggableData, 'type'>;
-  }, [data, option]);
+  }, [id, option.idx, data.id]);
 
   if (option?.boxWrapper) {
     if (option.boxWrapper.render) {
@@ -54,7 +55,7 @@ function NodeBaseWrapper({ id, data, option, children }: Props) {
   if (isHaveLinkedChildren) {
     return (
       <Package
-        id={option.idx}
+        id={data.id}
         data={extendedData}
         className={cs('node-base-wrapper', { 'node-base-wrapper--linked': isHaveLinkedChildren })}
       >
@@ -64,7 +65,7 @@ function NodeBaseWrapper({ id, data, option, children }: Props) {
   }
 
   return (
-    <Package id={option.idx} data={extendedData} className="node-base-wrapper">
+    <Package id={data.id} data={extendedData} className="node-base-wrapper">
       {children}
     </Package>
   );

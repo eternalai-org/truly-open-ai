@@ -573,33 +573,254 @@ const args = {
             },
             'categoryIdx': 'personality',
           },
+          {
+            'id': '307e60ef-cf1e-4584-b343-830cac55035f',
+            'idx': 'decentralize_inference_hermes_3_70b',
+            'title': 'Hermes 3 70B',
+            'children': [],
+            'data': {
+              'decentralizeId': 'NousResearch/Hermes-3-Llama-3.1-70B-FP8',
+            },
+            'rect': {
+              'position': {
+                'x': -356.325830278392,
+                'y': 579.7615898194902,
+              },
+            },
+            'categoryIdx': 'decentralized_inference',
+          },
+          {
+            'id': '0989eac7-90e5-4d41-86d2-4e3006c0d5fa',
+            'idx': 'blockchain_base',
+            'title': 'Base',
+            'children': [],
+            'data': {
+              'chainId': 'base',
+            },
+            'rect': {
+              'position': {
+                'x': -344.171875,
+                'y': 561,
+              },
+            },
+            'categoryIdx': 'blockchain',
+          },
+          {
+            'id': '56398488-5df3-48f5-b660-a58c0ceab703',
+            'idx': 'ai_framework_eternal_ai',
+            'title': 'Eternal AI',
+            'children': [],
+            'data': {
+              'aiFrameworkId': 'ai_framework_eternal_ai',
+            },
+            'rect': {
+              'position': {
+                'x': -333.171875,
+                'y': 560,
+              },
+            },
+            'categoryIdx': 'ai_framework',
+          },
+          {
+            'id': 'f6f0ba36-b89a-4334-abe1-11b125a5d4c2',
+            'idx': 'decentralize_inference_hermes_3_70b',
+            'title': 'Hermes 3 70B',
+            'children': [],
+            'data': {
+              'decentralizeId': 'NousResearch/Hermes-3-Llama-3.1-70B-FP8',
+            },
+            'rect': {
+              'position': {
+                'x': -409.171875,
+                'y': 705,
+              },
+            },
+            'categoryIdx': 'decentralized_inference',
+          },
+          {
+            'id': 'e141c450-4033-4fd1-b1e0-ca7eaa441d2b',
+            'idx': 'token_base',
+            'title': 'Token on Base',
+            'children': [],
+            'data': {
+              'tokenId': '8453',
+            },
+            'rect': {
+              'position': {
+                'x': -456.171875,
+                'y': 724,
+              },
+            },
+            'categoryIdx': 'token',
+          },
+          {
+            'id': '0b2a65a8-7954-42d8-b775-07028aeb996f',
+            'idx': 'blockchain_symbiosis',
+            'title': 'Symbiosis',
+            'children': [],
+            'data': {
+              'chainId': 'symbiosis',
+            },
+            'rect': {
+              'position': {
+                'x': -437.171875,
+                'y': 565,
+              },
+            },
+            'categoryIdx': 'blockchain',
+          },
+          {
+            'id': '6760e0ac-5f11-42dd-b892-41e9bdf237cc',
+            'idx': 'ai_framework_eternal_ai',
+            'title': 'Eternal AI',
+            'children': [],
+            'data': {
+              'aiFrameworkId': 'ai_framework_eternal_ai',
+            },
+            'rect': {
+              'position': {
+                'x': -436.171875,
+                'y': 555,
+              },
+            },
+            'categoryIdx': 'ai_framework',
+          },
+          {
+            'id': '90685e57-5c1a-45d5-9ac8-303776a82ee5',
+            'idx': 'blockchain_bnb',
+            'title': 'BNB',
+            'children': [],
+            'data': {
+              'chainId': 'bsc',
+            },
+            'rect': {
+              'position': {
+                'x': -429.171875,
+                'y': 577,
+              },
+            },
+            'categoryIdx': 'blockchain',
+          },
+          {
+            'id': '2bc99401-1bac-4951-a031-fc2636417035',
+            'idx': 'decentralize_inference_intellect_1_10b',
+            'title': 'INTELLECT 1 10B',
+            'children': [],
+            'data': {
+              'decentralizeId': 'PrimeIntellect/INTELLECT-1-Instruct',
+            },
+            'rect': {
+              'position': {
+                'x': -489.171875,
+                'y': 685,
+              },
+            },
+            'categoryIdx': 'decentralized_inference',
+          },
+          {
+            'id': '507e468d-e189-476c-b55d-36c9063a438b',
+            'idx': 'mission_on_x_post',
+            'title': 'Post on X',
+            'children': [],
+            'data': {},
+            'rect': {
+              'position': {
+                'x': -629.171875,
+                'y': 913,
+              },
+            },
+            'categoryIdx': 'mission_on_x',
+          },
         ],
         'data': {
           'agentName': '',
         },
         'rect': {
           'position': {
-            'x': 85,
-            'y': 143.5,
+            'x': -445,
+            'y': 310.5,
           },
         },
         'categoryIdx': 'agent',
       },
       {
-        'id': '307e60ef-cf1e-4584-b343-830cac55035f',
-        'idx': 'decentralize_inference_hermes_3_70b',
-        'title': 'Hermes 3 70B',
-        'children': [],
-        'data': {
-          'decentralizeId': 'NousResearch/Hermes-3-Llama-3.1-70B-FP8',
-        },
+        'id': '8a0487c6-ce57-49ab-b52b-6a239e8bbd32',
+        'idx': 'personality_customize',
+        'title': 'New personality',
+        'children': [
+          {
+            'id': '41947e7d-9590-4482-9693-2dda468a6010',
+            'idx': 'ai_framework_eternal_ai',
+            'title': 'Eternal AI',
+            'children': [],
+            'data': {
+              'aiFrameworkId': 'ai_framework_eternal_ai',
+            },
+            'rect': {
+              'position': {
+                'x': 536.828125,
+                'y': 375,
+              },
+            },
+            'categoryIdx': 'ai_framework',
+          },
+          {
+            'id': '4ddb7e2a-3eb1-4fbc-81b7-aff8d02b2c1f',
+            'idx': 'blockchain_ape_chain',
+            'title': 'Ape Chain',
+            'children': [],
+            'data': {
+              'chainId': 'ape',
+            },
+            'rect': {
+              'position': {
+                'x': 393.828125,
+                'y': 366,
+              },
+            },
+            'categoryIdx': 'blockchain',
+          },
+          {
+            'id': 'd9227871-6e69-4362-845c-14a570aa9450',
+            'idx': 'decentralize_inference_intellect_1_10b',
+            'title': 'INTELLECT 1 10B',
+            'children': [],
+            'data': {
+              'decentralizeId': 'PrimeIntellect/INTELLECT-1-Instruct',
+            },
+            'rect': {
+              'position': {
+                'x': 363.828125,
+                'y': 435,
+              },
+            },
+            'categoryIdx': 'decentralized_inference',
+          },
+          {
+            'id': '758ed68d-6e00-4e95-9b41-8fd1dd03144d',
+            'idx': 'decentralize_inference_llama_3_1_405b',
+            'title': 'Llama 3.1 405B',
+            'children': [],
+            'data': {
+              'decentralizeId': 'neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16',
+            },
+            'rect': {
+              'position': {
+                'x': 470.828125,
+                'y': 374,
+              },
+            },
+            'categoryIdx': 'decentralized_inference',
+          },
+        ],
+        'data': {},
         'rect': {
           'position': {
-            'x': 94.67416972160802,
-            'y': 375.7615898194902,
+            'x': 360.828125,
+            'y': 351,
           },
         },
-        'categoryIdx': 'decentralized_inference',
+        'categoryIdx': 'personality',
       },
     ],
     'viewport': {
@@ -627,6 +848,7 @@ export const AgentStudio: Story = {
           {...args}
           categories={cate}
           ref={ref}
+          isDebugger
           onChange={(data) => {
             console.log('[Studio] onChange', data);
             // disable personality if have existed
