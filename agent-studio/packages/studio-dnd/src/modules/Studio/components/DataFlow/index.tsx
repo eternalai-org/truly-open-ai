@@ -153,16 +153,18 @@ function Publish({ onChange }: { onChange?: (graphData: GraphData) => void }) {
     onChangeRef.current = onChange;
   }, [onChange]);
 
+  const viewportDelay = useThrottleValue(viewport, 500);
+
   useEffect(() => {
     if (!isDragging) {
       if (onChangeRef.current) {
         onChangeRef.current({
           data,
-          viewport,
+          viewport: viewportDelay,
         } satisfies GraphData);
       }
     }
-  }, [data, viewport, isDragging]);
+  }, [data, viewportDelay, isDragging]);
 
   return <></>;
 }

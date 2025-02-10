@@ -12,7 +12,9 @@ class AgentFullname(str, Enum):
 
 class ModelName(str, Enum):
     INTELLECT_10B = "PrimeIntellect/INTELLECT-1-Instruct"
-    DEEPSEEK_R1 = "DeepSeek-R1-Distill-Llama-70B"
+    DEEPSEEK_R1 = "DeepSeek-R1"
+    DEEPSEEK_V3 = "DeepSeek V3"
+    DEEPSEEK_R1_DISTILL_LLAMA_70B = "DeepSeek-R1-Distill-Llama-70B"
 
 
 class HTTPMethod(str, Enum):
@@ -65,6 +67,9 @@ if isinstance(USE_RQ, str):
 REDIS_LOG_BASE_KEY = get_and_warn(
     "REDIS_LOG_BASE_KEY", "ReactAgentReasoningLog-state-1"
 )
+REDIS_CHAT_REQUEST_BASE_KEY = get_and_warn(
+    "REDIS_CHAT_REQUEST_BASE_KEY", "ChatRequest-state-1"
+)
 APP_ENV = get_and_warn("APP_ENV")
 RUN_SERVICE_V2: bool = get_and_warn("RUN_SERVICE_V2") or False
 
@@ -100,7 +105,6 @@ ALL_BLACKLIST = [
 GAME_TASKS_WHITELIST = [
     AgentUsername.CRYPTOCOMIC_AI,
 ]
-
 
 GCP_MEME_IMAGES_FOLDER = get_and_warn("GCP_MEME_IMAGES_FOLDER")
 GCP_BUCKET_NAME = get_and_warn("GCP_BUCKET_NAME")

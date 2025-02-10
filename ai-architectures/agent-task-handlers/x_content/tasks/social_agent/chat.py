@@ -2,10 +2,11 @@ from x_content.tasks.utils import a_move_state
 from x_content.tasks.base import MultiStepTaskBase
 from json_repair import repair_json
 from x_content.utils import parse_knowledge_ids
+from x_content.wrappers.conversation import get_llm_result_by_model_name
 from x_content.wrappers.knowledge_base.local import KBStore
 from x_content.models import AgentKnowledgeBase, ReasoningLog
 from x_content.models import ReasoningLog, MissionChainState
-from x_content.llm.eternal_ai import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 from x_content import constants as const
 
 
@@ -52,6 +53,7 @@ Using the information above to generate a concise and effective response to the 
                     messages, temperature=0.7
                 )
                 content = result.generations[0].message.content
+                content = get_llm_result_by_model_name(content, log.model)
                 parsed_content = repair_json(content, return_objects=True)
 
                 if "query" not in parsed_content:
@@ -95,9 +97,9 @@ Using the information above to generate a concise and effective response to the 
             result: OnchainInferResult = await self.llm.agenerate(
                 messages, temperature=0.7
             )
-            log.execute_info["task_result"] = result.generations[
-                0
-            ].message.content
+            content = result.generations[0].message.content
+            content = get_llm_result_by_model_name(content, log.model)
+            log.execute_info["task_result"] = content
             return await a_move_state(
                 log, MissionChainState.DONE, "Task completed"
             )

@@ -3,8 +3,7 @@ import logging
 from json_repair import repair_json
 
 from x_content.constants import ToolSet
-from x_content.llm.base import OpenAILLMBase
-from x_content.llm.eternal_ai import OnchainInferResult
+from x_content.llm.base import OpenAILLMBase, OnchainInferResult
 from x_content.models import (
     ToolDef,
     ToolParam,
@@ -14,6 +13,7 @@ from x_content.models import (
 )
 from x_content.wrappers.conversation import (
     get_enhance_tweet_conversation,
+    get_llm_result_by_model_name,
     get_reply_tweet_conversation,
 )
 from x_content.wrappers import bing_search, trading
@@ -32,7 +32,7 @@ from x_content.wrappers.api.twitter_v2.models.response import (
     Response,
     TweetsDto,
 )
-from x_content.wrappers.magic import retry, sync2async
+from x_content.wrappers.magic import get_agent_llm_first_interval, retry, sync2async
 from x_content.wrappers.postprocess import postprocess_tweet_by_prompts
 from x_content.wrappers.tweet_specialty import TweetSpecialty, detect_tweet_specialties
 from x_content.wrappers.twin_agent import get_random_example_tweets
@@ -178,15 +178,18 @@ class LiveXDB(IToolCall):
             result: OnchainInferResult = await self.llm.agenerate(
                 enhance_tweet_conversation, temperature=0.01
             )
-            assistant_message = result.generations[0].message.content
-            data = repair_json(assistant_message, return_objects=True)
+            content = result.generations[0].message.content
+            content = get_llm_result_by_model_name(
+                content, self.auth.model_name
+            )
+            data = repair_json(content, return_objects=True)
             return data["tweet"]
 
         try:
             enhanced_tweet = await retry(
                 get_enhanced_tweet,
                 max_retry=3,
-                first_interval=60,
+                first_interval=get_agent_llm_first_interval(),
                 interval_multiply=2,
             )()
         except Exception as err:
@@ -221,6 +224,7 @@ class LiveXDB(IToolCall):
             "tool_call": "tweet_with_enhancement",
             "original_tweet": content,
             "enhanced_tweet": enhanced_tweet,
+            "postprocessed_tweet": postprocessed_tweet,
         }
 
         if not resp.data.success:
@@ -277,15 +281,18 @@ class LiveXDB(IToolCall):
             result: OnchainInferResult = await self.llm.agenerate(
                 conversational_chat, temperature=0.7
             )
-            assistant_message = result.generations[0].message.content
-            data = repair_json(assistant_message, return_objects=True)
+            content = result.generations[0].message.content
+            content = get_llm_result_by_model_name(
+                content, self.auth.model_name
+            )
+            data = repair_json(content, return_objects=True)
             return data["tweet"]
 
         try:
             reply_tweet = await retry(
                 get_reply_tweet,
                 max_retry=3,
-                first_interval=60,
+                first_interval=get_agent_llm_first_interval(),
                 interval_multiply=2,
             )()
         except Exception as err:

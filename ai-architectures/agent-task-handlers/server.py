@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 from typing import Optional
 import threading
-from x_content.service import handle_pod_shutdown, scan_db_and_resume_tasks
+from x_content.service import handle_pod_shutdown, scan_db_and_resume_chat_requests, scan_db_and_resume_tasks
 from x_content import constants as const
 from x_content import __version__
 import uvicorn
@@ -104,6 +104,13 @@ def _setup_scheduling():
 
             non_blocking_io_resume_task.start()
 
+            # non_blocking_io_resume_chat_requests = threading.Thread(
+            #     target=asyncio.run,
+            #     args=(scan_db_and_resume_chat_requests(),),
+            #     daemon=True,
+            # )
+
+            # non_blocking_io_resume_chat_requests.start()
         else:
             logger.info("Non-blocking IO task is already running. Skipping...")
 
