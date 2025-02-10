@@ -7,10 +7,10 @@ import {twitterStorage} from "./storage";
 
 const getRedirectUrl = (prams: {
     install_code: string
-    app_id: string,
     agent_id: string,
+    store_url: string
 }) => {
-    return `${process.env.TWITTER_APP_STORE_URL}/api/webhook/twitter-oauth?install_code=${prams?.install_code}`;
+    return `${prams.store_url}/api/webhook/twitter-oauth?install_code=${prams?.install_code}&agent_id=${prams?.agent_id}`;
 }
 
 export function twitterRouters() {
@@ -28,11 +28,19 @@ export function twitterRouters() {
     });
 
     router.get("/api/install", (req, res) => {
-        const install_code = req.query?.install_code;
+        const install_code = (req.query?.install_code || "") as string;
+        const agent_id = (req.query?.agent_id || "") as string;
 
-        console.log(`${TWITTER_APP_STORE_URL}/api/webhook/twitter-oauth?install_code=${install_code}`);
+        if (!install_code || !agent_id) {
+            res.send("Error: install_code and agent_id are required");
+            return;
+        }
 
-        const redirect_uri = `${TWITTER_APP_STORE_URL}/api/webhook/twitter-oauth?install_code=${install_code}`;
+        const redirect_uri = getRedirectUrl({
+            install_code,
+            agent_id,
+            store_url: TWITTER_APP_STORE_URL
+        });
         const callbackUrl = getTwitterOauthUrl({
             client_id: TWITTER_APP_CLIENT_ID,
             redirect_uri: redirect_uri
@@ -44,8 +52,13 @@ export function twitterRouters() {
 
     router.get("/api/webhook/twitter-oauth", async (req, res) => {
         const code = req.query?.code as string;
-        const install_code = req.query?.install_code;
-        const redirect_uri = `${TWITTER_APP_STORE_URL}/api/webhook/twitter-oauth?install_code=${install_code}`
+        const install_code = req.query?.install_code as string;
+        const agent_id = req.query?.agent_id as string;
+        const redirect_uri = getRedirectUrl({
+            install_code,
+            agent_id,
+            store_url: TWITTER_APP_STORE_URL
+        });
 
         const username = TWITTER_APP_CLIENT_ID;
         const password = TWITTER_APP_CLIENT_SECRET;
@@ -73,14 +86,15 @@ export function twitterRouters() {
                 accessToken,
                 refreshToken,
                 install_code,
-                api_key
+                api_key,
+                agent_id
             }))
 
             const return_data = Buffer.from(JSON.stringify({
                 api_key
             })).toString('base64');
 
-            res.redirect(`https://eternalai.org/agents/edit-mission?install_code=${install_code}&return_data=${return_data}`)
+            res.redirect(`https://eternalai.org/agents/edit-mission/${agent_id}?install_code=${install_code}&return_data=${return_data}`)
 
         } catch (e: any) {
             res.send("Error: " + e?.message ? e.message : e);
