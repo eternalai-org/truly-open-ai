@@ -2200,7 +2200,8 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						tx,
 						snapshotPostID,
 						map[string][]interface{}{
-							"AgentInfo": {},
+							"AgentInfo":        {},
+							"AgentStore.Owner": {},
 						},
 						true,
 					)
@@ -2224,26 +2225,50 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						if err != nil {
 							return errs.NewError(err)
 						}
-						err = tx.Model(agentInfo).
-							UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
-							Error
-						if err != nil {
-							return errs.NewError(err)
+						if inferPost.AgentStoreID > 0 {
+							if inferPost.AgentStore != nil &&
+								inferPost.AgentStoreMissionFee.Float.Cmp(big.NewFloat(0)) > 0 {
+								owner := inferPost.AgentStore.Owner
+								err = tx.Model(owner).
+									UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.AgentStoreMissionFee)).
+									Error
+								if err != nil {
+									return errs.NewError(err)
+								}
+								_ = s.dao.Create(
+									tx,
+									&models.UserTransaction{
+										NetworkID: inferPost.NetworkID,
+										EventId:   fmt.Sprintf("agent_trigger_refund_%d", inferPost.ID),
+										UserID:    owner.ID,
+										Type:      models.UserTransactionTypeAgentStoreFee,
+										Amount:    inferPost.AgentStoreMissionFee,
+										Status:    models.UserTransactionStatusDone,
+									},
+								)
+							}
+						} else {
+							err = tx.Model(agentInfo).
+								UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
+								Error
+							if err != nil {
+								return errs.NewError(err)
+							}
+							_ = s.dao.Create(
+								tx,
+								&models.AgentEaiTopup{
+									NetworkID:      agentInfo.NetworkID,
+									EventId:        fmt.Sprintf("agent_trigger_refund_%d", inferPost.ID),
+									AgentInfoID:    agentInfo.ID,
+									Type:           models.AgentEaiTopupTypeRefund,
+									Amount:         inferPost.Fee,
+									Status:         models.AgentEaiTopupStatusDone,
+									DepositAddress: agentInfo.ETHAddress,
+									ToAddress:      agentInfo.ETHAddress,
+									Toolset:        toolSet,
+								},
+							)
 						}
-						_ = s.dao.Create(
-							tx,
-							&models.AgentEaiTopup{
-								NetworkID:      agentInfo.NetworkID,
-								EventId:        fmt.Sprintf("agent_trigger_refund_%d", inferPost.ID),
-								AgentInfoID:    agentInfo.ID,
-								Type:           models.AgentEaiTopupTypeRefund,
-								Amount:         inferPost.Fee,
-								Status:         models.AgentEaiTopupStatusDone,
-								DepositAddress: agentInfo.ETHAddress,
-								ToAddress:      agentInfo.ETHAddress,
-								Toolset:        toolSet,
-							},
-						)
 					}
 					if inferPost != nil &&
 						inferPost.Status == models.AgentSnapshotPostStatusInferError &&

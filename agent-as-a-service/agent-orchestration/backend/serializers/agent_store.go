@@ -54,6 +54,7 @@ func NewAgentStoreResp(m *models.AgentStore) *AgentStoreResp {
 		AgentStoreMissions: NewAgentStoreMissionRespArray(m.AgentStoreMissions),
 	}
 }
+
 func NewAgentStoreRespArray(arr []*models.AgentStore) []*AgentStoreResp {
 	resps := []*AgentStoreResp{}
 	for _, r := range arr {

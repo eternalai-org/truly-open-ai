@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 
@@ -139,7 +140,7 @@ func (s *Service) ChargeUserInfraInstall(ctx context.Context, agentInfraInstallI
 	return nil
 }
 
-func (s *Service) SaveAgentInfra(ctx context.Context, userAddress string, req *serializers.AgentInfraReq) (*models.AgentInfra, error) {
+func (s *Service) CreateOrUpdateAgentInfra(ctx context.Context, userAddress string, req *serializers.AgentInfraReq) (*models.AgentInfra, error) {
 	var agentInfra *models.AgentInfra
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
@@ -153,6 +154,10 @@ func (s *Service) SaveAgentInfra(ctx context.Context, userAddress string, req *s
 			}
 			if !strings.Contains(hostURL.Host, ".") {
 				return errs.NewError(errs.ErrBadRequest)
+			}
+			err = helpers.CurlURL(req.ApiUrl+"/health", http.MethodGet, map[string]string{}, nil, nil)
+			if err != nil {
+				return errs.NewError(errs.ErrApiUrlNotHealth)
 			}
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {

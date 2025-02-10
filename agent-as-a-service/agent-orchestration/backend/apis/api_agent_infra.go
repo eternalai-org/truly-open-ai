@@ -35,7 +35,7 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 		// 	c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		// 	return
 		// }
-		// var urlPath string
+		var urlPath string
 		director := func(req *http.Request) {
 			hostURL, err := url.Parse(infra.ApiUrl)
 			if err != nil {
@@ -62,10 +62,10 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 				v := c.GetHeader(k)
 				req.Header.Set(k, v)
 			}
+			urlPath = req.URL.String()
 			if os.Getenv("DEV") == "true" {
-				fmt.Printf("%s -> %s\n", r.URL.String(), req.URL.String())
+				fmt.Printf("%s -> %s\n", r.URL.String(), urlPath)
 			}
-			// urlPath = req.URL.String()
 		}
 		proxy := &httputil.ReverseProxy{
 			Director: director,
@@ -73,4 +73,24 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 		proxy.ServeHTTP(w, r)
 		// _ = s.nls.ChargeUserInfraInstall(context.Background(), agentInfraInstall.ID, urlPath, w.Status())
 	}
+}
+
+func (s *Server) CreateOrUpdateAgentInfra(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.AgentInfraReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	obj, err := s.nls.CreateOrUpdateAgentInfra(ctx, userAddress, &req)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraResp(obj)})
 }
