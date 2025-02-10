@@ -377,7 +377,8 @@ func (s *Server) Routers() {
 		{
 			agentInfraAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.CreateOrUpdateAgentInfra)
 			agentInfraAPI.GET("/list", s.GetListAgentInfra)
-			agentInfraAPI.GET("/install/list", s.GetListAgentStoreInstall)
+			agentInfraAPI.GET("/list-by-user", s.GetListAgentInfra)
+			agentInfraAPI.GET("/install/list", s.GetListAgentInfraInstall)
 			agentInfraAPI.GET("/detail/:id", s.GetAgentInfraDetail)
 			agentInfraAPI.GET("/install-code/:id", s.authCheckTK1TokenMiddleware(), s.GetAgentInfraInstallCode)
 			agentInfraAPI.Any("/data/:infra_id/*path", s.proxyAgentInfraMiddleware("/api/agent-infra/data"))

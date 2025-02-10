@@ -27,6 +27,15 @@ type AgentInfra struct {
 	Price        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 }
 
+type (
+	AgentInfraInstallStatus string
+)
+
+const (
+	AgentInfraInstallStatusNew  AgentInfraInstallStatus = "new"
+	AgentInfraInstallStatusDone InstallStatus           = "done"
+)
+
 type AgentInfraInstall struct {
 	gorm.Model
 	Code         string `gorm:"unique_index"`
@@ -34,6 +43,7 @@ type AgentInfraInstall struct {
 	AgentInfra   *AgentInfra
 	UserID       uint `gorm:"index"`
 	User         *User
+	Status       AgentInfraInstallStatus
 }
 
 type AgentInfraLog struct {

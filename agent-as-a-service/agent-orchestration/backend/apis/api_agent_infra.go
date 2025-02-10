@@ -106,6 +106,22 @@ func (s *Server) GetListAgentInfra(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraRespArray(res), Count: &count})
 }
 
+func (s *Server) GetListAgentInfraByUser(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	res, count, err := s.nls.GetListAgentInfraByUser(ctx, userAddress, page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraRespArray(res), Count: &count})
+}
+
 func (s *Server) GetAgentInfraDetail(c *gin.Context) {
 	ctx := s.requestContext(c)
 	res, err := s.nls.GetAgentInfraDetail(ctx, s.uintFromContextParam(c, "id"))
@@ -130,4 +146,20 @@ func (s *Server) GetAgentInfraInstallCode(c *gin.Context) {
 		return
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: res.Code})
+}
+
+func (s *Server) GetListAgentInfraInstallByUser(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	res, count, err := s.nls.GetListAgentInfraInstallByUser(ctx, userAddress, page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraInstallRespArray(res), Count: &count})
 }

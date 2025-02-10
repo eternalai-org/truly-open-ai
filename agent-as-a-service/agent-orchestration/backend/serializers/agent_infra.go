@@ -60,3 +60,36 @@ func NewAgentInfraRespArray(arr []*models.AgentInfra) []*AgentInfraResp {
 	}
 	return resps
 }
+
+type AgentInfraInstallResp struct {
+	ID           uint            `json:"id"`
+	CreatedAt    time.Time       `json:"created_at"`
+	Code         string          `json:"code"`
+	AgentInfraID uint            `json:"agent_infra_id"`
+	AgentInfra   *AgentInfraResp `json:"agent_infra"`
+	UserID       uint            `json:"user_id"`
+	User         *UserResp       `json:"user"`
+}
+
+func NewAgentInfraInstallResp(m *models.AgentInfraInstall) *AgentInfraInstallResp {
+	if m == nil {
+		return nil
+	}
+	return &AgentInfraInstallResp{
+		ID:           m.ID,
+		CreatedAt:    m.CreatedAt,
+		Code:         m.Code,
+		AgentInfraID: m.AgentInfraID,
+		AgentInfra:   NewAgentInfraResp(m.AgentInfra),
+		UserID:       m.UserID,
+		User:         NewUserResp(m.User),
+	}
+}
+
+func NewAgentInfraInstallRespArray(arr []*models.AgentInfraInstall) []*AgentInfraInstallResp {
+	resps := []*AgentInfraInstallResp{}
+	for _, r := range arr {
+		resps = append(resps, NewAgentInfraInstallResp(r))
+	}
+	return resps
+}

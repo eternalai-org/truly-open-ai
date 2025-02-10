@@ -244,6 +244,7 @@ func (s *Service) CreateAgentInfraInstallCode(ctx context.Context, userAddress s
 			Code:         helpers.RandomStringWithLength(64),
 			AgentInfraID: agentInfraID,
 			UserID:       user.ID,
+			Status:       models.AgentInfraInstallStatusNew,
 		}
 		err = s.dao.Create(daos.GetDBMainCtx(ctx), agentInfraInstall)
 		if err != nil {
@@ -269,6 +270,22 @@ func (s *Service) GetListAgentInfra(ctx context.Context, page, limit int) ([]*mo
 	return res, count, nil
 }
 
+func (s *Service) GetListAgentInfraByUser(ctx context.Context, userAddress string, page, limit int) ([]*models.AgentInfra, uint, error) {
+	res, count, err := s.dao.FindAgentInfra4Page(daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"owner_address = ?": {strings.ToLower(userAddress)},
+		},
+		map[string][]interface{}{},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
+}
+
 func (s *Service) GetAgentInfraDetail(ctx context.Context, id uint) (*models.AgentInfra, error) {
 	res, err := s.dao.FirstAgentInfraByID(daos.GetDBMainCtx(ctx),
 		id,
@@ -277,4 +294,28 @@ func (s *Service) GetAgentInfraDetail(ctx context.Context, id uint) (*models.Age
 		return nil, errs.NewError(err)
 	}
 	return res, nil
+}
+
+func (s *Service) GetListAgentInfraInstallByUser(ctx context.Context, userAddress string, page, limit int) ([]*models.AgentInfraInstall, uint, error) {
+	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	filter := map[string][]interface{}{
+		"user_id = ?": {user.ID},
+		"status = ?":  {models.AgentInfraInstallStatusDone},
+	}
+	res, count, err := s.dao.FindAgentInfraInstall4Page(daos.GetDBMainCtx(ctx),
+		filter,
+		map[string][]interface{}{
+			"AgentInfra": {},
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
 }
