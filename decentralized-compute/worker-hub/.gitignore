@@ -54,3 +54,4 @@ cache
 node_modules
 get-docker.sh
 env/contracts/.env
+cmd/miner/main_test.*

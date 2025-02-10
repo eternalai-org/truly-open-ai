@@ -1320,6 +1320,7 @@ func (c *CMD_Local_Chain_V2) StartApiLogic() error {
 	fmt.Println("Create Api: ")
 	numberOfMiners := 1
 	names := ""
+	c.StartContainersNoBuild(pkg.REDIS_PUBSUB)
 
 	for i := 1; i <= numberOfMiners; i++ {
 		name := fmt.Sprintf("%s_%d", pkg.API_SERVICE_NAME, i)

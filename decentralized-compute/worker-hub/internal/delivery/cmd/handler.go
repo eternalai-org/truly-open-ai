@@ -667,6 +667,11 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 		rpc = "http://localhost:8545"
 	}
 
+	pubsub, ok := input[pkg.COMMAND_LOCAL_PUBSUB]
+	if !ok {
+		pubsub = "localhost:6380"
+	}
+
 	chainID, ok := input[pkg.COMMAND_LOCAL_CHAIN_ID]
 	if !ok {
 		chainID = "31337"
@@ -712,6 +717,7 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	cnf.ChainID = chainID
 	cnf.ModelName = modelName
 	cnf.RunPodAPIKEY = runPodAPIKey
+	cnf.PubSubURL = pubsub
 
 	if runPod != "" && runPod != "1" {
 		cnf.RunPodInternal = runPod
