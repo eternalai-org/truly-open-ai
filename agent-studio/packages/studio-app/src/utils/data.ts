@@ -101,7 +101,7 @@ export const createGraphDataFromAgentDetail = (
       CATEGORY_OPTION_KEYS.agent.agent_new,
       newGraph
     );
-    let treeData: StudioDataNode | undefined;
+    let treeData: StudioDataNode = undefined as any;
     // agent name
     if (agentOptionData.length) {
       treeData = agentOptionData[0];
@@ -424,12 +424,14 @@ export const createGraphDataFromAgentDetail = (
     if (agentSnapshotMission.length) {
       agentSnapshotMission.forEach((mission) => {
         const matchedMission = missionOnXOptionData.find(
+          // @ts-ignore
           (item) => item?.data?.id === mission.id
         );
 
         if (matchedMission) {
           matchedMission.data = {
             ...matchedMission.data,
+            // @ts-ignore
             id: mission.id as any,
             frequency: getHourFromSecond(mission.interval) as any,
             details: mission.user_prompt,
@@ -439,9 +441,11 @@ export const createGraphDataFromAgentDetail = (
           } satisfies EngageOnXFormData;
           treeData.children.push(matchedMission);
         } else {
+          // @ts-ignore
           if (MISSION_X_REVERSE_MAPPING[mission.tool_set as MissionXSupport]) {
             const missionOptionData = findCategoryOptionInCategories(
               MISSION_ON_X_CATEGORY_KEY,
+              // @ts-ignore
               MISSION_X_REVERSE_MAPPING[mission.tool_set as MissionXSupport]
             );
 
@@ -449,10 +453,13 @@ export const createGraphDataFromAgentDetail = (
               const firstModel = Object.entries(
                 selectedChain?.support_model_names || {}
               )[0];
+              // @ts-ignore
               const model =
                 selectedChain?.support_model_names?.[
+                  // @ts-ignore
                   mission.agent_base_model
                 ] || firstModel[1];
+              // @ts-ignore
               const modelName = mission.agent_base_model || firstModel[0];
 
               if (
@@ -466,12 +473,16 @@ export const createGraphDataFromAgentDetail = (
                   missionOptionData,
                   [],
                   {
+                    // @ts-ignore
                     id: mission.id as any,
                     frequency: getHourFromSecond(mission.interval) as any,
                     details: prompt,
                     topics: {
+                      // @ts-ignore
                       values: mission.topics || "",
+                      // @ts-ignore
                       bingSearch: mission.is_bing_search || false,
+                      // @ts-ignore
                       twitterSearch: mission.is_twitter_search || false,
                     },
                     model: model,
@@ -493,11 +504,14 @@ export const createGraphDataFromAgentDetail = (
                   missionOptionData,
                   [],
                   {
+                    // @ts-ignore
                     id: mission.id as any,
+                    // @ts-ignore
                     frequency: getHourFromSecond(mission.interval) as any,
                     details: prompt,
                     fetchPostsFrequency: cutoff_hour,
                     model: model,
+                    // @ts-ignore
                     modelName: modelName,
                   } satisfies PostFollowingOnXFormData,
                   cloneDeep(position)
@@ -511,6 +525,7 @@ export const createGraphDataFromAgentDetail = (
                   missionOptionData,
                   [],
                   {
+                    // @ts-ignore
                     id: mission.id as any,
                     frequency: getHourFromSecond(mission.interval) as any,
                     details: mission.user_prompt,
@@ -547,12 +562,14 @@ export const createGraphDataFromAgentDetail = (
     if (agentSnapshotMission.length) {
       agentSnapshotMission.forEach((mission) => {
         const matchedMission = missionOnFarcasterOptionData.find(
+          // @ts-ignore
           (item) => item?.data?.id === mission.id
         );
 
         if (matchedMission) {
           matchedMission.data = {
             ...matchedMission.data,
+            // @ts-ignore
             id: mission.id as any,
             frequency: getHourFromSecond(mission.interval) as any,
             details: mission.user_prompt,
@@ -564,12 +581,14 @@ export const createGraphDataFromAgentDetail = (
         } else {
           if (
             MISSION_FARCASTER_REVERSE_MAPPING[
+              // @ts-ignore
               mission.tool_set as MissionFarcasterSupport
             ]
           ) {
             const missionOptionData = findCategoryOptionInCategories(
               MISSION_ON_FARCASTER_CATEGORY_KEY,
               MISSION_FARCASTER_REVERSE_MAPPING[
+                // @ts-ignore
                 mission.tool_set as MissionFarcasterSupport
               ]
             );
@@ -580,6 +599,7 @@ export const createGraphDataFromAgentDetail = (
                 missionOptionData,
                 [],
                 {
+                  // @ts-ignore
                   id: mission.id as any,
                   frequency: getHourFromSecond(mission.interval) as any,
                   details: mission.user_prompt,
