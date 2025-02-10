@@ -37,6 +37,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 				}
 			} else {
 				agentStore = &models.AgentStore{
+					Type:         req.Type,
 					StoreId:      helpers.RandomBigInt(12).Text(16),
 					OwnerID:      user.ID,
 					OwnerAddress: userAddress,
