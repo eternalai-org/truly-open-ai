@@ -15,29 +15,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
+func (s *Server) proxyAgentStoreMiddleware(prefixPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		r := c.Request
 		w := c.Writer
-		infraId := s.stringFromContextParam(c, "infra_id")
+		StoreId := s.stringFromContextParam(c, "Store_id")
 		// apiKey := c.GetHeader("api-key")
-		infra, err := s.nls.GetAgentInfra(context.Background(), infraId)
+		Store, err := s.nls.GetAgentStore(context.Background(), StoreId)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 			return
 		}
-		if infra.Status != models.AgentInfraStatusActived {
+		if Store.Status != models.AgentStoreStatusActived {
 			c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 			return
 		}
-		// agentInfraInstall, err := s.nls.ValidateUserInfraFee(context.Background(), apiKey)
+		// agentStoreInstall, err := s.nls.ValidateUserStoreFee(context.Background(), apiKey)
 		// if err != nil {
 		// 	c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		// 	return
 		// }
 		var urlPath string
 		director := func(req *http.Request) {
-			hostURL, err := url.Parse(infra.ApiUrl)
+			hostURL, err := url.Parse(Store.ApiUrl)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 				return
@@ -50,7 +50,7 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrBadRequest)})
 				return
 			}
-			prefixPath = prefixPath + "/" + infraId
+			prefixPath = prefixPath + "/" + StoreId
 			req.URL.Scheme = hostURL.Scheme
 			req.URL.Host = hostURL.Host
 			req.Host = hostURL.Host
@@ -71,95 +71,6 @@ func (s *Server) proxyAgentInfraMiddleware(prefixPath string) gin.HandlerFunc {
 			Director: director,
 		}
 		proxy.ServeHTTP(w, r)
-		// _ = s.nls.ChargeUserInfraInstall(context.Background(), agentInfraInstall.ID, urlPath, w.Status())
+		// _ = s.nls.ChargeUserStoreInstall(context.Background(), agentStoreInstall.ID, urlPath, w.Status())
 	}
-}
-
-func (s *Server) CreateOrUpdateAgentInfra(c *gin.Context) {
-	ctx := s.requestContext(c)
-	var req serializers.AgentInfraReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	userAddress, err := s.getUserAddressFromTK1Token(c)
-	if err != nil || userAddress == "" {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
-		return
-	}
-	obj, err := s.nls.CreateOrUpdateAgentInfra(ctx, userAddress, &req)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraResp(obj)})
-}
-
-func (s *Server) GetListAgentInfra(c *gin.Context) {
-	ctx := s.requestContext(c)
-	page, limit := s.pagingFromContext(c)
-	res, count, err := s.nls.GetListAgentInfra(ctx, page, limit)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraRespArray(res), Count: &count})
-}
-
-func (s *Server) GetListAgentInfraByUser(c *gin.Context) {
-	ctx := s.requestContext(c)
-	page, limit := s.pagingFromContext(c)
-	userAddress, err := s.getUserAddressFromTK1Token(c)
-	if err != nil || userAddress == "" {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
-		return
-	}
-	res, count, err := s.nls.GetListAgentInfraByUser(ctx, userAddress, page, limit)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraRespArray(res), Count: &count})
-}
-
-func (s *Server) GetAgentInfraDetail(c *gin.Context) {
-	ctx := s.requestContext(c)
-	res, err := s.nls.GetAgentInfraDetail(ctx, s.uintFromContextParam(c, "id"))
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraResp(res)})
-}
-
-func (s *Server) GetAgentInfraInstallCode(c *gin.Context) {
-	ctx := s.requestContext(c)
-	agentInfraID := s.uintFromContextParam(c, "id")
-	userAddress, err := s.getUserAddressFromTK1Token(c)
-	if err != nil || userAddress == "" {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
-		return
-	}
-	res, err := s.nls.CreateAgentInfraInstallCode(ctx, userAddress, agentInfraID)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: res.Code})
-}
-
-func (s *Server) GetListAgentInfraInstallByUser(c *gin.Context) {
-	ctx := s.requestContext(c)
-	page, limit := s.pagingFromContext(c)
-	userAddress, err := s.getUserAddressFromTK1Token(c)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	res, count, err := s.nls.GetListAgentInfraInstallByUser(ctx, userAddress, page, limit)
-	if err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraInstallRespArray(res), Count: &count})
 }

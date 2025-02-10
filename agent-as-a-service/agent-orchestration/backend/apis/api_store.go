@@ -173,7 +173,23 @@ func (s *Server) AuthenAgentStoreCallback(c *gin.Context) {
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
 }
 
-func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
+// func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
+// 	ctx := s.requestContext(c)
+// 	page, limit := s.pagingFromContext(c)
+// 	userAddress, err := s.getUserAddressFromTK1Token(c)
+// 	if err != nil {
+// 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+// 		return
+// 	}
+// 	res, count, err := s.nls.GetListAgentStoreInstall(ctx, userAddress, s.uintFromContextQuery(c, "agent_info_id"), page, limit)
+// 	if err != nil {
+// 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+// 		return
+// 	}
+// 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentStoreRespArrayFromInstall(res), Count: &count})
+// }
+
+func (s *Server) GetListAgentStoreInstallByUser(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
 	userAddress, err := s.getUserAddressFromTK1Token(c)
@@ -181,7 +197,7 @@ func (s *Server) GetListAgentStoreInstall(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	res, count, err := s.nls.GetListAgentStoreInstall(ctx, userAddress, s.uintFromContextQuery(c, "agent_info_id"), page, limit)
+	res, count, err := s.nls.GetListAgentStoreInstallByUser(ctx, userAddress, page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
