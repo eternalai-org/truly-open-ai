@@ -72,28 +72,6 @@ type AgentStoreInstall struct {
 	Type           AgentStoreInstallType
 }
 
-type (
-	AgentStoreTransactionType   string
-	AgentStoreTransactionStatus string
-)
-
-const (
-	AgentStoreTransactionTypeFee AgentStoreTransactionType = "fee"
-
-	AgentStoreTransactionStatusDone AgentStoreTransactionStatus = "done"
-)
-
-type AgentStoreTransaction struct {
-	gorm.Model
-	NetworkID    uint64
-	AgentStoreID uint   `gorm:"index"`
-	EventId      string `gorm:"unique_index"`
-	Type         AgentStoreTransactionType
-	Amount       numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
-	Toolset      string
-	Status       AgentStoreTransactionStatus
-}
-
 type AgentStoreLog struct {
 	gorm.Model
 	AgentStoreInstallID uint
