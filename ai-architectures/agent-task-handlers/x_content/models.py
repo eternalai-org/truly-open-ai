@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 from x_content import constants as const
 from x_content.constants import AgentTask, HTTPMethod, MissionChainState, ToolSet
+from langchain.schema import ChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -251,39 +252,22 @@ class AdvanceToolDef(ToolDef):
     label: ToolLabel = ToolLabel.QUERY
 
 
-class ReasoningLog(BaseModel):
+class AutoAgentTask(BaseModel):
     # auto
     id: str = Field(default_factory=lambda: f"fun-{random_uuid()}")
 
-    # for request
-    prompt: str  # set a goal for the agent
-    seed: Optional[int] = 512  # seed for the agent
+    # request
     meta_data: Optional[ReactAgentReasoningMeta] = None
-
     agent_meta_data: AgentMetadata = AgentMetadata()
+    model: Optional[str] = ""
 
     # @deprecated
     system_prompt: Optional[str] = "You are a helpful assistant."
-    model: Optional[str] = ""
 
-    @property
-    def _system_prompt_(self) -> str:
-        return modified_json_stringnify(
-            self.agent_meta_data.json_system_prompt()
-        )
-
-    task: Optional[AgentTask] = AgentTask.REACT_AGENT
-    toolset: Optional[str] = ToolSet.DEFAULT
-    tool_list: Optional[List[AdvanceToolDef]] = []
-    need_to_post_process: bool = False
-
-    # for response
-    infer_receipt: Optional[Union[int, str]] = None
-    state: MissionChainState = MissionChainState.NEW
+    # task status
     scratchpad: List[Dict[str, Any]] = []
+    state: MissionChainState = MissionChainState.NEW
     system_message: str = ""  # for error messages
-    execute_info: Dict[str, Any] = {}
-    llm_info: Dict[str, Any] = {}
 
     created_at: str = Field(
         default_factory=lambda: datetime.now().strftime(
@@ -332,6 +316,50 @@ class ReasoningLog(BaseModel):
 
         return self
 
+    @property
+    def checksum(self):
+        def cvt(data):
+            if isinstance(data, set):
+                return list(data)
+
+            return str(data)
+
+        try:
+            data = json.dumps(
+                self.model_dump(), sort_keys=True, default=cvt
+            ).encode("utf-8")
+
+        except Exception as err:
+            logger.error(
+                f"Failed to encode the reasoning log to get checksum: {err}! Returning a non-standard stringified json to encode instead."
+            )
+
+            data = json.dumps(self.model_dump(), default=cvt).encode("utf-8")
+
+        return md5(data).hexdigest()
+
+
+class ReasoningLog(AutoAgentTask):
+    # for request
+    prompt: str  # set a goal for the agent
+    seed: Optional[int] = 512  # seed for the agent
+
+    @property
+    def _system_prompt_(self) -> str:
+        return modified_json_stringnify(
+            self.agent_meta_data.json_system_prompt()
+        )
+
+    task: Optional[AgentTask] = AgentTask.REACT_AGENT
+    toolset: Optional[str] = ToolSet.DEFAULT
+    tool_list: Optional[List[AdvanceToolDef]] = []
+    need_to_post_process: bool = False
+
+    # for response
+    infer_receipt: Optional[Union[int, str]] = None
+    execute_info: Dict[str, Any] = {}
+    llm_info: Dict[str, Any] = {}
+
     @model_validator(mode="before")
     @classmethod
     def parse_tool_list(cls, data: dict):
@@ -366,27 +394,14 @@ class ReasoningLog(BaseModel):
 
         return data
 
-    @property
-    def checksum(self):
-        def cvt(data):
-            if isinstance(data, set):
-                return list(data)
 
-            return str(data)
+class ChatRequest(AutoAgentTask):
+    # user data
+    user_address: str = ""
+    messages: List[ChatMessage] = []
 
-        try:
-            data = json.dumps(
-                self.model_dump(), sort_keys=True, default=cvt
-            ).encode("utf-8")
-
-        except Exception as err:
-            logger.error(
-                f"Failed to encode the reasoning log to get checksum: {err}! Returning a non-standard stringified json to encode instead."
-            )
-
-            data = json.dumps(self.model_dump(), default=cvt).encode("utf-8")
-
-        return md5(data).hexdigest()
+    # for response
+    chat_result: Optional[str] = None
 
 
 class APIStatus(str, Enum):

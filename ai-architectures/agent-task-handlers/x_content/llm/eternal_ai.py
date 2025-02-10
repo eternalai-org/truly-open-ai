@@ -1,11 +1,12 @@
 from typing import Any, List, Optional, Dict
 import httpx
-from langchain.schema import BaseMessage, ChatGeneration, ChatResult, AIMessage
+from langchain.schema import BaseMessage, ChatGeneration, AIMessage
 from langchain_community.adapters.openai import convert_message_to_dict
 from asyncio import sleep as async_sleep
 import time
 import json
 import logging
+from x_content.llm.base import OnchainInferResult
 from x_content.llm.time_estimation import ModelInferTimeEstimation
 from .base import OpenAILLMBase
 from typing import Dict
@@ -19,11 +20,6 @@ logger = logging.getLogger(__name__)
 @lru_cache(maxsize=1)
 def get_time_estimation():
     return ModelInferTimeEstimation()
-
-
-class OnchainInferResult(ChatResult):
-    tx_hash: str = None
-    receipt: str = None
 
 
 # TODO: add retry logic

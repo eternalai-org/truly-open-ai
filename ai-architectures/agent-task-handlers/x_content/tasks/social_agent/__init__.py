@@ -1,5 +1,6 @@
 from . import (
     chat,
+    chat_v2,
     post_v2,
     post_v3,
     react_agent,

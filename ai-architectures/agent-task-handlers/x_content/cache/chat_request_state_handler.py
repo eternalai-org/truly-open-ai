@@ -1,6 +1,6 @@
 from x_content.cache.base_state_handler import StatusHandlerBase
 from x_content.constants import MissionChainState
-from x_content.models import ChatRequest, ReasoningLog
+from x_content.models import ChatRequest
 from redis import Redis
 import json
 from typing import Optional, List
@@ -9,30 +9,29 @@ from pydantic_core import from_json
 from x_content import constants as const
 
 
-class MissionStateHandler(StatusHandlerBase[ReasoningLog]):
-    BASE_KEY = const.REDIS_LOG_BASE_KEY
+class ChatRequestStateHandler(StatusHandlerBase[ChatRequest]):
+    BASE_KEY = const.REDIS_CHAT_REQUEST_BASE_KEY
 
     def __init__(self, connection: Redis) -> None:
         self.redis_client = connection
         self.cache_expiry = 3 * 24 * 3600  # Cache entries for 3 * 24 hours
 
-    def commit(self, state: ReasoningLog):
+    def commit(self, state: ChatRequest):
         key = f"{self.BASE_KEY}:{state.id}"
         jsons = json.dumps(state.model_dump())
         self.redis_client.setex(key, self.cache_expiry, jsons)
         return state
 
-    async def acommit(self, state: ReasoningLog):
+    async def acommit(self, state: ChatRequest):
         return self.commit(state)
 
-    def get_undone(self) -> List[ReasoningLog]:
+    def get_undone(self) -> List[ChatRequest]:
         keys = self.redis_client.keys(f"{self.BASE_KEY}:*")
         states = []
 
         for key in keys:
-
             try:
-                state = ReasoningLog.model_validate(
+                state = ChatRequest.model_validate(
                     from_json(self.redis_client.get(key).decode("utf-8"))
                 )
             except ValueError:
@@ -45,13 +44,13 @@ class MissionStateHandler(StatusHandlerBase[ReasoningLog]):
 
     def get(
         self, _id: str, none_if_error: bool = False
-    ) -> Optional[ReasoningLog]:
+    ) -> Optional[ChatRequest]:
         key = f"{self.BASE_KEY}:{_id}"
         json_state: Optional[bytes] = self.redis_client.get(key)
 
         if json_state is not None:
             try:
-                state = ReasoningLog.model_validate(
+                state = ChatRequest.model_validate(
                     from_json(json_state.decode("utf-8"))
                 )
 
@@ -62,24 +61,20 @@ class MissionStateHandler(StatusHandlerBase[ReasoningLog]):
                     return None
 
                 # Fallback to error state if JSON deserialization fails
-                state = ReasoningLog(
+                state = ChatRequest(
                     state=MissionChainState.ERROR,
                     id=_id,
                     system_message=f"{_id} JSON deserialization failed",
-                    prompt="",
-                    meta_data=None,
                 )
         else:
             if none_if_error:
                 return None
 
             # Return an error state if the state doesn't exist in Redis
-            state = ReasoningLog(
+            state = ChatRequest(
                 state=MissionChainState.ERROR,
                 id=_id,
                 system_message=f"{_id} Not found",
-                prompt="",
-                meta_data=None,
             )
 
         # Update the cache expiry time

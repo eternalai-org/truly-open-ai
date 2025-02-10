@@ -8,7 +8,7 @@ from typing import Optional
 from . import redis_wrapper
 
 from x_content.llm.local import SyncBasedEternalAI
-from x_content.wrappers.magic import helpful_raise_for_status
+from x_content.wrappers.magic import get_llm_tasks_first_interval, helpful_raise_for_status
 from x_content.wrappers.magic import retry
 from .log_decorators import log_function_call
 from x_content import constants as const
@@ -433,7 +433,10 @@ Here is the input tweet: {}
         return result.lower()
 
     result = retry(
-        run_llm, max_retry=3, first_interval=60, interval_multiply=2
+        run_llm,
+        max_retry=3,
+        first_interval=get_llm_tasks_first_interval(),
+        interval_multiply=2,
     )()
     return result == "yes"
 
@@ -538,7 +541,12 @@ Task prompt: {task_prompt}
         obj = IncludeExcludeInfo.model_validate(result)
         return obj
 
-    obj = retry(run_llm, max_retry=3, first_interval=60, interval_multiply=2)()
+    obj = retry(
+        run_llm,
+        max_retry=3,
+        first_interval=get_llm_tasks_first_interval(),
+        interval_multiply=2,
+    )()
     return obj
 
 

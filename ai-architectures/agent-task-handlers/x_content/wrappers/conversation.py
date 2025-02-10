@@ -2,6 +2,7 @@ import json
 import logging
 from typing import List
 
+from x_content.constants.main import ModelName
 from x_content.wrappers.api.twitter_v2.models.objects import (
     StructuredInformation,
     TweetObject,
@@ -217,3 +218,24 @@ Relevant Information:
     ]
 
     return conversational_chat
+
+
+def parse_deepseek_r1_result(content: str):
+    result = {}
+    start = content.find("<think>")
+    end = content.find("</think>")
+    if start == -1:
+        start = 0
+    if end == -1:
+        result["answer"] = content.strip()
+    else:
+        result["think"] = content[start + len("<think>") : end].strip()
+        result["answer"] = content[end + len("</think>") :].strip()
+    return result
+
+
+def get_llm_result_by_model_name(content: str, model_name: str):
+    if model_name == ModelName.DEEPSEEK_R1:
+        return parse_deepseek_r1_result(content)["answer"]
+
+    return content

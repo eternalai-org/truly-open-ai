@@ -13,7 +13,7 @@ from x_content.models import ReasoningLog
 
 from x_content.tasks.base import MultiStepTaskBase
 from x_content.tasks.utils import a_move_state, create_twitter_auth_from_reasoning_log
-from x_content.llm import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 import asyncio
 
 logging.basicConfig(level=logging.INFO if not __debug__ else logging.DEBUG)

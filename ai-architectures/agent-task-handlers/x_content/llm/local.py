@@ -1,5 +1,6 @@
-from x_content.llm.base import OpenAILLMBase
-from x_content.llm.eternal_ai import OnchainInferResult, logger
+import json
+from x_content.llm.base import OnchainInferResult, OpenAILLMBase
+from x_content.llm.eternal_ai import logger
 
 import httpx
 import requests
@@ -40,54 +41,59 @@ class SyncBasedEternalAI(OpenAILLMBase):
             "logit_bias": None,
             "frequency_penalty": self.frequency_penalty,
             "seed": self.seed,
+            "stream": True,
         }
 
         json_data.update(kwargs)
-        # print("json_data:", json_data)
 
         url = f"{self.openai_api_base}/chat/completions"
 
+        token_usage = 0
+        final_response = ""
+
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(
+                async with client.stream(
+                    "POST",
                     url,
                     headers=headers,
                     json=json_data,
-                    timeout=httpx.Timeout(60.0),
-                )
+                    timeout=httpx.Timeout(120.0),
+                ) as response:
+                    if response.status_code != 200:
+                        logger.info(
+                            f"Failed to send request to '{url}'; code: {response.status_code}"
+                        )
+                        raise ValueError(
+                            f"Failed to send request to '{url}'; code: {response.status_code}"
+                        )
+
+                    # Handle streaming response
+                    async for chunk in response.aiter_lines():
+                        data = chunk.split("data: ")
+
+                        if len(data) <= 1:
+                            continue
+
+                        if data[1] == "[DONE]":
+                            break
+
+                        json_data = json.loads(data[1])
+
+                        final_response += json_data["choices"][0]["delta"].get(
+                            "content", ""
+                        )
+
+                        token_usage += 1
+
         except Exception as err:
             logger.info(f"Failed to send request to '{url}'; error: {err}")
             raise ValueError(
                 f"Failed to send request to '{url}'; error: {err}"
             )
 
-        if response.status_code != 200:
-            logger.info(
-                f"Failed to send request to '{url}'; code: {response.status_code}"
-            )
-            raise ValueError(
-                f"Failed to send request to '{url}'; code: {response.status_code}"
-            )
-
-        response_json = response.json()
-
-        choices = response_json.get("choices", [])
-        if not choices:
-            raise ValueError("No choices found in the OpenAI response.")
-
-        if (
-            choices[0].get("message") is None
-            or choices[0].get("message", {}).get("content") is None
-        ):
-            raise ValueError(
-                "Bad response from LLM-server: {}".format(response_json)
-            )
-
-        content = choices[0].get("message", {}).get("content", "")
-        token_usage = response_json.get("usage", {})
-
         return {
-            "message": AIMessage(content=content),
+            "message": AIMessage(content=final_response),
             "token_usage": token_usage,
         }
 
@@ -96,7 +102,7 @@ class SyncBasedEternalAI(OpenAILLMBase):
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
         **kwargs: Any,
-    ) -> ChatResult:
+    ) -> OnchainInferResult:
         """Generate a chat response asynchronously and return it as a ChatResult."""
         # Start the asynchronous request
         result: dict = await self.start_async_request(messages, **kwargs)
@@ -138,38 +144,40 @@ class SyncBasedEternalAI(OpenAILLMBase):
             "logit_bias": None,
             "frequency_penalty": self.frequency_penalty,
             "seed": self.seed,
+            "stream": True,
         }
 
-        response = requests.post(
+        final_response = ""
+        token_usage = 0
+        # Send the POST request with streaming enabled
+        with requests.post(
             f"{self.openai_api_base}/chat/completions",
-            headers=headers,
             json=json_data,
-        )
-
-        if response.status_code != 200:
-            raise Exception(
-                f"Failed to send request to '{self.openai_api_base}/chat/completions'; code: {response.status_code}"
-            )
-
-        response_json = response.json()
-
-        choices = response_json.get("choices", [])
-        if not choices:
-            raise ValueError("No choices found in the OpenAI response.")
-
-        if (
-            choices[0].get("message") is None
-            or choices[0].get("message", {}).get("content") is None
-        ):
-            raise ValueError(
-                "Bad response from LLM-server: {}".format(response_json)
-            )
-
-        content = choices[0].get("message", {}).get("content", "")
-        token_usage = response_json.get("usage", {})
+            headers=headers,
+            stream=True,
+        ) as response:
+            if response.status_code != 200:
+                logger.info(
+                    f"Failed to send request to '{self.openai_api_base}/chat/completions'; code: {response.status_code}"
+                )
+                raise Exception(
+                    f"Failed to send request to '{self.openai_api_base}/chat/completions'; code: {response.status_code}"
+                )
+            # Handle streaming response
+            for chunk in response.iter_lines():
+                if chunk:
+                    # Decode each chunk and print the content
+                    data = chunk.decode("utf-8").split("data: ")
+                    if data[1] == "[DONE]":
+                        break
+                    json_data = json.loads(data[1])
+                    final_response += json_data["choices"][0]["delta"].get(
+                        "content", ""
+                    )
+                    token_usage += 1
 
         return {
-            "message": AIMessage(content=content),
+            "message": AIMessage(content=final_response),
             "token_usage": token_usage,
         }
 
@@ -178,8 +186,8 @@ class SyncBasedEternalAI(OpenAILLMBase):
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
         **kwargs: Any,
-    ) -> ChatResult:
-        """Generate a chat response asynchronously and return it as a ChatResult."""
+    ) -> OnchainInferResult:
+        """Generate a chat response synchronously and return it as a OnchainInferResult."""
         # Start the asynchronous request
         result: dict = self.start_sync_request(messages)
 

@@ -7,10 +7,11 @@ from x_content.wrappers import trading
 from x_content.tasks.utils import format_prompt_v2
 from x_content.wrappers.api import twitter_v2
 from x_content.tasks.utils import a_move_state
-from x_content.llm import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 from x_content.wrappers import trading
 from x_content.models import ToolSet
 
+from x_content.wrappers.conversation import get_llm_result_by_model_name
 from x_content.wrappers.magic import sync2async
 from .react_agent import ReactAgent
 
@@ -233,6 +234,7 @@ class TradingTask(ReactAgent):
                 )
 
                 result = infer_result.generations[0].message.content
+                result = get_llm_result_by_model_name(result, log.model)
                 pad: dict = await sync2async(
                     parse_conversational_react_response
                 )(result)
