@@ -332,6 +332,16 @@ func UploadFile(apikey, fileName string, filePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	cid, exist, err := fileExistOnNetwork(data)
+	if err != nil {
+		return "", err
+	}
+
+	if exist {
+		return cid, nil
+	}
+
 	urlLink := "https://node.lighthouse.storage/api/v0/add"
 
 	var b bytes.Buffer
