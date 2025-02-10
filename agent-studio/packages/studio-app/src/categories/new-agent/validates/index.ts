@@ -1,5 +1,5 @@
-import CREATE_FLOW_NEW_AGENT_VALIDATORS from "./create";
-import UPDATE_FLOW_NEW_AGENT_VALIDATORS from "./update";
+import CREATE_FLOW_NEW_AGENT_VALIDATORS from './create';
+import UPDATE_FLOW_NEW_AGENT_VALIDATORS from './update';
 
 const NEW_AGENT_VALIDATES = {
   create: CREATE_FLOW_NEW_AGENT_VALIDATORS,

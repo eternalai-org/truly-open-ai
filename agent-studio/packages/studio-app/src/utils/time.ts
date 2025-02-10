@@ -5,3 +5,7 @@ export const getHourFromSecond = (second: number) => {
 export const getSecondsFromHour = (hour: number) => {
   return Math.floor(hour * 60 * 60);
 };
+
+export const sleep = (second: number) => {
+  return new Promise((resolve) => setTimeout(resolve, second * 1000));
+};

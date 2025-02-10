@@ -20,7 +20,7 @@ const Package = ({ id, data, disabled, children, ...props }: Props) => {
   }, [data]);
 
   const { setNodeRef } = useDroppable({
-    id: id + '-package',
+    id,
     data: extendedData,
     disabled,
   });

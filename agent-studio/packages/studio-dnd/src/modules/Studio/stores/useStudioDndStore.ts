@@ -1,3 +1,4 @@
+import { UniqueIdentifier } from '@dnd-kit/core';
 import { Transform } from '@dnd-kit/utilities';
 import { ReactNode } from 'react';
 import { create } from 'zustand';
@@ -17,6 +18,9 @@ type Store = {
   draggingData: DraggableData | null;
   draggingPoint: DomRect | null; // touching point of dragging element
   transform: Transform | null;
+
+  draggingOverId: UniqueIdentifier | null;
+  setDraggingOverId: (id: UniqueIdentifier | null) => void;
 
   setDragging: (node?: ReactNode | null, data?: DraggableData | null, point?: DomRect | null) => void;
   setTransform: (transform: Transform | null) => void;
@@ -42,6 +46,11 @@ const useStudioDndStore = create<Store>((set, get) => ({
 
   setTransform: (t) => {
     set({ transform: t });
+  },
+
+  draggingOverId: null,
+  setDraggingOverId: (id) => {
+    set({ draggingOverId: id });
   },
 }));
 

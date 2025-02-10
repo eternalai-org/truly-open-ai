@@ -1,4 +1,4 @@
-import { Input } from "@chakra-ui/react";
+import { ChakraProps, Input } from "@chakra-ui/react";
 import cn from "classnames";
 import { ChangeEventHandler, memo } from "react";
 import { TextStyleMap } from "../../styles";
@@ -9,7 +9,7 @@ type Props = {
   onChange: ChangeEventHandler<HTMLInputElement>;
   placeholder?: string;
   disabled?: boolean;
-};
+} & ChakraProps;
 
 const StudioInput = ({
   className,
@@ -21,10 +21,9 @@ const StudioInput = ({
 }: Props) => {
   return (
     <Input
-      {...rest}
       className={cn("nowheel", className)}
       height={"28px"}
-      width={"246px"}
+      width={rest?.width || "246px"}
       borderRadius={"999px"}
       border={"none"}
       bgColor={"#fff"}
@@ -37,6 +36,7 @@ const StudioInput = ({
       onChange={onChange}
       placeholder={placeholder}
       disabled={disabled}
+      {...rest}
     />
   );
 };

@@ -1,0 +1,22 @@
+.listSearch {
+    // position: absolute;
+    // top: 295px;
+    // left: 24px;
+    width: 100%;
+    // padding: 20px;
+    // box-shadow: 0px 0px 24px -6px #0000001F;
+    // border: 1px solid #E5E7EB;
+    // border-radius: 16px;
+
+    .nftInfo {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 24px;
+        gap: 12px;
+        background: rgba(0, 82, 255, 0.05);
+        border: 1px solid rgba(0, 82, 255, 0.2);
+        border-radius: 16px;
+    }
+
+}

@@ -97,27 +97,49 @@ const useDndAction = () => {
     };
   }, []);
 
-  const addToPackage = useCallback((node?: StudioNode, products?: (StudioNode | undefined)[]) => {
+  const addToPackage = useCallback((node?: StudioNode, products?: (StudioNode | undefined)[], index = -1) => {
     if (!node || !products) return {};
 
-    node.data.metadata.children = [...node.data.metadata.children, ...noUndefinedElement(products)];
+    if (index === -1) {
+      node.data.metadata.children = [...node.data.metadata.children, ...noUndefinedElement(products)];
+    } else {
+      const befores = node.data.metadata.children.slice(0, index);
+      const afters = node.data.metadata.children.slice(index);
+      node.data.metadata.children = [...befores, ...noUndefinedElement(products), ...afters];
+    }
 
     return {
       targetNode: node,
     };
   }, []);
 
-  const movePartOfPackage = useCallback((fromNode?: StudioNode, toNode?: StudioNode, fromData?: DraggableData) => {
+  const movePartOfPackage = useCallback((fromNode?: StudioNode, toNode?: StudioNode, fromData?: DraggableData, index = -1) => {
     if (!fromNode || !toNode || !fromData) return {};
 
     const addons = cloneData(fromNode.data.metadata.children).filter((_, index) => index >= (fromData?.childIndex || 0));
 
-    addToPackage(toNode, addons);
+    addToPackage(toNode, addons, index);
     removePartOfPackage(fromNode, fromData?.childIndex || 0);
 
     return {
       targetNode: toNode,
       sourceNode: fromNode,
+    };
+  }, []);
+
+  const sortPartOfPackage = useCallback((node?: StudioNode, moveTo = 0, fromTo = 0) => {
+    if (!node || moveTo === -1 || fromTo === -1) return {};
+
+    const children = cloneData(node.data.metadata.children);
+    const befores = children.slice(0, moveTo);
+    const sortItems = children.slice(fromTo);
+    const afters = children.slice(moveTo, fromTo);
+
+    node.data.metadata.children = [...befores, ...sortItems, ...afters];
+
+    return {
+      targetNode: node,
+      sourceNode: node,
     };
   }, []);
 
@@ -186,7 +208,7 @@ const useDndAction = () => {
     [],
   );
 
-  const mergeProducts = useCallback((fromNode?: StudioNode, toNode?: StudioNode, fromData?: DraggableData) => {
+  const mergeProducts = useCallback((fromNode?: StudioNode, toNode?: StudioNode, fromData?: DraggableData, index = -1) => {
     if (!fromNode || !toNode || !fromData) return {};
 
     const clonedFromNode = cloneData(fromNode);
@@ -194,7 +216,7 @@ const useDndAction = () => {
 
     const fromNodeLinkedNodes = useStudioFlowStore.getState().linkedNodes[fromNode.id];
 
-    addToPackage(toNode, [clonedFromNode, ...fromNode.data.metadata.children]);
+    addToPackage(toNode, [clonedFromNode, ...fromNode.data.metadata.children], index);
     removeProduct(fromNode.id);
 
     fromNodeLinkedNodes?.forEach((linkedNodeId) => {
@@ -231,6 +253,7 @@ const useDndAction = () => {
     link,
     unlink,
     unlinkAll,
+    sortPartOfPackage,
   };
 };
 

@@ -12,3 +12,19 @@ export const InfoIcon = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
+
+export const categoryImageIcon = (src: string) => {
+  return () => {
+    return (
+      <img
+        src={src}
+        alt="Lego Component Icon"
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 4,
+        }}
+      />
+    );
+  };
+};

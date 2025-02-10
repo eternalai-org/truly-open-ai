@@ -1,0 +1,38 @@
+.checkbox {
+    margin-bottom: 0 !important;
+
+    :global {
+        .chakra-checkbox__label {
+            font-size: 14px;
+        }
+
+        .chakra-checkbox__control {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #CECECE;
+
+            &[data-checked] {
+                background: #368cdc;
+            }
+
+        }
+
+    }
+}
+
+.searchResult {
+    padding: 20px;
+    background: #FAFAFA;
+    border-radius: 12px;
+    color: #000;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+
+    li {
+        &:not(:first-child) {
+            margin-top: 12px;
+        }
+    }
+}
