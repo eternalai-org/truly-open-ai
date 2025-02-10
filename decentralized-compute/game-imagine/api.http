@@ -1,0 +1,40 @@
+# -*- restclient -*-
+:host = http://localhost:8080/api
+# :host = http://game-api.eternalai.org/api
+:token = Bearer xxxx
+
+:header = <<
+Content-Type: application/json
+Authorization: :token
+#
+#
+GET :host/health
+:header
+
+#
+POST :host/v1/game/start
+:header
+{
+  "tweet_id": "1234",
+  "usernames": ["1", "2"],
+  "time_out": 3600
+}
+
+#
+GET :host/v1/game/123
+:header
+
+#
+GET :host/v1/game?tweet_ids[]=1874871729442730318&tweet_ids[]=123
+:header
+
+#
+POST :host/v1/game/123123111/end
+:header
+
+#
+POST :host/v1/game/123123111/result
+:header
+{
+  "username": ""
+}
