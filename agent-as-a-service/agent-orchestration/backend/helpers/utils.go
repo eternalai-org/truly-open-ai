@@ -771,3 +771,19 @@ func GetFrequencyFromMap(mapInfo map[string]interface{}) int {
 	}
 	return frequency
 }
+
+func GetTokenIDFromMap(mapInfo map[string]interface{}) uint64 {
+	tokenId := int(0)
+	switch v := mapInfo["tokenId"].(type) {
+	case int:
+		tokenId = v
+	case float64:
+		{
+			frequencyF := v
+			tokenId = int(frequencyF)
+		}
+	case string:
+		tokenId, _ = strconv.Atoi(v)
+	}
+	return uint64(tokenId)
+}
