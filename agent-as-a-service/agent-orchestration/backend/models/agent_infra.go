@@ -21,6 +21,7 @@ type AgentInfra struct {
 	Name         string
 	Description  string `gorm:"type:text"`
 	Icon         string `gorm:"type:text"`
+	Docs         string `gorm:"type:longtext"`
 	Status       AgentInfraStatus
 	ApiUrl       string
 	Price        numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`

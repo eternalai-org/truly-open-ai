@@ -11,25 +11,11 @@ type AgentInfraReq struct {
 	ID          uint                    `json:"id"`
 	Name        string                  `json:"name"`
 	Description string                  `json:"description"`
-	AuthenUrl   string                  `json:"authen_url"`
+	Docs        string                  `json:"docs"`
 	Icon        string                  `json:"icon"`
 	Status      models.AgentInfraStatus `json:"status"`
 	ApiUrl      string                  `json:"api_url"`
-}
-
-type AgentInfraMissionReq struct {
-	ID          uint             `json:"id"`
-	Name        string           `json:"name"`
-	Description string           `json:"description"`
-	Prompt      string           `json:"prompt"`
-	Price       numeric.BigFloat `json:"price"`
-	ToolList    string           `json:"tool_list"`
-	Icon        string           `json:"icon"`
-}
-
-type AuthenAgentInfraCallback struct {
-	Code           string            `json:"code"`
-	CallbackParams map[string]string `json:"callback_params"`
+	Price       numeric.BigFloat        `json:"price"`
 }
 
 type AgentInfraResp struct {
@@ -40,6 +26,7 @@ type AgentInfraResp struct {
 	OwnerAddress string                  `json:"owner_address"`
 	Name         string                  `json:"name"`
 	Description  string                  `json:"description"`
+	Docs         string                  `json:"docs"`
 	Icon         string                  `json:"icon"`
 	Status       models.AgentInfraStatus `json:"status"`
 	ApiUrl       string                  `json:"api_url"`
@@ -58,6 +45,7 @@ func NewAgentInfraResp(m *models.AgentInfra) *AgentInfraResp {
 		OwnerAddress: m.OwnerAddress,
 		Name:         m.Name,
 		Description:  m.Description,
+		Docs:         m.Docs,
 		Icon:         m.Icon,
 		Status:       m.Status,
 		ApiUrl:       m.ApiUrl,

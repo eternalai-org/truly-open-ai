@@ -179,6 +179,8 @@ func (s *Service) CreateOrUpdateAgentInfra(ctx context.Context, userAddress stri
 				agentInfra.Icon = req.Icon
 				agentInfra.Status = req.Status
 				agentInfra.ApiUrl = req.ApiUrl
+				agentInfra.Price = req.Price
+				agentInfra.Docs = req.Docs
 			} else {
 				agentInfra = &models.AgentInfra{
 					InfraId:      helpers.RandomBigInt(12).Text(16),
@@ -189,6 +191,8 @@ func (s *Service) CreateOrUpdateAgentInfra(ctx context.Context, userAddress stri
 					OwnerID:      user.ID,
 					Status:       req.Status,
 					ApiUrl:       req.ApiUrl,
+					Price:        req.Price,
+					Docs:         req.Docs,
 				}
 			}
 			if err != nil {
@@ -237,7 +241,7 @@ func (s *Service) CreateAgentInfraInstallCode(ctx context.Context, userAddress s
 	}
 	if agentInfraInstall == nil {
 		agentInfraInstall = &models.AgentInfraInstall{
-			Code:         helpers.RandomReferralCode(32),
+			Code:         helpers.RandomStringWithLength(64),
 			AgentInfraID: agentInfraID,
 			UserID:       user.ID,
 		}
@@ -263,4 +267,14 @@ func (s *Service) GetListAgentInfra(ctx context.Context, page, limit int) ([]*mo
 		return nil, 0, errs.NewError(err)
 	}
 	return res, count, nil
+}
+
+func (s *Service) GetAgentInfraDetail(ctx context.Context, id uint) (*models.AgentInfra, error) {
+	res, err := s.dao.FirstAgentInfraByID(daos.GetDBMainCtx(ctx),
+		id,
+		map[string][]interface{}{}, false)
+	if err != nil {
+		return nil, errs.NewError(err)
+	}
+	return res, nil
 }

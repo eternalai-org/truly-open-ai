@@ -94,3 +94,40 @@ func (s *Server) CreateOrUpdateAgentInfra(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraResp(obj)})
 }
+
+func (s *Server) GetListAgentInfra(c *gin.Context) {
+	ctx := s.requestContext(c)
+	page, limit := s.pagingFromContext(c)
+	res, count, err := s.nls.GetListAgentInfra(ctx, page, limit)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraRespArray(res), Count: &count})
+}
+
+func (s *Server) GetAgentInfraDetail(c *gin.Context) {
+	ctx := s.requestContext(c)
+	res, err := s.nls.GetAgentInfraDetail(ctx, s.uintFromContextParam(c, "id"))
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: serializers.NewAgentInfraResp(res)})
+}
+
+func (s *Server) GetAgentInfraInstallCode(c *gin.Context) {
+	ctx := s.requestContext(c)
+	agentInfraID := s.uintFromContextParam(c, "id")
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	res, err := s.nls.CreateAgentInfraInstallCode(ctx, userAddress, agentInfraID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: res.Code})
+}
