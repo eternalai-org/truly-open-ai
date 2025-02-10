@@ -225,7 +225,7 @@ func (s *Service) UpdateKnowledgeBaseInContractWithSignature(ctx context.Context
 	if err != nil {
 		return nil, fmt.Errorf("updateKnowledgeBaseInContractWithSignature error: failed to read ABI JSON: %v", err)
 	}
-	kbId, ok := new(big.Int).SetString(request.KnowledgeBaseId, 10)
+	kbId, ok := new(big.Int).SetString(info.KBTokenID, 10)
 	if !ok {
 		return nil, fmt.Errorf("updateKnowledgeBaseInContractWithSignature error: knowledge_base_id is nnot big int")
 	}
