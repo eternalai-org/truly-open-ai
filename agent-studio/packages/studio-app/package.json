@@ -25,6 +25,7 @@
     "dotenv": "^16.4.7",
     "framer-motion": "^11.17.0",
     "gsap": "^3.12.7",
+    "hide-cra-error-overlay": "^1.0.23",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
     "react": "^19.0.0",
