@@ -1,297 +1,624 @@
-// import { AgentDetail } from "@eternalai-dagent/core";
-// import getAgentModelCategories from "../categories";
-// import {
-//   createNodeData,
-//   findDataByCategoryKey,
-//   findDataByOptionKey,
-//   StudioDataNode,
-// } from "@agent-studio/studio-dnd";
-// import { CATEGORY_OPTION_KEYS } from "../constants/category-option-keys";
-// import { CATEGORY_KEYS } from "../constants/category-keys";
-// import { getHourFromSecond } from "./time";
-// import {
-//   MISSION_FARCASTER_REVERSE_MAPPING,
-//   MISSION_X_REVERSE_MAPPING,
-//   MissionFarcasterSupport,
-//   MissionXSupport,
-// } from "../constants/mapping";
-// import { v4 } from "uuid";
-// import cloneDeep from "lodash.clonedeep";
-// import { BaseFarcasterFormData } from "../categories/farcaster/renders/onflow/custom-base/types";
-// import { BaseXFormData } from "../categories/x/renders/onflow/custom-base/types";
+import {
+  AGENT_CATEGORY_KEY,
+  AI_FRAMEWORK_CATEGORY_KEY,
+  BLOCKCHAIN_CATEGORY_KEY,
+  DECENTRALIZED_INFERENCE_CATEGORY_KEY,
+  MISSION_ON_FARCASTER_CATEGORY_KEY,
+  MISSION_ON_X_CATEGORY_KEY,
+  PERSONALITY_CATEGORY_KEY,
+  TOKEN_CATEGORY_KEY,
+} from "../constants/category-keys";
+import { v4 } from "uuid";
+import getAgentModelCategories from "../categories/categories";
+import { CATEGORY_OPTION_KEYS } from "../constants/category-option-keys";
 
-// const categories = getAgentModelCategories("create");
+import {
+  MISSION_FARCASTER_REVERSE_MAPPING,
+  MISSION_X_REVERSE_MAPPING,
+  MissionFarcasterSupport,
+  MissionXSupport,
+} from "../constants/mapping";
+import { EngageOnXFormData } from "../categories/x/engageOnX/types";
 
-// const findCategoryInCategories = (categoryKey: string) => {
-//   return categories.find((category) => category.idx === categoryKey);
-// };
+import cloneDeep from "lodash.clonedeep";
+import { ChainId, SUPPORT_NETWORKS } from "../constants/networks";
+import { PostNewsOnXFormData } from "../categories/x/postNewsOnX/types";
 
-// const findCategoryOptionInCategories = (
-//   categoryKey: string,
-//   optionKey: string
-// ) => {
-//   const category = findCategoryInCategories(categoryKey);
-//   if (category) {
-//     return category.options.find((option) => option.idx === optionKey);
-//   }
-// };
+import { PostFollowingOnXFormData } from "../categories/x/postFollowingOnX/types";
+import { getDynamicAiModelOptions } from "./category";
+import { AgentDetail } from "../services/apis/studio/types";
+import {
+  createNodeData,
+  findDataByCategoryKey,
+  findDataByOptionKey,
+  StudioDataNode,
+} from "@agent-studio/studio-dnd";
+import { tokens } from "../constants/tokens";
+import { TokenSetupMode } from "@eternalai-dagent/core";
+import { OPTION_ETERNAL_AI_ID } from "../constants/option-values";
+import { compareString } from "./string";
+import useCommonStore from "../stores/useCommonStore";
+import { getHourFromSecond } from "./time";
 
-// export const createGraphDataFromAgentDetail = (
-//   agentDetail: AgentDetail,
-//   graph: StudioDataNode[] = []
-// ): StudioDataNode[] => {
-//   const POSITION_OFFSET = 550;
-//   const MAX_COLUMN = 2;
-//   let position = { x: 0, y: 0 };
+const categories = getAgentModelCategories("create");
 
-//   const updatePosition = () => {
-//     position.x += POSITION_OFFSET;
+const findCategoryInCategories = (categoryKey: string) => {
+  return categories.find((category) => category.idx === categoryKey);
+};
 
-//     if (position.x > POSITION_OFFSET * MAX_COLUMN) {
-//       position.x = POSITION_OFFSET;
-//       position.y += POSITION_OFFSET;
-//     }
-//   };
+const findCategoryOptionInCategories = (
+  categoryKey: string,
+  optionKey: string
+) => {
+  const category = findCategoryInCategories(categoryKey);
+  if (category) {
+    return category.options.find((option) => option.idx === optionKey);
+  }
+};
 
-//   const newGraph = JSON.parse(JSON.stringify(graph));
-//   // for agent
-//   const agentName = agentDetail.agent_name;
-//   const agentOptionData = findDataByOptionKey(
-//     CATEGORY_OPTION_KEYS.agent.agent_new,
-//     newGraph
-//   );
-//   let treeData: StudioDataNode;
-//   if (agentOptionData.length) {
-//     treeData = agentOptionData[0];
-//     agentOptionData[0].data = {
-//       ...agentOptionData[0].data,
-//       agentName,
-//     };
-//   } else {
-//     const defaultAgentOption = findCategoryOptionInCategories(
-//       CATEGORY_KEYS.agent,
-//       CATEGORY_OPTION_KEYS.agent.agent_new
-//     );
+const findCategoryOptionInCategoriesByFieldValue = (
+  categoryKey: string,
+  dataField: string,
+  dataValue: string | number
+) => {
+  const category = findCategoryInCategories(categoryKey);
+  if (category) {
+    return category.options.find(
+      (option) =>
+        `${option?.data?.[dataField].defaultValue}`.toLowerCase() ===
+        `${dataValue}`.toLowerCase()
+    );
+  }
+};
 
-//     if (defaultAgentOption) {
-//       const newOptionData = createNodeData(
-//         v4(),
-//         defaultAgentOption,
-//         [],
-//         {
-//           agentName,
-//         },
-//         cloneDeep(position)
-//       );
+export const createGraphDataFromAgentDetail = (
+  agentDetail: AgentDetail,
+  graph: StudioDataNode[] = []
+): StudioDataNode[] => {
+  try {
+    console.log("___________________createGraphDataFromAgentDetail", {
+      agentDetail,
+      graph,
+    });
 
-//       updatePosition();
+    const POSITION_OFFSET = 550;
+    const MAX_COLUMN = 2;
+    let position = { x: 0, y: 0 };
 
-//       newGraph.push(newOptionData);
-//       treeData = newOptionData;
-//     }
-//   }
+    const updatePosition = () => {
+      position.x += POSITION_OFFSET;
 
-//   // @ts-ignore
-//   if (!treeData) {
-//     return newGraph;
-//   }
+      if (position.x > POSITION_OFFSET * MAX_COLUMN) {
+        position.x = POSITION_OFFSET;
+        position.y += POSITION_OFFSET;
+      }
+    };
 
-//   // for personality
-//   const personality = agentDetail.system_content;
+    const newGraph = JSON.parse(JSON.stringify(graph));
+    // for agent
+    const agentName = agentDetail.agent_name;
+    const agentOptionData = findDataByOptionKey(
+      CATEGORY_OPTION_KEYS.agent.agent_new,
+      newGraph
+    );
+    let treeData: StudioDataNode = undefined as any;
+    // agent name
+    if (agentOptionData.length) {
+      treeData = agentOptionData[0];
+      agentOptionData[0].data = {
+        ...agentOptionData[0].data,
+        agentName,
+      };
+    } else {
+      const defaultAgentOption = findCategoryOptionInCategories(
+        AGENT_CATEGORY_KEY,
+        CATEGORY_OPTION_KEYS.agent.agent_new
+      );
 
-//   // check existing personality
-//   const personalities = findDataByCategoryKey(
-//     CATEGORY_KEYS.personalities,
-//     graph
-//   );
-//   if (personalities.length) {
-//     //
-//   } else {
-//     // no existing personality
-//     let newOptionData;
-//     const defaultPersonalityOption = findCategoryOptionInCategories(
-//       CATEGORY_KEYS.personalities,
-//       CATEGORY_OPTION_KEYS.personalities.personality_customize
-//     );
-//     if (defaultPersonalityOption) {
-//       newOptionData = createNodeData(
-//         v4(),
-//         defaultPersonalityOption,
-//         [],
-//         {
-//           personality: personality,
-//           originalText: personality,
-//         },
-//         { x: 0, y: 0 }
-//       );
-//     }
+      if (defaultAgentOption) {
+        const newOptionData = createNodeData(
+          v4(),
+          defaultAgentOption,
+          [],
+          {
+            agentName,
+          },
+          cloneDeep(position)
+        );
 
-//     if (newOptionData) {
-//       treeData.children.push(newOptionData);
-//     }
-//   }
+        updatePosition();
 
-//   // for block chain
-//   const blockchainOptionKeys = Object.values(CATEGORY_OPTION_KEYS.blockchains);
-//   const aiBlockchainOptionData = treeData?.children.filter((item) =>
-//     blockchainOptionKeys.includes(item.idx)
-//   );
+        newGraph.push(newOptionData);
+        treeData = newOptionData;
+      }
+    }
 
-//   if (aiBlockchainOptionData?.[0]) {
-//     aiBlockchainOptionData[0].data = {
-//       ...aiBlockchainOptionData[0].data,
-//       chainId: agentDetail.chain_id,
-//     };
-//   }
+    if (!treeData) {
+      return newGraph;
+    }
 
-//   // for token
-//   const tokenOptionKeys = Object.values(CATEGORY_OPTION_KEYS.tokens);
-//   const tokenOptionData = treeData?.children.filter((item) =>
-//     tokenOptionKeys.includes(item.idx)
-//   );
+    // for personality
+    const personality = agentDetail.system_content;
 
-//   if (tokenOptionData?.[0]) {
-//     tokenOptionData[0].data = {
-//       ...tokenOptionData[0].data,
-//       tokenId: agentDetail.token_chain_id,
-//     };
-//   }
+    // check existing personality
+    const personalities = findDataByCategoryKey(
+      PERSONALITY_CATEGORY_KEY,
+      graph
+    );
+    if (personalities.length) {
+      //
+    } else {
+      // no existing personality
+      let newOptionData;
+      if (agentDetail.create_token_mode === TokenSetupMode.LINK_EXISTING) {
+        // pump token
+        const defaultPersonalityOption = findCategoryOptionInCategories(
+          PERSONALITY_CATEGORY_KEY,
+          CATEGORY_OPTION_KEYS.personalities.personality_token
+        );
+        if (defaultPersonalityOption) {
+          newOptionData = createNodeData(
+            v4(),
+            defaultPersonalityOption,
+            [],
+            {
+              personality: personality,
+            },
+            { x: 0, y: 0 }
+          );
+        }
+      } else {
+        if (agentDetail.nft_token_id) {
+          if (agentDetail.nft_public_key) {
+            // ordinals
+            const defaultPersonalityOption = findCategoryOptionInCategories(
+              PERSONALITY_CATEGORY_KEY,
+              CATEGORY_OPTION_KEYS.personalities.personality_ordinals
+            );
+            if (defaultPersonalityOption) {
+              newOptionData = createNodeData(
+                v4(),
+                defaultPersonalityOption,
+                [],
+                {
+                  personality: personality,
+                },
+                { x: 0, y: 0 }
+              );
+            }
+          } else {
+            // nft
+            const defaultPersonalityOption = findCategoryOptionInCategories(
+              PERSONALITY_CATEGORY_KEY,
+              CATEGORY_OPTION_KEYS.personalities.personality_nft
+            );
+            if (defaultPersonalityOption) {
+              newOptionData = createNodeData(
+                v4(),
+                defaultPersonalityOption,
+                [],
+                {
+                  personality: personality,
+                },
+                { x: 0, y: 0 }
+              );
+            }
+          }
+        } else {
+          // custom
+          const defaultPersonalityOption = findCategoryOptionInCategories(
+            PERSONALITY_CATEGORY_KEY,
+            CATEGORY_OPTION_KEYS.personalities.personality_customize
+          );
+          if (defaultPersonalityOption) {
+            newOptionData = createNodeData(
+              v4(),
+              defaultPersonalityOption,
+              [],
+              {
+                personality: personality,
+                originalText: personality,
+              },
+              { x: 0, y: 0 }
+            );
+          }
+        }
+      }
 
-//   const decentralizeOptionKeys = Object.values(CATEGORY_OPTION_KEYS.tokens);
-//   const decentralizeOptionData = treeData?.children.filter((item) =>
-//     decentralizeOptionKeys.includes(item.idx)
-//   );
+      if (newOptionData) {
+        treeData.children.push(newOptionData);
+      }
+    }
 
-//   if (decentralizeOptionData?.[0]) {
-//     decentralizeOptionData[0].data = {
-//       ...decentralizeOptionData[0].data,
-//       decentralizeId: agentDetail.agent_base_model,
-//     };
-//   }
+    // for ai framework
+    const aiFrameworkOptionKeys = Object.values(
+      CATEGORY_OPTION_KEYS.aiFrameworks
+    );
+    const aiFrameworkOptionData = treeData?.children.filter((item) =>
+      aiFrameworkOptionKeys.includes(item.idx)
+    );
 
-//   // mission
-//   const agentSnapshotMission = agentDetail.agent_info?.agent_snapshot_mission;
+    if (aiFrameworkOptionData?.[0]) {
+      aiFrameworkOptionData[0].data = {
+        ...aiFrameworkOptionData[0].data,
+        aiFrameworkId: OPTION_ETERNAL_AI_ID,
+      };
+    } else {
+      const defaultAiFrameworkOption = findCategoryOptionInCategories(
+        AI_FRAMEWORK_CATEGORY_KEY,
+        CATEGORY_OPTION_KEYS.aiFrameworks.ai_framework_eternal_ai
+      );
 
-//   // mission on x
-//   const missionOnXOptionData = findDataByCategoryKey(
-//     CATEGORY_KEYS.missionOnX,
-//     graph
-//   );
+      if (defaultAiFrameworkOption) {
+        const newOptionData = createNodeData(
+          v4(),
+          defaultAiFrameworkOption,
+          [],
+          {
+            aiFrameworkId: OPTION_ETERNAL_AI_ID,
+          },
+          cloneDeep(position)
+        );
 
-//   const missionOnXOptionKeys = Object.values(CATEGORY_OPTION_KEYS.missionOnX);
+        updatePosition();
 
-//   treeData.children = treeData.children.filter(
-//     (item) => !missionOnXOptionKeys.includes(item.idx)
-//   );
+        treeData.children.push(newOptionData);
+      }
+    }
 
-//   if (agentSnapshotMission.length) {
-//     agentSnapshotMission.forEach((mission) => {
-//       const matchedMission = missionOnXOptionData.find(
-//         (item) => item?.data?.id === (mission as any).id
-//       );
+    // for block chain
+    const blockchainOptionKeys = Object.values(
+      CATEGORY_OPTION_KEYS.blockchains
+    );
+    const aiBlockchainOptionData = treeData?.children.filter((item) =>
+      blockchainOptionKeys.includes(item.idx)
+    );
 
-//       if (matchedMission) {
-//         matchedMission.data = {
-//           ...matchedMission.data,
-//           id: (mission as any).id as any,
-//           frequency: getHourFromSecond(mission.interval) as any,
-//           details: mission.user_prompt,
-//         } satisfies BaseXFormData;
-//         treeData.children.push(matchedMission);
-//       } else {
-//         if (MISSION_X_REVERSE_MAPPING[mission.tool_set as MissionXSupport]) {
-//           const missionOptionData = findCategoryOptionInCategories(
-//             CATEGORY_KEYS.missionOnX,
-//             MISSION_X_REVERSE_MAPPING[mission.tool_set as MissionXSupport]
-//           );
-//           if (missionOptionData) {
-//             const newOptionData = createNodeData(
-//               v4(),
-//               missionOptionData,
-//               [],
-//               {
-//                 id: (mission as any).id as any,
-//                 frequency: getHourFromSecond(mission.interval) as any,
-//                 details: mission.user_prompt,
-//               },
-//               cloneDeep(position)
-//             );
+    let networkId = "";
+    if (aiBlockchainOptionData?.[0]) {
+      networkId = agentDetail.chain_id;
+      aiBlockchainOptionData[0].data = {
+        ...aiBlockchainOptionData[0].data,
+        chainId: agentDetail.chain_id,
+      };
+    } else {
+      const networkName =
+        agentDetail.agent_info.network_name || SUPPORT_NETWORKS.BASE;
+      const defaultBlockchainOption =
+        findCategoryOptionInCategoriesByFieldValue(
+          BLOCKCHAIN_CATEGORY_KEY,
+          "chainId",
+          networkName
+        );
 
-//             updatePosition();
+      if (defaultBlockchainOption) {
+        networkId = `${networkName}`.toLowerCase();
+        const newOptionData = createNodeData(
+          v4(),
+          defaultBlockchainOption,
+          [],
+          {
+            chainId: `${networkName}`.toLowerCase(),
+          },
+          cloneDeep(position)
+        );
 
-//             treeData.children.push(newOptionData);
-//           }
-//         }
-//       }
-//     });
-//   }
+        updatePosition();
 
-//   // for mission on farcaster
-//   const missionOnFarcasterOptionData = findDataByCategoryKey(
-//     CATEGORY_KEYS.missionOnFarcaster,
-//     graph
-//   );
+        treeData.children.push(newOptionData);
+      }
+    }
 
-//   const missionOnFarcasterOptionKeys = Object.values(
-//     CATEGORY_OPTION_KEYS.missionOnFarcaster
-//   );
+    const matchedToken = tokens.find((v) => compareString(v.id, networkId));
 
-//   treeData.children = treeData.children.filter(
-//     (item) => !missionOnFarcasterOptionKeys.includes(item.idx)
-//   );
+    const selectedChain = useCommonStore
+      .getState()
+      .chains?.find((v) => compareString(v.chain_id, matchedToken?.chainId));
 
-//   if (agentSnapshotMission.length) {
-//     agentSnapshotMission.forEach((mission) => {
-//       const matchedMission = missionOnFarcasterOptionData.find(
-//         (item) => item?.data?.id === (mission as any).id
-//       );
+    // for token
+    const tokenOptionKeys = Object.values(CATEGORY_OPTION_KEYS.tokens);
+    const tokenOptionData = treeData?.children.filter((item) =>
+      tokenOptionKeys.includes(item.idx)
+    );
 
-//       if (matchedMission) {
-//         matchedMission.data = {
-//           ...matchedMission.data,
-//           id: (mission as any).id as any,
-//           frequency: getHourFromSecond(mission.interval) as any,
-//           details: mission.user_prompt,
-//         } satisfies BaseFarcasterFormData;
-//         treeData.children.push(matchedMission);
-//       } else {
-//         if (
-//           MISSION_FARCASTER_REVERSE_MAPPING[
-//             mission.tool_set as MissionFarcasterSupport
-//           ]
-//         ) {
-//           const missionOptionData = findCategoryOptionInCategories(
-//             CATEGORY_KEYS.missionOnFarcaster,
-//             MISSION_FARCASTER_REVERSE_MAPPING[
-//               mission.tool_set as MissionFarcasterSupport
-//             ]
-//           );
+    if (tokenOptionData?.[0]) {
+      tokenOptionData[0].data = {
+        ...tokenOptionData[0].data,
+        tokenId: agentDetail.token_chain_id,
+      };
+    } else {
+      const tokenChainId = agentDetail.token_chain_id || ChainId.Base;
+      const defaultToken = findCategoryOptionInCategoriesByFieldValue(
+        TOKEN_CATEGORY_KEY,
+        "tokenId",
+        tokenChainId
+      );
 
-//           if (missionOptionData) {
-//             const newOptionData = createNodeData(
-//               v4(),
-//               missionOptionData,
-//               [],
-//               {
-//                 id: (mission as any).id as any,
-//                 frequency: getHourFromSecond(mission.interval) as any,
-//                 details: mission.user_prompt,
-//               },
-//               cloneDeep(position)
-//             );
+      if (defaultToken) {
+        const newOptionData = createNodeData(
+          v4(),
+          defaultToken,
+          [],
+          {
+            tokenId: tokenChainId,
+          },
+          cloneDeep(position)
+        );
 
-//             updatePosition();
+        updatePosition();
 
-//             treeData.children.push(newOptionData);
-//           }
-//         }
-//       }
-//     });
-//   }
+        treeData.children.push(newOptionData);
+      }
+    }
 
-//   return newGraph;
-// };
+    const decentralizeOptionKeys = Object.values(
+      CATEGORY_OPTION_KEYS.decentralized
+    );
 
-export const createGraphDataFromAgentDetail = () => {
-  //
+    const decentralizeOptionData = treeData?.children.filter((item) =>
+      decentralizeOptionKeys.includes(item.idx)
+    );
+
+    if (decentralizeOptionData?.[0]) {
+      const aiModel = [
+        agentDetail.agent_base_model,
+        selectedChain?.support_model_names?.[
+          agentDetail.agent_base_model || ""
+        ] || "",
+      ];
+      decentralizeOptionData[0].data = {
+        ...decentralizeOptionData[0].data,
+        decentralizeId: aiModel[0],
+        decentralizeKey: aiModel[1],
+      };
+    } else {
+      const newOptions = getDynamicAiModelOptions(
+        useCommonStore.getState().chains || [],
+        {}
+      );
+      const aiModel = [
+        agentDetail.agent_base_model,
+        selectedChain?.support_model_names?.[
+          agentDetail.agent_base_model || ""
+        ] || "",
+      ];
+
+      const option = newOptions.find(
+        (item) =>
+          item.idx === `decentralize_inference_${agentDetail.agent_base_model}`
+      );
+
+      if (option) {
+        const newOptionData = createNodeData(
+          v4(),
+          option,
+          [],
+          {
+            decentralizeId: aiModel[0],
+            decentralizeKey: aiModel[1],
+          },
+          cloneDeep(position)
+        );
+
+        updatePosition();
+
+        treeData.children.push(newOptionData);
+      }
+    }
+
+    // mission
+    const agentSnapshotMission = agentDetail.agent_info?.agent_snapshot_mission;
+
+    // mission on x
+    const missionOnXOptionData = findDataByCategoryKey(
+      MISSION_ON_X_CATEGORY_KEY,
+      graph
+    );
+
+    const missionOnXOptionKeys = Object.values(CATEGORY_OPTION_KEYS.missionOnX);
+
+    treeData.children = treeData.children.filter(
+      (item) => !missionOnXOptionKeys.includes(item.idx)
+    );
+
+    if (agentSnapshotMission.length) {
+      agentSnapshotMission.forEach((mission) => {
+        const matchedMission = missionOnXOptionData.find(
+          // @ts-ignore
+          (item) => item?.data?.id === mission.id
+        );
+
+        if (matchedMission) {
+          matchedMission.data = {
+            ...matchedMission.data,
+            // @ts-ignore
+            id: mission.id as any,
+            frequency: getHourFromSecond(mission.interval) as any,
+            details: mission.user_prompt,
+            toolset: "",
+            model: "",
+            modelName: "",
+          } satisfies EngageOnXFormData;
+          treeData.children.push(matchedMission);
+        } else {
+          // @ts-ignore
+          if (MISSION_X_REVERSE_MAPPING[mission.tool_set as MissionXSupport]) {
+            const missionOptionData = findCategoryOptionInCategories(
+              MISSION_ON_X_CATEGORY_KEY,
+              // @ts-ignore
+              MISSION_X_REVERSE_MAPPING[mission.tool_set as MissionXSupport]
+            );
+
+            if (missionOptionData) {
+              const firstModel = Object.entries(
+                selectedChain?.support_model_names || {}
+              )[0];
+              // @ts-ignore
+              const model =
+                selectedChain?.support_model_names?.[
+                  // @ts-ignore
+                  mission.agent_base_model
+                ] || firstModel[1];
+              // @ts-ignore
+              const modelName = mission.agent_base_model || firstModel[0];
+
+              if (
+                missionOptionData.idx ===
+                CATEGORY_OPTION_KEYS.missionOnX.mission_on_x_post_news
+              ) {
+                const { prompt } = JSON.parse(mission.user_prompt);
+
+                const newOptionData = createNodeData(
+                  v4(),
+                  missionOptionData,
+                  [],
+                  {
+                    // @ts-ignore
+                    id: mission.id as any,
+                    frequency: getHourFromSecond(mission.interval) as any,
+                    details: prompt,
+                    topics: {
+                      // @ts-ignore
+                      values: mission.topics || "",
+                      // @ts-ignore
+                      bingSearch: mission.is_bing_search || false,
+                      // @ts-ignore
+                      twitterSearch: mission.is_twitter_search || false,
+                    },
+                    model: model,
+                    modelName: modelName,
+                  } satisfies PostNewsOnXFormData,
+                  cloneDeep(position)
+                );
+
+                updatePosition();
+
+                treeData.children.push(newOptionData);
+              } else if (
+                missionOptionData.idx ===
+                CATEGORY_OPTION_KEYS.missionOnX.mission_on_x_post_following
+              ) {
+                const { prompt, cutoff_hour } = JSON.parse(mission.user_prompt);
+                const newOptionData = createNodeData(
+                  v4(),
+                  missionOptionData,
+                  [],
+                  {
+                    // @ts-ignore
+                    id: mission.id as any,
+                    // @ts-ignore
+                    frequency: getHourFromSecond(mission.interval) as any,
+                    details: prompt,
+                    fetchPostsFrequency: cutoff_hour,
+                    model: model,
+                    // @ts-ignore
+                    modelName: modelName,
+                  } satisfies PostFollowingOnXFormData,
+                  cloneDeep(position)
+                );
+                updatePosition();
+
+                treeData.children.push(newOptionData);
+              } else {
+                const newOptionData = createNodeData(
+                  v4(),
+                  missionOptionData,
+                  [],
+                  {
+                    // @ts-ignore
+                    id: mission.id as any,
+                    frequency: getHourFromSecond(mission.interval) as any,
+                    details: mission.user_prompt,
+                    model: model,
+                    modelName: modelName,
+                  },
+                  cloneDeep(position)
+                );
+
+                updatePosition();
+
+                treeData.children.push(newOptionData);
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // for mission on farcaster
+    const missionOnFarcasterOptionData = findDataByCategoryKey(
+      MISSION_ON_FARCASTER_CATEGORY_KEY,
+      graph
+    );
+
+    const missionOnFarcasterOptionKeys = Object.values(
+      CATEGORY_OPTION_KEYS.missionOnFarcaster
+    );
+
+    treeData.children = treeData.children.filter(
+      (item) => !missionOnFarcasterOptionKeys.includes(item.idx)
+    );
+
+    if (agentSnapshotMission.length) {
+      agentSnapshotMission.forEach((mission) => {
+        const matchedMission = missionOnFarcasterOptionData.find(
+          // @ts-ignore
+          (item) => item?.data?.id === mission.id
+        );
+
+        if (matchedMission) {
+          matchedMission.data = {
+            ...matchedMission.data,
+            // @ts-ignore
+            id: mission.id as any,
+            frequency: getHourFromSecond(mission.interval) as any,
+            details: mission.user_prompt,
+            toolset: "",
+            model: "",
+            modelName: "",
+          } satisfies EngageOnXFormData;
+          treeData.children.push(matchedMission);
+        } else {
+          if (
+            MISSION_FARCASTER_REVERSE_MAPPING[
+              // @ts-ignore
+              mission.tool_set as MissionFarcasterSupport
+            ]
+          ) {
+            const missionOptionData = findCategoryOptionInCategories(
+              MISSION_ON_FARCASTER_CATEGORY_KEY,
+              MISSION_FARCASTER_REVERSE_MAPPING[
+                // @ts-ignore
+                mission.tool_set as MissionFarcasterSupport
+              ]
+            );
+
+            if (missionOptionData) {
+              const newOptionData = createNodeData(
+                v4(),
+                missionOptionData,
+                [],
+                {
+                  // @ts-ignore
+                  id: mission.id as any,
+                  frequency: getHourFromSecond(mission.interval) as any,
+                  details: mission.user_prompt,
+                },
+                cloneDeep(position)
+              );
+
+              updatePosition();
+
+              treeData.children.push(newOptionData);
+            }
+          }
+        }
+      });
+    }
+
+    return newGraph;
+  } catch (e) {
+    console.log("_____________createGraphDataFromAgentDetail", e);
+    return [];
+  }
 };

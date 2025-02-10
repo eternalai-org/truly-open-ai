@@ -279,7 +279,7 @@ func (s *Server) Routers() {
 		{
 			agentStoreAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.SaveAgentStore)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
-			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
+			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstallByUser)
 			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)
 			agentStoreAPI.POST("/:id/mission", s.authCheckTK1TokenMiddleware(), s.SaveMissionStore)
 			agentStoreAPI.GET("/:id/install-code/:agent_info_id", s.authCheckTK1TokenMiddleware(), s.GetAgentStoreInstallCode)
@@ -373,15 +373,9 @@ func (s *Server) Routers() {
 			sampleTwitterApp.POST("/tweet-message", s.SampleTwitterAppTweetMessage)
 		}
 
-		agentInfraAPI := rootAPI.Group("/agent-infra")
+		agentInfraAPI := rootAPI.Group("/infra")
 		{
-			agentInfraAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.CreateOrUpdateAgentInfra)
-			agentInfraAPI.GET("/list", s.GetListAgentInfra)
-			agentInfraAPI.GET("/list-by-user", s.GetListAgentInfra)
-			agentInfraAPI.GET("/install/list", s.GetListAgentInfraInstall)
-			agentInfraAPI.GET("/detail/:id", s.GetAgentInfraDetail)
-			agentInfraAPI.GET("/install-code/:id", s.authCheckTK1TokenMiddleware(), s.GetAgentInfraInstallCode)
-			agentInfraAPI.Any("/data/:infra_id/*path", s.proxyAgentInfraMiddleware("/api/agent-infra/data"))
+			agentInfraAPI.Any("/:infra_id/*path", s.proxyAgentStoreMiddleware("/api/infra"))
 		}
 	}
 }

@@ -854,8 +854,7 @@ func (s *Service) AgentCreateAgentStudio(ctx context.Context, address, graphData
 					}
 				case "token":
 					{
-						tokenChainId, _ := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
-						agent.TokenNetworkID = uint64(tokenChainId)
+						agent.TokenNetworkID = helpers.GetTokenIDFromMap(item.Data)
 						if agent.TokenNetworkID > 0 {
 							agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
 						} else {
@@ -1134,8 +1133,7 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 						case "token":
 							{
 								if agent.TokenStatus == "" && agent.TokenAddress == "" {
-									tokenChainId, _ := strconv.ParseInt(item.Data["tokenId"].(string), 10, 64)
-									agent.TokenNetworkID = uint64(tokenChainId)
+									agent.TokenNetworkID = helpers.GetTokenIDFromMap(item.Data)
 									if agent.TokenNetworkID > 0 {
 										agent.TokenMode = string(models.CreateTokenModeTypeAutoCreate)
 									} else {
