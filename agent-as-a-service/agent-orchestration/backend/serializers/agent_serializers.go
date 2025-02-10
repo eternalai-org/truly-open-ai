@@ -214,6 +214,7 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 
 	if m.AgentStoreMissionID > 0 {
 		resp.ToolList = ""
+		resp.ToolSet = models.ToolsetType(fmt.Sprintf("%d", m.AgentStoreMissionID))
 	}
 	return resp
 }

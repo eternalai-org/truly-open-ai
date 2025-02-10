@@ -8,4 +8,6 @@ export type UpdateStudioAgentPayload = CreateStudioAgentPayload;
 
 export type AgentDetail = IAgent & {
   graph_data?: string;
+  nft_token_id?: string | number;
+  nft_public_key?: string | number;
 };
