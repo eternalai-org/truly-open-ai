@@ -2208,6 +2208,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						map[string][]interface{}{
 							"AgentInfo":        {},
 							"AgentStore.Owner": {},
+							"User":             {},
 						},
 						true,
 					)
@@ -2219,7 +2220,6 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						inferPost.AgentInfo != nil &&
 						inferPost.AgentSnapshotMissionID > 0 {
 						//
-						agentInfo := inferPost.AgentInfo
 						toolSet, err := s.dao.GetMissionToolset(tx, inferPost.AgentSnapshotMissionID)
 						if err != nil {
 							return errs.NewError(err)
@@ -2231,11 +2231,10 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 						if err != nil {
 							return errs.NewError(err)
 						}
-						if inferPost.AgentStoreID > 0 {
-							if inferPost.AgentStore != nil &&
-								inferPost.AgentStoreMissionFee.Float.Cmp(big.NewFloat(0)) > 0 {
-								owner := inferPost.AgentStore.Owner
-								err = tx.Model(owner).
+						if inferPost.AgentInfoID <= 0 {
+							if inferPost.UserID > 0 {
+								user := inferPost.User
+								err = tx.Model(user).
 									UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.AgentStoreMissionFee)).
 									Error
 								if err != nil {
@@ -2246,14 +2245,15 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 									&models.UserTransaction{
 										NetworkID: inferPost.NetworkID,
 										EventId:   fmt.Sprintf("agent_trigger_refund_%d", inferPost.ID),
-										UserID:    owner.ID,
+										UserID:    user.ID,
 										Type:      models.UserTransactionTypeAgentStoreFee,
-										Amount:    inferPost.AgentStoreMissionFee,
+										Amount:    inferPost.Fee,
 										Status:    models.UserTransactionStatusDone,
 									},
 								)
 							}
 						} else {
+							agentInfo := inferPost.AgentInfo
 							err = tx.Model(agentInfo).
 								UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
 								Error
