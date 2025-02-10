@@ -205,3 +205,39 @@ func (s *Server) GetAgentStoreInstallCode(c *gin.Context) {
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: res.Code})
 }
+
+func (s *Server) RunMission(c *gin.Context) {
+	ctx := s.requestContext(c)
+	var req serializers.AgentStoreMissionReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	obj, err := s.nls.AgentSnapshotPostCreateForUser(ctx, req.NetworkID, userAddress, req.Prompt, req.Model, req.ID)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: obj.ResponseId})
+}
+
+func (s *Server) MissionStoreResult(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil || userAddress == "" {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
+		return
+	}
+	responseId := s.stringFromContextQuery(c, "id")
+	resp, err := s.nls.GetMissionStoreResult(ctx, responseId)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxSTRING(c, http.StatusOK, resp)
+}

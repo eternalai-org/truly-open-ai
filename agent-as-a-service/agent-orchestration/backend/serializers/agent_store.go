@@ -23,6 +23,8 @@ type AgentStoreMissionReq struct {
 	Price       numeric.BigFloat `json:"price"`
 	ToolList    string           `json:"tool_list"`
 	Icon        string           `json:"icon"`
+	NetworkID   uint64           `json:"network_id"`
+	Model       string           `json:"model"`
 }
 
 type AuthenAgentStoreCallback struct {

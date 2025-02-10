@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -84,7 +86,9 @@ func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*mo
 func (s *Service) GetAgentStoreDetail(ctx context.Context, id uint) (*models.AgentStore, error) {
 	res, err := s.dao.FirstAgentStoreByID(daos.GetDBMainCtx(ctx),
 		id,
-		map[string][]interface{}{}, false)
+		map[string][]interface{}{
+			"AgentStoreMissions": {},
+		}, false)
 	if err != nil {
 		return nil, errs.NewError(err)
 	}
@@ -240,4 +244,58 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 		return nil, errs.NewError(err)
 	}
 	return obj, nil
+}
+
+func (s *Service) GetMissionStoreResult(ctx context.Context, responseID string) (string, error) {
+	var resp string
+	cacheKey := fmt.Sprintf(`CacheAgentSnapshotPost_%s`, strings.ToLower(responseID))
+	err := s.GetRedisCachedWithKey(cacheKey, &resp)
+	if err != nil {
+		s.CacheMissionStoreResult(daos.GetDBMainCtx(ctx), responseID)
+		s.GetRedisCachedWithKey(cacheKey, &resp)
+	}
+
+	return resp, nil
+}
+
+func (s *Service) CacheMissionStoreResult(tx *gorm.DB, responseID string) error {
+	snapshotPost, err := s.dao.FirstAgentSnapshotPost(
+		tx,
+		map[string][]interface{}{
+			"response_id = ?": {responseID},
+		},
+		map[string][]interface{}{
+			"AgentSnapshotMission": {},
+			"AgentInfo":            {},
+		},
+		[]string{},
+	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+
+	err = s.CacheAgentSnapshotPost(snapshotPost)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) CacheAgentSnapshotPost(snapshotPost *models.AgentSnapshotPost) error {
+	if snapshotPost != nil {
+		cacheData, err := json.Marshal(&serializers.Resp{Result: serializers.NewAgentSnapshotPostResp(snapshotPost)})
+		if err != nil {
+			errs.NewError(err)
+		}
+		err = s.SetRedisCachedWithKey(
+			fmt.Sprintf(`CacheAgentSnapshotPost_%s`, strings.ToLower(snapshotPost.ResponseId)),
+			string(cacheData),
+			1*time.Hour,
+		)
+
+		if err != nil {
+			return errs.NewError(err)
+		}
+	}
+	return nil
 }
