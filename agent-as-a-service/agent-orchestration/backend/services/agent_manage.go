@@ -1121,7 +1121,7 @@ func (s *Service) AgentUpdateAgentStudio(ctx context.Context, address, agentID, 
 						case "blockchain":
 							{
 								if !(agent.AgentContractID != "" || agent.AgentNftMinted == true) {
-									chainName := fmt.Sprintf("%v", item.Data["decentralizeId"])
+									chainName := helpers.GetStringValueFromMap(item.Data, "chainId")
 									agent.NetworkID = models.GetChainID(chainName)
 									agent.NetworkName = models.GetChainName(agent.NetworkID)
 								}
