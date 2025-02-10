@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -23,6 +25,23 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {
 				return errs.NewError(err)
+			}
+			// validate for alpha
+			if req.ApiUrl != "" {
+				hostURL, err := url.Parse(req.ApiUrl)
+				if err != nil {
+					return errs.NewError(err)
+				}
+				if hostURL.Scheme != "https" {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				if !strings.Contains(hostURL.Host, ".") {
+					return errs.NewError(errs.ErrBadRequest)
+				}
+				err = helpers.CurlURL(req.ApiUrl+"/health", http.MethodGet, map[string]string{}, nil, nil)
+				if err != nil {
+					return errs.NewError(errs.ErrApiUrlNotHealth)
+				}
 			}
 			if req.ID > 0 {
 				agentStore, err = s.dao.FirstAgentStoreByID(tx, req.ID, map[string][]interface{}{}, true)
