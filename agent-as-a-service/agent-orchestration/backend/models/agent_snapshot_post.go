@@ -210,6 +210,7 @@ const (
 	ToolsetTypeTradeAnalyticsMentions  ToolsetType = "trade_analytics_mentions"
 	ToolsetTypeLuckyMoneys             ToolsetType = "lucky_moneys"
 	ToolsetTypeLaunchpadJoin           ToolsetType = "launchpad_join"
+	ToolsetTypeMissionStore            ToolsetType = "mission_store"
 
 	ToolsetTypeReplyMentionsFarcaster    ToolsetType = "reply_mentions_farcaster"
 	ToolsetTypeReplyNonMentionsFarcaster ToolsetType = "reply_non_mentions_farcaster"

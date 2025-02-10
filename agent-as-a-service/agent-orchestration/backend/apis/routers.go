@@ -283,6 +283,7 @@ func (s *Server) Routers() {
 			agentStoreAPI.POST("/install/callback", s.AuthenAgentStoreCallback)
 
 			agentStoreAPI.POST("/run-mission", s.authCheckTK1TokenMiddleware(), s.RunMission)
+			agentStoreAPI.GET("/mission-result", s.authCheckTK1TokenMiddleware(), s.MissionStoreResult)
 		}
 
 		missionStoreAPI := rootAPI.Group("/mission-store")

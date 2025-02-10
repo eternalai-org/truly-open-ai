@@ -1656,8 +1656,15 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 					snapshotPost.AgentSnapshotMission != nil &&
 					(snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsOnTwitter ||
 						snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeTradeAnalyticsMentions ||
-						snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeLuckyMoneys) {
-					if snapshotPost.Status == models.AgentSnapshotPostStatusInferResolved {
+						snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeLuckyMoneys ||
+						snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeMissionStore) {
+					if snapshotPost.AgentSnapshotMission.ToolSet == models.ToolsetTypeMissionStore || snapshotPost.AgentStoreMissionID > 0 {
+						//cache result
+						err = s.CacheAgentSnapshotPost(snapshotPost)
+						if err != nil {
+							return errs.NewError(err)
+						}
+					} else if snapshotPost.Status == models.AgentSnapshotPostStatusInferResolved {
 						var rs struct {
 							Data struct {
 								ResponseId string `json:"response_id"`
@@ -1759,7 +1766,6 @@ func (s *Service) UpdateDataMissionTradeAnalytics(ctx context.Context, snapshotP
 								return errs.NewError(err)
 							}
 						}
-
 					}
 				}
 				return nil
@@ -1851,10 +1857,10 @@ func (s *Service) JobUpdateOffchainAutoOutputForMission(ctx context.Context) err
 	ms, err := s.dao.FindAgentSnapshotPostJoinSelect(daos.GetDBMainCtx(ctx),
 		selected, joinFilters,
 		map[string][]interface{}{
-			"agent_snapshot_posts.created_at <= adddate(now(), interval -5 minute)": {},
-			"agent_snapshot_posts.created_at >= adddate(now(), interval -12 hour)":  {},
-			"agent_snapshot_missions.tool_set in (?)":                               {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions, models.ToolsetTypeLuckyMoneys}},
-			"agent_snapshot_posts.status = ?":                                       {models.AgentSnapshotPostStatusInferSubmitted},
+			"agent_snapshot_posts.created_at <= adddate(now(), interval -5 minute)":                      {},
+			"agent_snapshot_posts.created_at >= adddate(now(), interval -12 hour)":                       {},
+			"agent_snapshot_missions.tool_set in (?) or agent_snapshot_posts.agent_store_mission_id > 0": {[]models.ToolsetType{models.ToolsetTypeTradeAnalyticsOnTwitter, models.ToolsetTypeTradeAnalyticsMentions, models.ToolsetTypeLuckyMoneys, models.ToolsetTypeMissionStore}},
+			"agent_snapshot_posts.status = ?":                                                            {models.AgentSnapshotPostStatusInferSubmitted},
 		},
 		map[string][]interface{}{},
 		[]string{}, 1, 50,
