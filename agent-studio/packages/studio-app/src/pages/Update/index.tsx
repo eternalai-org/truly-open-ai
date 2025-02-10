@@ -1,39 +1,30 @@
 import { Flex } from "@chakra-ui/react";
-import getAgentModelCategories from "../../categories";
-import {
-  GraphData,
-  Studio,
-  StudioDataNode,
-  StudioRef,
-} from "@agent-studio/studio-dnd";
+import { GraphData, Studio, StudioRef } from "@agent-studio/studio-dnd";
 import { useParams } from "react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import useStudioAgentStore from "../../stores/useStudioAgentStore";
-import { getAgentInstance } from "../../utils/agent";
-import { IAgent } from "@eternalai-dagent/core";
-import agentDatabase from "../../services/agent-database";
-import { createGraphDataFromAgentDetail } from "../../utils/data";
+import { useMemo, useRef, useState } from "react";
+import { AgentDetail } from "../../services/apis/studio/types";
+// import { getAgentInstance } from "../../utils/agent";
 
 const args = {
   dataSource: {},
   showConnectLine: true,
 };
 
-const updateAgentModelCategories = getAgentModelCategories("update");
+// const updateAgentModelCategories = getAgentModelCategories("update");
 function Update() {
   const { id } = useParams<{ id: string }>();
   const ref = useRef<StudioRef>(null);
 
-  const [categories, setCategories] = useState(updateAgentModelCategories);
+  const [categories, setCategories] = useState([]);
 
-  const createGraphDataForNonLocal = (agentDetail: IAgent) => {
-    return createGraphDataFromAgentDetail(agentDetail);
-  };
-  const reMapGraphData = (agentDetail: IAgent, data: StudioDataNode[]) => {
-    return createGraphDataFromAgentDetail(agentDetail, data);
-  };
+  // const createGraphDataForNonLocal = (agentDetail: AgentDetail) => {
+  //   return createGraphDataFromAgentDetail(agentDetail);
+  // };
+  // const reMapGraphData = (agentDetail: AgentDetail, data: StudioDataNode[]) => {
+  //   return createGraphDataFromAgentDetail(agentDetail, data);
+  // };
 
-  const fetchAgentLocalGraph = async (id: string, agentDetail: IAgent) => {
+  const fetchAgentLocalGraph = async (id: string, agentDetail: AgentDetail) => {
     // try {
     //   const data = await agentDatabase.getItem(id);
     //   if (data) {
@@ -66,31 +57,31 @@ function Update() {
   };
 
   const getAgentDetail = async () => {
-    if (id) {
-      const baseAgent = await getAgentInstance({} as any);
-      const agentDetail: IAgent = await baseAgent.getAgent(id);
-      if (agentDetail) {
-        useStudioAgentStore.getState().setAgentDetail(agentDetail);
-        fetchAgentLocalGraph(agentDetail.id, agentDetail);
-      }
-    }
+    // if (id) {
+    //   const baseAgent = await getAgentInstance({} as any);
+    //   const agentDetail: AgentDetail = await baseAgent.getAgent(id);
+    //   if (agentDetail) {
+    //     useStudioAgentStore.getState().setAgentDetail(agentDetail);
+    //     fetchAgentLocalGraph(agentDetail.id, agentDetail);
+    //   }
+    // }
   };
 
-  useEffect(() => {
-    getAgentDetail();
-  }, [id]);
+  // useEffect(() => {
+  //   getAgentDetail();
+  // }, [id]);
 
-  useEffect(() => {
-    useStudioAgentStore.getState().setIsDetail(true);
-    setCategories(updateAgentModelCategories);
+  // useEffect(() => {
+  //   useStudioAgentStore.getState().setIsDetail(true);
+  //   setCategories(updateAgentModelCategories);
 
-    return () => {
-      // cleanup
-      if (ref.current) {
-        ref.current.cleanup();
-      }
-    };
-  }, []);
+  //   return () => {
+  //     // cleanup
+  //     if (ref.current) {
+  //       ref.current.cleanup();
+  //     }
+  //   };
+  // }, []);
 
   const dataGraph = useMemo(() => {
     return {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { XYPosition } from '@xyflow/react';
 
 import { createNewBaseEdge, generateSourceHandleId } from './edge';
@@ -69,7 +68,9 @@ export const transformDataToNodes = (data: StudioDataNode[]) => {
       const childrenNode: StudioNode[] = [];
       if (item.children.length) {
         // for directly children
-        const directlyChildren = item.children.filter((child) => (categoryOptionMap[child.idx].type as any) === StudioCategoryType.INLINE);
+        const directlyChildren = item.children.filter(
+          (child) => (categoryOptionMap[child.idx].type as StudioCategoryType) === StudioCategoryType.INLINE,
+        );
 
         childrenNode.push(...transformDataToNodes(directlyChildren));
       }

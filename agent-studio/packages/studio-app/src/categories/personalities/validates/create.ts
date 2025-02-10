@@ -1,22 +1,38 @@
 import {
+  findDataByCategoryKey,
+  findDataById,
   OnAddPayload,
   OnCreatePayload,
   OnMergePayload,
   OnSnapPayload,
+  StudioDataNode,
+  StudioNode,
 } from "@agent-studio/studio-dnd";
-import { onlyOptionSameCategoryInTree } from "../../../utils/validate";
+import { onlyOptionSameCategoryInTree } from "../../shared/validators";
 
 const onAddValidate = (data: OnAddPayload) => {
-  return onlyOptionSameCategoryInTree(data);
+  if (!onlyOptionSameCategoryInTree(data)) {
+    return false;
+  }
+
+  return true;
 };
 const onSnapValidate = (data: OnSnapPayload) => {
-  return onlyOptionSameCategoryInTree(data);
+  if (!onlyOptionSameCategoryInTree(data)) {
+    return false;
+  }
+
+  return true;
 };
 const onSplitValidate = () => {
   return true;
 };
 const onMergeValidate = (data: OnMergePayload) => {
-  return onlyOptionSameCategoryInTree(data);
+  if (!onlyOptionSameCategoryInTree(data)) {
+    return false;
+  }
+
+  return true;
 };
 const onDropInValidate = (data: OnCreatePayload) => {
   return true;

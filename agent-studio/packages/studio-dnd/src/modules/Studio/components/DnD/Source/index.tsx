@@ -21,7 +21,7 @@ const Source = ({ id, data, disabled = false, children, ...props }: Props) => {
       ...data,
       type: StudioZone.ZONE_SOURCE,
     } satisfies DraggableData;
-  }, [data, id]);
+  }, [data]);
 
   const handleOnDrag = useCallback(
     (_data: DraggableData, touchingPoint: DomRect | null) => {

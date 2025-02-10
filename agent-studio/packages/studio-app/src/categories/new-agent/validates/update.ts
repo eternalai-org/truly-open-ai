@@ -1,4 +1,4 @@
-import { OnAddPayload } from "@agent-studio/studio-dnd";
+import { OnAddPayload, OnCreatePayload } from "@agent-studio/studio-dnd";
 
 const onAddValidate = (data: OnAddPayload) => {
   // TODO: Block adding new personality to the root

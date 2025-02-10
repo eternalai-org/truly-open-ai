@@ -1,0 +1,28 @@
+.modalContent {
+  overflow: hidden;
+}
+
+.modalBody {
+  max-height: 800px !important;
+  min-width: 500px;
+  overflow: hidden;
+}
+
+.predictModal__body {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  gap: 24px;
+
+  .predictModal__stats {
+    flex: 0 50%;
+    // width: 50%;
+    overflow: hidden;
+  }
+
+  .predictModal__prediction {
+    flex: 0 50%;
+    // width: 50%;
+    overflow: hidden;
+  }
+}

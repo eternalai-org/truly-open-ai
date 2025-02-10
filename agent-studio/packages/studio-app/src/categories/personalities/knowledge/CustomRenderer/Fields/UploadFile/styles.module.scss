@@ -1,0 +1,85 @@
+.dropFile {
+  width: 100%;
+  text-align: center;
+  position: relative;
+  border-radius: 12px;
+  border: 1px dashed #95a4fc;
+  background: #f2f5fa;
+
+  .dropZone {
+    margin: 0;
+    padding: 12px 24px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .dropZoneThumbnail {
+    display: inline-block;
+  }
+
+  .dropZoneDescription {
+    color: #000;
+    text-align: center;
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 24px;
+    opacity: 0.6;
+  }
+
+  &__drag {
+    background-color: #e5ecf6;
+  }
+
+  &__error {
+    border: 1px solid #ff4747;
+  }
+
+  .errorText {
+    color: #ff4747;
+  }
+
+  .loadingWrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgb(255 255 255 / 20%);
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+
+    .loadingIndicatorWrapper {
+      position: relative;
+      height: 56px;
+      width: 56px;
+    }
+
+    .loadingText {
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 26px;
+      color: #0006;
+    }
+  }
+}
+
+.uploadFile_description {
+  margin-top: 8px;
+  color: #000;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  opacity: 0.6;
+
+  li {
+    text-align: left;
+  }
+}

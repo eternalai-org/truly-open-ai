@@ -1,18 +1,26 @@
-import { Flex, Text } from "@chakra-ui/react";
-import React, { PropsWithChildren } from "react";
-import { TextStyleMap } from "../form/styles";
+import { Flex } from "@chakra-ui/react";
+import { PropsWithChildren } from "react";
+import CustomRendererBaseTitle from "./CustomRendererBaseTitle";
 
 type Props = PropsWithChildren & {
-  title?: string | React.ReactNode;
+  title?: string;
+  tag?: string;
   actions?: React.ReactNode;
+  isSelected?: boolean;
+  onClick?: () => void;
 };
 
-const CustomRendererBase = ({ title, children, actions }: Props) => {
+const CustomRendererBase = ({
+  title,
+  tag,
+  children,
+  actions,
+  isSelected = false,
+  onClick,
+}: Props) => {
   return (
-    <Flex flexDir={"column"} gap={"4px"}>
-      {title && (
-        <Text {...(TextStyleMap.FORM_HEADING_STYLE as any)}>{title}</Text>
-      )}
+    <Flex flexDir={"column"} gap={"4px"} paddingTop={".2em"} onClick={onClick}>
+      <CustomRendererBaseTitle tag={tag} title={title} />
 
       {children}
 

@@ -1,0 +1,20 @@
+.skeletonWrapper {
+    width: 100%;
+    padding: 0 12px;
+
+    .item {
+        background: #343a40;
+        padding: 16px;
+        height: 76px;
+        border-radius: 12px;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+
+        .avatar {
+            span {
+                display: flex;
+            }
+        }
+    }
+}

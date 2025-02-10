@@ -1,19 +1,33 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, ReactNode } from "react";
+import { Text, TextProps } from "@chakra-ui/react";
 
 type Props = {
-  data: React.ReactNode | FunctionComponent;
+  data?: ReactNode | FunctionComponent;
+  style?: TextProps;
 };
 
-function TextRender({ data }: Props) {
-  if (!data) {
-    return <></>;
-  }
-
+// Convert FunctionComponent | ReactNode to ReactNode
+export const convertToReactNode = (
+  data: ReactNode | FunctionComponent
+): ReactNode => {
   if (typeof data === "function") {
-    return <>{data({}) as any}</>;
+    return data({}) as any;
+  }
+  return data;
+};
+
+function TextRender({ data, ...props }: Props) {
+  if (!data) {
+    return null;
   }
 
-  return <>{data}</>;
+  const content = convertToReactNode(data);
+
+  return (
+    <Text width={"max-content"} {...(props as any)}>
+      {content}
+    </Text>
+  );
 }
 
 export default TextRender;

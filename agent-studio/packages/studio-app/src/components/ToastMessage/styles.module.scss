@@ -1,0 +1,61 @@
+.wrapper {
+  color: white;
+}
+
+.container {
+  font-size: 14px;
+  font-weight: 400;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  flex: 1;
+  margin-top: -4px;
+  position: relative;
+
+  .messageText {
+    color: white;
+
+    &.messageText__light {
+      color: #000;
+    }
+  }
+
+  .descriptionText {
+    opacity: 0.7;
+    color: white;
+    font-size: 12px;
+    max-width: 250px;
+
+    &.descriptionText__light {
+      color: #000;
+    }
+  }
+
+  .walletLink {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    margin-top: 5px;
+    font-size: 12px;
+    opacity: 0.7;
+  }
+
+  button {
+    background-color: #f5f5f5;
+  }
+
+  .btnClose {
+    position: absolute;
+    top: 60%;
+    right: 0;
+    transform: translateY(-50%);
+
+    svg {
+      opacity: 0.7;
+
+      path {
+        fill: #fff;
+      }
+    }
+  }
+}

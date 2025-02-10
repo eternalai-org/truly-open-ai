@@ -1,21 +1,25 @@
-import { BaseDagent, IAgentCharacter, InitAgent } from "@eternalai-dagent/core";
 import {
-  ETERNAL_AI_URL,
+  BaseDagent,
+  IAgentCharacter,
+  ICharacter,
+} from "@eternalai-dagent/core";
+import {
+  AGENT_AI_URL,
   FARCASTER_CLIENT_ID,
   OWNER_PRIVATE_KEY,
   TWITTER_CLIENT_ID,
 } from "../configs";
 
-export const getAgentInstance = async ({
-  dagentCharacter,
-}: {
-  dagentCharacter: IAgentCharacter;
-}) => {
+export const getBaseAgent = () => {
+  const dagentCharacter: IAgentCharacter = {
+    character: {} as ICharacter,
+  };
+
   const baseAgent = new BaseDagent({
     dagentCharacter,
     environment: {
       PRIVATE_KEY: OWNER_PRIVATE_KEY,
-      ETERNAL_AI_URL: ETERNAL_AI_URL,
+      ETERNAL_AI_URL: AGENT_AI_URL,
       TWITTER: {
         CLIENT_ID: TWITTER_CLIENT_ID,
       },
@@ -24,6 +28,5 @@ export const getAgentInstance = async ({
       },
     },
   });
-  await baseAgent.configAccessToken();
   return baseAgent;
 };
