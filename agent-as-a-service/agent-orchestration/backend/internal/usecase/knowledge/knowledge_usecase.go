@@ -435,6 +435,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 				if _, err := uc.insertFilesToRAG(ctx, k); err != nil {
 					continue
 				}
+				// TODO transfer fee to backend wallet
 			}
 		}
 
@@ -492,7 +493,8 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			}
 
 			updatedFields := make(map[string]interface{})
-			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
+			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
+			updatedFields["status"] = kn.Status
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
 			updatedFields["deposit_chain_id"] = nId
 			if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
@@ -500,7 +502,6 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			}
 			content := fmt.Sprintf("Received amount for kb: %s (%d) on chain #%d", kn.Name, kn.ID, nId)
 			uc.SendMessage(ctx, content, uc.notiActChanId)
-			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
 		}
 	}
 	return nil
@@ -554,6 +555,14 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
 	}
 	logger.Info(categoryNameTracer, "insert_file_to_rag", zap.Any("body", body))
+
+	if kn.KbId != "" {
+		kn.Status = models.KnowledgeBaseStatusProcessUpdate
+	} else {
+		kn.Status = models.KnowledgeBaseStatusProcessing
+	}
+	kn.FilecoinHash = hash
+
 	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
@@ -562,7 +571,6 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 		uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 		return nil, err
 	}
-	kn.Status = models.KnowledgeBaseStatusProcessing
 
 	bBody, _ := json.Marshal(body)
 	kn.RagInsertFileRequest = string(bBody)
