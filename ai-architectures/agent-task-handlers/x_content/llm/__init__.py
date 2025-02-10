@@ -1,3 +1,3 @@
-from .base import OpenAILLMBase
-from .eternal_ai import ASyncBasedEternalAI, OnchainInferResult
+from .base import OnchainInferResult, OpenAILLMBase
+from .eternal_ai import ASyncBasedEternalAI
 from .local import SyncBasedEternalAI

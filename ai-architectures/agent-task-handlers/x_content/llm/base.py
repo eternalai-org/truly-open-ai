@@ -3,6 +3,11 @@ from typing import Any, List, Optional
 from langchain.schema import BaseMessage, ChatResult
 
 
+class OnchainInferResult(ChatResult):
+    tx_hash: str = None
+    receipt: str = None
+
+
 class OpenAILLMBase(ChatOpenAI):
 
     def __init__(self, *args, **kwargs):
@@ -13,7 +18,7 @@ class OpenAILLMBase(ChatOpenAI):
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
         **kwargs: Any,
-    ) -> ChatResult:
+    ) -> OnchainInferResult:
         raise NotImplementedError(
             "generate method not implemented; cls: {}".format(
                 self.__class__.__name__
@@ -25,7 +30,7 @@ class OpenAILLMBase(ChatOpenAI):
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
         **kwargs: Any,
-    ) -> ChatResult:
+    ) -> OnchainInferResult:
         raise NotImplementedError(
             "agenerate method not implemented; cls: {}".format(
                 self.__class__.__name__

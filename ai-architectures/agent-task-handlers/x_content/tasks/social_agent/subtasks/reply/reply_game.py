@@ -13,13 +13,14 @@ from x_content.wrappers.api.twitter_v2.models.response import (
 )
 from x_content.wrappers.conversation import (
     get_enhance_tweet_conversation,
+    get_llm_result_by_model_name,
     get_reply_game_conversation,
 )
 from x_content.wrappers.postprocess import postprocess_tweet_by_prompts
 
 from x_content.tasks.reply_subtask_base import ReplySubtaskBase
 
-from x_content.llm import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 from x_content.wrappers.twin_agent import get_random_example_tweets
 
 logging.basicConfig(level=logging.INFO if not __debug__ else logging.DEBUG)
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 MINIMUM_REPLY_LENGTH = 32
 
-from x_content.wrappers.magic import retry, sync2async
+from x_content.wrappers.magic import get_agent_llm_first_interval, retry, sync2async
 
 
 class ReplyGameSubtask(ReplySubtaskBase):
@@ -74,6 +75,7 @@ class ReplyGameSubtask(ReplySubtaskBase):
                 base_reply_conversation, temperature=0.7
             )
             response = result.generations[0].message.content
+            response = get_llm_result_by_model_name(response, self.log.model)
             debug_data = {
                 "tweets_context": [
                     {"user": x.twitter_username, "message": x.full_text}
@@ -89,7 +91,7 @@ class ReplyGameSubtask(ReplySubtaskBase):
             base_reply, base_reply_tx_hash = await retry(
                 get_base_reply,
                 max_retry=3,
-                first_interval=60,
+                first_interval=get_agent_llm_first_interval(),
                 interval_multiply=2,
             )()
         except Exception as err:

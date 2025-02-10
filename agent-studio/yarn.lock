@@ -9355,6 +9355,11 @@ he@^1.2.0:
   resolved "https://registry.npmjs.org/he/-/he-1.2.0.tgz"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
+hide-cra-error-overlay@^1.0.23:
+  version "1.0.23"
+  resolved "https://registry.yarnpkg.com/hide-cra-error-overlay/-/hide-cra-error-overlay-1.0.23.tgz#f60eb67eba11f26c0c97ee6b4fbe16eb592b6521"
+  integrity sha512-1EvnRW8YjivuQcZ4OXdvMHyhTqn3voDENTjeYfB1BtnBucnaw0Jz453zDu1KVN0aVoGmzCRq6TfrCDEQkWULhQ==
+
 hmac-drbg@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/hmac-drbg/-/hmac-drbg-1.0.1.tgz#d2745701025a6c775a6c545793ed502fc0c649a1"
