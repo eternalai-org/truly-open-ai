@@ -12,7 +12,7 @@ from x_content.models import ReasoningLog
 from x_content.legacy_services.post import brainstorm_post_service
 
 from ..base import MultiStepTaskBase
-from x_content.llm import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 from ..utils import a_move_state, create_twitter_auth_from_reasoning_log
 
 from json_repair import repair_json

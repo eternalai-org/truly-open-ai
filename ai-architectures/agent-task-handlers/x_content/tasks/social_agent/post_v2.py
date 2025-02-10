@@ -2,9 +2,9 @@ from typing import List
 
 from json_repair import repair_json
 
-from x_content.wrappers.conversation import get_enhance_tweet_conversation
+from x_content.wrappers.conversation import get_enhance_tweet_conversation, get_llm_result_by_model_name
 from x_content.wrappers.postprocess import postprocess_tweet_by_prompts
-from x_content.wrappers.magic import retry, sync2async
+from x_content.wrappers.magic import get_agent_llm_first_interval, retry, sync2async
 from x_content.tasks.utils import (
     a_move_state,
     create_twitter_auth_from_reasoning_log,
@@ -20,7 +20,7 @@ from x_content.models import ReasoningLog, MissionChainState
 from x_content.wrappers.bing_search import search_from_bing
 from x_content.wrappers.twin_agent import get_random_example_tweets
 from x_content.wrappers.api import twitter_v2
-from x_content.llm.eternal_ai import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 import json
 import random
 
@@ -115,14 +115,15 @@ Topic list: {topics}
                 result: OnchainInferResult = await self.llm.agenerate(
                     base_tweet_conversation, temperature=0.7
                 )
-                base_tweet = result.generations[0].message.content
+                content = result.generations[0].message.content
+                base_tweet = get_llm_result_by_model_name(content, log.model)
                 return base_tweet, result.tx_hash
 
             try:
                 base_tweet, base_tweet_tx_hash = await retry(
                     get_base_tweet,
                     max_retry=3,
-                    first_interval=60,
+                    first_interval=get_agent_llm_first_interval(),
                     interval_multiply=2,
                 )()
             except Exception as err:
@@ -156,15 +157,16 @@ Topic list: {topics}
                 result: OnchainInferResult = await self.llm.agenerate(
                     enhance_tweet_conversation, temperature=0.01
                 )
-                assistant_message = result.generations[0].message.content
-                data = repair_json(assistant_message, return_objects=True)
+                content = result.generations[0].message.content
+                content = get_llm_result_by_model_name(content, log.model)
+                data = repair_json(content, return_objects=True)
                 return data["tweet"], result.tx_hash
 
             try:
                 enhanced_tweet, enhanced_tweet_tx_hash = await retry(
                     get_enhanced_tweet,
                     max_retry=3,
-                    first_interval=60,
+                    first_interval=get_agent_llm_first_interval(),
                     interval_multiply=2,
                 )()
             except Exception as err:

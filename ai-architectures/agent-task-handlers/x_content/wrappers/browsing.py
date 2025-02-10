@@ -3,61 +3,19 @@ import os
 import logging
 from bs4 import BeautifulSoup
 import requests
-import PyPDF2
-import json
+import pypdf
 import string, random
 from x_content import constants as const
-from json_repair import repair_json
+
+from x_content.wrappers.llm_tasks import clean_text
 
 logging.basicConfig(level=logging.INFO if not __debug__ else logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def clean_text(crawled_text: str):
-    system_prompt = """You are a helpful assistant. Your task is to summarize the following crawled text in one paragraph, highlighting keywords, locations, dates, and other metadata. Provide the cleaned version of the text in a structured JSON format with the key "cleaned_text". Ensure no additional comments are added.
-
-    Output format example:
-    {
-        "cleaned_text": "Your cleaned and summarized text here"
-    }
-    """
-    url = os.path.join(const.SELF_HOSTED_LLAMA_405B_URL, "v1/chat/completions")
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {const.SELF_HOSTED_LLAMA_API_KEY}",
-    }
-
-    data = {
-        "model": const.SELF_HOSTED_LLAMA_405B_MODEL_IDENTITY,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": crawled_text},
-        ],
-        "max_tokens": 1024,
-        "temperature": 0.01,
-    }
-
-    resp = requests.post(url, headers=headers, data=json.dumps(data))
-
-    if resp.status_code != 200:
-        return crawled_text
-
-    content = resp.json()["choices"][0]["message"]["content"]
-
-    try:
-        cleaned_text = repair_json(content, return_objects=True)[
-            "cleaned_text"
-        ]
-    except (json.JSONDecodeError, KeyError):
-        cleaned_text = crawled_text
-
-    return cleaned_text
-
-
 def extract_text_from_pdf(filename):
     with open(filename, "rb") as file:
-        reader = PyPDF2.PdfReader(file)
+        reader = pypdf.PdfReader(file)
         text = ""
         for page in reader.pages:
             text += page.extract_text() + "\n"
@@ -92,7 +50,7 @@ def _crawl_data_from_url(url: str, raise_on_error=False):
 
                     full_text = extract_text_from_pdf(filename)
 
-                    return full_text[: const.MAX_TEXT_LENGTH], []
+                    return full_text, []
                 except Exception as err:
                     logger.error(
                         f"[_crawl_data_from_url] Error processing pdf: {err}"
@@ -164,3 +122,8 @@ def get_cleaned_text(full_text: str):
 
             full_text = full_text.replace(url, cleaned_text)
     return full_text
+
+
+if __name__ == "__main__":
+    full_text, _ = _crawl_data_from_url("https://arxiv.org/pdf/2203.04374")
+    print(full_text)

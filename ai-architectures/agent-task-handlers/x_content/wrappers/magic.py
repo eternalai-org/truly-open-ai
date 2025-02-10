@@ -10,6 +10,9 @@ from typing import Union
 
 import logging
 
+from x_content.utils import is_local_env
+from x_content import constants as const
+
 logger = logging.getLogger(__name__)
 
 
@@ -49,6 +52,20 @@ def retry(func: Callable, max_retry=5, first_interval=10, interval_multiply=1):
         raise Exception(f"Function {func.__name__} failed after all retry.")
 
     return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+
+
+def get_agent_llm_first_interval():
+    if is_local_env():
+        return const.LOCAL_LLM_RETRY_FIRST_INTERVAL
+    else:
+        return const.ASYNC_LLM_RETRY_FIRST_INTERVAL
+
+
+def get_llm_tasks_first_interval():
+    if is_local_env():
+        return const.LOCAL_LLM_RETRY_FIRST_INTERVAL
+    else:
+        return const.LLM_TASKS_RETRY_FIRST_INTERVAL
 
 
 def helpful_raise_for_status(resp: requests.Response | httpx.Response):

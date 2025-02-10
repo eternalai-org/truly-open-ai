@@ -92,8 +92,8 @@ type RetrieveKnowledgeBaseResponse struct {
 }
 
 type UpdateKnowledgeBaseWithSignatureRequest struct {
-	KnowledgeBaseId string `json:"knowledge_base_id" `
-	NetworkID       string `json:"network_id"`
+	KnowledgeId uint   `json:"knowledge_id"`
+	NetworkID   string `json:"network_id"`
 	// sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte
 	HashData        string `json:"hash_data"`
 	PromptKeyData   string `json:"prompt_key_data"`

@@ -196,6 +196,7 @@ class TwitterRequestAuthorization(BaseModel):
     toolset: Optional[str] = "not_defined"
     kn_base: KnowledgeBase
     prompt: Optional[str] = ""
+    model_name: Optional[str] = ""
 
     def to_dict(self):
         return {
