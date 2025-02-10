@@ -287,7 +287,7 @@ func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
 	}
 
 	if info.UserAddress != userAddress {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("you are not owner")})
 		return
 	}
 
