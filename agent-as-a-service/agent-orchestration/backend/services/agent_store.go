@@ -256,9 +256,9 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 	agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
+			"user_id = ?":        {user.ID},
 			"agent_store_id = ?": {agentStoreID},
 			"agent_info_id = ?":  {agentInfoID},
-			"user_id = ?":        {user.ID},
 		},
 		map[string][]interface{}{},
 		[]string{},
@@ -295,7 +295,8 @@ func (s *Service) GetListAgentStoreInstallByUser(ctx context.Context, userAddres
 		"user_id = ?": {user.ID},
 		"status = ?":  {models.InstallStatusDone},
 	}
-	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
+	res, count, err := s.dao.FindAgentStoreInstall4Page(
+		daos.GetDBMainCtx(ctx),
 		filter,
 		map[string][]interface{}{
 			"AgentStore":                    {},
