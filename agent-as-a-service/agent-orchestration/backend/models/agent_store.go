@@ -6,17 +6,18 @@ import (
 )
 
 type (
-	InstallStatus    string
-	InstallType      string
 	AgentStoreType   string
 	AgentStoreStatus string
+
+	AgentStoreInstallStatus string
+	AgentStoreInstallType   string
 )
 
 const (
-	InstallStatusNew  InstallStatus = "new"
-	InstallStatusDone InstallStatus = "done"
-	InstallTypeAgent  InstallType   = "agent"
-	InstallTypeUser   InstallType   = "user"
+	AgentStoreInstallStatusNew  AgentStoreInstallStatus = "new"
+	AgentStoreInstallStatusDone AgentStoreInstallStatus = "done"
+	AgentStoreInstallTypeAgent  AgentStoreInstallType   = "agent"
+	AgentStoreInstallTypeUser   AgentStoreInstallType   = "user"
 
 	AgentStoreTypeStore AgentStoreType = "store"
 	AgentStoreTypeInfra AgentStoreType = "infra"
@@ -67,8 +68,8 @@ type AgentStoreInstall struct {
 	AgentInfoID    uint `gorm:"index"`
 	AgentStore     *AgentStore
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
-	Status         InstallStatus
-	Type           InstallType
+	Status         AgentStoreInstallStatus
+	Type           AgentStoreInstallType
 }
 
 type (

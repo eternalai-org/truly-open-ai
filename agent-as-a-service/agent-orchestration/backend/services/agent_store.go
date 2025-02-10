@@ -201,7 +201,7 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 				return errs.NewError(errs.ErrBadRequest)
 			} else {
 				obj.CallbackParams = string(params)
-				obj.Status = models.InstallStatusDone
+				obj.Status = models.AgentStoreInstallStatusDone
 			}
 
 			err = s.dao.Save(tx, obj)
@@ -221,7 +221,7 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 
 func (s *Service) GetListAgentStoreInstall(ctx context.Context, userAddress string, agentInfoID uint, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
 	filter := map[string][]interface{}{
-		"status = ?": {models.InstallStatusDone},
+		"status = ?": {models.AgentStoreInstallStatusDone},
 	}
 	filter["user_address = ?"] = []interface{}{strings.ToLower(userAddress)}
 	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
@@ -271,12 +271,12 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 			Code:         helpers.RandomStringWithLength(64),
 			AgentStoreID: agentStoreID,
 			AgentInfoID:  agentInfoID,
-			Status:       models.InstallStatusNew,
-			Type:         models.InstallTypeAgent,
+			Status:       models.AgentStoreInstallStatusNew,
+			Type:         models.AgentStoreInstallTypeAgent,
 			UserID:       user.ID,
 		}
 		if agentInfoID == 0 {
-			agentStoreInstall.Type = models.InstallTypeUser
+			agentStoreInstall.Type = models.AgentStoreInstallTypeUser
 		}
 		err := s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreInstall)
 		if err != nil {
@@ -293,7 +293,7 @@ func (s *Service) GetListAgentStoreInstallByUser(ctx context.Context, userAddres
 	}
 	filter := map[string][]interface{}{
 		"user_id = ?": {user.ID},
-		"status = ?":  {models.InstallStatusDone},
+		"status = ?":  {models.AgentStoreInstallStatusDone},
 	}
 	res, count, err := s.dao.FindAgentStoreInstall4Page(
 		daos.GetDBMainCtx(ctx),
