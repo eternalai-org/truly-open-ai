@@ -1,4 +1,5 @@
 import { LocalStorage } from "node-localstorage";
 
-export const twitterStorage = new LocalStorage('./twitter-service-db');
+const storage_path = './storage';
+export const twitterStorage = new LocalStorage(storage_path + '/twitter-service-db');
 
