@@ -4,7 +4,7 @@ import traceback
 from json_repair import repair_json
 from x_content.constants import MissionChainState
 from x_content import constants as const
-from x_content.llm.eternal_ai import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 from x_content.models import ReasoningLog, modified_json_stringnify
 from x_content.tasks.base import MultiStepTaskBase
 from x_content.wrappers.api import twitter_v2

@@ -44,6 +44,10 @@ type AgentStoreResp struct {
 	Description        string                   `json:"description"`
 	AuthenUrl          string                   `json:"authen_url"`
 	Icon               string                   `json:"icon"`
+	Docs               string                   `json:"docs"`
+	ApiUrl             string                   `json:"api_url"`
+	Status             models.AgentStoreStatus  `json:"status"`
+	Price              numeric.BigFloat         `json:"price"`
 	AgentStoreMissions []*AgentStoreMissionResp `json:"agent_store_missions"`
 }
 
@@ -58,6 +62,10 @@ func NewAgentStoreResp(m *models.AgentStore) *AgentStoreResp {
 		Description:        m.Description,
 		AuthenUrl:          m.AuthenUrl,
 		Icon:               m.Icon,
+		Docs:               m.Docs,
+		ApiUrl:             m.ApiUrl,
+		Price:              m.Price,
+		Status:             m.Status,
 		AgentStoreMissions: NewAgentStoreMissionRespArray(m.AgentStoreMissions),
 	}
 }

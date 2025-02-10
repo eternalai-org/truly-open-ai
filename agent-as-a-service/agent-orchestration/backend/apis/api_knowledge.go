@@ -280,7 +280,7 @@ func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
 		return
 	}
 
-	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseByKBId(ctx, req.KnowledgeBaseId)
+	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeId)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
 		return

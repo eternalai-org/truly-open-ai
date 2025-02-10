@@ -6,7 +6,6 @@ interface IAuthenParams {
 
 export const getTwitterOauthUrl = ({ client_id, redirect_uri }: IAuthenParams) => {
     const rootUrl = "https://twitter.com/i/oauth2/authorize";
-    const URL = `&client_id=${client_id}`;
     const options = {
         redirect_uri: redirect_uri,
         client_id: client_id,
@@ -37,4 +36,15 @@ export const getTwitterOauthUrl = ({ client_id, redirect_uri }: IAuthenParams) =
     };
     const qs = new URLSearchParams(options).toString();
     return `${rootUrl}?${qs}`;
+}
+
+export const randomString = (length: number) => {
+    // random no double characters and add timestamp
+    const timestamp = Date.now();
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return `${result}${timestamp}`;
 }

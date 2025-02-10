@@ -2,7 +2,7 @@ from x_content.constants import MissionChainState, ModelName
 from x_content.llm.base import OpenAILLMBase
 from x_content.llm.eternal_ai import ASyncBasedEternalAI
 from x_content.llm.local import SyncBasedEternalAI
-from x_content.models import AgentKnowledgeBase, ReasoningLog, ToolDef
+from x_content.models import AgentKnowledgeBase, AutoAgentTask, ChatRequest, ReasoningLog, ToolDef
 from x_content.toolcall import dynamic_toolcall, wrapped_external_apis
 from x_content.utils import parse_knowledge_ids
 from x_content.wrappers.knowledge_base.base import KnowledgeBase
@@ -25,21 +25,21 @@ from x_content.wrappers.api import twitter_v2
 logger = logging.getLogger(__name__)
 
 
-def a_move_state(log: ReasoningLog, state: MissionChainState, reason: str):
+def a_move_state(log: AutoAgentTask, state: MissionChainState, reason: str):
     log.system_message = reason
     log.state = state
     return log
 
 
 async def a_move_state(
-    log: ReasoningLog, state: MissionChainState, reason: str
+    log: AutoAgentTask, state: MissionChainState, reason: str
 ):
     log.system_message = reason
     log.state = state
     return log
 
 
-def notify_status(log: ReasoningLog):
+def notify_status_reasoning_log(log: ReasoningLog):
     nav = f'<b>Request-ID</b>: {log.id};</i>'
 
     if log.state == MissionChainState.NEW:
@@ -63,6 +63,31 @@ def notify_status(log: ReasoningLog):
     )
 
 
+def notify_status_chat_request(request: ChatRequest):
+    nav = f'<b>Request-ID</b>: {request.id};</i>'
+
+    task_name = "chat"
+    if request.state == MissionChainState.NEW:
+        info = f"<i><b>Ref-ID</b>: {request.meta_data.ref_id};\n{nav}"
+        msg = f"<strong>Received a new task {task_name} for {request.meta_data.twitter_username}</strong>\nTraceback info:\n{info}"
+
+    elif request.state in [MissionChainState.ERROR, MissionChainState.DONE]:
+        info = f"<i><b>Ref-ID</b>: {request.meta_data.ref_id};\n{nav}"
+        system_message = request.system_message
+        msg = f"<strong>Task {task_name} for {request.meta_data.twitter_username} finished with state {request.state}</strong>\nTraceback info:\n{info}\nSystem message: {system_message}"
+
+    else:
+        return
+
+    telegram.send_message(
+        twitter_username="junk_notifications",
+        message_to_send=msg,
+        schedule=True,
+        room=telegram.TELEGRAM_TASK_IO_NOTIFICATION_ROOM,
+        fmt="HTML",
+    )
+
+
 _alert_template = """
 <strong>Alert</strong>
 <i>Task {log.task} using toolset {log.toolset} for {log.meta_data.twitter_username} raised an alert</i>
@@ -72,13 +97,13 @@ _alert_template = """
 """
 
 
-def send_alert(log: ReasoningLog, reason: str):
+def send_alert(task: AutoAgentTask, reason: str):
     global _alert_template
 
-    nav = f'<b>Request-ID</b>: {log.id};</i>'
-    info = f"<i><b>Ref-ID</b>: {log.meta_data.ref_id};\n{nav}"
+    nav = f'<b>Request-ID</b>: {task.id};</i>'
+    info = f"<i><b>Ref-ID</b>: {task.meta_data.ref_id};\n{nav}"
 
-    msg = _alert_template.format(log=log, info=info, reason=reason)
+    msg = _alert_template.format(task=task, info=info, reason=reason)
     telegram.send_message(
         twitter_username="junk_notifications",
         message_to_send=msg,
@@ -157,10 +182,11 @@ def create_twitter_auth_from_reasoning_log(log: ReasoningLog):
         toolset=log.toolset,
         kn_base=create_kn_base(log),
         prompt=log.prompt,
+        model_name=log.model,
     )
 
 
-def magic_toolset(log: ReasoningLog, llm: OpenAILLMBase):
+def magic_toolset_from_reasoning_log(log: ReasoningLog, llm: OpenAILLMBase):
     if len(log.tool_list) > 0:
         toolcall = dynamic_toolcall.DynamicToolcall(log.tool_list)
 
@@ -174,37 +200,37 @@ def magic_toolset(log: ReasoningLog, llm: OpenAILLMBase):
     return toolcall
 
 
-def model_dependent_frequency_penalty(log: ReasoningLog) -> float:
+def model_dependent_frequency_penalty(task: AutoAgentTask) -> float:
     frequency_penalty = 0
 
-    if log.model == ModelName.INTELLECT_10B:
+    if task.model == ModelName.INTELLECT_10B:
         frequency_penalty = 0.1
 
     return frequency_penalty
 
 
-def create_llm(log: ReasoningLog):
+def create_llm(task: AutoAgentTask):
     if const.LLM_MODE == "0":
         return ASyncBasedEternalAI(
             max_tokens=const.DEFAULT_MAX_OUTPUT_TOKENS,
             temperature=const.DEFAULT_TEMPERATURE,
             base_url=const.BACKEND_API,
             api_key=const.BACKEND_AUTH_TOKEN,
-            frequency_penalty=model_dependent_frequency_penalty(log),
-            model=log.model,
+            frequency_penalty=model_dependent_frequency_penalty(task),
+            model=task.model,
             seed=random.randint(1, int(1e9)),
-            chain_id=log.meta_data.chain_id,
-            agent_contract_id=log.meta_data.agent_contract_id,
-            metadata=log.meta_data.model_dump(),
+            chain_id=task.meta_data.chain_id,
+            agent_contract_id=task.meta_data.agent_contract_id,
+            metadata=task.meta_data.model_dump(),
         )
 
     else:
         models_info = const.SELF_HOSTED_MODELS
-        models = list(filter(lambda x: x["model"] == log.model, models_info))
+        models = list(filter(lambda x: x["model"] == task.model, models_info))
 
         if len(models) == 0:
             raise Exception(
-                f"Model {log.model} not found in the list of SELF_HOSTED_MODELS"
+                f"Model {task.model} not found in the list of SELF_HOSTED_MODELS"
             )
 
         model = models[0]
@@ -212,18 +238,18 @@ def create_llm(log: ReasoningLog):
         return SyncBasedEternalAI(
             max_tokens=const.DEFAULT_MAX_OUTPUT_TOKENS,
             temperature=const.DEFAULT_TEMPERATURE,
-            base_url=model["url"].strip("/") + "/v1",
+            base_url=model["url"].rstrip("/") + "/v1",
             api_key=model["api_key"],
-            frequency_penalty=model_dependent_frequency_penalty(log),
-            model=log.model,
+            frequency_penalty=model_dependent_frequency_penalty(task),
+            model=task.model,
             seed=random.randint(1, int(1e9)),
-            metadata=log.meta_data.model_dump(),
+            metadata=task.meta_data.model_dump(),
         )
 
 
-def create_kn_base(log: ReasoningLog) -> KnowledgeBase:
-    if len(log.agent_meta_data.kb_agents) == 0:
-        kb_ids = parse_knowledge_ids(log.meta_data.knowledge_base_id)
+def create_kn_base(task: AutoAgentTask) -> KnowledgeBase:
+    if len(task.agent_meta_data.kb_agents) == 0:
+        kb_ids = parse_knowledge_ids(task.meta_data.knowledge_base_id)
         return KBStore(
             default_top_k=5,
             similarity_threshold=0.5,
@@ -237,7 +263,7 @@ def create_kn_base(log: ReasoningLog) -> KnowledgeBase:
             similarity_threshold=0.5,
             base_url=const.BACKEND_API,
             api_key=const.BACKEND_AUTH_TOKEN,
-            kbs=log.agent_meta_data.kb_agents,
+            kbs=task.agent_meta_data.kb_agents,
         )
     else:
         return KBStore(
@@ -245,5 +271,5 @@ def create_kn_base(log: ReasoningLog) -> KnowledgeBase:
             similarity_threshold=0.5,
             base_url=const.RAG_API,
             api_key=const.RAG_SECRET_TOKEN,
-            kbs=log.agent_meta_data.kb_agents,
+            kbs=task.agent_meta_data.kb_agents,
         )
