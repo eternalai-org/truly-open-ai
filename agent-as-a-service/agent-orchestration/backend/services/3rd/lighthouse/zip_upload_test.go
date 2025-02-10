@@ -18,7 +18,7 @@ func TestZipAndUploadFileInMultiplePartsToLightHouseByUrl(t *testing.T) {
 	}{
 		{
 			name: "Test Case 1",
-			args: args{filename: "test1", fileDir: "/Users/macbook_autonomous/projects/open-source-eternalai/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"},
+			args: args{filename: "test1", fileDir: ""},
 		},
 	}
 	for _, tt := range tests {
