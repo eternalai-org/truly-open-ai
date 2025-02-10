@@ -10,6 +10,13 @@ import { BrowserRouter } from "react-router";
 import GlobalDataProvider from "./providers/GlobalDataProvider";
 import ToastOverlay from "./components/ToastOverlay";
 
+if (process.env.NODE_ENV !== "production") {
+  // @ts-ignore
+  import("hide-cra-error-overlay").then(({ initHideOverlay }) =>
+    initHideOverlay()
+  );
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
