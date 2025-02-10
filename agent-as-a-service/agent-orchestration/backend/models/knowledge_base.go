@@ -1,6 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"math"
+
+	"gorm.io/gorm"
+)
 
 type (
 	KnowledgeBaseStatus     int64
@@ -14,13 +18,12 @@ const (
 	KnowledgeBaseStatusDone
 	KnowledgeBaseStatusMinted
 	KnowledgeBaseStatusProcessingFailed
-	KnowledgeBaseStatusUpdated
+	KnowledgeBaseStatusProcessUpdate
 )
 
 const (
 	KnowledgeBaseFileStatusPending KnowledgeBaseFileStatus = iota + 1
 	KnowledgeBaseFileStatusDone
-	KnowledgeBaseFileStatusNotUsed
 )
 
 type KnowledgeBase struct {
@@ -40,6 +43,7 @@ type KnowledgeBase struct {
 	KBTokenMintTx          string               `json:"kb_token_mint_tx" gorm:"index"`
 	KnowledgeBaseFiles     []*KnowledgeBaseFile `json:"knowledge_base_files"`
 	Fee                    float64              `json:"fee"`
+	ChargeMore             float64              `json:"charge_more"`
 	SolanaDepositAddress   string               `json:"solana_deposit_address"`
 	SolanaDepositPrivKey   string               `json:"-"`
 	FilecoinHash           string               `json:"filecoin_hash"`
@@ -54,13 +58,14 @@ type KnowledgeBase struct {
 
 type KnowledgeBaseFile struct {
 	gorm.Model
-	KnowledgeBaseId uint                    `json:"knowledge_base_id"`
-	FileUrl         string                  `json:"file_url"`
-	FileName        string                  `json:"name"`
-	FileSize        uint                    `json:"size"`
-	GroupFileId     int64                   `json:"group_file_id"`
-	Status          KnowledgeBaseFileStatus `json:"status"`
-	FilecoinHash    string                  `json:"filecoin_hash"`
+	KnowledgeBaseId     uint                    `json:"knowledge_base_id"`
+	FileUrl             string                  `json:"file_url"`
+	FileName            string                  `json:"name"`
+	FileSize            uint                    `json:"size"`
+	GroupFileId         int64                   `json:"group_file_id"`
+	Status              KnowledgeBaseFileStatus `json:"status"`
+	FilecoinHash        string                  `json:"filecoin_hash"`
+	FilecoinHashRawData string                  `json:"filecoin_hash_raw_data"`
 }
 
 type ListKnowledgeBaseRequest struct {
@@ -75,6 +80,44 @@ func (m *KnowledgeBase) FileUrls() []string {
 		urls = append(urls, f.FileUrl)
 	}
 	return urls
+}
+
+func round(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
+}
+
+func (m *KnowledgeBase) CalcChargeMore() float64 {
+	unitPrice := 10
+	total := float64(0)
+	for _, r := range m.KnowledgeBaseFiles {
+		if r.Status == KnowledgeBaseFileStatusDone {
+			continue
+		}
+		total += float64(r.FileSize)
+	}
+
+	price := total / 1_000_000 // 1 Megabyte is equal to 1000000 bytes (decimal).
+	price = round(price, 0)
+	if price == 0 {
+		price = 1
+	}
+	return price * float64(unitPrice)
+}
+
+func (m *KnowledgeBase) CalcTotalFee() float64 {
+	unitPrice := 10
+	total := float64(0)
+	for _, r := range m.KnowledgeBaseFiles {
+		total += float64(r.FileSize)
+	}
+
+	price := total / 1_000_000 // 1 Megabyte is equal to 1000000 bytes (decimal).
+	price = round(price, 0)
+	if price == 0 {
+		price = 1
+	}
+	return price * float64(unitPrice)
 }
 
 type RagResult struct {

@@ -25,10 +25,10 @@ type UpdateKnowledgeRequest struct {
 }
 
 type File struct {
-	Url          string `json:"url" form:"url"`
-	Name         string `json:"name" form:"name"`
-	Size         uint   `json:"size" form:"size"`
-	FilecoinHash string `json:"filecoin_hash"`
+	Url      string `json:"url" form:"url"`
+	Name     string `json:"name" form:"name"`
+	Size     uint   `json:"size" form:"size"`
+	KbFileId uint   `json:"kb_file_id" form:"kb_file_id"`
 }
 
 type KnowledgeBase struct {
@@ -55,13 +55,17 @@ type KnowledgeBase struct {
 	UsageFee               float64              `json:"usage_fee"`
 	UserCount              int64                `json:"user_count"`
 	UsageCount             int64                `json:"usage_count"`
+	ChargeMore             float64              `json:"charge_more"`
 }
 
 type KnowledgeBaseFile struct {
+	Id              uint   `json:"id"`
 	KnowledgeBaseId uint   `json:"knowledge_base_id"`
 	FileUrl         string `json:"file_url"`
-	FileName        string `json:"name"`
-	FileSize        uint   `json:"size"`
+	FileName        string `json:"file_name"`
+	FileSize        uint   `json:"file_size"`
+	FilecoinHash    string `json:"filecoin_hash"`
+	Status          int    `json:"status"`
 }
 
 type AgentUseKnowledgeBaseRequest struct {

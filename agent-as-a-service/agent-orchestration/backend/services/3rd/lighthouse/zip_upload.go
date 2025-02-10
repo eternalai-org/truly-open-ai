@@ -394,7 +394,7 @@ func ZipAndUploadFileInMultiplePartsToLightHouseByUrl(url string, baseDir string
 			return nil, fmt.Errorf("error when upload file:%v ", err)
 		}
 		return &FileInLightHouse{
-			Name:   fileFolder,
+			Name:   fileName,
 			IsPart: false,
 			Files: []*FileDetail{
 				{Name: fileName, Hash: hash, Index: 1},

@@ -259,7 +259,7 @@ func (s *Service) UpdateKnowledgeBaseInContractWithSignature(ctx context.Context
 	if txReceipt.Status == types.ReceiptStatusFailed {
 		return nil, fmt.Errorf("updateKnowledgeBaseInContractWithSignature error: tx exucute with status fail: %v", tx)
 	}
-	info.Status = models.KnowledgeBaseStatusUpdated
+	info.Status = models.KnowledgeBaseStatusMinted
 	err = s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, info.ID, map[string]interface{}{
 		"status": info.Status,
 	})
