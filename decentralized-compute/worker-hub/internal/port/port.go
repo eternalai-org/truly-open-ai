@@ -2,12 +2,9 @@ package port
 
 import (
 	"context"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-
+	"math/big"
 	"solo/config"
-
 	"solo/internal/contracts/erc20"
 	"solo/internal/model"
 
@@ -63,6 +60,7 @@ type IMiner interface {
 	GetChainCommon() ICommon
 	GetCluster() ICluster
 	GetConfig() *config.Config
+	GetTaskQueue() chan *model.Task
 }
 
 type IStaking interface {
@@ -92,6 +90,7 @@ type ICMDLocalChain interface {
 	StartHardHat() error
 	StartOllama() error
 	CreateInfer(prompt []model.LLMInferMessage) (*types.Transaction, *uint64, *string, error)
+	CreateInferWithStream(prompt []model.LLMInferMessage, out chan model.StreamDataChannel) (*types.Transaction, *uint64, *string, error)
 	StartMinerLogic() error
 	CreateConfigENV(minerAddress string, index int) error
 	DeployContractLogic() error
@@ -115,5 +114,6 @@ type IServer interface {
 
 type IApi interface {
 	CreateInfer(ctx context.Context, request model.LLMInferRequest) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
+	CreateInferWithStream(ctx context.Context, request model.LLMInferRequest, out chan model.StreamDataChannel) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
 	HealthCheck(ctx context.Context) (bool, error)
 }

@@ -83,28 +83,19 @@ type LLMInferMessage struct {
 }
 
 type LLMInferResponse struct {
-	Id      string `json:"id"`
-	Object  string `json:"object"`
-	Created int    `json:"created"`
-	Model   string `json:"model"`
-	Choices []struct {
-		Index   int `json:"index"`
-		Message struct {
-			Role      string        `json:"role"`
-			Content   string        `json:"content"`
-			ToolCalls []interface{} `json:"tool_calls"`
-		} `json:"message"`
-		Logprobs     interface{} `json:"logprobs"`
-		FinishReason string      `json:"finish_reason"`
-		StopReason   interface{} `json:"stop_reason"`
-	} `json:"choices"`
-	Usage struct {
+	Id      string           `json:"id"`
+	Object  string           `json:"object"`
+	Created int              `json:"created"`
+	Model   string           `json:"model"`
+	Choices []LLMInferChoice `json:"choices"`
+	Usage   struct {
 		PromptTokens        int         `json:"prompt_tokens"`
 		TotalTokens         int         `json:"total_tokens"`
 		CompletionTokens    int         `json:"completion_tokens"`
 		PromptTokensDetails interface{} `json:"prompt_tokens_details"`
 	} `json:"usage"`
 	PromptLogprobs interface{} `json:"prompt_logprobs"`
+	IsStop         bool        `json:"is_stop"`
 	OnchainData    struct {
 		InferId       uint64   `json:"infer_id"`
 		PbftCommittee []string `json:"pbft_committee"`
@@ -112,6 +103,48 @@ type LLMInferResponse struct {
 		InferTx       string   `json:"infer_tx"`
 		ProposeTx     string   `json:"propose_tx"`
 	} `json:"onchain_data"`
+}
+
+type LLMInferChoice struct {
+	Index   int `json:"index"`
+	Message struct {
+		Role      string        `json:"role"`
+		Content   string        `json:"content"`
+		ToolCalls []interface{} `json:"tool_calls"`
+	} `json:"message"`
+	Logprobs     interface{} `json:"logprobs"`
+	FinishReason string      `json:"finish_reason"`
+	StopReason   interface{} `json:"stop_reason"`
+}
+
+type LLMInferStreamResponse struct {
+	Id      string `json:"id"`
+	Object  string `json:"object"`
+	Created int    `json:"created"`
+	Model   string `json:"model"`
+	Choices []struct {
+		Index int `json:"index"`
+		Delta struct {
+			Content string `json:"content"`
+			Role    string `json:"role"`
+		} `json:"delta"`
+		Logprobs     interface{} `json:"logprobs"`
+		FinishReason interface{} `json:"finish_reason"`
+	} `json:"choices"`
+}
+
+type StreamingData struct {
+	Data        *LLMInferStreamResponse
+	Err         error
+	Stop        bool
+	InferenceID string
+	StreamID    int
+}
+
+type StreamDataChannel struct {
+	Data    *LLMInferResponse `json:"data"`
+	Err     error             `json:"err"`
+	InferID uint64            `json:"infer_id"`
 }
 
 type Response struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"solo/internal/delivery/http/response"
 	"solo/internal/model"
@@ -88,7 +89,7 @@ func (h *httpDelivery) printRoutes() {
 }
 
 func (h *httpDelivery) createInfer(w http.ResponseWriter, r *http.Request) {
-	response.NewRESTHandlerTemplate(
+	response.NewStreamHandlerTemplate(
 		func(ctx context.Context, r *http.Request, vars map[string]string) (interface{}, error) {
 			var reqBody model.LLMInferRequest
 			decoder := json.NewDecoder(r.Body)
@@ -97,14 +98,68 @@ func (h *httpDelivery) createInfer(w http.ResponseWriter, r *http.Request) {
 				return nil, err
 			}
 
+			if reqBody.Stream {
+
+				w.Header().Set("Content-Type", "text/event-stream")
+				w.Header().Set("Cache-Control", "no-cache")
+				w.Header().Set("Connection", "keep-alive")
+				w.WriteHeader(http.StatusOK)
+				writer := io.Writer(w)
+
+				dataFChan := make(chan model.StreamDataChannel)
+				type _RESP struct {
+					Err  error
+					Data *model.LLMInferResponse
+				}
+
+				_f := make(chan _RESP, 1)
+				go func(dataFChan chan model.StreamDataChannel, _f chan _RESP) {
+					_, _, resp, err1 := h.usecase.CreateInferWithStream(ctx, reqBody, dataFChan)
+					_f <- _RESP{
+						Err:  err1,
+						Data: resp,
+					}
+
+				}(dataFChan, _f)
+
+				for v := range dataFChan {
+					if v.Err != nil {
+						return false, err
+					}
+
+					stdata := response.JsonResponse{
+						Data:   v.Data,
+						Status: true,
+					}
+
+					msg, _ := json.Marshal(stdata)
+					fmt.Fprintf(w, "%s\n", string(msg))
+					// Flush the response to the client immediately
+					if f, ok := writer.(http.Flusher); ok {
+						f.Flush() // Flush the buffer to the client
+					}
+					//time.Sleep(1 * time.Second) // Simulate delay
+				}
+
+				// Flush the response to the client immediately
+				if f, ok := writer.(http.Flusher); ok {
+					f.Flush() // Flush the buffer to the client
+				}
+
+				_r1 := <-_f
+				return response.StreamResponse{IsNotStream: true, Data: true}, _r1.Err
+			}
+
 			_, _, resp, err := h.usecase.CreateInfer(ctx, reqBody)
 			if err != nil {
 				return nil, err
 			}
 
-			return resp, nil
+			return response.StreamResponse{IsNotStream: true, Data: resp}, nil
+
 		},
 	).ServeHTTP(w, r)
+
 }
 
 func (h *httpDelivery) healthCheck(w http.ResponseWriter, r *http.Request) {

@@ -3,22 +3,26 @@
 echo "Deploy and start decentralized agents in one step"
 
 # Step 1: Deploy Decentralized Compute
+
 cd decentralized-compute/models
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     echo "Running on Linux"
-    apt update
-    bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
+    #apt update
+    #bash download_model_linux.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Running on macOS"
-    sudo -u $SUDO_USER brew update && sudo -u $SUDO_USER brew install pigz
-    bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
+    #sudo -u $SUDO_USER brew update && sudo -u $SUDO_USER brew install pigz
+    #bash download_model_macos.sh bafkreieglfaposr5fggc7ebfcok7dupfoiwojjvrck6hbzjajs6nywx6qi
 else
     echo "Unknown operating system: $OSTYPE"
 fi
 
-ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+#DeepSeek-R1-Distill-Qwen-1.5B-Q8 is being tested.
+#ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
+# use this instead
+ollama run deepseek-r1:1.5b-qwen-distill-q8_0 > output.log 2>&1 &
 
 cd ../..
 

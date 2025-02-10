@@ -1311,6 +1311,7 @@ func (c *cmdLocalChainV2) StartApiLogic() error {
 	fmt.Println("Create Api: ")
 	numberOfMiners := 1
 	names := ""
+	c.StartContainersNoBuild(pkg.REDIS_PUBSUB)
 
 	for i := 1; i <= numberOfMiners; i++ {
 		name := fmt.Sprintf("%s_%d", pkg.API_SERVICE_NAME, i)
@@ -1388,4 +1389,9 @@ func (c *cmdLocalChainV2) ApiHealthCheck() ([]byte, bool) {
 
 	// time.Sleep(5 * time.Second)
 	return _b, true
+}
+
+func (c *cmdLocalChainV2) CreateInferWithStream(prompt []model.LLMInferMessage, out chan model.StreamDataChannel) (*types.Transaction, *uint64, *string, error) {
+	//TODO - implement me
+	return nil, nil, nil, nil
 }

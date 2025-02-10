@@ -13,3 +13,10 @@ type DecentralizeInferResponse struct {
 	InferID     string `json:"infer_id"`
 	InferTxHash string `json:"infer_tx_hash"`
 }
+
+type StreamData struct {
+	Data     []byte
+	Stop     bool
+	StreamID int
+	Err      error
+}

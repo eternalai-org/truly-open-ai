@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis"
 	"math/big"
 	"os"
 	"time"
@@ -30,6 +31,7 @@ type miner struct {
 	IsStaked     *bool
 	currentBlock uint64
 	tasksQueue   chan *model.Task
+	rdb          *redis.Client
 
 	chain   port.IChain
 	staking port.IStaking
@@ -38,14 +40,26 @@ type miner struct {
 }
 
 func NewMiner(chain port.IChain, staking port.IStaking, common port.ICommon, cnf *config.Config, cluster port.ICluster) port.IMiner {
+	// Create a new Redis client
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cnf.PubSubURL, // Redis server address
+		Password: "",            // no password set
+		DB:       0,             // default DB
+	})
+
 	return &miner{
 		staking:    staking,
 		chain:      chain,
 		common:     common,
 		cnf:        cnf,
 		cluster:    cluster,
+		rdb:        rdb,
 		tasksQueue: make(chan *model.Task, 10),
 	}
+}
+
+func (t *miner) GetTaskQueue() chan *model.Task {
+	return t.tasksQueue
 }
 
 func (t *miner) GetPendingTasks(ctx context.Context) {
@@ -78,6 +92,39 @@ func (t *miner) GetChainCommon() port.ICommon {
 
 func (t *miner) GetCluster() port.ICluster {
 	return t.cluster
+}
+
+func (t *miner) streamData(dataFChan <-chan model.StreamingData, task *model.Task) {
+	channel := pkg.STREAM_DATA_CHANNEL
+	fmt.Println("")
+	fmt.Print(pkg.Line)
+	fmt.Println(task.Params)
+	fmt.Printf("\n -> Streaming data on channel: %s \n", channel)
+	for v := range dataFChan {
+		if v.Err != nil {
+			fmt.Println("[Err] - ", v.Err.Error())
+		}
+
+		if v.Data != nil {
+			v.InferenceID = task.InferenceID
+			//if len(v.Data.Choices) > 0 {
+			msg, _ := json.Marshal(v)
+			fmt.Println("[INFO][Publish Data] - ", v.Stop, v.Data)
+			if t.rdb != nil {
+				err1 := t.rdb.Publish(channel, string(msg)).Err()
+				if err1 != nil {
+					fmt.Println("[Err][Publish Data] - ", err1.Error())
+				}
+			}
+
+			_ = t.cnf.PubSubURL
+
+			//}
+		}
+	}
+	fmt.Println("")
+	fmt.Print(pkg.Line)
+	fmt.Println("")
 }
 
 func (t *miner) ExecueteTasks(ctx context.Context) {
@@ -146,10 +193,15 @@ func (t *miner) ExecueteTasks(ctx context.Context) {
 
 func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.TaskResult, error) {
 	res := &model.TaskResult{Storage: model.LightHouseStorageType}
+	//result := []byte{}
+	streamChan := make(chan model.StreamingData)
+
+	go t.streamData(streamChan, task)
+
 	if len(task.BatchInfers) > 0 && task.IsBatch {
 		for _, b := range task.BatchInfers {
 			seed := pkg.CreateSeed(b.PromptInput, task.TaskID)
-			obj, err := t.inferChatCompletions(ctx, b.PromptInput, "", seed)
+			obj, err := t.inferChatCompletions(ctx, b.PromptInput, "", seed, streamChan)
 			if err != nil {
 				return nil, err
 			}
@@ -167,7 +219,7 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 		res.Data = objJson
 	} else {
 		seed := pkg.CreateSeed(task.Params, task.TaskID)
-		obj, err := t.inferChatCompletions(ctx, task.Params, "", seed)
+		obj, err := t.inferChatCompletions(ctx, task.Params, "", seed, streamChan)
 		if err != nil {
 			return nil, err
 		}
@@ -188,7 +240,7 @@ func (t *miner) executeTasks(ctx context.Context, task *model.Task) (*model.Task
 	return res, nil
 }
 
-func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelName string, _ uint64) (*model.LLMInferResponse, error) {
+func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelName string, seed uint64, streamChan chan model.StreamingData) (*model.LLMInferResponse, error) {
 	var err error
 	key := "InferChatCompletions"
 	logs := new([]zap.Field)
@@ -197,6 +249,7 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		zap.String("seed", modelName),
 		zap.String("prompt", prompt),
 	}
+
 	defer func() {
 		if t.cnf.DebugMode {
 			if err != nil {
@@ -210,7 +263,8 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 
 	_b := []byte(prompt)
 
-	res := &model.LLMInferResponse{}
+	//strChan: rapid response
+	res := &model.LLMInferResponse{} // will be posted to the smart-contract
 	infer := &model.LLMInferRequest{}
 
 	err = json.Unmarshal(_b, &infer)
@@ -218,15 +272,9 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		return nil, err
 	}
 
-	//infer.MaxToken = 512
-	//infer.Temperature = 0.001
-	/*
-		oldModel := infer.Model
-		if t.common.GetConfig().ModelName == "" {
-			infer.Model = "hf.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q3_K_S"
-		} else {
-			infer.Model = t.common.GetConfig().ModelName
-		}*/
+	//infer.Seed = seed
+	infer.Stream = true
+	infer.MaxToken = 4096
 
 	url := t.cnf.ApiUrl
 	headers := make(map[string]string)
@@ -234,7 +282,8 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 	headers["Authorization"] = fmt.Sprintf("Bearer %s", t.cnf.ApiKey)
 	*logs = append(*logs, zap.Any("headers", headers))
 	*logs = append(*logs, zap.Any("inferJSON", infer))
-	_b, respH, st, err := pkg.HttpRequest(url, "POST", headers, infer)
+
+	res, respH, st, err := pkg.HttpStreamRequest(url, "POST", headers, infer, streamChan)
 	if err != nil {
 		return nil, err
 	}
@@ -246,8 +295,11 @@ func (t *miner) inferChatCompletions(ctx context.Context, prompt string, modelNa
 		return nil, err
 	}
 
-	// res.Model = oldModel
 	return res, nil
+}
+
+func (t *miner) InferChatCompletions(ctx context.Context, prompt string, modelName string, seed uint64, strChan chan model.StreamingData) (*model.LLMInferResponse, error) {
+	return t.inferChatCompletions(ctx, prompt, modelName, seed, strChan)
 }
 
 func (t *miner) Verify() bool {

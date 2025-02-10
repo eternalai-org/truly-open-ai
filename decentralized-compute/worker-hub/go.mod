@@ -7,6 +7,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.11
 	github.com/ethereum/go-ethereum v1.14.12
 	github.com/gabriel-vasile/mimetype v1.4.7
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.2.0

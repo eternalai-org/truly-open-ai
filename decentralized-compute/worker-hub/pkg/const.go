@@ -22,6 +22,7 @@ const (
 	MODE_VALIDATOR          = "validator"
 	MINER_SERVICE_NAME      = "service_miner"
 	API_SERVICE_NAME        = "service_api"
+	REDIS_PUBSUB            = "redis_pubsub"
 	MINER_SERVICE_CONTRACTS = "contracts"
 	MINER_SERVICE_OLLAMA    = "ollama"
 	MINER_SERVICE_HARDHAT   = "hardhat"
@@ -78,6 +79,7 @@ const (
 	COMMAND_LOCAL_SET_WEAI        = "set-weai"
 	COMMAND_LOCAL_PRIV_KEY        = "private key"
 	COMMAND_LOCAL_CHAIN_RPC       = "rpc"
+	COMMAND_LOCAL_PUBSUB          = "pubsub"
 	COMMAND_LOCAL_CHAIN_ID        = "chainID"
 	COMMAND_LOCAL_GAS_PRICE       = "gasPrice"
 	COMMAND_LOCAL_GAS_LIMIT       = "gasLimit"
@@ -104,14 +106,15 @@ const (
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_GPU_MANAGER_V1      = "stakingHubAddress"
 	COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1           = "hybridModelAddress"
 	API_URL                                                  = "http://localhost:8004/v1/chat/completions"
-	// staking
-	MIN_STAKE          = 25000
-	BLOCK_PER_EPOCH    = 600
-	REWARD_PER_EPOCH   = 1
-	UNSTAK_DEPLAY_TIME = 907200 // 907200 blocks = 21 days (blocktime = 2)
-	PENALTY_DURATION   = 0
-	FINE_PERCENTAGE    = 0
-	MIN_FEE_TO_USE     = 0
+	//staking
+	MIN_STAKE           = 25000
+	BLOCK_PER_EPOCH     = 600
+	REWARD_PER_EPOCH    = 1
+	UNSTAK_DEPLAY_TIME  = 907200 //907200 blocks = 21 days (blocktime = 2)
+	PENALTY_DURATION    = 0
+	FINE_PERCENTAGE     = 0
+	MIN_FEE_TO_USE      = 0
+	STREAM_DATA_CHANNEL = "stream_channel"
 )
 
 var SupportedContracts = []string{
