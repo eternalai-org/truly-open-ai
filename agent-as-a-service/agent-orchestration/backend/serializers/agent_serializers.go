@@ -211,6 +211,7 @@ func NewAgentSnapshotMissionResp(m *models.AgentSnapshotMission) *AgentSnapshotM
 		AgentStoreMissionID: m.AgentStoreMissionID,
 		AgentStoreID:        m.AgentStoreID,
 	}
+
 	if m.AgentStoreMissionID > 0 {
 		resp.ToolList = ""
 	}
