@@ -10,6 +10,7 @@ const StudioHorizontalField = ({
   label,
   tooltip,
   children,
+  action,
   errorMessage,
 }: Props) => {
   return (
@@ -21,6 +22,8 @@ const StudioHorizontalField = ({
       <StudioFieldInputPlaceholder errorMessage={errorMessage}>
         {children}
       </StudioFieldInputPlaceholder>
+
+      <Box w={"28px"}>{action}</Box>
     </Flex>
   );
 };

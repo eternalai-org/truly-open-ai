@@ -6,10 +6,30 @@ export const TextStyleMap: Record<string, SystemStyleObject> = {
     lineHeight: "calc(20 / 14)",
     fontWeight: "600",
     fontFamily: "var(--font-SFProDisplay)",
-    color: "#555555",
+    color: "#ffffff",
+  },
+
+  FORM_HEADING_TAG_STYLE: {
+    fontSize: "14px",
+    lineHeight: "calc(20 / 14)",
+    fontWeight: "600",
+    fontFamily: "var(--font-SFProDisplay)",
+    color: "#ffffff",
+    backgroundColor: "#e18326",
+    borderRadius: "999px",
+    padding: "4px 8px",
+    width: "fit-content",
   },
 
   LABEL_STYLE: {
+    fontSize: "18px",
+    lineHeight: "calc(28 / 18)",
+    fontWeight: "500",
+    fontFamily: "var(--font-SFProDisplay)",
+    color: "white",
+  },
+
+  SIDEBAR_CATEGORY_OPTION_LABEL_STYLE: {
     fontSize: "18px",
     lineHeight: "calc(28 / 18)",
     fontWeight: "500",
@@ -57,8 +77,9 @@ export const TextStyleMap: Record<string, SystemStyleObject> = {
   },
 
   ERROR_STYLE: {
-    fontSize: "14px",
-    lineHeight: "calc(20 / 14)",
+    height: "12px",
+    fontSize: "12px",
+    lineHeight: "1",
     fontWeight: "500",
     fontFamily: "var(--font-SFProDisplay)",
   },

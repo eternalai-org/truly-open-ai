@@ -30,6 +30,25 @@ import { StudioCategory, StudioCategoryMapValue, StudioCategoryOptionMapValue } 
 import { DraggableData, StudioZone } from '@/modules/Studio/types/dnd';
 import { StudioNode } from '@/modules/Studio/types/graph';
 
+const findIndexFromChildren = (belongsTo: string, id: string, children: StudioNode[]) => {
+  let index = -1;
+
+  if (!belongsTo || !id) {
+    return index;
+  }
+
+  if (belongsTo !== id) {
+    const foundIndex = children.findIndex((item) => item.id === id);
+    if (foundIndex >= 0) {
+      index = foundIndex + 1;
+    }
+  } else {
+    index = 0;
+  }
+
+  return index;
+};
+
 function DndFlow({ children }: PropsWithChildren) {
   const { getZoom } = useReactFlow();
   const sensors = useSensors(useSensor(MouseSensor, { activationConstraint: { distance: 5 } }));
@@ -48,6 +67,7 @@ function DndFlow({ children }: PropsWithChildren) {
     link,
     unlinkAll,
     updateFieldValidate,
+    sortPartOfPackage,
   } = useDndAction();
   const { updateNodes } = useDndInteraction();
 
@@ -56,6 +76,9 @@ function DndFlow({ children }: PropsWithChildren) {
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
+    // event.over?.id
+    useStudioDndStore.getState().setDraggingOverId(null);
+
     if ((window as any)?.studioLogger) {
       console.log('[DndContainer] handleDragEnd', {
         categoryMap: useStudioCategoryStore.getState().categoryMap,
@@ -256,7 +279,11 @@ function DndFlow({ children }: PropsWithChildren) {
 
         const newNode = getNewNodeInfo(fromData.optionKey, fromOption);
 
-        addToPackage(toNode, [newNode]);
+        addToPackage(
+          toNode,
+          [newNode],
+          findIndexFromChildren(toData.belongsTo || '', toData.id || '', toNode.data.metadata.children),
+        );
         updateNodes([toNode]);
 
         return;
@@ -324,7 +351,12 @@ function DndFlow({ children }: PropsWithChildren) {
 
         if (!isValid) return;
 
-        mergeProducts(fromNode, toNode, fromData);
+        mergeProducts(
+          fromNode,
+          toNode,
+          fromData,
+          findIndexFromChildren(toData.belongsTo || '', toData.id || '', toNode.data.metadata.children),
+        );
         updateNodes([fromNode, toNode]);
 
         return;
@@ -350,8 +382,30 @@ function DndFlow({ children }: PropsWithChildren) {
 
         if (!isValid) return;
 
-        movePartOfPackage(fromNode, toNode, fromData);
+        movePartOfPackage(
+          fromNode,
+          toNode,
+          fromData,
+          findIndexFromChildren(toData.belongsTo || '', toData.id || '', toNode.data.metadata.children),
+        );
         updateNodes([fromNode, toNode]);
+
+        return;
+      }
+
+      // sort
+      if (
+        from === StudioZone.ZONE_PRODUCT_ADDON &&
+        isTheSameNode &&
+        toOption?.type !== StudioCategoryType.LINK &&
+        fromOption?.type !== StudioCategoryType.LINK
+      ) {
+        if (!fromData.belongsTo || !fromNode || !toNode) return;
+        const moveTo = Number(toData.childIndex) + 1;
+        const fromTo = Number(fromData.childIndex);
+        if (moveTo >= fromTo) return;
+        sortPartOfPackage(fromNode, moveTo, fromTo);
+        updateNodes([fromNode]);
 
         return;
       }
@@ -467,9 +521,24 @@ function DndFlow({ children }: PropsWithChildren) {
     [getZoom],
   );
 
-  const handleDragOver = useCallback((_event: DragOverEvent) => {
+  const handleDragOver = useCallback((event: DragOverEvent) => {
     if ((window as any)?.studioLogger) {
-      console.log('[DndContainer] handleDragOver', _event.over?.id);
+      console.log('[DndContainer] handleDragOver', event);
+    }
+
+    const fromOptionKey = event?.active?.data?.current?.optionKey;
+    if (fromOptionKey) {
+      const categoryOptionMap = useStudioCategoryStore.getState().categoryOptionMap;
+      const fromOption: StudioCategoryOptionMapValue = categoryOptionMap[fromOptionKey];
+      if (fromOption?.type && (fromOption.type as StudioCategoryType) === StudioCategoryType.INLINE) {
+        const draggingOverId = event.over?.id ? `${event.over?.id?.toString()}` : null;
+
+        useStudioDndStore.getState().setDraggingOverId(draggingOverId);
+      } else {
+        useStudioDndStore.getState().setDraggingOverId(null);
+      }
+    } else {
+      useStudioDndStore.getState().setDraggingOverId(null);
     }
   }, []);
 

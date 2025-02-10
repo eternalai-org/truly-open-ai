@@ -1,0 +1,117 @@
+.loading {
+  height: 100%;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.colorful {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  --c1: linear-gradient(#ffd82e 0 0);
+  --c2: linear-gradient(#ff6761 0 0);
+  --s: calc(100% / 3) calc(100% / 3);
+  background: var(--c1) 0 0, var(--c2) 50% 0, var(--c1) 100% 0, var(--c2) 0 50%,
+    var(--c2) 100% 50%, var(--c1) 0 100%, var(--c2) 50% 100%,
+    var(--c1) 100% 100%;
+  background-repeat: no-repeat;
+  animation: colorful-p30qnz 1.5s infinite alternate;
+}
+
+.colorful:before {
+  content: '';
+  width: calc(100% / 3);
+  height: calc(100% / 3);
+  background: #474bff;
+  animation: inherit;
+  animation-delay: 0s;
+  animation-name: colorful-9tp7np;
+}
+
+@keyframes colorful-p30qnz {
+  0%,
+  12.49% {
+    background-size: var(--s), 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+
+  12.5%,
+  24.9% {
+    background-size: var(--s), var(--s), 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+
+  25%,
+  37.4% {
+    background-size: var(--s), var(--s), var(--s), 0 0, 0 0, 0 0, 0 0, 0 0;
+  }
+
+  37.5%,
+  49.9% {
+    background-size: var(--s), var(--s), var(--s), 0 0, var(--s), 0 0, 0 0, 0 0;
+  }
+
+  50%,
+  61.4% {
+    background-size: var(--s), var(--s), var(--s), 0 0, var(--s), 0 0, 0 0,
+      var(--s);
+  }
+
+  62.5%,
+  74.9% {
+    background-size: var(--s), var(--s), var(--s), 0 0, var(--s), 0 0, var(--s),
+      var(--s);
+  }
+
+  75%,
+  86.4% {
+    background-size: var(--s), var(--s), var(--s), 0 0, var(--s), var(--s),
+      var(--s), var(--s);
+  }
+
+  87.5%,
+  100% {
+    background-size: var(--s), var(--s), var(--s), var(--s), var(--s), var(--s),
+      var(--s), var(--s);
+  }
+}
+
+@keyframes colorful-9tp7np {
+  0%,
+  5% {
+    transform: translate(0, 0);
+  }
+
+  12.5% {
+    transform: translate(100%, 0);
+  }
+
+  25% {
+    transform: translate(200%, 0);
+  }
+
+  37.5% {
+    transform: translate(200%, 100%);
+  }
+
+  50% {
+    transform: translate(200%, 200%);
+  }
+
+  62.5% {
+    transform: translate(100%, 200%);
+  }
+
+  75% {
+    transform: translate(0, 200%);
+  }
+
+  87.5% {
+    transform: translate(0, 100%);
+  }
+
+  95%,
+  100% {
+    transform: translate(100%, 100%);
+  }
+}

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import Product from '../../../DnD/Product';
-import ProductPlaceholder from '../../../DnD/ProductPlaceholder';
+import DraggingPlaceholder from '../../DraggingPlaceholder';
 import DraggingFloating from '../DraggingFloating';
 import LegoRender from '../LegoRender';
 import NodeBaseChild from '../NodeBaseChild';
@@ -23,6 +23,8 @@ const NodeStacks = ({ data, ...rest }: Props) => {
   const { isSelected } = useNodeSelected({ id: data.id });
 
   const draggingData = useStudioDndStore((state) => state.draggingData);
+  const draggingOverId = useStudioDndStore((state) => state.draggingOverId);
+
   const categoryMap = useStudioCategoryStore((state) => state.categoryMap);
   const categoryOptionMap = useStudioCategoryStore((state) => state.categoryOptionMap);
   const children = data?.metadata?.children;
@@ -33,7 +35,12 @@ const NodeStacks = ({ data, ...rest }: Props) => {
   const schemaData = option?.data;
 
   const productData: Omit<DraggableData, 'type'> = useMemo(
-    () => ({ optionKey: option.idx, belongsTo: data.id, categoryKey: category?.idx }),
+    () => ({
+      optionKey: option.idx,
+      id: data.id,
+      belongsTo: data.id,
+      categoryKey: category?.idx,
+    }),
     [data.id, option.idx, category?.idx],
   );
 
@@ -48,31 +55,45 @@ const NodeStacks = ({ data, ...rest }: Props) => {
     [option, category],
   );
 
+  const isDraggingOver = useMemo(() => {
+    return !!(draggingOverId && draggingOverId === data.id && draggingData?.id !== draggingOverId);
+  }, [draggingOverId, data.id, draggingData?.id]);
+
   return (
     <NodeBaseWrapper data={data} id={data.id} option={option}>
       <div className="node-base">
-        <Product
-          id={data.id}
-          data={productData}
-          draggingFloating={
-            <div>
-              <NodeBaseReadOnly {...rest} data={data} />
-              {renderChildren.map((item) => (
-                <DraggingFloating key={`dragging-floating-${data.id}-${item.id}`} data={item} />
-              ))}
-            </div>
-          }
+        <div
+          style={{
+            position: 'relative',
+            width: 'fit-content',
+          }}
         >
-          <LegoRender
-            background={isSelected ? highlightColor : option.color}
-            icon={option.icon}
-            title={option.title}
+          <Product
             id={data.id}
-            schemaData={schemaData}
-            idx={option.idx}
-            render={option.customizeRenderOnBoard}
-          />
-        </Product>
+            data={productData}
+            draggingFloating={
+              <div>
+                <NodeBaseReadOnly {...rest} data={data} />
+                {renderChildren.map((item) => (
+                  <DraggingFloating key={`dragging-floating-${data.id}-${item.id}`} data={item} />
+                ))}
+              </div>
+            }
+          >
+            <LegoRender
+              background={isSelected ? highlightColor : option.color}
+              icon={option.icon}
+              title={option.title}
+              id={data.id}
+              schemaData={schemaData}
+              idx={option.idx}
+              render={option.customizeRenderOnBoard}
+            />
+          </Product>
+          {/* <ProductPlaceholder id={data.id} data={productData} hidden={isDraggingOver} /> */}
+        </div>
+
+        {isDraggingOver && <DraggingPlaceholder />}
 
         {renderChildren?.map((item, index) => (
           <NodeBaseChild
@@ -82,10 +103,10 @@ const NodeStacks = ({ data, ...rest }: Props) => {
             items={children}
             belongsTo={data.id}
             isHidden={draggingData?.belongsTo === data.id && draggingData?.optionKey === option?.idx}
+            isLast={index === renderChildren.length - 1}
           />
         ))}
 
-        <ProductPlaceholder id={data.id} data={productData} />
         <NodeBaseConnection />
       </div>
     </NodeBaseWrapper>

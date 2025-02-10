@@ -11,12 +11,10 @@ const StudioFieldInputPlaceholder = ({ children, errorMessage }: Props) => {
     <Flex flexDir={"column"} gap={"4px"}>
       {children}
 
-      <Box height={"12px"}>
-        {errorMessage && (
-          <Text {...(TextStyleMap.ERROR_STYLE as any)} color={"red"}>
-            {errorMessage}
-          </Text>
-        )}
+      <Box>
+        <Text {...(TextStyleMap.ERROR_STYLE as any)} color={"red"}>
+          {errorMessage || ""}
+        </Text>
       </Box>
     </Flex>
   );

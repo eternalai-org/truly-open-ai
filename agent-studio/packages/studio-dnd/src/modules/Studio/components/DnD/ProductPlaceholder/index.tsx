@@ -8,12 +8,13 @@ import { DraggableData, StudioZone } from '@/modules/Studio/types/dnd';
 import './Package.scss';
 
 type Props = React.HTMLAttributes<HTMLDivElement> & {
+  hidden: boolean;
   id: string;
   data: Omit<DraggableData, 'type'>;
   disabled?: boolean; // means the droppable do not accept any droppable
 };
 
-const ProductPlaceholderComponent = ({ id, data, disabled, className, children, ...props }: Props) => {
+const ProductPlaceholderComponent = ({ id, data, disabled, className, children, hidden, ...props }: Props) => {
   const draggingElement = useStudioDndStore((state) => state.draggingElement);
 
   const extendedData = useMemo(() => {
@@ -24,7 +25,7 @@ const ProductPlaceholderComponent = ({ id, data, disabled, className, children, 
   }, [data]);
 
   const { setNodeRef, isOver, active } = useDroppable({
-    id: id + '-placeholder',
+    id,
     data: extendedData,
     disabled,
   });
@@ -35,7 +36,7 @@ const ProductPlaceholderComponent = ({ id, data, disabled, className, children, 
     }
 
     return isOver;
-  }, [active, isOver, id]);
+  }, [active?.id, isOver, id]);
 
   const isParent = useMemo(() => {
     const matchedData = useStudioDataStore.getState().data.find((item) => item.id === id);
@@ -67,6 +68,7 @@ const ProductPlaceholderComponent = ({ id, data, disabled, className, children, 
       style={{
         width: '100%',
         minHeight: '100%',
+        opacity: hidden ? 0 : 1,
         ...extendedStyle,
       }}
       {...props}

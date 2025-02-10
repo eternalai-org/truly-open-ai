@@ -1,0 +1,135 @@
+.wrapper {
+    position: relative;
+    height: 100%;
+    min-width: 470px;
+    //padding-bottom: 12px;
+    max-height: calc(100vh - 330px - var(--TOP-BANNER-HEIGHT));
+    // overflow: hidden !important;
+    // @include hideScrollBar;
+
+    .MessageList {
+        width: 100%;
+        padding: 0;
+        overflow: hidden;
+        margin-bottom: 0;
+        margin-top: auto;
+
+        &.MessageList__Loading {
+            overflow: hidden;
+            height: 100%;
+        }
+    }
+
+    &.empty_list {
+        display: grid;
+        place-items: center;
+    }
+
+    .empty {
+        .empty_thumbnail {
+            max-width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .text {
+            text-align: center;
+            margin-top: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+    }
+
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 16px !important;
+        width: 16px !important;
+    }
+}
+
+.scroll {
+    scroll-behavior: smooth;
+    -webkit-scroll-behavior: smooth;
+
+    scrollbar-color: gray transparent;
+    scrollbar-width: thin;
+
+    &::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3) !important;
+        background-color: transparent !important;
+    }
+
+    &::-webkit-scrollbar {
+        width: 2px !important;
+        background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: gray;
+    }
+
+    // overflow: hidden;
+
+
+    // >div {
+    //   overflow: hidden;
+    // }
+
+}
+
+.chat_message_wrapper {
+    //padding: 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .content {
+        //margin-left: 4px;
+        border-radius: 12px;
+        padding: 12px 16px;
+        //background-color: rgba(95, 66, 243, 1);
+
+        max-width: 90%;
+        width: fit-content;
+        gap: 8px;
+
+        &.reply {
+            margin-bottom: 0;
+            //opacity: 0.6;
+            background: rgba(242, 243, 245, 1) !important;
+        }
+    }
+
+    .reply_to {
+        //margin-left: 30px;
+        color: white;
+    }
+
+    .normalText {
+        font-size: 16px;
+        font-weight: 400;
+        width: 300px;
+        text-wrap: wrap;
+
+        &.align_right {
+            text-align: right;
+        }
+
+        span {
+            display: inline-block;
+            animation: streaming-text 5s linear infinite;
+        }
+    }
+
+    @keyframes streaming-text {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+}

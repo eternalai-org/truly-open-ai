@@ -1,0 +1,9 @@
+import { CREATE_KNOWLEDGE_VALIDATORS } from './create';
+import UPDATE_KNOWLEDGE_VALIDATORS from './update';
+
+const KNOWLEDGE_VALIDATES = {
+  create: CREATE_KNOWLEDGE_VALIDATORS,
+  update: UPDATE_KNOWLEDGE_VALIDATORS,
+};
+
+export default KNOWLEDGE_VALIDATES;

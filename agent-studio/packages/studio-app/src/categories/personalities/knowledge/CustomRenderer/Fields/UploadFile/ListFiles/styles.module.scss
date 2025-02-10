@@ -1,0 +1,33 @@
+.listFiles {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  background: #F8F9FA;
+  padding: 6px 16px;
+}
+
+.name {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #5400FB;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.size {
+  color: #898989;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 24px;
+}

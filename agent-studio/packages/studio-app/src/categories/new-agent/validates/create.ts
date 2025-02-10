@@ -1,4 +1,5 @@
 import { OnAddPayload } from "@agent-studio/studio-dnd";
+import { showValidateError } from "../../../utils/toast";
 
 const onAddValidate = (data: OnAddPayload) => {
   // TODO: Block adding new personality to the root
@@ -7,6 +8,7 @@ const onAddValidate = (data: OnAddPayload) => {
 };
 
 const onSnapValidate = () => {
+  showValidateError("The root item cannot be snapped");
   return false;
 };
 
@@ -15,6 +17,7 @@ const onSplitValidate = () => {
 };
 
 const onMergeValidate = () => {
+  showValidateError("The root item cannot be snapped");
   return false;
 };
 
