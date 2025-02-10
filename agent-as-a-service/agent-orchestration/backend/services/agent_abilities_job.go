@@ -615,7 +615,7 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 						tx,
 						map[string][]interface{}{
 							"agent_store_id = ?": {agentStoreMission.AgentStoreID},
-							"user_id = ?":        {user.ID},
+							"user_address = ?":   {strings.ToLower(user.Address)},
 						},
 						map[string][]interface{}{},
 						[]string{"id desc"},
