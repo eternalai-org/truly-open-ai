@@ -1,6 +1,8 @@
 import json
 from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
+
+from x_content.cache.chat_request_state_handler import ChatRequestStateHandler
 from .verifications import (
     verify_opencall_x_token,
     verify_third_party_authorization_key,
@@ -9,6 +11,7 @@ from .verifications import (
 from .wrappers.api.twitter_v2.models.response import Response, SearchTweetDto
 from x_content import constants as const
 from .models import (
+    ChatRequest,
     ReasoningLog,
     APIResponse,
     APIStatus,
@@ -22,7 +25,7 @@ from x_content.wrappers.magic import sync2async
 from x_content.tasks.social_agent import post_v3
 from x_content.wrappers import bing_search
 from x_content.wrappers.magic import sync2async
-from .service import MissionStateHandler, service_v2_handle_request
+from .service import MissionStateHandler, handle_chat_request, service_v2_handle_request
 from .wrappers import redis_wrapper
 from .legacy_services.twin import twin_service
 from .tasks import utils as task_utils
@@ -37,6 +40,14 @@ logger = logging.getLogger(__name__)
 @lru_cache(maxsize=1)
 def get_state_handler():
     state_handler = MissionStateHandler(
+        redis_wrapper.reusable_redis_connection()
+    )
+    return state_handler
+
+
+@lru_cache(maxsize=1)
+def get_chat_request_state_handler():
+    state_handler = ChatRequestStateHandler(
         redis_wrapper.reusable_redis_connection()
     )
     return state_handler
@@ -144,7 +155,7 @@ async def enqueue_api(
         f"[enqueue_api] Received request: {json.dumps(request.model_dump())}"
     )
     if request.state == MissionChainState.NEW:
-        task_utils.notify_status(request)
+        task_utils.notify_status_reasoning_log(request)
 
     get_state_handler().commit(request)
     background_tasks.add_task(service_v2_handle_request, request)
@@ -182,6 +193,34 @@ async def get_result_api(id: str, thought_only: bool = False) -> JSONResponse:
         )
 
     return JSONResponse(content=log.model_dump(), status_code=200)
+
+
+@router.post("/async/chat/enqueue", dependencies=[Depends(verify_x_token)])
+async def enqueue_chat(
+    request: ChatRequest, background_tasks: BackgroundTasks
+) -> ChatRequest:
+    logger.info(
+        f"[enqueue_chat] Received request: {json.dumps(request.model_dump())}"
+    )
+    if request.state == MissionChainState.NEW:
+        task_utils.notify_status_chat_request(request)
+
+    get_chat_request_state_handler().commit(request)
+    background_tasks.add_task(handle_chat_request, request)
+    return request
+
+
+@router.get("/async/chat/get", dependencies=[Depends(verify_x_token)])
+async def get_chat_result_api(id: str) -> JSONResponse:
+    request = get_chat_request_state_handler().get(id, none_if_error=True)
+
+    if request is None:
+        return JSONResponse(
+            {},
+            status_code=404,
+        )
+
+    return JSONResponse(content=request.model_dump(), status_code=200)
 
 
 @router.get(

@@ -1,6 +1,4 @@
 from .react_agent import ReactAgent
-from json_repair import json_repair
-import json
 import re
 from .react_agent import dynamic_system_reminder
 from x_content.models import ReasoningLog, ToolDef, MissionChainState
@@ -8,7 +6,7 @@ from typing import List
 from x_content.tasks.utils import a_move_state
 from x_content.toolcall.utils import execute_tool
 from x_content.wrappers.magic import sync2async
-from x_content.llm import OnchainInferResult
+from x_content.llm.base import OnchainInferResult
 from x_content import constants as const
 import logging
 
@@ -20,19 +18,19 @@ def format_prompt_v2(log: ReasoningLog, tools: List[ToolDef]):
 You have access to the following tools to get information or take actions:
 {tools}
 
-Your knowledge is outdated for years. So, for the best outcome, you must take some actions, to get information, to update your knowledge before acting something.
+Your knowledge is outdated for years, it is recommended to use the provided tools to get the newest information before acting something.
 
-Your answer must be a single JSON object with exactly three keys described as follows:
-- name: must be one of {toolnames}.
-- parameters: provide the necessary parameters for the chosen action.
+Your answer must be formed in XML format with action and action input as follows:
+- <action>must be one of {toolnames}</action>
+- <action_input>the necessary parameters for the chosen action separated by |. For instance, if the action requires two parameters are 'a' and 'b', the action_input should be 'a|b'</action_input>
 
-OR with exactly one key as follows:
-- conclusion: your conclusion.
+OR with exactly one final_answer:
+- <final_answer>your final_answer</final_answer>
 
 About you:
 {base_system_prompt}
 
-Again, only shortly think about the task and answer in a single JSON!
+Again, shortly think about what to do and answer in the required format!
 """
 
     tool_names = ", ".join([tool.name for tool in tools])
@@ -46,37 +44,36 @@ Again, only shortly think about the task and answer in a single JSON!
 
 
 def parse_conversational_react_response(response: str, verbose=True) -> dict:
-    response_pattern = re.compile(
-        "<think>(.*?)</think>(.*?)", re.IGNORECASE | re.DOTALL
+    thought_pat = re.compile(
+        r"<think>(.*?)</think>", re.IGNORECASE | re.DOTALL
+    )
+    action_pat = re.compile(
+        r"<action>(.*?)</action>", re.IGNORECASE | re.DOTALL
+    )
+    action_input_pat = re.compile(
+        r"<action_input>(.*?)</action_input>", re.IGNORECASE | re.DOTALL
+    )
+    final_answer_pat = re.compile(
+        r"<final_answer>(.*?)</final_answer>", re.IGNORECASE | re.DOTALL
     )
 
-    try:
-        match = response_pattern.match(response)
-        assert match is not None, "No match"
-        thought = match.group(1)
-        other_response = match.group(2)
-        json_response = json_repair.repair_json(
-            other_response, return_objects=True
-        )
-    except json.JSONDecodeError:
-        return {}
-
+    action = action_pat.findall(response)
+    action_input = action_input_pat.findall(response)
+    thought = thought_pat.findall(response)
+    final_answer = final_answer_pat.findall(response)
     segment_pad = {}
 
-    segment_pad.update({"thought": thought})
+    if action is not None and len(action) > 0:
+        segment_pad.update({"action": action[0]})
 
-    if "conclusion" in json_response:
-        segment_pad.update({"conclusion": json_response["conclusion"]})
-        return segment_pad
+    if action_input is not None and len(action_input) > 0:
+        segment_pad.update({"action_input": action_input[0]})
 
-    if "name" in json_response:
-        segment_pad.update({"name": json_response["name"]})
+    if thought is not None and len(thought) > 0:
+        segment_pad.update({"thought": thought[0]})
 
-        if "parameters" not in json_response:
-            json_response["parameters"] = ""
-
-    if "parameters" in json_response:
-        segment_pad.update({"parameters": json_response["parameters"]})
+    if final_answer is not None and len(final_answer) > 0:
+        segment_pad.update({"final_answer": final_answer[0]})
 
     return segment_pad
 
@@ -92,33 +89,39 @@ def render_conversation(log: ReasoningLog, tools: List[ToolDef]):
             if k in item:
                 user_message[k] = item[k]
 
+        user_message["system_reminder"] = dynamic_system_reminder(
+            log, it, tools
+        )
+
         assistant_message = {}
-        for k in ["thought", "name", "parameters", "conclusion"]:
+        for k in ["thought", "action", "action_input", "final_answer"]:
             if k in item:
                 assistant_message[k] = item[k]
 
         if len(assistant_message) > 0:
-            assistant_resp = "<think>{}</think>{}".format(
-                assistant_message.get("thought", ""),
-                json.dumps(
-                    {
-                        k: v
-                        for k, v in assistant_message.items()
-                        if k != "thought"
-                    }
-                ),
+            assistant_resp = "<think>\n{}\n</think>".format(
+                assistant_message.get("thought", "")
             )
+
+            for item in ["action", "action_input", "final_answer"]:
+                if item in assistant_message:
+                    assistant_resp += "\n<{}>{}</{}>".format(
+                        item, assistant_message[item], item
+                    )
 
             conversation.append(
                 {"role": "assistant", "content": assistant_resp}
             )
 
-        response = {
-            **user_message,
-            "system reminder": dynamic_system_reminder(log, it + 1, tools),
-        }
+        response = ""
 
-        conversation.append({"role": "user", "content": json.dumps(response)})
+        for item in ["task", "observation", "hot_news", "system_reminder"]:
+            if item in user_message:
+                response += "\n<{}>{}</{}>".format(
+                    item, user_message[item], item
+                )
+
+        conversation.append({"role": "user", "content": response})
 
     return conversation
 
@@ -128,7 +131,7 @@ class ReactAgentUsingDeepSeekR1(ReactAgent):
 
     async def is_react_complete(self, log: ReasoningLog) -> bool:
         return (
-            len(log.scratchpad) > 0 and "conclusion" in log.scratchpad[-1]
+            len(log.scratchpad) > 0 and "final_answer" in log.scratchpad[-1]
         ) or len(log.scratchpad) > log.meta_data.params.get(
             "react_max_steps", const.DEFAULT_REACT_MAX_STEPS
         )
@@ -200,9 +203,9 @@ class ReactAgentUsingDeepSeekR1(ReactAgent):
         if "thought" in pad:
             if "thought" in log.scratchpad[-1] and any(
                 k not in log.scratchpad[-1]
-                for k in ["name", "parameters", "observation"]
+                for k in ["action", "action_input", "observation"]
             ):
-                for kk in ["name", "parameters", "observation"]:
+                for kk in ["action", "action_input", "observation"]:
                     if kk not in log.scratchpad[-1]:
                         log.scratchpad[-1][kk] = "Not found!"
 
@@ -218,10 +221,10 @@ class ReactAgentUsingDeepSeekR1(ReactAgent):
                 f"[{log.id}][React-Iter {len(log.scratchpad)}] 🤔 Thought: {pad['thought']}"
             )
 
-        if "name" in pad:
-            if "parameters" not in pad:
+        if "action" in pad:
+            if "action_input" not in pad:
                 log.scratchpad[-1].update(
-                    action=pad["name"], action_input="Not found!"
+                    action=pad["action"], action_input="Not found!"
                 )
 
                 return await a_move_state(
@@ -233,12 +236,12 @@ class ReactAgentUsingDeepSeekR1(ReactAgent):
                     log, MissionChainState.ERROR, "No thought found!"
                 )
 
-            action = pad["name"]
+            action = pad["action"]
             logger.info(
                 f"[{log.id}][React-Iter {len(log.scratchpad)}] 🛠️ Action: {action}"
             )
 
-            action_input = pad["parameters"]
+            action_input = pad["action_input"]
             logger.info(
                 f"[{log.id}][React-Iter {len(log.scratchpad)}] 📥 Action Input: {action_input}"
             )
@@ -251,18 +254,8 @@ class ReactAgentUsingDeepSeekR1(ReactAgent):
             for tool in tools:
                 if tool.name == action:
 
-                    action_input_ordered = []
-
-                    for p in tool.params:
-                        if p in action_input:
-                            action_input_ordered.append(
-                                str(action_input.get(p, ""))
-                            )
-
-                    action_input_str = "|".join(action_input_ordered)
-
                     observation = await execute_tool(
-                        tool, action_input_str, request_id=log.id
+                        tool, action_input, request_id=log.id
                     )
                     new_observation = []
 
@@ -283,17 +276,17 @@ class ReactAgentUsingDeepSeekR1(ReactAgent):
                 f"[{log.id}][React-Iter {len(log.scratchpad)}] 🔍 Observation: {observation}"
             )
 
-        if "conclusion" in pad:
+        if "final_answer" in pad:
             if any(
                 k in log.scratchpad[-1]
-                for k in ["name", "parameters", "observation"]
+                for k in ["action", "action_input", "observation"]
             ):
                 log.scratchpad.append({})
 
             logger.info(
-                f"[{log.id}][React-Iter {len(log.scratchpad)}] 🎯 Final Answer: {pad['conclusion']}"
+                f"[{log.id}][React-Iter {len(log.scratchpad)}] 🎯 Final Answer: {pad['final_answer']}"
             )
-            log.scratchpad[-1].update({"conclusion": pad["conclusion"]})
+            log.scratchpad[-1].update({"final_answer": pad["final_answer"]})
 
             log = await a_move_state(
                 log, MissionChainState.DONE, "Final answer found"
