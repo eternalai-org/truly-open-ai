@@ -2235,7 +2235,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 							if inferPost.UserID > 0 {
 								user := inferPost.User
 								err = tx.Model(user).
-									UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.AgentStoreMissionFee)).
+									UpdateColumn("eai_balance", gorm.Expr("eai_balance + ?", inferPost.Fee)).
 									Error
 								if err != nil {
 									return errs.NewError(err)
