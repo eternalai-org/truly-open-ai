@@ -2,9 +2,8 @@ package response
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -107,8 +106,20 @@ type restHandlerTemplate struct {
 	httpResp    *httpResponse
 }
 
+type streamHandlerTemplate struct {
+	handlerFunc HandlerFunc
+	httpResp    *httpResponse
+}
+
 func NewRESTHandlerTemplate(handlerFunc HandlerFunc) http.Handler {
 	return &restHandlerTemplate{
+		handlerFunc: handlerFunc,
+		httpResp:    NewHttpResponse(),
+	}
+}
+
+func NewStreamHandlerTemplate(handlerFunc HandlerFunc) http.Handler {
+	return &streamHandlerTemplate{
 		handlerFunc: handlerFunc,
 		httpResp:    NewHttpResponse(),
 	}
@@ -147,4 +158,10 @@ func (h *restHandlerTemplate) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 	h.httpResp.RespondSuccess(w, http.StatusOK, Success, item, "")
+}
+
+func (h *streamHandlerTemplate) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	vars := mux.Vars(r)
+	h.handlerFunc(ctx, r, vars)
 }

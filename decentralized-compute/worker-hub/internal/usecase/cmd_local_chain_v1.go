@@ -292,6 +292,7 @@ func (c *CMD_Local_ChainV1) CreateConfigENV(minerAddress string, index int) erro
 	cnf := c.ReadLocalChainCnf()
 
 	env := ""
+	env += fmt.Sprintf("PUBSUB_URL=%v\n", cnf.PubSubURL)
 	env += fmt.Sprintf("PLATFORM=%v\n", cnf.Platform)
 	env += fmt.Sprintf("API_URL=%v\n", cnf.RunPodInternal)
 	env += fmt.Sprintf("API_KEY=%v\n", cnf.RunPodAPIKEY)

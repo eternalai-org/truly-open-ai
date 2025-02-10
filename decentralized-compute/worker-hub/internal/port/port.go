@@ -2,12 +2,9 @@ package port
 
 import (
 	"context"
-	"math/big"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-
+	"math/big"
 	"solo/config"
-
 	"solo/internal/contracts/erc20"
 	"solo/internal/model"
 
@@ -63,6 +60,7 @@ type IMiner interface {
 	GetChainCommon() ICommon
 	GetCluster() ICluster
 	GetConfig() *config.Config
+	GetTaskQueue() chan *model.Task
 }
 
 type IStaking interface {
@@ -105,4 +103,5 @@ type IServer interface {
 
 type IApi interface {
 	CreateInfer(ctx context.Context, request model.LLMInferRequest) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
+	CreateInferWithStream(ctx context.Context, request model.LLMInferRequest, out chan model.StreamDataChannel) (*types.Transaction, *uint64, *model.LLMInferResponse, error)
 }

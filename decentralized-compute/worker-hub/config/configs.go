@@ -15,6 +15,7 @@ const (
 
 type Config struct {
 	Rpc                      string
+	PubSubURL                string
 	Account                  string
 	StakingHubAddress        string
 	WorkerHubAddress         string
@@ -41,6 +42,7 @@ func ReadConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
+	cfg.PubSubURL = os.Getenv("PUBSUB_URL")
 	cfg.Rpc = os.Getenv("CHAIN_RPC")
 	cfg.Account = os.Getenv("ACCOUNT_PRIV")
 	cfg.StakingHubAddress = os.Getenv("STAKING_HUB_ADDRESS")
