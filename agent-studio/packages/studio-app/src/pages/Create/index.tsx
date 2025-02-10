@@ -26,7 +26,13 @@ function Create() {
   const [isMounted, setIsMounted] = useState(false);
 
   const { isLoading } = useStudioAgentStore();
-  const { chains } = useCommonStore();
+
+  const dataGraph = useMemo(() => {
+    return {
+      data: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    } satisfies GraphData;
+  }, []);
 
   useEffect(() => {
     useStudioAgentStore.getState().setIsDetail(false);
@@ -34,27 +40,15 @@ function Create() {
       try {
         const data = await agentDatabase.getItem(id);
 
-        const parsedData = JSON.parse(
-          data?.data ||
-            JSON.stringify({
-              data: [],
-              viewport: { x: 0, y: 0, zoom: 1 },
-            } satisfies GraphData)
-        );
+        const parsedData = JSON.parse(data?.data || JSON.stringify(dataGraph));
         useStudioAgentStore.getState().setGraphData(parsedData);
         if (ref.current) {
           ref.current.redraw(parsedData satisfies GraphData);
         }
       } catch (e) {
-        useStudioAgentStore.getState().setGraphData({
-          data: [],
-          viewport: { x: 0, y: 0, zoom: 1 },
-        } satisfies GraphData);
+        useStudioAgentStore.getState().setGraphData(dataGraph);
         if (ref.current) {
-          ref.current.redraw({
-            data: [],
-            viewport: { x: 0, y: 0, zoom: 1 },
-          } satisfies GraphData);
+          ref.current.redraw(dataGraph);
         }
       } finally {
         setIsMounted(true);
@@ -69,27 +63,9 @@ function Create() {
         ref.current.cleanup();
       }
     };
-  }, []);
-
-  const dataGraph = useMemo(() => {
-    return {
-      data: [],
-      viewport: { x: 0, y: 0, zoom: 1 },
-    } satisfies GraphData;
-  }, []);
+  }, [ref.current]);
 
   const renderStudio = (categories: StudioCategory[]) => {
-    if (!chains || chains?.length === 0) {
-      return (
-        <Studio
-          {...args}
-          categories={[]}
-          graphData={dataGraph}
-          sidebarWidth={"430px"}
-        />
-      );
-    }
-
     return (
       <Studio
         {...args}

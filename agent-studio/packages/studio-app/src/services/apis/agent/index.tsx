@@ -1,8 +1,8 @@
-import { ChatCompletionType } from "@eternalai-dagent/core";
+import { AgentInfo, ChatCompletionType } from "@eternalai-dagent/core";
 import { ShortAgentToken } from "../../../stores/useCommonStore";
 import { ISearchTwitterInfo } from "../../../types/agent";
 import { INFTInfo } from "../../../types/collection";
-import { agentAPIClient } from "../clients";
+import { agentAPIClient, eternalAPIClient } from "../clients";
 import { ICollectionsResponse } from "./types";
 import axios from "axios";
 import { AgentDetail } from "../studio/types";
@@ -173,6 +173,27 @@ const AgentAPI = {
       );
       return res;
     } catch {
+      return undefined;
+    }
+  },
+
+  getAgent: async (agentID: string): Promise<AgentInfo | undefined> => {
+    // https://imagine-backend.dev.bvm.network/api/agent/671b39e41a57fd90616013e2
+    try {
+      const res: AgentInfo = await agentAPIClient.get(`/api/agent/${agentID}`);
+      return res;
+    } catch (e) {
+      return undefined;
+    }
+  },
+
+  getAgentByImagine: async (id: string): Promise<AgentInfo | undefined> => {
+    try {
+      const res: AgentInfo = await agentAPIClient.get(
+        `/api/agent/detail/${id}`
+      );
+      return res;
+    } catch (e) {
       return undefined;
     }
   },

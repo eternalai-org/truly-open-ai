@@ -1,87 +1,92 @@
-import { Flex } from "@chakra-ui/react";
-import { GraphData, Studio, StudioRef } from "@agent-studio/studio-dnd";
-import { useParams } from "react-router";
-import { useMemo, useRef, useState } from "react";
-import { AgentDetail } from "../../services/apis/studio/types";
-// import { getAgentInstance } from "../../utils/agent";
+import { Box, Flex } from "@chakra-ui/react";
+import {
+  GraphData,
+  Studio,
+  StudioCategory,
+  StudioRef,
+} from "@agent-studio/studio-dnd";
+import { useNavigate, useParams } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import useStudioAgentStore from "../../stores/useStudioAgentStore";
+import AgentAPI from "../../services/apis/agent";
+import { createGraphDataFromAgentDetail } from "../../utils/data";
+import ModelData from "../../providers/GlobalDataProvider/ModelData";
+import SimulateTasks from "../../components/SimulateTasks";
+import AutoUpdateSaving from "./AutoUpdateSaving";
+import useAgentServiceStore from "../../stores/useAgentServiceStore";
+import { compareString } from "../../utils/string";
 
 const args = {
   dataSource: {},
   showConnectLine: true,
 };
 
-// const updateAgentModelCategories = getAgentModelCategories("update");
 function Update() {
-  const { id } = useParams<{ id: string }>();
+  const walletAddress = useAgentServiceStore((state) => state.walletAddress);
+  const params = useParams();
   const ref = useRef<StudioRef>(null);
+  const { agentDetail } = useStudioAgentStore();
 
-  const [categories, setCategories] = useState([]);
+  const agentId = params?.id as string;
+  const [isMounted, setIsMounted] = useState(false);
 
-  // const createGraphDataForNonLocal = (agentDetail: AgentDetail) => {
-  //   return createGraphDataFromAgentDetail(agentDetail);
-  // };
-  // const reMapGraphData = (agentDetail: AgentDetail, data: StudioDataNode[]) => {
-  //   return createGraphDataFromAgentDetail(agentDetail, data);
-  // };
+  const navigate = useNavigate();
 
-  const fetchAgentLocalGraph = async (id: string, agentDetail: AgentDetail) => {
-    // try {
-    //   const data = await agentDatabase.getItem(id);
-    //   if (data) {
-    //     const parsedData = JSON.parse(data?.data || `[]`);
-    //     // re-map remote data to local graph data
-    //     const graphData = reMapGraphData(agentDetail, parsedData);
-    //     useStudioAgentStore.getState().setData(graphData);
-    //     if (ref.current) {
-    //       ref.current.redraw(graphData);
-    //     }
-    //     // const parsedData = JSON.parse(data?.data || `[]`);
-    //     // useStudioAgentStore.getState().setData(parsedData);
-    //     // if (ref.current) {
-    //     //   ref.current.redraw(parsedData);
-    //     // }
-    //   } else {
-    //     const graphData = createGraphDataForNonLocal(agentDetail);
-    //     useStudioAgentStore.getState().setData(graphData);
-    //     if (ref.current) {
-    //       ref.current.redraw(graphData);
-    //     }
-    //   }
-    // } catch (e) {
-    //   const graphData = createGraphDataForNonLocal(agentDetail);
-    //   useStudioAgentStore.getState().setData(graphData);
-    //   if (ref.current) {
-    //     ref.current.redraw(graphData);
-    //   }
-    // }
+  const getAgentInfo = async (id: string) => {
+    let res: any = undefined;
+
+    if (isNaN(Number(id))) {
+      res = await AgentAPI.getAgent(id as string);
+    } else {
+      res = await AgentAPI.getAgentByImagine(id as string);
+    }
+
+    return res;
   };
 
-  const getAgentDetail = async () => {
-    // if (id) {
-    //   const baseAgent = await getAgentInstance({} as any);
-    //   const agentDetail: AgentDetail = await baseAgent.getAgent(id);
-    //   if (agentDetail) {
-    //     useStudioAgentStore.getState().setAgentDetail(agentDetail);
-    //     fetchAgentLocalGraph(agentDetail.id, agentDetail);
-    //   }
-    // }
-  };
+  useEffect(() => {
+    useStudioAgentStore.getState().setIsDetail(true);
 
-  // useEffect(() => {
-  //   getAgentDetail();
-  // }, [id]);
+    return () => {
+      // cleanup
+      if (ref.current) {
+        ref.current.cleanup();
+      }
+    };
+  }, []);
 
-  // useEffect(() => {
-  //   useStudioAgentStore.getState().setIsDetail(true);
-  //   setCategories(updateAgentModelCategories);
+  useEffect(() => {
+    const fetchRemoteAgent = async () => {
+      try {
+        const res = await AgentAPI.getAgentDetail(agentId as string);
+        const agentInfoRes = await getAgentInfo(agentId as string);
 
-  //   return () => {
-  //     // cleanup
-  //     if (ref.current) {
-  //       ref.current.cleanup();
-  //     }
-  //   };
-  // }, []);
+        useStudioAgentStore.getState().setAgentDetail(res);
+        useStudioAgentStore.getState().setAgentInfo(agentInfoRes);
+
+        if (res.graph_data) {
+          const dataGraph = JSON.parse(res.graph_data);
+          useStudioAgentStore.getState().setGraphData(dataGraph);
+
+          ref.current?.redraw(dataGraph);
+        } else {
+          const dataGraph = {
+            data: createGraphDataFromAgentDetail(res),
+            viewport: { x: 0, y: 0, zoom: 1 },
+          };
+          useStudioAgentStore.getState().setGraphData(dataGraph);
+          ref.current?.redraw(dataGraph);
+        }
+      } catch (e) {
+        navigate("/");
+      } finally {
+        setIsMounted(true);
+      }
+    };
+
+    setIsMounted(false);
+    fetchRemoteAgent();
+  }, [agentId]);
 
   const dataGraph = useMemo(() => {
     return {
@@ -90,18 +95,56 @@ function Update() {
     } satisfies GraphData;
   }, []);
 
-  return (
-    <Flex w="100%" h="100%" position={"relative"}>
+  const renderStudio = (categories: StudioCategory[]) => {
+    return (
       <Studio
         {...args}
         categories={categories}
         ref={ref}
         graphData={dataGraph}
-        onChange={(data) => {
-          // useStudioAgentStore.getState().setData(data);
+        sidebarWidth={"430px"}
+        onChange={(graph: GraphData) => {
+          if (isMounted) {
+            useStudioAgentStore.getState().setGraphData(graph);
+          }
         }}
       />
-    </Flex>
+    );
+  };
+
+  return (
+    <ModelData state="update">
+      {(categories) => (
+        <>
+          {/* <ReviewAgentModal /> */}
+          <Flex w="100%" h="100%" position={"relative"}>
+            {/* <TopWorkArea /> */}
+            <AutoUpdateSaving />
+            {walletAddress &&
+              agentDetail?.creator &&
+              compareString(walletAddress, agentDetail?.creator) && (
+                <Flex
+                  // pos={'absolute'}
+                  // zIndex={10}
+                  // top="10"
+                  // right="10"
+                  flexDir={"row"}
+                  align={"center"}
+                  gap={"24px"}
+                  justifyContent={"flex-end"}
+                >
+                  {/* <TopUpButton /> */}
+                </Flex>
+              )}
+
+            <Box w={"100%"} h={"100%"}>
+              {renderStudio(categories)}
+              <SimulateTasks />
+            </Box>
+          </Flex>
+        </>
+      )}
+    </ModelData>
   );
 }
 
