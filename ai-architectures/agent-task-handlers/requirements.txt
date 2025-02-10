@@ -5,10 +5,11 @@ schedule==1.2.2
 redis==5.2.0
 bs4==0.0.2
 logger==1.4
-PyPDF2==3.0.1
+pypdf==5.3.0
 google-cloud-storage==2.18.2
 langchain_openai==0.2.13
 langchain_community==0.3.14
 langchain==0.3.14
+langgraph==0.2.69
 colorama==0.4.6 
 json-repair==0.35.0
