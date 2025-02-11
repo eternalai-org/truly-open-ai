@@ -4,7 +4,7 @@ This developer guide shows you how to use Decentralized Inference API with DeepS
 
 * **Decentralized**: Use Eternal AI's Decentralized Inference API instead of OpenAI's Centralized API.
 * **Onchain-verifiable AI**: Don't trust AI, verify them. All inferences are recorded onchain and verifiable by anyone.
-* **Unstoppable**: All inference runs exactly as coded on Base without any possibility of censorship, fraud, or third-party interference.
+* **Unstoppable**: All inference runs exactly as coded on BNB chain without any possibility of censorship, fraud, or third-party interference.
 * **Permissionless**: Anyone can call the Decentralized Inference API at any time without a KYC or permission.
 * **SOTA model**: DeepSeek R1 is the state-of-the-art AI model for reasoning.
 
