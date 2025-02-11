@@ -422,6 +422,24 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						if agentStoreInstall == nil {
 							return errs.NewError(errs.ErrBadRequest)
 						}
+						//
+						agentStoreMission, err := s.dao.FirstAgentStoreMissionByID(
+							tx,
+							mission.AgentStoreMissionID,
+							map[string][]interface{}{},
+							false,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if agentStoreMission == nil {
+							return errs.NewError(errs.ErrBadRequest)
+						}
+						agentStoreMission.NumUsed++
+						err = s.dao.Save(tx, agentStoreMission)
+						if err != nil {
+							return errs.NewError(err)
+						}
 						params := map[string]interface{}{}
 						err = helpers.ConvertJsonObject(agentStoreInstall.CallbackParams, &params)
 						if err != nil {
@@ -592,6 +610,7 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentStoreMission.NumUsed++
 					var headSystemPrompt string
 					metaDataReq := &aidojo.AgentMetadataRequest{}
 					inferTxHash := helpers.RandomBigInt(12).Text(16)

@@ -48,6 +48,7 @@ type AgentStoreResp struct {
 	ApiUrl             string                   `json:"api_url"`
 	Status             models.AgentStoreStatus  `json:"status"`
 	Price              numeric.BigFloat         `json:"price"`
+	NumInstall         uint                     `json:"num_install"`
 	AgentStoreMissions []*AgentStoreMissionResp `json:"agent_store_missions"`
 }
 
@@ -64,8 +65,9 @@ func NewAgentStoreResp(m *models.AgentStore) *AgentStoreResp {
 		Icon:               m.Icon,
 		Docs:               m.Docs,
 		ApiUrl:             m.ApiUrl,
-		Price:              m.Price,
+		NumInstall:         m.NumInstall,
 		Status:             m.Status,
+		Price:              m.Price,
 		AgentStoreMissions: NewAgentStoreMissionRespArray(m.AgentStoreMissions),
 	}
 }
@@ -88,6 +90,7 @@ type AgentStoreMissionResp struct {
 	Price        numeric.BigFloat `json:"price"`
 	ToolList     string           `json:"tool_list"`
 	Icon         string           `json:"icon"`
+	NumUsed      uint             `json:"num_used"`
 }
 
 func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionResp {
@@ -104,6 +107,7 @@ func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionRes
 		Price:        m.Price,
 		ToolList:     m.ToolList,
 		Icon:         m.Icon,
+		NumUsed:      m.NumUsed,
 	}
 }
 func NewAgentStoreMissionRespArray(arr []*models.AgentStoreMission) []*AgentStoreMissionResp {
