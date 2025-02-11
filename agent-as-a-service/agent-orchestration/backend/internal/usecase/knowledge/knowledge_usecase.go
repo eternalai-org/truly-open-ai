@@ -171,6 +171,7 @@ func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(ctx context.Context, so
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
+	return nil, nil
 	kn, err := uc.knowledgeBaseRepo.GetById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -429,14 +430,26 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 				}
 
 				// transfer fee to backend wallet
-				amount := new(big.Int).SetInt64(int64(chargeMore))
-				hash, err := uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
-				if err != nil {
-					return err
+				i := 0
+				var transferErr error
+				var hash string
+				for i < 10 {
+					amount := new(big.Int).SetInt64(int64(chargeMore))
+					hash, transferErr = uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
+					if transferErr != nil {
+						i += 1
+						time.Sleep(3 * time.Second)
+						continue
+					}
+
+					if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
+						return err
+					}
+					break
 				}
 
-				if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
-					return err
+				if transferErr != nil && hash == "" {
+					_, _ = uc.SendMessage(ctx, fmt.Sprintf("transferFund for agent %s (%d) - has error: %s ", k.Name, k.ID, transferErr.Error()), uc.notiErrorChanId)
 				}
 			}
 		}
@@ -565,7 +578,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	// } else {
 	// 	kn.Status = models.KnowledgeBaseStatusProcessing
 	// }
-	kn.FilecoinHash = hash
+	kn.FilecoinHash = fmt.Sprintf("ipfs://%s", hash)
 	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
@@ -611,8 +624,13 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	result := []*lighthouse.FileInLightHouse{}
 	kbFileIds := []uint{}
 	for _, f := range kn.KnowledgeBaseFiles {
-		if f.Status == models.KnowledgeBaseFileStatusDone {
-			continue
+		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
+			r := &lighthouse.FileInLightHouse{}
+			if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
+				r.IsInsert = true
+				result = append(result, r)
+				continue
+			}
 		}
 
 		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
@@ -632,6 +650,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 			map[string]interface{}{"filecoin_hash_raw_data": f.FilecoinHashRawData, "status": models.KnowledgeBaseFileStatusDone},
 		)
 		kbFileIds = append(kbFileIds, f.ID)
+		r.IsInsert = false
 		result = append(result, r)
 	}
 

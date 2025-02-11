@@ -31,7 +31,7 @@ export const AppAgent: Store = {
                     },
                     "label": "action",
                     "method": "POST",
-                    "executor": "https://agent.api.eternalai.org/api/internal/twitter/user/tweet-by-token",
+                    "executor": "https://composed-rarely-feline.ngrok-free.app/api/internal/twitter/user/tweet-by-token",
                     "name": "post",
                     "description": "Post something to twitter",
                     "params": [

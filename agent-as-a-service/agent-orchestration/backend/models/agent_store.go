@@ -67,10 +67,10 @@ type AgentStoreInstall struct {
 	gorm.Model
 	Type           AgentStoreInstallType
 	Code           string `gorm:"unique_index"`
-	UserID         uint   `gorm:"index"`
+	UserID         uint   `gorm:"unique_index:agent_store_main_idx"`
 	User           *User
-	AgentStoreID   uint `gorm:"index"`
-	AgentInfoID    uint `gorm:"index"`
+	AgentStoreID   uint `gorm:"unique_index:agent_store_main_idx"`
+	AgentInfoID    uint `gorm:"unique_index:agent_store_main_idx"`
 	AgentStore     *AgentStore
 	CallbackParams string `gorm:"type:longtext"` //{"user_id" : "123", "authen_token" : "xxx",...}
 	Status         AgentStoreInstallStatus
