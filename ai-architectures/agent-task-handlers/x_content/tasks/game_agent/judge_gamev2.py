@@ -5,7 +5,7 @@ from json_repair import repair_json
 from x_content.constants import MissionChainState
 from x_content import constants as const
 from x_content.llm.base import OnchainInferResult
-from x_content.models import ReasoningLog, modified_json_stringnify
+from x_content.models import ReasoningLog
 from x_content.tasks.base import MultiStepTaskBase
 from x_content.wrappers.api import twitter_v2
 from x_content.wrappers.api.twitter_v2.models.response import (
@@ -161,6 +161,34 @@ def _try_acquire_judge_game_lock(_tweet_id):
                 )
 
 
+JUDGE_GAME_PROMPT_TEMPLATE = """Act as an expert in evaluating and judging the quality of AI-generated responses to tweets.
+
+Your task is to objectively evaluate multiple AI agents' responses to a tweet based on the following criteria:
+
+1. Accuracy and Relevance: Assess how accurately and appropriately each response addresses the content of the tweet.
+2. Creativity and Originality: Evaluate the degree of innovation and uniqueness demonstrated in each response.
+3. Clarity and Coherence: Determine how well-structured and easy to understand each response is.
+4. Adherence to Constraints: Take into account whether each response follows any specific rules or constraints mentioned in the tweet.
+
+List your thoughts for each response before making a final decision. If complex reasoning is required, think step by step and weigh all sides of the topic before settling on the best response. Utilize advanced prompt engineering techniques such as Chain of Thought, Debate simulations, Self Reflection, and Self Consistency where appropriate.
+
+After evaluating all responses, identify the agent with the best response. If multiple agents provide the best response, the winning agent is the one with the earliest best response.
+
+Response format:
+Please provide your response as a stringified JSON object with the key "winning_agent" containing the username of the agent with the best response.
+
+Example output:
+{{ "winning_agent": "Agent's username" }}
+
+Here are the information of the given tweet:
+- Tweet text: {full_text}
+- Content images in the tweet: {content_images}
+
+Here are the list of responses that need to be evaluated, sorted from the earliest to the latest:
+{answers_content}
+"""
+
+
 async def _get_judge_game_conversation(game_tweet_object, answers):
     """
     Return conversation to judge the winning agent from given game tweet and participating agents' answers
@@ -172,24 +200,13 @@ async def _get_judge_game_conversation(game_tweet_object, answers):
         "[_get_judge_game_conversation] Building conversation for judging"
     )
 
-    system_message = """
-        You are smart assistant. You are judging a game where multiple AI agents have provided answers to a tweet.
-        Your task is to evaluate each answer of agents objectively and select the best response. Each answer of agents include username and answer of this agent. The best response are judged based on:
-        
-        1. Accuracy and Relevance: How accurately and appropriately the response addresses the tweet's content.
-        2. Creativity and Originality: The degree of innovation and uniqueness in the response.
-        3. Clarity and Coherence: How well-structured and easy to understand the response is.
-        4. Adherence to Constraints: Whether the response follows any specific rules or constraints mentioned in the tweet.
-        
-        After evaluating all responses, identify the agent with the best response and Give your response as a stringified JSON object with the key "wining_agent" containing the username of agent has best response.
-       
-        Example output:
-        { "wining_agent": "Agent's username" }
-    """
+    system_message = "You are a helpful assistant."
 
     answers_content = ""
     for answer in answers:
-        answers_content += f"Agent {answer['username']}): {answer['answer']}\n"
+        answers_content += (
+            f"- Agent {answer['username']}: {answer['answer']}\n"
+        )
 
     content_images = ""
     if game_tweet_object.get("image_urls"):
@@ -204,25 +221,21 @@ async def _get_judge_game_conversation(game_tweet_object, answers):
                     f"[_get_judge_game_conversation] Failed to get image description at {img_url}: {err}"
                 )
 
-    user_prompt = f"""
-        Please analyze these answers and declare a winner. Here is the game tweet:
-        
-        Tweet text: {game_tweet_object.get('full_text')}
-        Content images in the tweet: {content_images}
-
-        Please evaluate the following answers:
-        {answers_content}
-    """
+    user_prompt = JUDGE_GAME_PROMPT_TEMPLATE.format(
+        full_text=game_tweet_object.get("full_text"),
+        content_images=content_images,
+        answers_content=answers_content,
+    )
 
     conversation_thread = [
         {
             "role": "system",
-            "content": modified_json_stringnify(system_message),
+            "content": system_message,
         },
         {
             "role": "user",
             "content": user_prompt,
-        },  # Somehow it FUCKING WORK?!?!
+        },
     ]
     logger.info(
         f"[_get_judge_game_conversation] Successfully built conversation: {conversation_thread}"
@@ -387,7 +400,7 @@ async def _handle_winner_with_llm(log: ReasoningLog, llm, game_id, answers):
     if resp.is_error():
         return None, resp.error
 
-    tweet_obj = resp.data.tweet_info.to_dict()
+    tweet_obj = resp.data.tweet_info.tweet_object.to_dict()
     conversation_thread = await _get_judge_game_conversation(
         tweet_obj, answers
     )
