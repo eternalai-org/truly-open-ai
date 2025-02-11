@@ -166,7 +166,7 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 				// return nil, errs.NewError(err) //TODO: must be remove when release
 			}
 			agent.ETHAddress = strings.ToLower(ethAddress)
-			agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+			// agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
 			solAddress, err := s.CreateSOLAddress(ctx)
 			if err != nil {
 				// return nil, errs.NewError(err) //TODO: must be remove when release
@@ -512,11 +512,15 @@ func (s *Service) AgentUpdateAgentAssistant(ctx context.Context, address string,
 			return nil, err
 		}
 
-		i.Fee = i.CalcTotalFee()
+		i.Fee, _ = s.KnowledgeUsecase.CalcFeeByKnowledgeBaseId(ctx, agent.AgentKBId)
 		i.ChargeMore = i.CalcChargeMore()
 
 		updateMap["fee"] = i.Fee
 		updateMap["charge_more"] = i.ChargeMore
+		if i.ChargeMore != 0 {
+			updateMap["status"] = models.KnowledgeBaseStatusWaitingPayment
+		}
+
 		if err := s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, agent.AgentKBId, updateMap); err != nil {
 			return nil, err
 		}

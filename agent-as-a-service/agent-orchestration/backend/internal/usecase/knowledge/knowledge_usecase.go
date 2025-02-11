@@ -128,6 +128,10 @@ func NewKnowledgeUsecase(options ...options) ports.IKnowledgeUsecase {
 	return uc
 }
 
+func (uc *knowledgeUsecase) CalcFeeByKnowledgeBaseId(ctx context.Context, kbId uint) (float64, error) {
+	return uc.knowledgeBaseFileRepo.CalcTotalFee(ctx, kbId)
+}
+
 func (uc *knowledgeUsecase) SendMessage(_ context.Context, content string, chanId int64) (int, error) {
 	if chanId == 0 {
 		chanId = uc.notiActChanId
@@ -297,7 +301,7 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	}
 
 	model.KnowledgeBaseFiles = files
-	model.Fee = model.CalcTotalFee()
+	model.Fee, _ = uc.knowledgeBaseFileRepo.CalcTotalFee(ctx, model.ID)
 	model.ChargeMore = model.CalcChargeMore()
 
 	updatedFields := make(map[string]interface{})

@@ -105,21 +105,6 @@ func (m *KnowledgeBase) CalcChargeMore() float64 {
 	return price * float64(unitPrice)
 }
 
-func (m *KnowledgeBase) CalcTotalFee() float64 {
-	unitPrice := 10
-	total := float64(0)
-	for _, r := range m.KnowledgeBaseFiles {
-		total += float64(r.FileSize)
-	}
-
-	price := total / 1_000_000 // 1 Megabyte is equal to 1000000 bytes (decimal).
-	price = round(price, 0)
-	if price == 0 {
-		price = 1
-	}
-	return price * float64(unitPrice)
-}
-
 type RagResult struct {
 	Ref          string `json:"ref"`
 	Kb           string `json:"kb"`
