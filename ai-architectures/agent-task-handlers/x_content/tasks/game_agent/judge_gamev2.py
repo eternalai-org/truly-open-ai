@@ -499,7 +499,7 @@ async def _post_game_result(log: ReasoningLog, game_id, winning_agent):
     logger.info(f"[_post_game_result] Posting result tweet: {tweet_content}")
 
     resp: Response[GenerateActionDto] = await sync2async(
-        twitter_v2.reply_multi
+        twitter_v2.reply_multi_unlimited
     )(
         auth=create_twitter_auth_from_reasoning_log(log),
         tweet_id=game_id,

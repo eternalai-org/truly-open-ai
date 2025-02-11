@@ -347,7 +347,7 @@ class GameAPIClient:
         """
 
         endpoint = f"/v1/game/{tweet_id}/result"
-        payload = {"usernames": agent_username}
+        payload = {"username": agent_username}
 
         response_data, err = GameAPIClient.request(
             method="POST",

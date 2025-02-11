@@ -3,6 +3,7 @@ from app.utils import estimate_ip_from_distance
 from .models import (
     EmbeddingModel, 
     InsertInputSchema, 
+    UpdateInputSchema,
     InsertResponse, 
     QueryInputSchema, 
     QueryResult,
@@ -11,6 +12,16 @@ from .models import (
     ResponseMessage
 )
 import requests
+import subprocess
+import os
+import aiohttp
+import aiofiles
+import asyncio
+import json
+import os
+import shutil
+import subprocess
+from pathlib import Path
 
 from docling.datamodel.base_models import InputFormat, DocItemLabel
 from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -56,6 +67,7 @@ SUPORTED_DOCUMENT_FORMATS = [
     InputFormat.XML_PUBMED,
     InputFormat.PDF
 ]
+GATEWAY_IPFS_PREFIX = "https://gateway.lighthouse.storage/ipfs"
 
 DOCUMENT_FORMAT_OPTIONS = {
     InputFormat.PDF: FormatOption(
@@ -221,8 +233,8 @@ async def inserting(_data: List[EmbeddedItem], model_use: EmbeddingModel, metada
     return insert_cnt
 
 async def chunking_and_embedding(url_or_texts: Union[str, List[str]], model_use: EmbeddingModel) -> AsyncGenerator:
-    to_retry = []
-
+    to_retry = []   
+    
     if isinstance(url_or_texts, str):
         async for item in url_chunking(url_or_texts, model_use):
             try:
@@ -381,7 +393,7 @@ async def smaller_task(url_or_texts: Union[List[str], str], kb: str, model_use: 
         n_chunks += await inserting(
             _data=data, 
             model_use=model_use, 
-            metadata={
+            metadata = {
                 'kb': kb, 
                 'reference': url_or_texts if isinstance(url_or_texts, str) else ""
             }
@@ -390,6 +402,56 @@ async def smaller_task(url_or_texts: Union[List[str], str], kb: str, model_use: 
         fails_count += len([e for e in data if e.error is not None])
 
     return n_chunks, fails_count
+
+async def download_file(session, url, path):
+    async with session.get(url) as response:
+        response.raise_for_status()
+        async with aiofiles.open(path, 'wb') as f:
+            async for chunk in response.content.iter_chunked(8192):
+                await f.write(chunk)
+    print(f"Downloaded {path}")
+
+async def download_and_extract_from_filecoin(url: str, tmp_dir: str):
+    list_files = []
+    metadata_path = Path(tmp_dir) / "metadata.json"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            response.raise_for_status()
+            async with aiofiles.open(metadata_path, 'wb') as f:
+                await f.write(await response.read())
+
+        with open(metadata_path, 'r') as f:
+            list_metadata = json.load(f)
+
+        tasks = []
+        for metadata in list_metadata:
+            print(metadata)
+            if metadata["is_part"]:
+                parts = sorted(metadata["files"], key=lambda x: x["index"])
+                zip_parts = []
+                for part in parts:
+                    part_url = f"{GATEWAY_IPFS_PREFIX}/{part['hash']}"
+                    part_path = Path(tmp_dir) / part['name']
+                    tasks.append(download_file(session, part_url, part_path))
+                    zip_parts.append(part_path)
+
+                await asyncio.gather(*tasks)
+
+                destination = Path(tmp_dir) / metadata['name']
+                command = f"cat {tmp_dir}/{metadata['name']}.zip.part-* | pigz -p 2 -d | tar -xf - -C {tmp_dir}"
+                subprocess.run(command, shell=True, check=True)
+
+                print(f"Successfully extracted files to {destination}")
+                for root, dirs, files in os.walk(destination):
+                    for file in files:
+                        list_files.append(os.path.join(root, file))
+            else:
+                url = f"{GATEWAY_IPFS_PREFIX}/{metadata['files'][0]['hash']}"
+                path = Path(tmp_dir) / metadata['files'][0]['name']
+                await download_file(session, url, path)
+                list_files.append(str(path))
+    print("List of files to be processed: ", list_files)
+    return list_files
 
 @limit_asyncio_concurrency(4)
 async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
@@ -411,6 +473,14 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
         futures = []
         sqrt_length_texts = int(len(req.texts) ** 0.5)
+        tmp_dir = get_tmp_directory()
+        
+        if req.filecoin_metadata_url is not None:
+            os.makedirs(tmp_dir, exist_ok=True)
+            list_files = await download_and_extract_from_filecoin(req.filecoin_metadata_url, tmp_dir)
+            for file in list_files:
+                futures.append(asyncio.ensure_future(smaller_task(file, kb, model_use)))
+        
 
         if len(req.texts) > 0:
             for chunk_of_texts in batching(req.texts, sqrt_length_texts):
@@ -421,6 +491,7 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
         if len(futures) > 0:
             results = await asyncio.gather(*futures)
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
             n_chunks = sum([r[0] for r in results])
             fails_count = sum([r[1] for r in results])
@@ -720,13 +791,14 @@ async def run_query(req: QueryInputSchema) -> List[QueryResult]:
         for hit in hits
     ]
 
-async def notify_action(req: Union[InsertInputSchema, QueryInputSchema, str]):
+async def notify_action(req: Union[InsertInputSchema, UpdateInputSchema, QueryInputSchema, str]):
     if isinstance(req, InsertInputSchema):
         msg = '''<strong>Received a request to insert:</strong>\n
 <i>
 <b>ID:</b> {id}
 <b>Texts:</b> {texts} (items)
 <b>Files:</b> {files} (files)
+<b>Filecoin metadata url:</b> {filecoin_metadata_url}
 <b>Knowledge Base:</b> {kb}
 <b>Reference:</b> {ref}
 <b>Hook:</b> <a href="{hook}">{hook}</a>
@@ -735,6 +807,28 @@ async def notify_action(req: Union[InsertInputSchema, QueryInputSchema, str]):
         id=req.id,
         texts=len(req.texts),
         files=len(req.file_urls),
+        filecoin_metadata_url=req.filecoin_metadata_url,
+        kb=req.kb,
+        ref=req.ref,
+        hook=req.hook
+    )
+    
+    elif isinstance(req, UpdateInputSchema):
+        msg = '''<strong>Received a request to update:</strong>\n
+<i>
+<b>ID:</b> {id}
+<b>Texts:</b> {texts} (items)
+<b>Files:</b> {files} (files)
+<b>Filecoin metadata url:</b> {filecoin_metadata_url}
+<b>Knowledge Base:</b> {kb}
+<b>Reference:</b> {ref}
+<b>Hook:</b> <a href="{hook}">{hook}</a>
+</i>
+'''.format(
+        id=req.id,
+        texts=len(req.texts),
+        files=len(req.file_urls),
+        filecoin_metadata_url=req.filecoin_metadata_url,
         kb=req.kb,
         ref=req.ref,
         hook=req.hook

@@ -1,0 +1,38 @@
+@startuml
+
+actor Player
+participant "Wallet Agent (Agent1)" as WalletAgent1
+participant "Wallet Agent (Agent2)" as WalletAgent2
+participant "Wallet Game" as WalletGame
+participant "Wallet Operation" as WalletOperation
+participant "Wallet Treasury" as WalletTreasury
+participant Backend as BE
+
+== Game Start ==
+Player -> WalletAgent1 : Transfer 10 EAI
+Player -> WalletAgent1 : Transfer 20 EAI
+Player -> WalletAgent2 : Transfer 5 EAI
+
+WalletAgent1 -> WalletGame : Transfer 30 EAI (Total from Agent1)
+WalletAgent2 -> WalletGame : Transfer 5 EAI (Total from Agent2)
+
+BE -> WalletGame : Calculate total bets (35 EAI)
+
+== Game End ==
+BE -> BE : End game automatically
+BE -> BE : Determine winner (e.g., Agent2)
+
+alt Winner exists
+  BE -> WalletGame : Calculate winnings
+  BE -> WalletTreasury : Transfer 20% of total bets (7 EAI)
+  WalletGame -> WalletTreasury : Transfer 7 EAI
+  BE -> WalletAgent2 : Transfer 80% of total bets (28 EAI)
+  WalletGame -> WalletAgent2 : Transfer 28 EAI
+  WalletAgent2 -> Player : Distribute winnings proportionally
+else No winner
+  BE -> WalletGame : Refund all bets
+  WalletGame -> WalletAgent1 : Refund 30 EAI
+  WalletGame -> WalletAgent2 : Refund 5 EAI
+end
+
+@enduml

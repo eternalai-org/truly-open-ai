@@ -1,0 +1,355 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Game Imagine API",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/v1/game": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "summary": "List game",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tweet ID",
+                        "name": "tweet_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.ListGameResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/game/start": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "summary": "Start game",
+                "parameters": [
+                    {
+                        "description": "Start Game",
+                        "name": "start_game",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.StartGameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.Game"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/game/{tweet_id}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "summary": "Detail game",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tweet ID",
+                        "name": "tweet_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.Game"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/game/{tweet_id}/end": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "summary": "End game",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tweet ID",
+                        "name": "tweet_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.Game"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/game/{tweet_id}/result": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "summary": "Game result",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tweet ID",
+                        "name": "tweet_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Game Result",
+                        "name": "game_result",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.GameResultRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/agent-battle_internal_core_model.Game"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "agent-battle_internal_core_model.AgentWallet": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "transfer_amount": {
+                    "type": "number"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "agent-battle_internal_core_model.Game": {
+            "type": "object",
+            "properties": {
+                "agent_wallets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/agent-battle_internal_core_model.AgentWallet"
+                    }
+                },
+                "created_user_id": {
+                    "type": "string"
+                },
+                "date_created": {
+                    "type": "string"
+                },
+                "date_deleted": {
+                    "type": "string"
+                },
+                "date_modified": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "game_fee": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "modified_user_id": {
+                    "type": "string"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/agent-battle_internal_core_model.Player"
+                    }
+                },
+                "prize_per_player_winner": {
+                    "type": "number"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/agent-battle_internal_core_model.GameStatus"
+                },
+                "total_player_winners": {
+                    "type": "integer"
+                },
+                "tweet_id": {
+                    "type": "string"
+                },
+                "winner": {
+                    "type": "string"
+                }
+            }
+        },
+        "agent-battle_internal_core_model.GameResultRequest": {
+            "type": "object",
+            "properties": {
+                "tweet_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "agent-battle_internal_core_model.GameStatus": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "x-enum-varnames": [
+                "GameStatusRunning",
+                "GameStatusEnded",
+                "GameStatusResultUpdated",
+                "GameStatusCompleted"
+            ]
+        },
+        "agent-battle_internal_core_model.ListGameResponse": {
+            "type": "object",
+            "properties": {
+                "games": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/agent-battle_internal_core_model.Game"
+                    }
+                },
+                "total_records": {
+                    "type": "integer"
+                }
+            }
+        },
+        "agent-battle_internal_core_model.Player": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "bet_to_agent_address": {
+                    "type": "string"
+                },
+                "bet_to_agent_username": {
+                    "type": "string"
+                },
+                "prize_amount": {
+                    "type": "number"
+                },
+                "prize_tx_hash": {
+                    "type": "string"
+                },
+                "refund_amount": {
+                    "type": "number"
+                },
+                "refund_tx_hash": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "win": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "agent-battle_internal_core_model.StartGameRequest": {
+            "type": "object",
+            "properties": {
+                "time_out": {
+                    "type": "integer"
+                },
+                "tweet_id": {
+                    "type": "string"
+                },
+                "usernames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
