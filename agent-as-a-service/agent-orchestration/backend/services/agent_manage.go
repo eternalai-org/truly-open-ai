@@ -163,28 +163,28 @@ func (s *Service) AgentCreateAgentAssistant(ctx context.Context, address string,
 		{
 			ethAddress, err := s.CreateETHAddress(ctx)
 			if err != nil {
-				// return nil, errs.NewError(err) //TODO: must be remove when release
+				return nil, errs.NewError(err)
 			}
 			agent.ETHAddress = strings.ToLower(ethAddress)
-			// agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
+			agent.TronAddress = trxapi.AddrEvmToTron(ethAddress)
 			solAddress, err := s.CreateSOLAddress(ctx)
 			if err != nil {
-				// return nil, errs.NewError(err) //TODO: must be remove when release
+				return nil, errs.NewError(err)
 			}
 			agent.SOLAddress = solAddress
 			addressBtc, err := s.CreateBTCAddress(ctx)
 			if err != nil {
-				// return nil, errs.NewError(err) //TODO: must be remove when release
+				return nil, errs.NewError(err)
 			}
 			agent.TipBtcAddress = addressBtc
 			addressEth, err := s.CreateETHAddress(ctx)
 			if err != nil {
-				// return nil, errs.NewError(err) //TODO: must be remove when release
+				return nil, errs.NewError(err)
 			}
 			agent.TipEthAddress = addressEth
 			addressSol, err := s.CreateSOLAddress(ctx)
 			if err != nil {
-				// return nil, errs.NewError(err) //TODO: must be remove when release
+				return nil, errs.NewError(err)
 			}
 			agent.TipSolAddress = addressSol
 		}
