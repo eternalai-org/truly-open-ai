@@ -208,7 +208,7 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 			if err != nil {
 				return errs.NewError(err)
 			}
-			agentStore, err := s.dao.FirstAgentStoreByID(tx, obj.AgentInfoID, map[string][]interface{}{}, true)
+			agentStore, err := s.dao.FirstAgentStoreByID(tx, obj.AgentStoreID, map[string][]interface{}{}, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -275,9 +275,6 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 			return nil, errs.NewError(err)
 		}
 		if agentInfo == nil {
-			return nil, errs.NewError(errs.ErrBadRequest)
-		}
-		if !strings.EqualFold(agentInfo.Creator, userAddress) {
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
 	}
