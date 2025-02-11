@@ -612,12 +612,13 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 
 	result := []*lighthouse.FileInLightHouse{}
 	for _, f := range kn.KnowledgeBaseFiles {
-		if f.FilecoinHashRawData != "" {
-			r := &lighthouse.FileInLightHouse{}
-			if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
-				result = append(result, r)
-				continue
-			}
+		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
+			continue
+			// r := &lighthouse.FileInLightHouse{}
+			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
+			// 	result = append(result, r)
+			// 	continue
+			// }
 		}
 
 		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
