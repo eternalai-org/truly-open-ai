@@ -103,7 +103,7 @@ def send_alert(task: AutoAgentTask, reason: str):
     nav = f'<b>Request-ID</b>: {task.id};</i>'
     info = f"<i><b>Ref-ID</b>: {task.meta_data.ref_id};\n{nav}"
 
-    msg = _alert_template.format(task=task, info=info, reason=reason)
+    msg = _alert_template.format(log=task, info=info, reason=reason)
     telegram.send_message(
         twitter_username="junk_notifications",
         message_to_send=msg,
