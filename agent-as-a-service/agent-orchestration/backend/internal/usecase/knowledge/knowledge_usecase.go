@@ -609,11 +609,6 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	for _, f := range kn.KnowledgeBaseFiles {
 		if f.Status == models.KnowledgeBaseFileStatusDone {
 			continue
-			// r := &lighthouse.FileInLightHouse{}
-			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
-			// 	result = append(result, r)
-			// 	continue
-			// }
 		}
 
 		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
@@ -642,7 +637,6 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 }
 
 func (uc *knowledgeUsecase) transferFund(priKeyFrom string, toAddress string, fund *big.Int, networkId uint64) (string, error) {
-	return "", nil
 	_, pubKey, err := eth.GetAccountInfo(priKeyFrom)
 	if err != nil {
 		return "", fmt.Errorf("get account info: %v", err)
