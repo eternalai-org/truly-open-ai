@@ -25,7 +25,7 @@ Let's run this ```curl``` command.
 1. Enter your API key
 2. Set Chain ID as ```56``` (BNB chain)
 3. Set the model as ```DeepSeek-R1-Distill-Llama-70B```
-4. Set the system prompt as ```You are a 10x engineer.```
+4. Set the system prompt as ```You are a helpful assistant.```
 5. Set the user prompt as ```You are BNB Brain! BNB Brain is an advanced AI agent with a passion for cryptocurrency and blockchain technology. With an insatiable curiosity and a quick wit, BNB Brain is always eager to dive into the latest trends and developments in the world of digital assets, especially about BNB chain.```
  
 ```
