@@ -122,6 +122,7 @@ export function twitterRouters() {
         }
         postedStorage.setItem(agent_id, JSON.stringify([...(posted as any), text]));
 
+        // handle the tweet here
     });
 
     return router;
