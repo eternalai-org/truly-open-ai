@@ -413,11 +413,6 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 		}
 
 		for _, k := range resp {
-			// TODO Remove before commit
-			if k.ID != 41 {
-				continue
-			}
-
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
