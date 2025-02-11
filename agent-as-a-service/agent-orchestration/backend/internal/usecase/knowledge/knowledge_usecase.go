@@ -430,14 +430,26 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 				}
 
 				// transfer fee to backend wallet
-				amount := new(big.Int).SetInt64(int64(chargeMore))
-				hash, err := uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
-				if err != nil {
-					return err
+				i := 0
+				var transferErr error
+				var hash string
+				for i < 10 {
+					amount := new(big.Int).SetInt64(int64(chargeMore))
+					hash, transferErr = uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
+					if transferErr != nil {
+						i += 1
+						time.Sleep(3 * time.Second)
+						continue
+					}
+
+					if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
+						return err
+					}
+					break
 				}
 
-				if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
-					return err
+				if transferErr != nil && hash == "" {
+					_, _ = uc.SendMessage(ctx, fmt.Sprintf("transferFund for agent %s (%d) - has error: %s ", k.Name, k.ID, transferErr.Error()), uc.notiErrorChanId)
 				}
 			}
 		}
