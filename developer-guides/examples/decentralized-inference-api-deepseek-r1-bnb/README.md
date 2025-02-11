@@ -144,7 +144,7 @@ https://bscscan.com/tx/0x65a7a21b5d8a3a7706206e214c93465d64b5e29222b6af976c08c87
 
 ## Step 7: Let's verify the onchain response transaction
 
-Now, let's see the onchain response transaction on Base Explorer. You can see the actual response content with the thinking process and the final answer. Everything is onchain and verifiable.
+Now, let's see the onchain response transaction on BNB Chain Explorer. You can see the actual response content with the thinking process and the final answer. Everything is onchain and verifiable.
 
 https://bscscan.com/tx/0x2a2c392424ac38a923516a1afba1def43d0a9e8f7ac22313c82ab5f0e978fd1e
 
