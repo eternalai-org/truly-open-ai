@@ -176,6 +176,13 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 			if err != nil {
 				return errs.NewError(err)
 			}
+			agentStore, err := s.dao.FirstAgentStoreByID(tx, obj.AgentInfoID, map[string][]interface{}{}, true)
+			if err != nil {
+				return errs.NewError(err)
+			}
+			if agentStore == nil {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 			params, _ := json.Marshal(req.CallbackParams)
 			if obj == nil {
 				return errs.NewError(errs.ErrBadRequest)
@@ -185,7 +192,12 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 			}
 
 			err = s.dao.Save(tx, obj)
-
+			if err != nil {
+				return errs.NewError(err)
+			}
+			//
+			agentStore.NumInstall = agentStore.NumInstall + 1
+			err = s.dao.Save(tx, agentStore)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -205,8 +217,12 @@ func (s *Service) GetListAgentStoreInstall(ctx context.Context, userAddress stri
 		return nil, 0, errs.NewError(err)
 	}
 	filter := map[string][]interface{}{
-		"user_id = ?": {user.ID},
-		"status = ?":  {models.AgentStoreInstallStatusDone},
+		"status = ?": {models.AgentStoreInstallStatusDone},
+	}
+	if agentInfoID > 0 {
+		filter["agent_info_id = ?"] = []interface{}{agentInfoID}
+	} else {
+		filter["user_id = ?"] = []interface{}{user.ID}
 	}
 	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
 		filter,
@@ -268,32 +284,6 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 		}
 	}
 	return agentStoreInstall, nil
-}
-
-func (s *Service) GetListAgentStoreInstallByUser(ctx context.Context, userAddress string, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
-	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
-	if err != nil {
-		return nil, 0, errs.NewError(err)
-	}
-	filter := map[string][]interface{}{
-		"user_id = ?": {user.ID},
-		"status = ?":  {models.AgentStoreInstallStatusDone},
-	}
-	res, count, err := s.dao.FindAgentStoreInstall4Page(
-		daos.GetDBMainCtx(ctx),
-		filter,
-		map[string][]interface{}{
-			"AgentStore":                    {},
-			"AgentStore.AgentStoreMissions": {},
-		},
-		[]string{"id desc"},
-		page,
-		limit,
-	)
-	if err != nil {
-		return nil, 0, errs.NewError(err)
-	}
-	return res, count, nil
 }
 
 func (s *Service) GetMissionStoreResult(ctx context.Context, responseID string) (string, error) {

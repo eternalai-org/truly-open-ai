@@ -17,6 +17,7 @@ type IKnowledgeUsecase interface {
 	WatchWalletChange(context.Context) error
 	GetKnowledgeBaseByStatus(ctx context.Context, status models.KnowledgeBaseStatus, offset, limit int) ([]*models.KnowledgeBase, error)
 	UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
+	UpdateListKnowledgeBaseFile(ctx context.Context, kbId uint, files []*serializers.File) error
 	Webhook(context.Context, *models.RagResponse) (*models.KnowledgeBase, error)
 	WebhookFile(context.Context, string, []byte, uint) (*models.KnowledgeBase, error)
 	MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint][]*models.KnowledgeBase, error)
@@ -24,4 +25,5 @@ type IKnowledgeUsecase interface {
 	GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error)
 	GetManyKnowledgeBaseByQuery(context.Context, string, string, int, int) ([]*models.KnowledgeBase, error)
 	SendMessage(_ context.Context, content string, chanId int64) (int, error)
+	CalcFeeByKnowledgeBaseId(ctx context.Context, kbId uint) (float64, error)
 }

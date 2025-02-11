@@ -17,16 +17,19 @@ type CreateKnowledgeRequest struct {
 }
 
 type UpdateKnowledgeRequest struct {
-	Name        string `json:"name" form:"name"`
-	Description string `json:"description" form:"description"`
-	NetworkID   uint64 `json:"network_id"`
-	UserAddress string `json:"user_address" form:"-"`
+	Name        string  `json:"name" form:"name"`
+	Description string  `json:"description" form:"description"`
+	NetworkID   uint64  `json:"network_id"`
+	UserAddress string  `json:"user_address" form:"-"`
+	Files       []*File `json:"files" form:"files"`
 }
 
 type File struct {
-	Url  string `json:"url" form:"url"`
-	Name string `json:"name" form:"name"`
-	Size uint   `json:"size" form:"size"`
+	FileUrl         string `json:"file_url" form:"file_url"`
+	FileName        string `json:"file_name" form:"file_name"`
+	FileSize        uint   `json:"file_size" form:"file_size"`
+	KbFileId        uint   `json:"kb_file_id" form:"kb_file_id"`
+	KnowledgeBaseId uint   `json:"knowledge_base_id" form:"knowledge_base_id"`
 }
 
 type KnowledgeBase struct {
@@ -53,13 +56,17 @@ type KnowledgeBase struct {
 	UsageFee               float64              `json:"usage_fee"`
 	UserCount              int64                `json:"user_count"`
 	UsageCount             int64                `json:"usage_count"`
+	ChargeMore             float64              `json:"charge_more"`
 }
 
 type KnowledgeBaseFile struct {
+	Id              uint   `json:"id"`
 	KnowledgeBaseId uint   `json:"knowledge_base_id"`
 	FileUrl         string `json:"file_url"`
-	FileName        string `json:"name"`
-	FileSize        uint   `json:"size"`
+	FileName        string `json:"file_name"`
+	FileSize        uint   `json:"file_size"`
+	FilecoinHash    string `json:"filecoin_hash"`
+	Status          int    `json:"status"`
 }
 
 type AgentUseKnowledgeBaseRequest struct {
