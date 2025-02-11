@@ -70,10 +70,39 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 	return agentStore, nil
 }
 
-func (s *Service) GetListAgentStore(ctx context.Context, page, limit int) ([]*models.AgentStore, uint, error) {
+func (s *Service) GetListAgentStore(ctx context.Context, types string, page, limit int) ([]*models.AgentStore, uint, error) {
+	filters := map[string][]interface{}{
+		"status = ?": {models.AgentStoreStatusActived},
+	}
+	if types != "" {
+		filters["type in (?)"] = []interface{}{strings.Split(types, ",")}
+	}
 	res, count, err := s.dao.FindAgentStore4Page(
 		daos.GetDBMainCtx(ctx),
-		map[string][]interface{}{},
+		filters,
+		map[string][]interface{}{
+			"AgentStoreMissions": {},
+		},
+		[]string{"id desc"},
+		page,
+		limit,
+	)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	return res, count, nil
+}
+
+func (s *Service) GetListAgentStoreByOwner(ctx context.Context, userAddress string, page, limit int) ([]*models.AgentStore, uint, error) {
+	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
+	}
+	res, count, err := s.dao.FindAgentStore4Page(
+		daos.GetDBMainCtx(ctx),
+		map[string][]interface{}{
+			"user_id = ?": {user.ID},
+		},
 		map[string][]interface{}{
 			"AgentStoreMissions": {},
 		},
