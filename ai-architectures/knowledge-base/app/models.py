@@ -64,8 +64,6 @@ class UpdateInputSchema(BaseModel):
             
         if isinstance(data['texts'], str):
             data['texts'] = [data['texts']]
-
-        assert 'kb' in data, "Knowledge base must be provided"
         
         return data
 

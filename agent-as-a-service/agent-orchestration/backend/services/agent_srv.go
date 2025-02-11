@@ -1328,12 +1328,12 @@ func (s *Service) CreateUpdateAgentSnapshotMission(ctx context.Context, agentID 
 
 				listTestToolSet := strings.Split(s.conf.ListTestToolSet, ",")
 				if len(listID) > 0 {
-					err = tx.Where("agent_info_id = ? and id not in (?) and mission_store_id = 0 and tool_set not in (?)", agentInfo.ID, listID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and id not in (?) and (mission_store_id = 0 or mission_store_id is NULL) and tool_set not in (?)", agentInfo.ID, listID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}
 				} else {
-					err = tx.Where("agent_info_id = ? and mission_store_id = 0 and tool_set not in (?)", agentInfo.ID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
+					err = tx.Where("agent_info_id = ? and (mission_store_id = 0 or mission_store_id is NULL) and tool_set not in (?)", agentInfo.ID, listTestToolSet).Delete(&models.AgentSnapshotMission{}).Error
 					if err != nil {
 						return errs.NewError(err)
 					}

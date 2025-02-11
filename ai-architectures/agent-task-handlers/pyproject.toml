@@ -1,0 +1,5 @@
+[tool.pyink]
+line-length = 79
+target-version = ['py310']
+include = '\.pyi?$'
+pyink-use-majority-quotes = true

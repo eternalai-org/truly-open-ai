@@ -141,7 +141,9 @@ class ReplyTaskBase(MultiStepTaskBase):
                     for specialty in mentioned_data[i]["specialties"]
                 ]
 
-                subtask_cls = self.get_subtask_cls(log, specialties)
+                subtask_cls = self.get_subtask_cls(
+                    log, specialties, tweet_info
+                )
                 if subtask_cls is not None:
                     subtasks.append(
                         subtask_cls(
