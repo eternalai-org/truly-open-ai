@@ -25,10 +25,11 @@ type UpdateKnowledgeRequest struct {
 }
 
 type File struct {
-	Url      string `json:"url" form:"url"`
-	Name     string `json:"name" form:"name"`
-	Size     uint   `json:"size" form:"size"`
-	KbFileId uint   `json:"kb_file_id" form:"kb_file_id"`
+	FileUrl         string `json:"file_url" form:"file_url"`
+	FileName        string `json:"file_name" form:"file_name"`
+	FileSize        uint   `json:"file_size" form:"file_size"`
+	KbFileId        uint   `json:"kb_file_id" form:"kb_file_id"`
+	KnowledgeBaseId uint   `json:"knowledge_base_id" form:"knowledge_base_id"`
 }
 
 type KnowledgeBase struct {

@@ -267,9 +267,9 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	files := []*models.KnowledgeBaseFile{}
 	for _, f := range req.Files {
 		file := &models.KnowledgeBaseFile{
-			FileUrl:         f.Url,
-			FileName:        f.Name,
-			FileSize:        f.Size,
+			FileUrl:         f.FileUrl,
+			FileName:        f.FileName,
+			FileSize:        f.FileSize,
 			KnowledgeBaseId: resp.ID,
 			GroupFileId:     grFileId,
 			Status:          models.KnowledgeBaseFileStatusPending,
@@ -359,9 +359,9 @@ func (uc *knowledgeUsecase) UpdateListKnowledgeBaseFile(ctx context.Context, kbI
 		}
 
 		file := &models.KnowledgeBaseFile{
-			FileUrl:         f.Url,
-			FileName:        f.Name,
-			FileSize:        f.Size,
+			FileUrl:         f.FileUrl,
+			FileName:        f.FileName,
+			FileSize:        f.FileSize,
 			KnowledgeBaseId: kbId,
 			GroupFileId:     grFileId,
 			Status:          models.KnowledgeBaseFileStatusPending,
