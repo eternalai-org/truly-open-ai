@@ -24,7 +24,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 				req.Type = models.AgentStoreTypeStore
 			}
 			if req.Status == "" {
-				req.Status = models.AgentStoreStatusNew
+				req.Status = models.AgentStoreStatusActived
 			}
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {
