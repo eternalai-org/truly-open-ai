@@ -18,7 +18,6 @@ RUN rm /app/requirements.txt
 
 COPY server.py /app
 COPY x_content /app/x_content
-COPY ./.auth /app/.auth
 
 ARG GIT_TAG
 

@@ -268,3 +268,28 @@ func (s *Service) UpdateKnowledgeBaseInContractWithSignature(ctx context.Context
 	}
 	return info, nil
 }
+
+func (s *Service) TransferFund(priKeyFrom string, toAddress string, fund *big.Int, networkId uint64) (string, error) {
+	_, pubKey, err := eth.GetAccountInfo(priKeyFrom)
+	if err != nil {
+		return "", fmt.Errorf("get account info: %v", err)
+	}
+	rpc := s.conf.GetConfigKeyString(networkId, "rpc_url")
+	var paymasterAddress, paymasterToken string
+	var paymasterFeeZero bool
+	if s.conf.ExistsedConfigKey(networkId, "paymaster_address") &&
+		s.conf.ExistsedConfigKey(networkId, "paymaster_token") {
+		paymasterAddress = s.conf.GetConfigKeyString(networkId, "paymaster_address")
+		paymasterToken = s.conf.GetConfigKeyString(networkId, "paymaster_token")
+		paymasterFeeZero = s.conf.GetConfigKeyBool(networkId, "paymaster_fee_zero")
+	}
+	aiZkClient := zkclient.NewZkClient(rpc,
+		paymasterFeeZero,
+		paymasterAddress,
+		paymasterToken)
+	tx, err := aiZkClient.Transact(priKeyFrom, *pubKey, common.HexToAddress(toAddress), fund, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to transact: %v", err)
+	}
+	return tx.TxHash.Hex(), nil
+}

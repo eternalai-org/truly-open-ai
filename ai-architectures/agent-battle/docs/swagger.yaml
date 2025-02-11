@@ -1,0 +1,232 @@
+definitions:
+  agent-battle_internal_core_model.AgentWallet:
+    properties:
+      address:
+        type: string
+      amount:
+        type: number
+      transfer_amount:
+        type: number
+      tx_hash:
+        type: string
+      username:
+        type: string
+    type: object
+  agent-battle_internal_core_model.Game:
+    properties:
+      agent_wallets:
+        items:
+          $ref: '#/definitions/agent-battle_internal_core_model.AgentWallet'
+        type: array
+      created_user_id:
+        type: string
+      date_created:
+        type: string
+      date_deleted:
+        type: string
+      date_modified:
+        type: string
+      end_time:
+        type: string
+      game_fee:
+        type: number
+      id:
+        type: string
+      modified_user_id:
+        type: string
+      players:
+        items:
+          $ref: '#/definitions/agent-battle_internal_core_model.Player'
+        type: array
+      prize_per_player_winner:
+        type: number
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/agent-battle_internal_core_model.GameStatus'
+      total_player_winners:
+        type: integer
+      tweet_id:
+        type: string
+      winner:
+        type: string
+    type: object
+  agent-battle_internal_core_model.GameResultRequest:
+    properties:
+      tweet_id:
+        type: string
+      username:
+        type: string
+    type: object
+  agent-battle_internal_core_model.GameStatus:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    type: integer
+    x-enum-varnames:
+    - GameStatusRunning
+    - GameStatusEnded
+    - GameStatusResultUpdated
+    - GameStatusCompleted
+  agent-battle_internal_core_model.ListGameResponse:
+    properties:
+      games:
+        items:
+          $ref: '#/definitions/agent-battle_internal_core_model.Game'
+        type: array
+      total_records:
+        type: integer
+    type: object
+  agent-battle_internal_core_model.Player:
+    properties:
+      address:
+        type: string
+      amount:
+        type: number
+      bet_to_agent_address:
+        type: string
+      bet_to_agent_username:
+        type: string
+      prize_amount:
+        type: number
+      prize_tx_hash:
+        type: string
+      refund_amount:
+        type: number
+      refund_tx_hash:
+        type: string
+      tx_hash:
+        type: string
+      win:
+        type: boolean
+    type: object
+  agent-battle_internal_core_model.StartGameRequest:
+    properties:
+      time_out:
+        type: integer
+      tweet_id:
+        type: string
+      usernames:
+        items:
+          type: string
+        type: array
+    type: object
+info:
+  contact: {}
+  title: Game Imagine API
+  version: 1.0.0
+paths:
+  /api/v1/game:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tweet ID
+        in: query
+        name: tweet_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/agent-battle_internal_core_model.ListGameResponse'
+      summary: List game
+      tags:
+      - Game
+  /api/v1/game/{tweet_id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tweet ID
+        in: path
+        name: tweet_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/agent-battle_internal_core_model.Game'
+      summary: Detail game
+      tags:
+      - Game
+  /api/v1/game/{tweet_id}/end:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tweet ID
+        in: path
+        name: tweet_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/agent-battle_internal_core_model.Game'
+      summary: End game
+      tags:
+      - Game
+  /api/v1/game/{tweet_id}/result:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tweet ID
+        in: path
+        name: tweet_id
+        required: true
+        type: string
+      - description: Game Result
+        in: body
+        name: game_result
+        required: true
+        schema:
+          $ref: '#/definitions/agent-battle_internal_core_model.GameResultRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/agent-battle_internal_core_model.Game'
+      summary: Game result
+      tags:
+      - Game
+  /api/v1/game/start:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Start Game
+        in: body
+        name: start_game
+        required: true
+        schema:
+          $ref: '#/definitions/agent-battle_internal_core_model.StartGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/agent-battle_internal_core_model.Game'
+      summary: Start game
+      tags:
+      - Game
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
