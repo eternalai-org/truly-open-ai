@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
@@ -130,6 +131,68 @@ func (s *Service) ChargeUserStoreInstall(ctx context.Context, agentStoreInstallI
 			return nil
 		},
 	)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	return nil
+}
+
+func (s *Service) ScanAgentInfraMintHash(ctx context.Context, userAddress string, networkID uint64, txHash string, agentStoreID uint) error {
+	agentStore, err := s.dao.FirstAgentStoreByID(daos.GetDBMainCtx(ctx), agentStoreID, map[string][]interface{}{}, false)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if agentStore.NetworkID > 0 || agentStore.ContractAddress != "" || agentStore.TokenId > 0 {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	if agentStore.OwnerID != user.ID {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	logResp, err := s.GetEthereumClient(ctx, networkID).EventsByTransaction(txHash)
+	if err != nil {
+		return errs.NewError(err)
+	}
+	var contractAddress string
+	var tokenId uint64
+	for _, v := range logResp.NftTransfer {
+		if strings.EqualFold(v.From, models.ETH_ZERO_ADDRESS) {
+			contractAddress = strings.ToLower(v.ContractAddress)
+			tokenId = v.TokenId.Uint64()
+			break
+		}
+	}
+	if tokenId <= 0 {
+		return errs.NewError(errs.ErrBadRequest)
+	}
+	{
+		agentStoreCheck, err := s.dao.FirstAgentStore(
+			daos.GetDBMainCtx(ctx),
+			map[string][]interface{}{
+				"contract_address = ?": {contractAddress},
+				"token_id = ?":         {tokenId},
+			},
+			map[string][]interface{}{},
+			false,
+		)
+		if err != nil {
+			return errs.NewError(err)
+		}
+		if agentStoreCheck != nil {
+			return errs.NewError(errs.ErrBadRequest)
+		}
+	}
+	err = daos.GetDBMainCtx(ctx).
+		Model(agentStore).
+		Updates(
+			map[string]interface{}{
+				"contract_address": contractAddress,
+				"token_id":         tokenId,
+			},
+		).Error
 	if err != nil {
 		return errs.NewError(err)
 	}

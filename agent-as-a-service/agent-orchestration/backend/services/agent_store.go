@@ -21,7 +21,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			if req.Type == "" {
-				return errs.NewError(errs.ErrBadRequest)
+				req.Type = models.AgentStoreTypeStore
 			}
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {
@@ -44,6 +44,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 					StoreId:      helpers.RandomBigInt(12).Text(16),
 					OwnerID:      user.ID,
 					OwnerAddress: user.Address,
+					Status:       models.AgentStoreStatusActived,
 				}
 			}
 			agentStore.Name = req.Name
@@ -51,8 +52,10 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 			agentStore.AuthenUrl = req.AuthenUrl
 			agentStore.Icon = req.Icon
 			agentStore.Docs = req.Docs
-			agentStore.Status = req.Status
 			agentStore.Price = req.Price
+			if req.Status != "" {
+				agentStore.Status = req.Status
+			}
 			if agentStore.ID > 0 {
 				err = s.dao.Save(tx, agentStore)
 			} else {
@@ -205,7 +208,7 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 			if err != nil {
 				return errs.NewError(err)
 			}
-			agentStore, err := s.dao.FirstAgentStoreByID(tx, obj.AgentInfoID, map[string][]interface{}{}, true)
+			agentStore, err := s.dao.FirstAgentStoreByID(tx, obj.AgentStoreID, map[string][]interface{}{}, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
@@ -274,9 +277,6 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 		if agentInfo == nil {
 			return nil, errs.NewError(errs.ErrBadRequest)
 		}
-		if !strings.EqualFold(agentInfo.Creator, userAddress) {
-			return nil, errs.NewError(errs.ErrBadRequest)
-		}
 	}
 	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
 	if err != nil {
@@ -307,7 +307,7 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 		if agentInfoID == 0 {
 			agentStoreInstall.Type = models.AgentStoreInstallTypeUser
 		}
-		err := s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreInstall)
+		err = s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreInstall)
 		if err != nil {
 			return nil, errs.NewError(err)
 		}

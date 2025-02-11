@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
 import { DagentTwitter } from "@eternalai-dagent/client-dagent";
-import {createApiRouter, Direct} from "@eternalai-dagent/direct";
 
 class AgentTwitter {
   protected environment: IENV;
@@ -72,12 +71,6 @@ class AgentTwitter {
       await this.linkDagentToTwitter(agent.id);
     }
 
-    const direct = new Direct({
-      routers: [createApiRouter()]
-    })
-
-    direct.start(80);
-
     await this.getCreatedAgents();
   };
 
@@ -100,14 +93,38 @@ class AgentTwitter {
     }));
 
     await this.linkDagentToTwitter(agent.id);
+    await this.getShopApps();
 
-    const direct = new Direct({
-      routers: [
-          createApiRouter(),
-      ]
-    });
-    direct.start(80);
+    await this.dagent.api.agentApps();
+
+    await this.installApp("27", agent.agent_info.id);
   };
+
+  getShopApps = async () => {
+    const apps = await this.dagent.api.agentApps();
+    console.table(apps.map(app => {
+      return {
+        app_name: app.name,
+        app_id: app.id,
+        app_description: app.description,
+      };
+    }));
+  }
+
+  installApp = async (appId: string, agentInfoId: number) => {
+    const apps = await this.dagent.api.agentApps();
+    const app = apps.find(app => Number(app.id) === Number(appId));
+    if (!app) {
+      dagentLogger.error(`App not found: ${appId}`);
+      return;
+    }
+    const code = await this.dagent.api.getInstallCode({
+      agentId: agentInfoId.toString(),
+      appId: appId,
+    });
+
+    dagentLogger.warn(`Authen URL: ${app?.authen_url}?install_code=${code}&agent_id=${agentInfoId}`);
+  }
 
 }
 

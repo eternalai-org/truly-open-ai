@@ -84,20 +84,24 @@ def _get_following_list_redis_cache():
 def _get_shadow_reply_redis_cache():
     return ShadowReplyRedisCache()
 
+
 @lru_cache(maxsize=1)
 def _get_tweet_inscription_redis_cache():
     return TweetInscriptionRedisCache()
+
 
 def _preprocess_twitter_id(twitter_id: str):
     if twitter_id.startswith("twitter_id="):
         twitter_id = twitter_id.split("=")[1].strip(' "')
     return twitter_id
 
+
 def _preprocess_username(username: str):
     username = username.lstrip("@")
     if username.startswith("username="):
         username = username.split("=")[1].strip(' "')
     return username
+
 
 def is_valid_tweet_id(tweet_id):
     if not isinstance(tweet_id, (str, int)):
@@ -110,6 +114,7 @@ def is_valid_tweet_id(tweet_id):
         return False
 
     return 18 <= len(tweet_id_str) <= 19
+
 
 @lru_cache(maxsize=128)
 def _image_descriptions_from_tweet_id(tweet_id: str):
@@ -616,7 +621,7 @@ def get_tweets_by_username(
             return Response(
                 error=f"Something went wrong (status code: {resp.status_code})",
             )
-        
+
         resp = resp.json()
 
         if resp["error"] is not None:
@@ -930,6 +935,7 @@ def _get_tweet_info_from_tweet_id(
         )
         raise Exception("An unexpected error occurred")
 
+
 @log_function_call
 def get_tweet_info_from_tweet_id(
     tweet_id: str, preserve_img=False
@@ -1190,7 +1196,7 @@ def shadow_reply(
         action_input={"tweet_id": tweet_id, "comment": reply_content},
         tx_hash=tx_hash,
     )
-    
+
     if resp.is_error():
         return Response(error="Generate shadow_reply action failed")
 
@@ -1284,7 +1290,7 @@ def inscribe_tweet_by_id(
 
         if resp.is_error():
             return Response(error="Tweet id not found")
-        
+
         tweet_info = resp.data.tweet_info.to_dict()
 
         content = tweet_info["tweet_object"]["full_text"]
@@ -1334,6 +1340,7 @@ def inscribe_tweet_by_id(
         logger.error(f"[create_token] An unexpected error occurred: {err}")
         return Response(error="An unexpected error occurred")
 
+
 # TODO: Move to utils.py
 def is_float(xx: Any):
     try:
@@ -1380,7 +1387,7 @@ def create_token(
             action_type="create_token",
             action_input=create_token_action_input,
         )
-        
+
         if resp.is_error():
             return Response(error="Generate create token action failed")
 
@@ -1585,6 +1592,7 @@ def get_own_recent_tweets(
         return Response(
             error="An unexpected error occurred",
         )
+
 
 # TODO: Combine with get_tweets_by_username
 def get_tweets_by_username_v2(
@@ -2012,7 +2020,7 @@ def search_recent_tweet_by_tweetid(
         max_results = limit_observation
         url = f"{const.TWITTER_API_URL}/tweets/search/recent"
         optimized_query = query.strip()
-       
+
         if len(optimized_query) == 0:
             logger.error(f"[search_recent_tweets] Invalid query: {query}")
             return Response(
@@ -2062,7 +2070,7 @@ def search_recent_tweet_by_tweetid(
         for id, item in data["LookUps"].items():
             tweet = item["Tweet"]
             user = item["User"]
-            
+
             reference_tweets = (
                 []
                 if tweet["referenced_tweets"] is None
@@ -2072,10 +2080,10 @@ def search_recent_tweet_by_tweetid(
                     if ref["id"] == tweet_id
                 ]
             )
-            
-            if not reference_tweets:  
+
+            if not reference_tweets:
                 continue
-                        
+
             tweets.append(
                 TweetObject(
                     tweet_id=tweet["id"],
@@ -2260,6 +2268,7 @@ def get_popular_following_feed(
         return Response(
             error="An unexpected error occured",
         )
+
 
 def get_user_info_by_username(username: str) -> Response[TwitterUserObjectDto]:
     try:

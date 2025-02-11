@@ -1,9 +1,9 @@
 import { Direct, getRouter } from "@eternalai-dagent/direct";
-import {getTwitterOauthUrl, randomString} from "./direct";
+import { getTwitterOauthUrl, randomString } from "./utils";
 import axios from "axios";
 import dotenv from "dotenv";
 import path from "path";
-import {twitterStorage} from "./storage";
+import {postedStorage, twitterStorage} from "../storage";
 
 const getRedirectUrl = (prams: {
     install_code: string
@@ -101,16 +101,41 @@ export function twitterRouters() {
         }
     });
 
+    router.get("/api/internal/twitter/user/tweet-by-token", async (req, res) => {
+        // get api_key from the request in header
+        const api_key = req.headers["api-key"] as string;
+        const data = twitterStorage.getItem(api_key);
+        if (!data) {
+            res.status(401).send("Unauthorized");
+            return;
+        }
+        const text = req.body?.text as string;
+        res.send("Tweeted: " + text);
+
+        const { agent_id } = JSON.parse(data);
+
+        let posted: any = postedStorage.getItem(agent_id);
+        if (!posted) {
+            posted = []
+        } else {
+            posted = JSON.parse(posted) || [];
+        }
+        postedStorage.setItem(agent_id, JSON.stringify([...(posted as any), text]));
+
+        // handle the tweet here
+    });
+
     return router;
 }
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const service = new Direct({
     routers: [
         twitterRouters()
     ]
-})
+});
 
-service.start(80);
+export default service;
+

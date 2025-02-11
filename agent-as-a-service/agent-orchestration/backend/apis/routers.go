@@ -278,6 +278,7 @@ func (s *Server) Routers() {
 		agentStoreAPI := rootAPI.Group("/agent-store")
 		{
 			agentStoreAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.SaveAgentStore)
+			agentStoreAPI.POST("/mint/:agent_store_id", s.authCheckTK1TokenMiddleware(), s.ScanAgentInfraMintHash)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
 			agentStoreAPI.GET("/list-by-owner", s.authCheckTK1TokenMiddleware(), s.GetListAgentStoreByOwner)
 			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
@@ -372,6 +373,12 @@ func (s *Server) Routers() {
 			sampleTwitterApp.GET("/callback", s.SampleTwitterAppAuthenCallback)
 			sampleTwitterApp.GET("/get-bitcoin-price", s.SampleTwitterAppGetBTCPrice)
 			sampleTwitterApp.POST("/tweet-message", s.SampleTwitterAppTweetMessage)
+		}
+
+		infraTwitterApp := rootAPI.Group("/infra-twitter-app")
+		{
+			infraTwitterApp.GET("/install", s.InfraTwitterAppAuthenInstall)
+			infraTwitterApp.GET("/callback", s.InfraTwitterAppAuthenCallback)
 		}
 
 		// agentInfraAPI := rootAPI.Group("/infra")

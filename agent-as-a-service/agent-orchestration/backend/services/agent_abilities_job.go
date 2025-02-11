@@ -105,6 +105,7 @@ func (s *Service) JobAgentSnapshotPostCreate(ctx context.Context) error {
 							models.BITTENSOR_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
 							models.TRON_CHAIN_ID,
+							models.MODE_CHAIN_ID,
 						},
 					},
 					`agent_snapshot_missions.infer_at is null
@@ -1870,7 +1871,7 @@ func (s *Service) JobUpdateOffchainAutoOutputForMission(ctx context.Context) err
 	var retErr error
 	joinFilters := map[string][]interface{}{
 		`
-				join agent_snapshot_missions on agent_snapshot_missions.id = agent_snapshot_posts.agent_snapshot_mission_id
+				left join agent_snapshot_missions on agent_snapshot_missions.id = agent_snapshot_posts.agent_snapshot_mission_id
 			`: {},
 	}
 
