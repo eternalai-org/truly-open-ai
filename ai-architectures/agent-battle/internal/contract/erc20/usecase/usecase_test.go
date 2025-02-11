@@ -32,9 +32,9 @@ func initVars() {
 		panic(err)
 	}
 
-	toAddress = "0x976d5565927cf44ee19c346f61fcb37238b426d1"
-	privateKey = "bbd4ef749a6174d30490e67b1be7b8c9d1e80fae775ca8dce8d83fedb9ebc247"
-	fromAddress = "0xf0c08db5d131f1f77ed96a1d88a31c3f98ed7bdf"
+	toAddress = viper.GetString("TO_ADDRESS")
+	privateKey = viper.GetString("FROM_ADDRESS_PRIVATE_KEY")
+	fromAddress = viper.GetString("FROM_ADDRESS")
 }
 
 func Test_contractErc20Usecase_TransferToken(t *testing.T) {
