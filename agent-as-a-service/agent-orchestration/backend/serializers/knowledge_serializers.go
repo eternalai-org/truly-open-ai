@@ -57,6 +57,7 @@ type KnowledgeBase struct {
 	UserCount              int64                `json:"user_count"`
 	UsageCount             int64                `json:"usage_count"`
 	ChargeMore             float64              `json:"charge_more"`
+	FilecoinHash           string               `json:"filecoin_hash"`
 }
 
 type KnowledgeBaseFile struct {
@@ -93,8 +94,8 @@ type RetrieveKnowledgeBaseResponse struct {
 }
 
 type UpdateKnowledgeBaseWithSignatureRequest struct {
-	KnowledgeId uint   `json:"knowledge_id"`
-	NetworkID   string `json:"network_id"`
+	KnowledgeBaseId string `json:"knowledge_base_id"`
+	NetworkID       string `json:"network_id"`
 	// sysPrompt []byte, promptKey string, promptIdx *big.Int, randomNonce *big.Int, signature []byte
 	HashData        string `json:"hash_data"`
 	PromptKeyData   string `json:"prompt_key_data"`

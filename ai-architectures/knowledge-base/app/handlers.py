@@ -514,46 +514,23 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
         logger.info(f"(overall) Inserted {n_chunks} items to {kb} (collection: {model_use.identity()});\nCompleted handling task: {req.id}")
 
         if req.hook is not None:
-            file_submitted = False
-
-            if n_chunks > 0:
-                wspace = get_tmp_directory()
-                os.makedirs(wspace, exist_ok=True)
-
-                try:
-                    result_file = await export_collection_data(
-                        model_use.identity(), 
-                        wspace,
-                        f'kb == {kb!r}'
-                    )
-
-                    file_submitted = await hook_result(req.hook, result_file)
-
-                    if not file_submitted:
-                        logger.error("Failed to send the result back to hook url: {}".format(req.hook))
-
-                except Exception as e:
-                    logger.error(f"Internal server error: {e}")
-
-                finally:
-                    shutil.rmtree(wspace, ignore_errors=True)
 
             response = InsertResponse(
                 ref=req.ref,
                 message=f"Inserted {n_chunks} (chunks); {fails_count} (fails); {len(req.file_urls)} (urls).",
                 kb=kb,
-                artifact_submitted=file_submitted
+                artifact_submitted=False
             )
 
-            status = APIStatus.OK if n_chunks > 0 and file_submitted else APIStatus.ERROR
+            status = APIStatus.OK if n_chunks > 0 else APIStatus.ERROR
             err_msg = None
 
             if status == APIStatus.ERROR:
                 err_msg = "An error occured while processing data: "
+
                 if n_chunks == 0:
                     err_msg += "No data extracted from the provided documents."
-                elif not file_submitted:
-                    err_msg += "Failed to send the result back to the hook url."
+                
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(

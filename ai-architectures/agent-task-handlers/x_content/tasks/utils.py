@@ -40,7 +40,7 @@ async def a_move_state(
 
 
 def notify_status_reasoning_log(log: ReasoningLog):
-    nav = f'<b>Request-ID</b>: {log.id};</i>'
+    nav = f"<b>Request-ID</b>: {log.id};</i>"
 
     if log.state == MissionChainState.NEW:
         info = f"<i><b>Ref-ID</b>: {log.meta_data.ref_id};\n{nav}"
@@ -64,7 +64,7 @@ def notify_status_reasoning_log(log: ReasoningLog):
 
 
 def notify_status_chat_request(request: ChatRequest):
-    nav = f'<b>Request-ID</b>: {request.id};</i>'
+    nav = f"<b>Request-ID</b>: {request.id};</i>"
 
     task_name = "chat"
     if request.state == MissionChainState.NEW:
@@ -100,7 +100,7 @@ _alert_template = """
 def send_alert(task: AutoAgentTask, reason: str):
     global _alert_template
 
-    nav = f'<b>Request-ID</b>: {task.id};</i>'
+    nav = f"<b>Request-ID</b>: {task.id};</i>"
     info = f"<i><b>Ref-ID</b>: {task.meta_data.ref_id};\n{nav}"
 
     msg = _alert_template.format(log=task, info=info, reason=reason)
@@ -144,20 +144,7 @@ Again, only return a single JSON!
 
 
 def get_system_prompt(log: ReasoningLog):
-    if log.model == ModelName.INTELLECT_10B:
-        lines = log.agent_meta_data.persona.split("\n\n")
-        if lines[1].startswith(
-            "You have a token. Your token name is Eternal Intellect."
-        ):
-            lines = lines[:1] + lines[2:]
-        if lines[0].startswith(
-            "Your Twitter name is Eternal Intellect. Your Twitter username is @0xIntellect."
-        ):
-            lines = lines[1:]
-        system_prompt = "\n\n".join(lines)
-        return system_prompt
-    else:
-        return log._system_prompt_
+    return log.agent_meta_data.persona
 
 
 def get_system_prompt_with_random_example_tweets(log: ReasoningLog):

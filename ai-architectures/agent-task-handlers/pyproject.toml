@@ -1,3 +1,7 @@
+[tool.pytest.ini_options]
+testpaths = 'tests/unit'
+asyncio_mode= 'auto'
+
 [tool.pyink]
 line-length = 79
 target-version = ['py310']
