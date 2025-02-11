@@ -5,7 +5,7 @@ GAME_BASE_URL = get_and_warn("GAME_BASE_URL")
 GAME_EMOJIS = ["🎮", "🎯", "🎪", "🎲", "🤔"]
 GAME_KEYWORDS = ["game", "play", "guess", "riddle"]
 # GAME_DURATION = 60 * 60 * 4 # 4 hours
-GAME_DURATION = 60 * 60  # 1 hours
+GAME_DURATION = 60 * 10  # 10 minutes
 GAME_REDIS_CACHE = 24 * 60 * 60 * 2  # 2 day
 CREATE_GAME_LOCK_EXPIRY = 1000 * 10
 # 10 seconds
