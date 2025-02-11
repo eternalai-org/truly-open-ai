@@ -15,7 +15,6 @@ type AgentStoreReq struct {
 	AuthenUrl   string                  `json:"authen_url"`
 	Icon        string                  `json:"icon"`
 	Docs        string                  `json:"docs"`
-	ApiUrl      string                  `json:"api_url"`
 	Price       numeric.BigFloat        `json:"price"`
 	Status      models.AgentStoreStatus `json:"status"`
 }
