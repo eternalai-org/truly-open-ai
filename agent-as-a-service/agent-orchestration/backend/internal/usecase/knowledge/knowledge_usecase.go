@@ -550,13 +550,15 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	}
 
 	body := struct {
-		FileUrls []string `json:"file_urls"`
-		Ref      string   `json:"ref"`
-		Hook     string   `json:"hook"`
+		FilecoinMetadataUrl string `json:"filecoin_metadata_url"`
+		Ref                 string `json:"ref"`
+		Hook                string `json:"hook"`
+		Kb                  string `json:"kb"`
 	}{
-		FileUrls: []string{fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", hash)},
-		Ref:      fmt.Sprintf("%d", kn.ID),
-		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
+		FilecoinMetadataUrl: fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", hash),
+		Ref:                 fmt.Sprintf("%d", kn.ID),
+		Hook:                fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
+		Kb:                  kn.KbId,
 	}
 	logger.Info(categoryNameTracer, "insert_file_to_rag", zap.Any("body", body))
 
