@@ -3,7 +3,7 @@ import { getTwitterOauthUrl, randomString } from "./utils";
 import axios from "axios";
 import dotenv from "dotenv";
 import path from "path";
-import { twitterStorage } from "../storage";
+import {postedStorage, twitterStorage} from "../storage";
 
 const getRedirectUrl = (prams: {
     install_code: string
@@ -99,6 +99,29 @@ export function twitterRouters() {
         } catch (e: any) {
             res.send("Error: " + e?.message ? e.message : e);
         }
+    });
+
+    router.get("/api/internal/twitter/user/tweet-by-token", async (req, res) => {
+        // get api_key from the request in header
+        const api_key = req.headers["api-key"] as string;
+        const data = twitterStorage.getItem(api_key);
+        if (!data) {
+            res.status(401).send("Unauthorized");
+            return;
+        }
+        const text = req.body?.text as string;
+        res.send("Tweeted: " + text);
+
+        const { agent_id } = JSON.parse(data);
+
+        let posted: any = postedStorage.getItem(agent_id);
+        if (!posted) {
+            posted = []
+        } else {
+            posted = JSON.parse(posted) || [];
+        }
+        postedStorage.setItem(agent_id, JSON.stringify([...(posted as any), text]));
+
     });
 
     return router;
