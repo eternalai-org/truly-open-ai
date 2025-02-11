@@ -412,6 +412,11 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 		}
 
 		for _, k := range resp {
+			// TODO Remove before commit
+			if k.ID != 41 {
+				continue
+			}
+
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
@@ -609,15 +614,14 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	for _, f := range kn.KnowledgeBaseFiles {
 		if f.Status == models.KnowledgeBaseFileStatusDone {
 			continue
-			// r := &lighthouse.FileInLightHouse{}
-			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
-			// 	result = append(result, r)
-			// 	continue
-			// }
 		}
 
 		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
 		if err != nil {
+			updatedFields := make(map[string]interface{})
+			updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+			updatedFields["last_error_message"] = err.Error()
+			_ = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields)
 			uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 			return "", nil, err
 		}
@@ -635,6 +639,10 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	data, _ := json.Marshal(result)
 	hash, err := lighthouse.UploadData(uc.lighthouseKey, kn.Name, data)
 	if err != nil {
+		updatedFields := make(map[string]interface{})
+		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		updatedFields["last_error_message"] = err.Error()
+		_ = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields)
 		uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 		return "", nil, err
 	}

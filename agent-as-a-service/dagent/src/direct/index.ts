@@ -58,8 +58,12 @@ class ServiceManager {
 }
 
 const serviceManager = new ServiceManager();
+
+// Init environment, authen, and get access token interact with eternal ai api
 await serviceManager.init();
 
+// Create your app if you don't have one
 await serviceManager.createApp();
 
-// serviceManager.start();
+// Start the service if the app has been created
+serviceManager.start();
