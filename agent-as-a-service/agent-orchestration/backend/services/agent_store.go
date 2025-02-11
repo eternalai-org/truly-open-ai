@@ -126,7 +126,7 @@ func (s *Service) SaveMissionStore(ctx context.Context, userAddress string, agen
 	err := daos.WithTransaction(
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
-			agentStore, err := s.dao.FirstAgentStoreByID(tx, req.ID, map[string][]interface{}{}, true)
+			agentStore, err := s.dao.FirstAgentStoreByID(tx, agentStoreID, map[string][]interface{}{}, true)
 			if err != nil {
 				return errs.NewError(err)
 			}
