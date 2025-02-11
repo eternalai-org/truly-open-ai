@@ -408,8 +408,10 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
 							tx,
 							map[string][]interface{}{
+								"type = ?":           {models.AgentStoreInstallTypeAgent},
 								"agent_store_id = ?": {mission.AgentStoreID},
 								"agent_info_id = ?":  {mission.AgentInfoID},
+								"status = ?":         {models.AgentStoreInstallStatusDone},
 							},
 							map[string][]interface{}{},
 							[]string{"id desc"},
@@ -614,8 +616,10 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 					agentStoreInstall, err := s.dao.FirstAgentStoreInstall(
 						tx,
 						map[string][]interface{}{
+							"type = ?":           {models.AgentStoreInstallTypeUser},
+							"user_id = ?":        {user.ID},
 							"agent_store_id = ?": {agentStoreMission.AgentStoreID},
-							"user_address = ?":   {strings.ToLower(user.Address)},
+							"status = ?":         {models.AgentStoreInstallStatusDone},
 						},
 						map[string][]interface{}{},
 						[]string{"id desc"},
