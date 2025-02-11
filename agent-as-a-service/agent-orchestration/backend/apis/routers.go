@@ -374,6 +374,12 @@ func (s *Server) Routers() {
 			sampleTwitterApp.POST("/tweet-message", s.SampleTwitterAppTweetMessage)
 		}
 
+		infraTwitterApp := rootAPI.Group("/infra-twitter-app")
+		{
+			infraTwitterApp.GET("/install", s.InfraTwitterAppAuthenInstall)
+			infraTwitterApp.GET("/callback", s.InfraTwitterAppAuthenCallback)
+		}
+
 		// agentInfraAPI := rootAPI.Group("/infra")
 		// {
 		// 	agentInfraAPI.Any("/:infra_id/*path", s.proxyAgentStoreMiddleware("/api/infra"))
