@@ -23,9 +23,6 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 			if req.Type == "" {
 				req.Type = models.AgentStoreTypeStore
 			}
-			if req.Status == "" {
-				req.Status = models.AgentStoreStatusActived
-			}
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {
 				return errs.NewError(err)
@@ -47,6 +44,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 					StoreId:      helpers.RandomBigInt(12).Text(16),
 					OwnerID:      user.ID,
 					OwnerAddress: user.Address,
+					Status:       models.AgentStoreStatusActived,
 				}
 			}
 			agentStore.Name = req.Name
@@ -54,8 +52,10 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 			agentStore.AuthenUrl = req.AuthenUrl
 			agentStore.Icon = req.Icon
 			agentStore.Docs = req.Docs
-			agentStore.Status = req.Status
 			agentStore.Price = req.Price
+			if req.Status != "" {
+				agentStore.Status = req.Status
+			}
 			if agentStore.ID > 0 {
 				err = s.dao.Save(tx, agentStore)
 			} else {
