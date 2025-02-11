@@ -25,7 +25,7 @@ var (
 	configFile string
 )
 
-// @title Game Imagine API
+// @title Agent Battle API
 // @version 1.0.0
 // @securityDefinitions.apikey ApiKeyAuth
 // @in header

@@ -193,7 +193,7 @@ export class AgentClient extends BaseAPI implements IAgentClient {
   }
 
   agentApps = async (): Promise<AgentApps[]> => {
-    const apps = (await this.api.get(`/api/agent-store/list`)) as AgentApps[];
+    const apps = (await this.api.get(`/agent-store/list`)) as AgentApps[];
     return apps || [];
   }
 
