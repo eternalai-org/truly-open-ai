@@ -97,7 +97,7 @@ class AgentTwitter {
 
     await this.dagent.api.agentApps();
 
-    await this.installApp("27", agentId);
+    await this.installApp("27", agent.agent_info.id);
   };
 
   getShopApps = async () => {
@@ -111,19 +111,19 @@ class AgentTwitter {
     }));
   }
 
-  installApp = async (appId: string, agentId: string) => {
+  installApp = async (appId: string, agentInfoId: number) => {
     const apps = await this.dagent.api.agentApps();
-    const app = apps.find(app => app.id?.toString() === appId?.toString());
+    const app = apps.find(app => Number(app.id) === Number(appId));
     if (!app) {
       dagentLogger.error(`App not found: ${appId}`);
       return;
     }
     const code = await this.dagent.api.getInstallCode({
-      agentId: agentId,
+      agentId: agentInfoId.toString(),
       appId: appId,
     });
 
-    dagentLogger.warn(`Authen URL: ${app?.authen_url}?install_code=${code}&agent_id=${agentId}`);
+    dagentLogger.warn(`Authen URL: ${app?.authen_url}?install_code=${code}&agent_id=${agentInfoId}`);
   }
 
 }
