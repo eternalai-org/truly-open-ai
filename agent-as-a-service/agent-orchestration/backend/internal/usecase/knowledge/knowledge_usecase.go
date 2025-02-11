@@ -424,7 +424,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 
 				// TODO transfer fee to backend wallet
 				amount := new(big.Int).SetInt64(int64(chargeMore))
-				hash, err := uc.transferFund(k.DepositPrivKey, "", amount, k.NetworkID)
+				hash, err := uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
 				if err != nil {
 					return err
 				}
