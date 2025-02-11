@@ -310,7 +310,7 @@ func (s *Service) CreateAgentStoreInstallCode(ctx context.Context, userAddress s
 		if agentInfoID == 0 {
 			agentStoreInstall.Type = models.AgentStoreInstallTypeUser
 		}
-		err := s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreInstall)
+		err = s.dao.Create(daos.GetDBMainCtx(ctx), agentStoreInstall)
 		if err != nil {
 			return nil, errs.NewError(err)
 		}
