@@ -41,45 +41,11 @@ eternal-dagent
 git clone https://github.com/eternalai-org/eternal-ai
 
 cp .env.example .env
-
-yarn && yarn build && yarn start:dagent
 ```
 
-### Sample create a custom router
+### Example register your app on Shop apps and run your service
 
 ```bash
-import express, { Router } from "express";
-import { dagentLogger } from "@eternalai-dagent/core";
-import cors from "cors";
-
-export function createApiCustomRouter() {
-  const router = express.Router();
-
-  router.use(cors());
-  router.use(express.json());
-  router.use(express.urlencoded({ extended: true }));
-
-  router.get("/your-router", (req, res) => {
-    res.send("Hello World");
-  });
-  
-  return router;
-}
+yarn && yarn build && yarn start:direct
 ```
-* createApiRouter() will create a router that will listen for requests on /api,
-  you can create your own router and pass it to the Direct constructor.
-
-### Run your server
-
-```bash
-add "@eternalai-dagent/direct", to your package.json
-
-import { createApiRouter, Direct } from "@eternalai-dagent/direct";
-
-const direct = new Direct({
-  routers: [
-      createApiRouter(),
-  ]
-});
-direct.start(80);
-```
+[Example service code](https://github.com/eternalai-org/eternal-ai/blob/master/agent-as-a-service/dagent/src/direct/index.ts)
