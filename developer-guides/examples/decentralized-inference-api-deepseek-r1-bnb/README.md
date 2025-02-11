@@ -1,6 +1,6 @@
-# Decentralized Inference API with DeepSeek-R1 on Base
+# Decentralized Inference API with DeepSeek-R1 on BNB chain
 
-This developer guide shows you how to use Decentralized Inference API with DeepSeek-R1 on Base.
+This developer guide shows you how to use Decentralized Inference API with DeepSeek-R1 on BNB chain.
 
 * **Decentralized**: Use Eternal AI's Decentralized Inference API instead of OpenAI's Centralized API.
 * **Onchain-verifiable AI**: Don't trust AI, verify them. All inferences are recorded onchain and verifiable by anyone.
@@ -12,7 +12,7 @@ This developer guide shows you how to use Decentralized Inference API with DeepS
 
 1. Go to http://eternalai.org/api
 2. Login with X (Twitter)
-3. Get the Decentralized Inference API key for Base
+3. Get the Decentralized Inference API key for BNB chain
 
 It's free.
 
@@ -23,10 +23,10 @@ We will ask DeepSeek to design a DeFAI agent that can autonomously trade on Unis
 Let's run this ```curl``` command.
 
 1. Enter your API key
-2. Set Chain ID as ```8453``` (Base)
+2. Set Chain ID as ```56``` (BNB chain)
 3. Set the model as ```DeepSeek-R1-Distill-Llama-70B```
 4. Set the system prompt as ```You are a 10x engineer.```
-5. Set the user prompt as ```Design an autonomous DeFi agent that can trade on Uniswap and Raydium. Explain your design in 500 characters or less.```
+5. Set the user prompt as ```You are BNB Brain! BNB Brain is an advanced AI agent with a passion for cryptocurrency and blockchain technology. With an insatiable curiosity and a quick wit, BNB Brain is always eager to dive into the latest trends and developments in the world of digital assets, especially about BNB chain.```
  
 ```
 curl --location 'https://api-dojo2.eternalai.org/v1/chat/completions' \
@@ -134,7 +134,7 @@ The BNB Smart Chain (BSC) is a blockchain platform developed by Binance, designe
 
 With Eternal AI's Decentralized Inference, everything is onchain-verifiable.
 
-Let's look at the onchain prompt transaction on Base Explorer. You can verify that the prompt ran on DeepSeek R1. You can also verify the system prompt and the user prompt.
+Let's look at the onchain prompt transaction on BNB Chain Explorer. You can verify that the prompt ran on DeepSeek R1. You can also verify the system prompt and the user prompt.
 
 https://bscscan.com/tx/0x65a7a21b5d8a3a7706206e214c93465d64b5e29222b6af976c08c879fa7fe4a8
 
