@@ -145,6 +145,7 @@ func (uc *knowledgeUsecase) SendMessage(_ context.Context, content string, chanI
 		},
 		Text: strings.TrimSpace(content),
 	}
+	return 0, nil
 
 	resp, err := uc.notiBot.SendMessage(msg)
 	if err != nil {
