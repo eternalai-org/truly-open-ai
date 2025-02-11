@@ -422,6 +422,24 @@ func (s *Service) AgentSnapshotPostCreate(ctx context.Context, missionID uint, o
 						if agentStoreInstall == nil {
 							return errs.NewError(errs.ErrBadRequest)
 						}
+						//
+						agentStoreMission, err := s.dao.FirstAgentStoreMissionByID(
+							tx,
+							mission.AgentStoreMissionID,
+							map[string][]interface{}{},
+							false,
+						)
+						if err != nil {
+							return errs.NewError(err)
+						}
+						if agentStoreMission == nil {
+							return errs.NewError(errs.ErrBadRequest)
+						}
+						agentStoreMission.NumUsed++
+						err = s.dao.Save(tx, agentStoreMission)
+						if err != nil {
+							return errs.NewError(err)
+						}
 						params := map[string]interface{}{}
 						err = helpers.ConvertJsonObject(agentStoreInstall.CallbackParams, &params)
 						if err != nil {
@@ -592,6 +610,7 @@ func (s *Service) AgentSnapshotPostCreateForUser(ctx context.Context, networkID 
 					if err != nil {
 						return errs.NewError(err)
 					}
+					agentStoreMission.NumUsed++
 					var headSystemPrompt string
 					metaDataReq := &aidojo.AgentMetadataRequest{}
 					inferTxHash := helpers.RandomBigInt(12).Text(16)
@@ -2047,7 +2066,9 @@ func (s *Service) getTaskToolSet(assistant *models.AgentInfo, taskReq string) (s
 }
 
 func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *models.AgentInfo) (string, error) {
-	logRequest.AgentBaseModel = assistant.AgentBaseModel
+	if logRequest.AgentBaseModel == "" && assistant != nil {
+		logRequest.AgentBaseModel = assistant.AgentBaseModel
+	}
 	var agentMetaDataRequest models.AgentMetadataRequest
 	err := helpers.ConvertJsonObject(logRequest.AgentMetaData, &agentMetaDataRequest)
 	if err != nil {
@@ -2078,24 +2099,24 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 		request.MetaData.AgentContractId = assistant.AgentContractID
 		request.MetaData.ChainId = strconv.Itoa(int(assistant.NetworkID))
 		request.MetaData.KnowledgeBaseId = assistant.KnowledgeBaseID
-	}
-	knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(context.Background(), assistant.ID)
-	if len(knowledgeAgentsUsed) > 0 {
-		for _, item := range knowledgeAgentsUsed {
-			itemAdd := models.AgentWakeupKnowledgeBase{
-				KbId: item.KbId,
-			}
-			if item.AgentInfo != nil {
-				itemAdd.ChainId = fmt.Sprintf("%v", item.AgentInfo.NetworkID)
-			}
-			if request.AgentMetaData.KbAgents == nil {
-				request.AgentMetaData.KbAgents = []models.AgentWakeupKnowledgeBase{}
-			}
+		knowledgeAgentsUsed, _ := s.KnowledgeUsecase.GetKBAgentsUsedOfSocialAgent(context.Background(), assistant.ID)
+		if len(knowledgeAgentsUsed) > 0 {
+			for _, item := range knowledgeAgentsUsed {
+				itemAdd := models.AgentWakeupKnowledgeBase{
+					KbId: item.KbId,
+				}
+				if item.AgentInfo != nil {
+					itemAdd.ChainId = fmt.Sprintf("%v", item.AgentInfo.NetworkID)
+				}
+				if request.AgentMetaData.KbAgents == nil {
+					request.AgentMetaData.KbAgents = []models.AgentWakeupKnowledgeBase{}
+				}
 
-			request.AgentMetaData.KbAgents = append(request.AgentMetaData.KbAgents, itemAdd)
+				request.AgentMetaData.KbAgents = append(request.AgentMetaData.KbAgents, itemAdd)
+			}
 		}
+		request.MetaData.TwitterUsername = assistant.TwitterUsername
 	}
-	request.MetaData.TwitterUsername = assistant.TwitterUsername
 	body, err := helpers.CurlURLString(
 		s.conf.AgentOffchain.Url+"/async/enqueue",
 		"POST",

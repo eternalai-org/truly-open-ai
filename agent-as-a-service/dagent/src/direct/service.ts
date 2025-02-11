@@ -1,9 +1,9 @@
 import { Direct, getRouter } from "@eternalai-dagent/direct";
-import {getTwitterOauthUrl, randomString} from "./direct";
+import { getTwitterOauthUrl, randomString } from "./utils";
 import axios from "axios";
 import dotenv from "dotenv";
 import path from "path";
-import {twitterStorage} from "./storage";
+import { twitterStorage } from "../storage";
 
 const getRedirectUrl = (prams: {
     install_code: string
@@ -105,12 +105,13 @@ export function twitterRouters() {
 }
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
 
 const service = new Direct({
     routers: [
         twitterRouters()
     ]
-})
+});
 
-service.start(80);
+export default service;
+
