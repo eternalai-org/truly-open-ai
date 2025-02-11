@@ -171,6 +171,7 @@ func (uc *knowledgeUsecase) GetKBAgentsUsedOfSocialAgent(ctx context.Context, so
 }
 
 func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, bytes []byte, id uint) (*models.KnowledgeBase, error) {
+	return nil, nil
 	kn, err := uc.knowledgeBaseRepo.GetById(ctx, id)
 	if err != nil {
 		return nil, err
@@ -565,7 +566,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	// } else {
 	// 	kn.Status = models.KnowledgeBaseStatusProcessing
 	// }
-	kn.FilecoinHash = hash
+	kn.FilecoinHash = fmt.Sprintf("ipfs://%s", hash)
 	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
@@ -611,8 +612,13 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	result := []*lighthouse.FileInLightHouse{}
 	kbFileIds := []uint{}
 	for _, f := range kn.KnowledgeBaseFiles {
-		if f.Status == models.KnowledgeBaseFileStatusDone {
-			continue
+		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
+			r := &lighthouse.FileInLightHouse{}
+			if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
+				r.IsInsert = true
+				result = append(result, r)
+				continue
+			}
 		}
 
 		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
@@ -632,6 +638,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 			map[string]interface{}{"filecoin_hash_raw_data": f.FilecoinHashRawData, "status": models.KnowledgeBaseFileStatusDone},
 		)
 		kbFileIds = append(kbFileIds, f.ID)
+		r.IsInsert = false
 		result = append(result, r)
 	}
 

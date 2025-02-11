@@ -66,6 +66,7 @@ func (s *Service) JobAgentMintNft(ctx context.Context) error {
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
 							models.TRON_CHAIN_ID,
+							models.MODE_CHAIN_ID,
 						},
 					},
 				},
@@ -245,6 +246,7 @@ func (s *Service) JobRetryAgentMintNft(ctx context.Context) error {
 							models.AVALANCHE_C_CHAIN_ID,
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
+							models.MODE_CHAIN_ID,
 						},
 					},
 				},
@@ -317,6 +319,7 @@ func (s *Service) JobRetryAgentMintNftError(ctx context.Context) error {
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
 							models.TRON_CHAIN_ID,
+							models.MODE_CHAIN_ID,
 						},
 					},
 				},
@@ -432,7 +435,8 @@ func (s *Service) MintAgent(ctx context.Context, agentInfoID uint) error {
 				models.AVALANCHE_C_CHAIN_ID,
 				models.ABSTRACT_TESTNET_CHAIN_ID,
 				models.BITTENSOR_CHAIN_ID,
-				models.DUCK_CHAIN_ID:
+				models.DUCK_CHAIN_ID,
+				models.MODE_CHAIN_ID:
 				{
 					agentUriData := models.AgentUriData{
 						Name: agentInfo.AgentName,
@@ -783,6 +787,7 @@ func (s *Service) JobAgentStart(ctx context.Context) error {
 							models.ABSTRACT_TESTNET_CHAIN_ID,
 							models.DUCK_CHAIN_ID,
 							models.TRON_CHAIN_ID,
+							models.MODE_CHAIN_ID,
 						},
 					},
 				},

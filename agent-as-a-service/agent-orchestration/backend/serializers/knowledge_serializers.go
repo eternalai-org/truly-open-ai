@@ -57,6 +57,7 @@ type KnowledgeBase struct {
 	UserCount              int64                `json:"user_count"`
 	UsageCount             int64                `json:"usage_count"`
 	ChargeMore             float64              `json:"charge_more"`
+	FilecoinHash           string               `json:"filecoin_hash"`
 }
 
 type KnowledgeBaseFile struct {
