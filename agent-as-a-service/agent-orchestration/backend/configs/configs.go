@@ -254,6 +254,12 @@ type Config struct {
 		RedirectUri       string `json:"redirect_uri"`
 		ReturnUri         string `json:"return_uri"`
 	} `json:"sample_twitter_app"`
+	InfraTwitterApp struct {
+		OauthClientId     string `json:"oauth_client_id"`
+		OauthClientSecret string `json:"oauth_client_secret"`
+		RedirectUri       string `json:"redirect_uri"`
+		ReturnUri         string `json:"return_uri"`
+	} `json:"sample_twitter_app"`
 }
 
 func (cf *Config) ExistsedConfigKey(networkID uint64, name string) bool {
@@ -316,4 +322,5 @@ type KnowledgeBaseConfig struct {
 	KBTelegramKey             string `json:"kb_telegram_key"`
 	KBErrorTelegramAlert      string `json:"kb_error_telegram_alert"`
 	KBActivitiesTelegramAlert string `json:"kb_activities_telegram_alert"`
+	BackendWallet             string `json:"backend_wallet"`
 }

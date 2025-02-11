@@ -424,7 +424,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 
 				// TODO transfer fee to backend wallet
 				amount := new(big.Int).SetInt64(int64(chargeMore))
-				hash, err := uc.transferFund(k.DepositPrivKey, "", amount, k.NetworkID)
+				hash, err := uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
 				if err != nil {
 					return err
 				}
@@ -607,7 +607,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	result := []*lighthouse.FileInLightHouse{}
 	kbFileIds := []uint{}
 	for _, f := range kn.KnowledgeBaseFiles {
-		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
+		if f.Status == models.KnowledgeBaseFileStatusDone {
 			continue
 			// r := &lighthouse.FileInLightHouse{}
 			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {

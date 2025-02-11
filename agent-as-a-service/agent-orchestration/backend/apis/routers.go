@@ -279,7 +279,8 @@ func (s *Server) Routers() {
 		{
 			agentStoreAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.SaveAgentStore)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
-			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstallByUser)
+			agentStoreAPI.GET("/list-by-owner", s.authCheckTK1TokenMiddleware(), s.GetListAgentStoreByOwner)
+			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
 			agentStoreAPI.GET("/:id", s.GetAgentStoreDetail)
 			agentStoreAPI.POST("/:id/mission", s.authCheckTK1TokenMiddleware(), s.SaveMissionStore)
 			agentStoreAPI.GET("/:id/install-code/:agent_info_id", s.authCheckTK1TokenMiddleware(), s.GetAgentStoreInstallCode)
