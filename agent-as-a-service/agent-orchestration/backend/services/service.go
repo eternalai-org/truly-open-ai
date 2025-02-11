@@ -184,6 +184,7 @@ func NewService(conf *configs.Config) *Service {
 			s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert,
 			s.conf.KnowledgeBaseConfig.KBErrorTelegramAlert,
 		),
+		knowledge.WithConfig(s.conf),
 	)
 	appConfigRepo := repository.NewAppConfigRepository(gormDB)
 	s.AppConfigUseCase = appconfig.NewAppConfigUseCase(appConfigRepo)

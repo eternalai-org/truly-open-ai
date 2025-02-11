@@ -66,6 +66,7 @@ type KnowledgeBaseFile struct {
 	Status              KnowledgeBaseFileStatus `json:"status"`
 	FilecoinHash        string                  `json:"filecoin_hash"`
 	FilecoinHashRawData string                  `json:"filecoin_hash_raw_data"`
+	TransferHash        string                  `json:"transfer_hash"`
 }
 
 type ListKnowledgeBaseRequest struct {

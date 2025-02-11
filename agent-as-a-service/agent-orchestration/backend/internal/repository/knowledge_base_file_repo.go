@@ -18,11 +18,19 @@ type KnowledgeBaseFileRepo interface {
 	ListByKbId(ctx context.Context, kbId uint) ([]*models.KnowledgeBaseFile, error)
 	DeleteByIds(ctx context.Context, ids []uint) error
 	CalcTotalFee(ctx context.Context, kbId uint) (float64, error)
+	UpdateTransferHash(ctx context.Context, kbFileIds []uint, transferHash string) error
 }
 
 func round(val float64, precision uint) float64 {
 	ratio := math.Pow(10, float64(precision))
 	return math.Round(val*ratio) / ratio
+}
+
+func (r *knowledgeBaseFileRepo) UpdateTransferHash(ctx context.Context, kbFileIds []uint, transferHash string) error {
+	if err := r.db.WithContext(ctx).Model(&models.KnowledgeBaseFile{}).Where("id IN (?)", kbFileIds).Update("transfer_hash", transferHash).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *knowledgeBaseFileRepo) CalcTotalFee(ctx context.Context, kbId uint) (float64, error) {
