@@ -172,6 +172,21 @@ async def url_chunking(url: str, model_use: EmbeddingModel) -> AsyncGenerator:
     try:
         doc: ConversionResult = await get_doc_from_url(url) 
     except Exception as e:
+        fmt_exec = traceback.format_exc(limit=8)
+        msg = '''
+<strong>Error while reading file from {file_url}</strong>
+<strong>Reason:</strong> {reason}
+<strong>Traceback:</strong>
+<pre>
+{traceback}
+</pre>
+'''.format(
+    file_url=f'<a href="{url}">{PathL(url).name}</a>',
+    reason=str(e),
+    traceback=fmt_exec
+)
+        await notify_action(msg)
+
         logger.error(f"Failed to convert document from {url} to docling format. Reason: {str(e)}")
         
         traceback.print_exc()
