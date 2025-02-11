@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/daos"
@@ -44,8 +45,9 @@ func (s *Service) InfraTwitterAppAuthenInstall(ctx context.Context, address stri
 				Signature:   signature,
 			}
 		} else {
-			infraTwitterApp.Address = address
-			infraTwitterApp.Signature = signature
+			if !strings.EqualFold(infraTwitterApp.Address, address) {
+				return errs.NewError(errs.ErrBadRequest)
+			}
 		}
 		err = s.dao.Save(daos.GetDBMainCtx(ctx), infraTwitterApp)
 		if err != nil {
