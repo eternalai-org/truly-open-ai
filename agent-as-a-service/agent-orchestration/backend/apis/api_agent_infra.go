@@ -74,3 +74,29 @@ func (s *Server) proxyAgentStoreMiddleware(prefixPath string) gin.HandlerFunc {
 		// _ = s.nls.ChargeUserStoreInstall(context.Background(), agentStoreInstall.ID, urlPath, w.Status())
 	}
 }
+
+func (s *Server) ScanAgentInfraMintHash(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	networkID, err := s.uint64FromContextQuery(c, "network_id")
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	err = s.nls.ScanAgentInfraMintHash(
+		ctx,
+		userAddress,
+		networkID,
+		s.stringFromContextQuery(c, "tx_hash"),
+		s.uintFromContextParam(c, "agent_store_id"),
+	)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: true})
+}
