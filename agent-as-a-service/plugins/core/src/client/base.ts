@@ -1,6 +1,6 @@
- 
+
 import axios, { Axios } from "axios";
-import { IAuthenticParams } from "../types";
+import {IAuthenticParams, IGetAccessTokenParams} from "../types";
 
 export const TIMEOUT = 5 * 60000;
 export const HEADERS = { "Content-Type": "application/json" };
@@ -65,17 +65,38 @@ const createAxiosInstance = ({
   return instance;
 };
 
-export default class BaseAPI {
-  protected api: Axios;
 
-  constructor(params: IAuthenticParams) {
-    this.api = createAxiosInstance({
-      baseURL: params.endpoint,
-      authToken: params?.accessToken || "",
-    });
-  }
+/** Get access token */
+// getAccessToken: (params: IGetAccessTokenParams) => Promise<string>;
 
-  setAuthToken = (authToken: string) => {
-    (this.api.defaults.headers as any).Authorization = authToken;
-  };
+export interface IBaseAPI {
+    setAuthToken: (authToken: string) => void;
+    getAccessToken: (params: IGetAccessTokenParams) => Promise<string>;
+}
+
+export default class BaseAPI implements IBaseAPI {
+    protected api: Axios;
+
+    constructor(params: IAuthenticParams) {
+        this.api = createAxiosInstance({
+            baseURL: params.endpoint,
+            authToken: params?.accessToken || "",
+        });
+    }
+
+    setAuthToken = (authToken: string) => {
+        (this.api.defaults.headers as any).Authorization = authToken;
+    };
+
+    getAccessToken = async (params: IGetAccessTokenParams): Promise<string> => {
+        try {
+            const signature = params.signature.startsWith("0x")
+                ? params.signature.replace("0x", "")
+                : params.signature;
+            const authenCode: string = await this.api.post('auth/verify', { ...params, signature });
+            return authenCode;
+        } catch (e) {
+            throw e;
+        }
+    };
 }
