@@ -62,7 +62,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 					Type:         req.Type,
 					StoreId:      helpers.RandomBigInt(12).Text(16),
 					OwnerID:      user.ID,
-					OwnerAddress: userAddress,
+					OwnerAddress: user.Address,
 				}
 			}
 			agentStore.Name = req.Name
@@ -220,10 +220,14 @@ func (s *Service) SaveAgentStoreCallback(ctx context.Context, req *serializers.A
 }
 
 func (s *Service) GetListAgentStoreInstall(ctx context.Context, userAddress string, agentInfoID uint, page, limit int) ([]*models.AgentStoreInstall, uint, error) {
-	filter := map[string][]interface{}{
-		"status = ?": {models.AgentStoreInstallStatusDone},
+	user, err := s.GetUser(daos.GetDBMainCtx(ctx), 0, userAddress, false)
+	if err != nil {
+		return nil, 0, errs.NewError(err)
 	}
-	filter["user_address = ?"] = []interface{}{strings.ToLower(userAddress)}
+	filter := map[string][]interface{}{
+		"user_id = ?": {user.ID},
+		"status = ?":  {models.AgentStoreInstallStatusDone},
+	}
 	res, count, err := s.dao.FindAgentStoreInstall4Page(daos.GetDBMainCtx(ctx),
 		filter,
 		map[string][]interface{}{
