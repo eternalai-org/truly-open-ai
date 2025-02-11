@@ -412,17 +412,23 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 		}
 
 		for _, k := range resp {
+			// TODO Remove before commit
+			if k.ID != 41 {
+				continue
+			}
+
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
-			chargeMore := k.CalcChargeMore()
+
+			chargeMore := k.CalcChargeMore() // Ensure charge_more is executed before the file's status is changed.
 			if k.Status == models.KnowledgeBaseStatusPaymentReceipt {
 				_, kbFileIds, err := uc.insertFilesToRAG(ctx, k)
 				if err != nil {
 					continue
 				}
 
-				// TODO transfer fee to backend wallet
+				// transfer fee to backend wallet
 				amount := new(big.Int).SetInt64(int64(chargeMore))
 				hash, err := uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
 				if err != nil {
@@ -430,9 +436,8 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 				}
 
 				if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
-					continue
+					return err
 				}
-
 			}
 		}
 
@@ -561,7 +566,6 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	// 	kn.Status = models.KnowledgeBaseStatusProcessing
 	// }
 	kn.FilecoinHash = hash
-
 	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
@@ -609,15 +613,14 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	for _, f := range kn.KnowledgeBaseFiles {
 		if f.Status == models.KnowledgeBaseFileStatusDone {
 			continue
-			// r := &lighthouse.FileInLightHouse{}
-			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
-			// 	result = append(result, r)
-			// 	continue
-			// }
 		}
 
 		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
 		if err != nil {
+			updatedFields := make(map[string]interface{})
+			updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+			updatedFields["last_error_message"] = err.Error()
+			_ = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields)
 			uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 			return "", nil, err
 		}
@@ -635,6 +638,10 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	data, _ := json.Marshal(result)
 	hash, err := lighthouse.UploadData(uc.lighthouseKey, kn.Name, data)
 	if err != nil {
+		updatedFields := make(map[string]interface{})
+		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		updatedFields["last_error_message"] = err.Error()
+		_ = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields)
 		uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
 		return "", nil, err
 	}

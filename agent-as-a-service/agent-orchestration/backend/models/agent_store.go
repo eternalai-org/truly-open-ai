@@ -29,6 +29,8 @@ const (
 type AgentStore struct {
 	gorm.Model
 	NetworkID          uint64 `gorm:"default:0"`
+	ContractAddress    string
+	TokenId            uint64 `gorm:"default:0"`
 	StoreId            string `gorm:"unique_index"`
 	Type               AgentStoreType
 	Name               string

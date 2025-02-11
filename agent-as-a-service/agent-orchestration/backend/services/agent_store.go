@@ -21,7 +21,10 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 		daos.GetDBMainCtx(ctx),
 		func(tx *gorm.DB) error {
 			if req.Type == "" {
-				return errs.NewError(errs.ErrBadRequest)
+				req.Type = models.AgentStoreTypeStore
+			}
+			if req.Status == "" {
+				req.Status = models.AgentStoreStatusNew
 			}
 			user, err := s.GetUser(tx, 0, userAddress, false)
 			if err != nil {
