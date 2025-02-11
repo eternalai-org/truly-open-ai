@@ -62,7 +62,7 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 					Type:         req.Type,
 					StoreId:      helpers.RandomBigInt(12).Text(16),
 					OwnerID:      user.ID,
-					OwnerAddress: userAddress,
+					OwnerAddress: user.Address,
 				}
 			}
 			agentStore.Name = req.Name
