@@ -278,6 +278,7 @@ func (s *Server) Routers() {
 		agentStoreAPI := rootAPI.Group("/agent-store")
 		{
 			agentStoreAPI.POST("/save", s.authCheckTK1TokenMiddleware(), s.SaveAgentStore)
+			agentStoreAPI.POST("/mint/:agent_store_id", s.authCheckTK1TokenMiddleware(), s.ScanAgentInfraMintHash)
 			agentStoreAPI.GET("/list", s.GetListAgentStore)
 			agentStoreAPI.GET("/list-by-owner", s.authCheckTK1TokenMiddleware(), s.GetListAgentStoreByOwner)
 			agentStoreAPI.GET("/install/list", s.GetListAgentStoreInstall)
