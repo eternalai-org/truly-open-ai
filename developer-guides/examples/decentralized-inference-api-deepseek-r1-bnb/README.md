@@ -136,18 +136,21 @@ With Eternal AI's Decentralized Inference, everything is onchain-verifiable.
 
 Let's look at the onchain prompt transaction on Base Explorer. You can verify that the prompt ran on DeepSeek R1. You can also verify the system prompt and the user prompt.
 
-https://basescan.org/tx/0xac900d098cd27217378ba7e714cf708bb65e2491f6854a6a4d53444a944a85e5
+https://bscscan.com/tx/0x65a7a21b5d8a3a7706206e214c93465d64b5e29222b6af976c08c879fa7fe4a8
 
-<img width="1015" alt="image" src="https://github.com/user-attachments/assets/fff46f60-733d-4976-bf82-9b164f3a591b" />
+<img width="1682" alt="image" src="https://github.com/user-attachments/assets/a7ca8829-daf1-4a60-a40b-060de591cad7" />
+
 
 
 ## Step 7: Let's verify the onchain response transaction
 
 Now, let's see the onchain response transaction on Base Explorer. You can see the actual response content with the thinking process and the final answer. Everything is onchain and verifiable.
 
-https://basescan.org/tx/0x9a3eb2a23ee7668df30b4a63f0750596c0809740ab267de4fdc6ce534985f6bc
+https://bscscan.com/tx/0x2a2c392424ac38a923516a1afba1def43d0a9e8f7ac22313c82ab5f0e978fd1e
 
-<img width="1019" alt="image" src="https://github.com/user-attachments/assets/80f9c15b-3083-4be0-80ca-2fa78ce3b972" />
+<img width="1667" alt="image" src="https://github.com/user-attachments/assets/b3cbb230-312d-4d9e-93dd-335e8837a4d1" />
+
+
 
 ## Conclusion
 
