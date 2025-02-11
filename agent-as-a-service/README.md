@@ -43,9 +43,9 @@ git clone https://github.com/eternalai-org/eternal-ai
 cp .env.example .env
 ```
 
-### Sample register your app on Shop apps and run your service
+### Example register your app on Shop apps and run your service
 
 ```bash
 yarn && yarn build && yarn start:direct
-
 ```
+[Example service code](https://github.com/eternalai-org/eternal-ai/blob/master/agent-as-a-service/dagent/src/direct/index.ts)
