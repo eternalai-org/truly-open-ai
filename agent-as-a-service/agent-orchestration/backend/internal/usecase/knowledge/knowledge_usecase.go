@@ -420,14 +420,15 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
-			chargeMore := k.CalcChargeMore()
+
+			chargeMore := k.CalcChargeMore() // Ensure charge_more is executed before the file's status is changed.
 			if k.Status == models.KnowledgeBaseStatusPaymentReceipt {
 				_, kbFileIds, err := uc.insertFilesToRAG(ctx, k)
 				if err != nil {
 					continue
 				}
 
-				// TODO transfer fee to backend wallet
+				// transfer fee to backend wallet
 				amount := new(big.Int).SetInt64(int64(chargeMore))
 				hash, err := uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
 				if err != nil {
@@ -435,9 +436,8 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 				}
 
 				if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
-					continue
+					return err
 				}
-
 			}
 		}
 
@@ -566,7 +566,6 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	// 	kn.Status = models.KnowledgeBaseStatusProcessing
 	// }
 	kn.FilecoinHash = hash
-
 	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
