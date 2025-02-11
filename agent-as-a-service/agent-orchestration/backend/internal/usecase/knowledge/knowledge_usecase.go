@@ -4,21 +4,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"math/big"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/configs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/core/ports"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/internal/repository"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/logger"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/eth"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/ethapi"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/trxapi"
+	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/zkclient"
+	"github.com/ethereum/go-ethereum/common"
 	resty "github.com/go-resty/resty/v2"
 	"github.com/mymmrac/telego"
 
@@ -45,6 +49,7 @@ type knowledgeUsecase struct {
 	notiBot         *telego.Bot
 	notiActChanId   int64
 	notiErrorChanId int64
+	conf            *configs.Config
 }
 
 func WithRepos(
@@ -64,6 +69,12 @@ func WithRepos(
 func WithSecretKey(secretKey string) options {
 	return func(uc *knowledgeUsecase) {
 		uc.secretKey = secretKey
+	}
+}
+
+func WithConfig(conf *configs.Config) options {
+	return func(uc *knowledgeUsecase) {
+		uc.conf = conf
 	}
 }
 
@@ -128,18 +139,20 @@ func NewKnowledgeUsecase(options ...options) ports.IKnowledgeUsecase {
 	return uc
 }
 
+func (uc *knowledgeUsecase) CalcFeeByKnowledgeBaseId(ctx context.Context, kbId uint) (float64, error) {
+	return uc.knowledgeBaseFileRepo.CalcTotalFee(ctx, kbId)
+}
+
 func (uc *knowledgeUsecase) SendMessage(_ context.Context, content string, chanId int64) (int, error) {
 	if chanId == 0 {
 		chanId = uc.notiActChanId
-	}
-	if chanId == -1 {
+	} else if chanId == -1 {
 		chanId = uc.notiErrorChanId
 	}
+
 	msg := &telego.SendMessageParams{
-		ChatID: telego.ChatID{
-			ID: chanId,
-		},
-		Text: strings.TrimSpace(content),
+		ChatID: telego.ChatID{ID: chanId},
+		Text:   strings.TrimSpace(content),
 	}
 
 	resp, err := uc.notiBot.SendMessage(msg)
@@ -183,35 +196,7 @@ func (uc *knowledgeUsecase) WebhookFile(ctx context.Context, filename string, by
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
 		return nil, err
 	}
-	uc.SendMessage(ctx, fmt.Sprintf("start_webhook_file agent: %s (%d): %s - filecoin hash: %s", kn.Name, kn.ID, updatedFields["filecoin_hash"], filename), uc.notiActChanId)
-
-	i := 0
-	for {
-		if i > 5 {
-			break
-		}
-
-		kb1, err := uc.knowledgeBaseRepo.GetById(ctx, id)
-		if err != nil {
-			return kn, nil
-		}
-
-		if kb1.Status == models.KnowledgeBaseStatusDone {
-			break
-		}
-
-		if kb1.FilecoinHash != "" && kb1.KbId != "" && int(kb1.Status) < int(models.KnowledgeBaseStatusDone) {
-			updatedFields := make(map[string]interface{})
-			updatedFields["status"] = models.KnowledgeBaseStatusDone
-			if err := uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields); err != nil {
-				return nil, err
-			}
-			break
-		}
-
-		time.Sleep(1 * time.Second)
-		i += 1
-	}
+	_, _ = uc.SendMessage(ctx, fmt.Sprintf("start_webhook_file agent: %s (%d): %s - filecoin hash: %s", kn.Name, kn.ID, updatedFields["filecoin_hash"], filename), uc.notiActChanId)
 	return kn, nil
 }
 
@@ -236,11 +221,11 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = req.Result.Message
 		uc.SendMessage(ctx, fmt.Sprintf("webhook update agent status failed: %s (%d) - error %s", kn.Name, kn.ID, req.Result.Message), uc.notiActChanId)
-	} else {
+	} else if kn.KbId == "" {
 		updatedFields["kb_id"] = req.Result.Kb
-		if kn.FilecoinHash != "" {
-			updatedFields["status"] = models.KnowledgeBaseStatusDone
-		}
+		updatedFields["status"] = models.KnowledgeBaseStatusDone
+	} else {
+		updatedFields["status"] = models.KnowledgeBaseStatusProcessUpdate
 	}
 
 	uc.SendMessage(ctx, fmt.Sprintf("webhook_status update kb_id for agent_id %d: %s", kn.ID, req.Result.Kb), uc.notiActChanId)
@@ -249,26 +234,6 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	}
 
 	return kn, nil
-}
-
-func round(val float64, precision uint) float64 {
-	ratio := math.Pow(10, float64(precision))
-	return math.Round(val*ratio) / ratio
-}
-
-func (uc *knowledgeUsecase) calcTrainingFee(_ context.Context, req *serializers.CreateKnowledgeRequest) (float64, error) {
-	unitPrice := 10
-	total := float64(0)
-	for _, r := range req.Files {
-		total += float64(r.Size)
-	}
-
-	price := total / 1_000_000 // 1 Megabyte is equal to 1000000 bytes (decimal).
-	price = round(price, 0)
-	if price == 0 {
-		price = 1
-	}
-	return price * float64(unitPrice), nil
 }
 
 func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serializers.CreateKnowledgeRequest) (*serializers.KnowledgeBase, error) {
@@ -292,7 +257,6 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	model.SolanaDepositAddress = strings.ToLower(req.SolanaDepositAddress)
 
 	model.Status = models.KnowledgeBaseStatusWaitingPayment
-	model.Fee, _ = uc.calcTrainingFee(ctx, req)
 
 	resp, err := uc.knowledgeBaseRepo.Create(ctx, model)
 	if err != nil {
@@ -300,11 +264,12 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 	}
 
 	grFileId := time.Now().Unix()
+	files := []*models.KnowledgeBaseFile{}
 	for _, f := range req.Files {
 		file := &models.KnowledgeBaseFile{
-			FileUrl:         f.Url,
-			FileName:        f.Name,
-			FileSize:        f.Size,
+			FileUrl:         f.FileUrl,
+			FileName:        f.FileName,
+			FileSize:        f.FileSize,
 			KnowledgeBaseId: resp.ID,
 			GroupFileId:     grFileId,
 			Status:          models.KnowledgeBaseFileStatusPending,
@@ -313,14 +278,22 @@ func (uc *knowledgeUsecase) CreateKnowledgeBase(ctx context.Context, req *serial
 		if err != nil {
 			return nil, err
 		}
+		files = append(files, file)
 	}
 
-	r, err := uc.knowledgeBaseRepo.GetById(ctx, model.ID)
-	if err != nil {
+	model.KnowledgeBaseFiles = files
+	model.Fee, _ = uc.knowledgeBaseFileRepo.CalcTotalFee(ctx, model.ID)
+	model.ChargeMore = model.CalcChargeMore()
+
+	updatedFields := make(map[string]interface{})
+	updatedFields["fee"] = model.Fee
+	updatedFields["charge_more"] = model.ChargeMore
+	if err := uc.UpdateKnowledgeBaseById(ctx, resp.ID, updatedFields); err != nil {
 		return nil, err
 	}
+
 	result := &serializers.KnowledgeBase{}
-	if err := utils.Copy(result, r); err != nil {
+	if err := utils.Copy(result, model); err != nil {
 		return nil, err
 	}
 	return result, nil
@@ -371,6 +344,52 @@ func (uc *knowledgeUsecase) GetKnowledgeBaseByStatus(ctx context.Context, status
 	return uc.knowledgeBaseRepo.GetByStatus(ctx, status, offset, limit)
 }
 
+func (uc *knowledgeUsecase) UpdateListKnowledgeBaseFile(ctx context.Context, kbId uint, files []*serializers.File) error {
+	currentFiles, err := uc.knowledgeBaseFileRepo.ListByKbId(ctx, kbId)
+	if err != nil {
+		return err
+	}
+
+	fileIds := []uint{}
+	grFileId := time.Now().Unix()
+	for _, f := range files {
+		if f.KbFileId != 0 {
+			fileIds = append(fileIds, f.KbFileId)
+			continue
+		}
+
+		file := &models.KnowledgeBaseFile{
+			FileUrl:         f.FileUrl,
+			FileName:        f.FileName,
+			FileSize:        f.FileSize,
+			KnowledgeBaseId: kbId,
+			GroupFileId:     grFileId,
+			Status:          models.KnowledgeBaseFileStatusPending,
+		}
+		_, err := uc.knowledgeBaseFileRepo.Create(ctx, file)
+		if err != nil {
+			return err
+		}
+	}
+
+	mapFiles := make(map[uint]*models.KnowledgeBaseFile)
+	for _, f := range currentFiles {
+		mapFiles[f.ID] = f
+	}
+
+	deletedIds := []uint{}
+	for k, v := range mapFiles {
+		if v.Status == models.KnowledgeBaseFileStatusDone {
+			continue
+		}
+		if !slices.Contains(fileIds, k) {
+			deletedIds = append(deletedIds, v.ID)
+		}
+	}
+
+	return uc.knowledgeBaseFileRepo.DeleteByIds(ctx, deletedIds)
+}
+
 func (uc *knowledgeUsecase) UpdateKnowledgeBaseById(ctx context.Context, id uint, updatedFields map[string]interface{}) error {
 	return uc.knowledgeBaseRepo.UpdateById(ctx, id, updatedFields)
 }
@@ -396,11 +415,24 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
-
+			chargeMore := k.CalcChargeMore()
 			if k.Status == models.KnowledgeBaseStatusPaymentReceipt {
-				if _, err := uc.insertFilesToRAG(ctx, k); err != nil {
+				_, kbFileIds, err := uc.insertFilesToRAG(ctx, k)
+				if err != nil {
 					continue
 				}
+
+				// TODO transfer fee to backend wallet
+				amount := new(big.Int).SetInt64(int64(chargeMore))
+				hash, err := uc.transferFund(k.DepositPrivKey, "", amount, k.NetworkID)
+				if err != nil {
+					return err
+				}
+
+				if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
+					continue
+				}
+
 			}
 		}
 
@@ -410,7 +442,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 }
 
 func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.KnowledgeBase) error {
-	knPrice := new(big.Float).SetFloat64(kn.Fee)
+	knPrice := new(big.Float).SetFloat64(kn.ChargeMore)
 	knPrice = knPrice.Mul(knPrice, big.NewFloat(1e18))
 	_knPrice := new(big.Int)
 	_knPrice, _ = knPrice.Int(_knPrice)
@@ -458,7 +490,8 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			}
 
 			updatedFields := make(map[string]interface{})
-			updatedFields["status"] = models.KnowledgeBaseStatusPaymentReceipt
+			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
+			updatedFields["status"] = kn.Status
 			updatedFields["deposit_tx_hash"] = fmt.Sprintf("%s/address/%s", net["explorer_url"], kn.DepositAddress)
 			updatedFields["deposit_chain_id"] = nId
 			if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
@@ -466,8 +499,6 @@ func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.Knowled
 			}
 			content := fmt.Sprintf("Received amount for kb: %s (%d) on chain #%d", kn.Name, kn.ID, nId)
 			uc.SendMessage(ctx, content, uc.notiActChanId)
-
-			kn.Status = models.KnowledgeBaseStatusPaymentReceipt
 		}
 	}
 	return nil
@@ -503,43 +534,56 @@ func (uc *knowledgeUsecase) balanceOfAddress(_ context.Context, address string, 
 	return balanace, nil
 }
 
-func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.KnowledgeBase) (*models.InsertRagResponse, error) {
+func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.KnowledgeBase) (*models.InsertRagResponse, []uint, error) {
 	resp := &models.InsertRagResponse{}
-	if uc.webhookUrl == "" {
-		uc.webhookUrl = "https://agent.api.eternalai.org/api/knowledge/webhook-file"
+	hash, kbFileIds, err := uc.uploadKBFileToLighthouseAndProcess(ctx, kn)
+	if err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return nil, nil, err
 	}
+
 	body := struct {
-		FileUrls []string `json:"file_urls"`
-		Ref      string   `json:"ref"`
-		Hook     string   `json:"hook"`
+		FilecoinMetadataUrl string `json:"filecoin_metadata_url"`
+		Ref                 string `json:"ref"`
+		Hook                string `json:"hook"`
+		Kb                  string `json:"kb"`
 	}{
-		FileUrls: kn.FileUrls(),
-		Ref:      fmt.Sprintf("%d", kn.ID),
-		Hook:     fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
+		FilecoinMetadataUrl: fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", hash),
+		Ref:                 fmt.Sprintf("%d", kn.ID),
+		Hook:                fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
+		Kb:                  kn.KbId,
 	}
 	logger.Info(categoryNameTracer, "insert_file_to_rag", zap.Any("body", body))
-	_, err := resty.New().R().SetContext(ctx).SetDebug(true).
+
+	// if kn.KbId != "" {
+	// 	kn.Status = models.KnowledgeBaseStatusProcessUpdate
+	// } else {
+	// 	kn.Status = models.KnowledgeBaseStatusProcessing
+	// }
+	kn.FilecoinHash = hash
+
+	_, err = resty.New().R().SetContext(ctx).SetDebug(true).
 		SetBody(body).
 		SetResult(resp).
 		Post(fmt.Sprintf("%s/api/insert", uc.ragApi))
 	if err != nil {
-		uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
-		return nil, err
+		_, _ = uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return nil, nil, err
 	}
-	kn.Status = models.KnowledgeBaseStatusProcessing
 
 	bBody, _ := json.Marshal(body)
 	kn.RagInsertFileRequest = string(bBody)
 
 	updatedFields := make(map[string]interface{})
-	updatedFields["status"] = kn.Status
+	// updatedFields["status"] = kn.Status
 	updatedFields["rag_insert_file_request"] = kn.RagInsertFileRequest
+	updatedFields["filecoin_hash"] = kn.FilecoinHash
 	if err = uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
-		uc.SendMessage(ctx, fmt.Sprintf(" uc.knowledgeBaseRepo.UpdateById for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
-		return nil, err
+		_, _ = uc.SendMessage(ctx, fmt.Sprintf(" uc.knowledgeBaseRepo.UpdateById for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return nil, nil, err
 	}
-	uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent_id %s (%d): %s", kn.Name, kn.ID, string(bBody)), uc.notiActChanId)
-	return resp, nil
+	_, _ = uc.SendMessage(ctx, fmt.Sprintf("insertFilesToRAG for agent_id %s (%d): %s", kn.Name, kn.ID, string(bBody)), uc.notiActChanId)
+	return resp, kbFileIds, nil
 }
 
 func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
@@ -548,4 +592,80 @@ func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId str
 
 func (uc *knowledgeUsecase) GetManyKnowledgeBaseByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error) {
 	return uc.knowledgeBaseRepo.GetManyByQuery(ctx, query, orderOption, offset, limit)
+}
+
+func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Context, kn *models.KnowledgeBase) (string, []uint, error) {
+	kn.Status = models.KnowledgeBaseStatusProcessing
+
+	updatedFields := make(map[string]interface{})
+	updatedFields["status"] = kn.Status
+	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf(" uc.knowledgeBaseRepo.UpdateById for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return "", nil, err
+	}
+
+	result := []*lighthouse.FileInLightHouse{}
+	kbFileIds := []uint{}
+	for _, f := range kn.KnowledgeBaseFiles {
+		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
+			continue
+			// r := &lighthouse.FileInLightHouse{}
+			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
+			// 	result = append(result, r)
+			// 	continue
+			// }
+		}
+
+		r, err := lighthouse.ZipAndUploadFileInMultiplePartsToLightHouseByUrl(f.FileUrl, "/tmp/data", uc.lighthouseKey)
+		if err != nil {
+			uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+			return "", nil, err
+		}
+
+		rw, _ := json.Marshal(r)
+		f.FilecoinHashRawData = string(rw)
+		uc.knowledgeBaseFileRepo.UpdateByKnowledgeBaseId(
+			ctx, f.ID,
+			map[string]interface{}{"filecoin_hash_raw_data": f.FilecoinHashRawData, "status": models.KnowledgeBaseFileStatusDone},
+		)
+		kbFileIds = append(kbFileIds, f.ID)
+		result = append(result, r)
+	}
+
+	data, _ := json.Marshal(result)
+	hash, err := lighthouse.UploadData(uc.lighthouseKey, kn.Name, data)
+	if err != nil {
+		uc.SendMessage(ctx, fmt.Sprintf("uploadKBFileToLighthouseAndProcess for agent %s (%d) - has error: %s ", kn.Name, kn.ID, err.Error()), uc.notiErrorChanId)
+		return "", nil, err
+	}
+	return hash, kbFileIds, nil
+}
+
+func (uc *knowledgeUsecase) transferFund(priKeyFrom string, toAddress string, fund *big.Int, networkId uint64) (string, error) {
+	return "", nil
+	_, pubKey, err := eth.GetAccountInfo(priKeyFrom)
+	if err != nil {
+		return "", fmt.Errorf("get account info: %v", err)
+	}
+
+	rpc := uc.conf.GetConfigKeyString(networkId, "rpc_url")
+	var paymasterAddress, paymasterToken string
+	var paymasterFeeZero bool
+	if uc.conf.ExistsedConfigKey(networkId, "paymaster_address") &&
+		uc.conf.ExistsedConfigKey(networkId, "paymaster_token") {
+		paymasterAddress = uc.conf.GetConfigKeyString(networkId, "paymaster_address")
+		paymasterToken = uc.conf.GetConfigKeyString(networkId, "paymaster_token")
+		paymasterFeeZero = uc.conf.GetConfigKeyBool(networkId, "paymaster_fee_zero")
+	}
+	aiZkClient := zkclient.NewZkClient(
+		rpc,
+		paymasterFeeZero,
+		paymasterAddress,
+		paymasterToken,
+	)
+	tx, err := aiZkClient.Transact(priKeyFrom, *pubKey, common.HexToAddress(toAddress), fund, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to transact: %v", err)
+	}
+	return tx.TxHash.Hex(), nil
 }

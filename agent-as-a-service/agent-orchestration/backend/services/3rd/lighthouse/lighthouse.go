@@ -2,12 +2,15 @@ package lighthouse
 
 import (
 	"bytes"
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/ipfs/go-cid"
 	"github.com/ipfs/go-datastore"
 
@@ -197,7 +201,7 @@ func GetFileInfo(hash string) (*FileInfo, error) {
 		return nil, errors.WithStack(err)
 	}
 
-	//log.Println("body", string(body))
+	// log.Println("body", string(body))
 
 	var respBody FileInfo
 
@@ -243,7 +247,6 @@ func UploadData(apikey, fileName string, data []byte) (string, error) {
 		urlLink,
 		&b,
 	)
-
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -312,7 +315,7 @@ func Cid(data []byte) string {
 func fileExistOnNetwork(data []byte) (string, bool, error) {
 	cid := Cid(data)
 
-	log.Println("Check file exist", "cid", cid)
+	log.Println("Check file exist: ", "cid", cid)
 	fileInfo, err := GetFileInfo(cid)
 	if err != nil {
 		if fileInfo != nil && fileInfo.Error.Code == 404 {
@@ -326,13 +329,18 @@ func fileExistOnNetwork(data []byte) (string, bool, error) {
 
 func UploadFile(apikey, fileName string, filePath string) (string, error) {
 	data, err := os.ReadFile(filePath)
-	/*cid, exist, err := fileExistOnNetwork(data)
 	if err != nil {
 		return "", err
 	}
+
+	cid, exist, err := fileExistOnNetwork(data)
+	if err != nil {
+		return "", err
+	}
+
 	if exist {
 		return cid, nil
-	}*/
+	}
 
 	urlLink := "https://node.lighthouse.storage/api/v0/add"
 
@@ -353,7 +361,6 @@ func UploadFile(apikey, fileName string, filePath string) (string, error) {
 		urlLink,
 		&b,
 	)
-
 	if err != nil {
 		return "", fmt.Errorf("err when init upload request err:%v", err)
 	}
@@ -377,7 +384,6 @@ func UploadFile(apikey, fileName string, filePath string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("err when parse json body:%v,err:%v", body, err)
 	}
-
 	return respBody.Hash, nil
 }
 
@@ -423,4 +429,25 @@ func UploadDataWithRetry(apikey, fileName string, data []byte) (string, error) {
 		return hash, nil
 	}
 	return hash, err
+}
+
+func UploadDataFileByUrl(ctx context.Context, apikey, rawUrl string) (string, error) {
+	parsedUrl, err := url.ParseRequestURI(rawUrl)
+	if err != nil {
+		return "", err
+	}
+
+	client := resty.New().SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true})
+	res, err := client.R().SetContext(ctx).Get(rawUrl)
+	if err != nil {
+		return "", err
+	}
+
+	fileName := strings.Replace(res.Header().Get("Content-Disposition"), "attachment; filename=", "", -1)
+	fileName = strings.Replace(fileName, "attachment;filename=", "", -1)
+	if fileName == "" {
+		filePath := parsedUrl.Path
+		fileName = path.Base(filePath)
+	}
+	return UploadDataWithRetry(apikey, fileName, res.Body())
 }

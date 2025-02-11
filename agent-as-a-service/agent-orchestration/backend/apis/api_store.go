@@ -249,6 +249,7 @@ func (s *Server) MissionStoreResult(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
 		return
 	}
+
 	responseId := s.stringFromContextQuery(c, "id")
 	resp, err := s.nls.GetMissionStoreResult(ctx, responseId)
 	if err != nil {

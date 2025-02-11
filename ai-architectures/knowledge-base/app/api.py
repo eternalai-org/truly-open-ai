@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from .models import ResponseMessage
-from .models import InsertInputSchema, QueryInputSchema, ResponseMessage, APIStatus
+from .models import InsertInputSchema, UpdateInputSchema, QueryInputSchema, ResponseMessage, APIStatus
 import logging
 from .handlers import process_data, run_query, get_sample, drop_kb, notify_action, export_collection_data
 from .utils import get_tmp_directory, iter_file, sync2async
@@ -23,6 +23,30 @@ router = APIRouter(
 async def insert(request: InsertInputSchema, background_tasks: BackgroundTasks) -> ResponseMessage:
     handler = get_insertion_request_handler()
     handler.insert(request)
+
+    background_tasks.add_task(
+        process_data, 
+        request, 
+        get_default_embedding_model()
+    )
+
+    if not request.is_re_submit:
+        background_tasks.add_task(
+            notify_action,
+            request
+        )
+
+    return ResponseMessage(
+        result="successfully submitted documents", 
+        status=APIStatus.OK
+    )
+
+@router.post("/update", response_model = ResponseMessage)
+async def update(request: UpdateInputSchema, background_tasks: BackgroundTasks) -> ResponseMessage:
+    handler = get_insertion_request_handler()
+    handler.insert(request)
+
+    await drop_kb(request.kb)
 
     background_tasks.add_task(
         process_data, 

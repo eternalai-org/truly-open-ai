@@ -13,6 +13,7 @@ class InsertInputSchema(BaseModel):
     file_urls: List[str] = []
     texts: List[str] = [] 
     kb: Optional[str] = None
+    filecoin_metadata_url: str = None
 
     # ref and kb must not be both None
     ref: Optional[str] = None
@@ -38,6 +39,32 @@ class InsertInputSchema(BaseModel):
             data['kb'] = 'kb-' + data['ref']
 
         assert len(data['kb']) > 0, "Knowledge base must not be empty"
+        return data
+    
+class UpdateInputSchema(BaseModel):
+    kb: Optional[str]
+    id: str = Field(default_factory=lambda: f"doc-{str(uuid.uuid4().hex)}")
+    file_urls: List[str] = []
+    texts: List[str] = [] 
+    filecoin_metadata_url: str = None
+
+    # ref and kb must not be both None
+    ref: Optional[str] = None
+    hook: Optional[str] = None
+
+    is_re_submit: bool = False
+
+    @model_validator(mode='before')
+    def fill_texts(cls, data: dict):
+        if not isinstance(data, dict):
+            raise ValueError("Data must be a dictionary")
+
+        if 'texts' not in data:
+            data['texts'] = []
+            
+        if isinstance(data['texts'], str):
+            data['texts'] = [data['texts']]
+        
         return data
 
 class QueryInputSchema(BaseModel):
