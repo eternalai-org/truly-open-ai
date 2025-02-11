@@ -62,7 +62,7 @@ Content to follow: {}
     )
     conversational_chat.append(
         {
-            "role": "user",  # Somehow it FUCKING WORK?!?!
+            "role": "user",
             "content": prompt_to_use,
         }
     )
