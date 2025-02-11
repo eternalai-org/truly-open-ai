@@ -1,4 +1,5 @@
 import json
+import os
 import random
 from openai import BaseModel
 import requests
@@ -548,6 +549,46 @@ Task prompt: {task_prompt}
         interval_multiply=2,
     )()
     return obj
+
+
+def clean_text(crawled_text: str):
+    system_prompt = """You are a helpful assistant. Your task is to summarize the following crawled text in one paragraph, highlighting keywords, locations, dates, and other metadata. Provide the cleaned version of the text in a structured JSON format with the key "cleaned_text". Ensure no additional comments are added.
+
+    Output format example:
+    {
+        "cleaned_text": "Your cleaned and summarized text here"
+    }
+    """
+    url = os.path.join(const.SELF_HOSTED_LLAMA_405B_URL, "v1/chat/completions")
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {const.SELF_HOSTED_LLAMA_API_KEY}",
+    }
+
+    data = {
+        "model": const.SELF_HOSTED_LLAMA_405B_MODEL_IDENTITY,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": crawled_text[: const.MAX_TEXT_LENGTH]},
+        ],
+        "max_tokens": 1024,
+        "temperature": 0.01,
+    }
+
+    resp = requests.post(url, headers=headers, data=json.dumps(data))
+
+    if resp.status_code != 200:
+        return crawled_text
+
+    content = resp.json()["choices"][0]["message"]["content"]
+
+    try:
+        data = repair_json(content, return_objects=True)
+        return data["cleaned_text"]
+    except Exception as err:
+        logger.error(f"[clean_text] An error occured: {err}")
+        return crawled_text
 
 
 if __name__ == "__main__":
