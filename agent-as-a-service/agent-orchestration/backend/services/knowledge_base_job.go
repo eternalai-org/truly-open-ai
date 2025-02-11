@@ -286,7 +286,8 @@ func (s *Service) TransferFund(priKeyFrom string, toAddress string, fund *big.In
 	aiZkClient := zkclient.NewZkClient(rpc,
 		paymasterFeeZero,
 		paymasterAddress,
-		paymasterToken)
+		paymasterToken,
+	)
 	tx, err := aiZkClient.Transact(priKeyFrom, *pubKey, common.HexToAddress(toAddress), fund, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to transact: %v", err)
