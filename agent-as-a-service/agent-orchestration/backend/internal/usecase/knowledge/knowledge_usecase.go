@@ -607,7 +607,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 	result := []*lighthouse.FileInLightHouse{}
 	kbFileIds := []uint{}
 	for _, f := range kn.KnowledgeBaseFiles {
-		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
+		if f.Status == models.KnowledgeBaseFileStatusDone {
 			continue
 			// r := &lighthouse.FileInLightHouse{}
 			// if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
