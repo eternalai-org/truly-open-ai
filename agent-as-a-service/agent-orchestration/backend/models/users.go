@@ -67,6 +67,7 @@ const (
 	UserTransactionTypeDeposit              UserTransactionType = "deposit"
 	UserTransactionTypeAgentStoreFee        UserTransactionType = "agent_store_fee"
 	UserTransactionTypeTriggerFee           UserTransactionType = "trigger_fee"
+	UserTransactionTypeTriggerRefundFee     UserTransactionType = "trigger_refund_fee"
 	UserTransactionTypeUserAgentInfraFee    UserTransactionType = "user_agent_infra_fee"
 	UserTransactionTypeCreatorAgentInfraFee UserTransactionType = "creator_agent_infra_fee"
 

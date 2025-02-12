@@ -2282,7 +2282,7 @@ func (s *Service) AgentSnapshotPostStatusInferRefund(ctx context.Context, snapsh
 										NetworkID: inferPost.NetworkID,
 										EventId:   fmt.Sprintf("agent_trigger_refund_%d", inferPost.ID),
 										UserID:    user.ID,
-										Type:      models.UserTransactionTypeAgentStoreFee,
+										Type:      models.UserTransactionTypeTriggerRefundFee,
 										Amount:    inferPost.Fee,
 										Status:    models.UserTransactionStatusDone,
 									},
