@@ -149,6 +149,6 @@ func (h gameHandler) refundExpiredPlayers(ctx *fiber.Ctx) error {
 			c, cancel := context.WithTimeout(ctx.UserContext(), constants.FiberRequestTimeoutInSec*time.Second)
 			defer cancel()
 
-			return nil, h.gameUsecase.RefundsExpiredPlayers(c, ctx.Query("tweet_id"))
+			return nil, h.gameUsecase.RefundsExpiredPlayers(c, ctx.Params("tweet_id"))
 		}).ResponseJSON(ctx)
 }
