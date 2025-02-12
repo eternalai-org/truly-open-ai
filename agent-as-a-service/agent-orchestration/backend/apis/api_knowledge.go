@@ -2,16 +2,14 @@ package apis
 
 import (
 	"errors"
-	"io"
-	"net/http"
-	"strconv"
-
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/pkg/utils"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/serializers"
 	"github.com/gin-gonic/gin"
 	openai2 "github.com/sashabaranov/go-openai"
+	"io"
+	"net/http"
 )
 
 func (s *Server) createKnowledge(c *gin.Context) {
@@ -280,13 +278,7 @@ func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-	num, err := strconv.ParseUint(req.KnowledgeBaseId, 10, 0)
-	if err != nil {
-		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
-		return
-	}
-	knowledgeId := uint(num)
-	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, knowledgeId)
+	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseByKBTokenId(ctx, req.KnowledgeBaseId)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
 		return
