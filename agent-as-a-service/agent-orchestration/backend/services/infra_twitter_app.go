@@ -15,7 +15,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/services/3rd/lighthouse"
 )
 
-func (s *Service) InfraTwitterAppAuthenInstall(ctx context.Context, address string, installCode string, signature string) (string, error) {
+func (s *Service) InfraTwitterAppAuthenInstall(ctx context.Context, address string, installUri string, installCode string, signature string) (string, error) {
 	err := func() error {
 		if address == "" || installCode == "" || signature == "" {
 			return errs.NewError(errs.ErrBadRequest)
@@ -57,7 +57,7 @@ func (s *Service) InfraTwitterAppAuthenInstall(ctx context.Context, address stri
 	}()
 	if err != nil {
 		return helpers.BuildUri(
-			s.conf.InfraTwitterApp.ReturnUri,
+			installUri,
 			map[string]string{
 				"install_code": installCode,
 				"error":        err.Error(),
@@ -68,6 +68,7 @@ func (s *Service) InfraTwitterAppAuthenInstall(ctx context.Context, address stri
 		s.conf.InfraTwitterApp.RedirectUri,
 		map[string]string{
 			"install_code": installCode,
+			"install_uri":  installUri,
 		},
 	)
 	return helpers.BuildUri(
@@ -84,7 +85,7 @@ func (s *Service) InfraTwitterAppAuthenInstall(ctx context.Context, address stri
 	), nil
 }
 
-func (s *Service) InfraTwitterAppAuthenCallback(ctx context.Context, installCode string, code string) (string, error) {
+func (s *Service) InfraTwitterAppAuthenCallback(ctx context.Context, installUri string, installCode string, code string) (string, error) {
 	if installCode == "" || code == "" {
 		return "", errs.NewError(errs.ErrBadRequest)
 	}
@@ -93,6 +94,7 @@ func (s *Service) InfraTwitterAppAuthenCallback(ctx context.Context, installCode
 			s.conf.InfraTwitterApp.RedirectUri,
 			map[string]string{
 				"install_code": installCode,
+				"install_uri":  installUri,
 			},
 		)
 		respOauth, err := s.twitterAPI.TwitterOauthCallbackForSampleApp(
@@ -158,7 +160,7 @@ func (s *Service) InfraTwitterAppAuthenCallback(ctx context.Context, installCode
 	}()
 	if err != nil {
 		return helpers.BuildUri(
-			s.conf.InfraTwitterApp.ReturnUri,
+			installUri,
 			map[string]string{
 				"install_code": installCode,
 				"error":        err.Error(),
@@ -170,7 +172,7 @@ func (s *Service) InfraTwitterAppAuthenCallback(ctx context.Context, installCode
 	}
 	returnData := base64.StdEncoding.EncodeToString([]byte(helpers.ConvertJsonString(params)))
 	return helpers.BuildUri(
-		s.conf.InfraTwitterApp.ReturnUri,
+		installUri,
 		map[string]string{
 			"install_code": installCode,
 			"return_data":  returnData,

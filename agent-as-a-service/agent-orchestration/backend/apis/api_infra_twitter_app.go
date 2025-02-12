@@ -13,6 +13,7 @@ func (s *Server) InfraTwitterAppAuthenInstall(c *gin.Context) {
 	authUrl, err := s.nls.InfraTwitterAppAuthenInstall(
 		ctx,
 		s.stringFromContextQuery(c, "address"),
+		s.stringFromContextQuery(c, "install_uri"),
 		s.stringFromContextQuery(c, "install_code"),
 		s.stringFromContextQuery(c, "signature"),
 	)
@@ -25,7 +26,7 @@ func (s *Server) InfraTwitterAppAuthenInstall(c *gin.Context) {
 
 func (s *Server) InfraTwitterAppAuthenCallback(c *gin.Context) {
 	ctx := s.requestContext(c)
-	returnUri, err := s.nls.InfraTwitterAppAuthenCallback(ctx, s.stringFromContextQuery(c, "install_code"), s.stringFromContextQuery(c, "code"))
+	returnUri, err := s.nls.InfraTwitterAppAuthenCallback(ctx, s.stringFromContextQuery(c, "install_uri"), s.stringFromContextQuery(c, "install_code"), s.stringFromContextQuery(c, "code"))
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
