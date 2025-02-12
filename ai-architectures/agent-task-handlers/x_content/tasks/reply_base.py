@@ -179,7 +179,7 @@ class ReplyTaskBase(MultiStepTaskBase):
                     log.execute_info["task_failed"].append(
                         {
                             "tweet_id": tweet_info.tweet_object.tweet_id,
-                            "error": err,
+                            "error": str(err),
                         }
                     )
                     logger.info(

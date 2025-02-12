@@ -132,8 +132,11 @@ func (s *Service) DisableJobs() {
 }
 
 func (s *Service) RunJobs(ctx context.Context) error {
-	gocron.Every(300).Second().Do(func() {
+	gocron.Every(180).Second().Do(func() {
 		s.KnowledgeUsecase.WatchWalletChange(context.Background())
+	})
+	gocron.Every(30).Second().Do(func() {
+		s.KnowledgeUsecase.ScanKnowledgeBaseStatusPaymentReceipt(context.Background())
 	})
 
 	gocron.Every(30).Second().Do(func() {
@@ -236,38 +239,37 @@ func (s *Service) RunJobs(ctx context.Context) error {
 		},
 	)
 
-	// create launchpad
-	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
-	gocron.Every(30).Second().Do(
-		func() {
-			s.JobRunCheck(
-				context.Background(),
-				"JobAgentLaunchpad",
-				func() error {
-					s.JobAgentTwitterPostCreateLaunchpad(context.Background())
-					s.JobAgentLaunchpadEnd(context.Background())
-					s.JobAgentDeployDAOToken(context.Background())
-					s.JobAgentSettleDAOToken(context.Background())
-					s.JobAgentTgeTransferDAOToken(context.Background())
-					s.JobAgentAddLiquidityDAOToken(context.Background())
-					s.JobAgentTgeRefundBaseToken(context.Background())
-					return nil
-				},
-			)
-		},
-	)
-
 	gocron.Every(1).Minutes().Do(
 		func() {
 			s.JobCreateAgentKnowledgeBase(context.Background())
 		},
 	)
 
-	gocron.Every(1).Minutes().Do(
-		func() {
-			s.JobScanRepliesByLaunchpadTweetID(context.Background())
-		},
-	)
+	// create launchpad
+	// gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
+	// gocron.Every(30).Second().Do(
+	// 	func() {
+	// 		s.JobRunCheck(
+	// 			context.Background(),
+	// 			"JobAgentLaunchpad",
+	// 			func() error {
+	// 				s.JobAgentTwitterPostCreateLaunchpad(context.Background())
+	// 				s.JobAgentLaunchpadEnd(context.Background())
+	// 				s.JobAgentDeployDAOToken(context.Background())
+	// 				s.JobAgentSettleDAOToken(context.Background())
+	// 				s.JobAgentTgeTransferDAOToken(context.Background())
+	// 				s.JobAgentAddLiquidityDAOToken(context.Background())
+	// 				s.JobAgentTgeRefundBaseToken(context.Background())
+	// 				return nil
+	// 			},
+	// 		)
+	// 	},
+	// )
+	// gocron.Every(1).Minutes().Do(
+	// 	func() {
+	// 		s.JobScanRepliesByLaunchpadTweetID(context.Background())
+	// 	},
+	// )
 
 	<-gocron.Start()
 	return nil
