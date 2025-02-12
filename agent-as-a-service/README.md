@@ -11,7 +11,7 @@
 ```bash
 git clone https://github.com/eternalai-org/eternal-ai
 
-cp .env.example .env
+cd agent-as-a-service && cp .env.example .env
 
 yarn && yarn build
 ```
