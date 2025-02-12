@@ -427,39 +427,8 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 		}
 
 		for _, k := range resp {
-			if err := uc.checkBalance(ctx, k); err != nil {
+			if err := uc.CheckBalance(ctx, k); err != nil {
 				continue
-			}
-			// TODO
-			// chargeMore := k.CalcChargeMore() // Ensure charge_more is executed before the file's status is changed.
-			if k.Status == models.KnowledgeBaseStatusPaymentReceipt {
-				_, _, err := uc.insertFilesToRAG(ctx, k)
-				if err != nil {
-					continue
-				}
-
-				// TODO transfer fee to backend wallet
-				// i := 0
-				// var transferErr error
-				// var hash string
-				// for i < 10 {
-				// 	amount := new(big.Int).SetInt64(int64(chargeMore))
-				// 	hash, transferErr = uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
-				// 	if transferErr != nil {
-				// 		i += 1
-				// 		time.Sleep(3 * time.Second)
-				// 		continue
-				// 	}
-
-				// 	if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
-				// 		return err
-				// 	}
-				// 	break
-				// }
-
-				// if transferErr != nil && hash == "" {
-				// 	_, _ = uc.SendMessage(ctx, fmt.Sprintf("transferFund for agent %s (%d) - has error: %s ", k.Name, k.ID, transferErr.Error()), uc.notiErrorChanId)
-				// }
 			}
 		}
 
@@ -468,7 +437,60 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 	return nil
 }
 
-func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.KnowledgeBase) error {
+func (uc *knowledgeUsecase) ScanKnowledgeBaseStatusPaymentReceipt(ctx context.Context) error {
+	start := time.Now()
+	defer logger.Info(categoryNameTracer, "scan_knowledge_base_payment_receipt", zap.Any("start", start), zap.Any("end", time.Now()))
+	offset := 0
+	limit := 30
+	for {
+		resp, err := uc.knowledgeBaseRepo.GetByStatus(
+			ctx, models.KnowledgeBaseStatusPaymentReceipt, offset, limit,
+		)
+		if err != nil {
+			return err
+		}
+
+		if len(resp) == 0 {
+			break
+		}
+
+		for _, k := range resp {
+			// chargeMore := k.CalcChargeMore() // Ensure charge_more is executed before the file's status is changed.
+			_, _, err := uc.insertFilesToRAG(ctx, k)
+			if err != nil {
+				continue
+			}
+
+			// TODO transfer fee to backend wallet
+			// i := 0
+			// var transferErr error
+			// var hash string
+			// for i < 10 {
+			// 	amount := new(big.Int).SetInt64(int64(chargeMore))
+			// 	hash, transferErr = uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
+			// 	if transferErr != nil {
+			// 		i += 1
+			// 		time.Sleep(3 * time.Second)
+			// 		continue
+			// 	}
+
+			// 	if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
+			// 		return err
+			// 	}
+			// 	break
+			// }
+
+			// if transferErr != nil && hash == "" {
+			// 	_, _ = uc.SendMessage(ctx, fmt.Sprintf("transferFund for agent %s (%d) - has error: %s ", k.Name, k.ID, transferErr.Error()), uc.notiErrorChanId)
+			// }
+
+		}
+		offset += len(resp)
+	}
+	return nil
+}
+
+func (uc *knowledgeUsecase) CheckBalance(ctx context.Context, kn *models.KnowledgeBase) error {
 	price, err := uc.knowledgeBaseFileRepo.CalcTotalFee(ctx, kn.ID)
 	if err != nil {
 		return err
