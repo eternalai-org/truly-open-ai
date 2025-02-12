@@ -22,6 +22,7 @@ type IKnowledgeUsecase interface {
 	WebhookFile(context.Context, string, []byte, uint) (*models.KnowledgeBase, error)
 	MapKnowledgeBaseByAgentIds(ctx context.Context, ids []uint) (map[uint][]*models.KnowledgeBase, error)
 	GetKnowledgeBaseByKBId(context.Context, string) (*models.KnowledgeBase, error)
+	GetKnowledgeBaseByKBTokenId(context.Context, string) (*models.KnowledgeBase, error)
 	GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error)
 	GetManyKnowledgeBaseByQuery(context.Context, string, string, int, int) ([]*models.KnowledgeBase, error)
 	SendMessage(_ context.Context, content string, chanId int64) (int, error)
