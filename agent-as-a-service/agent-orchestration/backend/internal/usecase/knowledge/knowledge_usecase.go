@@ -3,6 +3,7 @@ package knowledge
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"slices"
@@ -218,6 +219,18 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	}
 
 	updatedFields := make(map[string]interface{})
+	if req.Status == "ok" && req.Result.Kb == "" {
+		msg := "the kb_id is missing from the webhook API response."
+		uc.SendMessage(ctx, fmt.Sprintf("webhook update agent status failed: %s (%d) - error %s", kn.Name, kn.ID, msg), uc.notiActChanId)
+
+		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
+		updatedFields["last_error_message"] = msg
+		if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
+			return nil, err
+		}
+		return nil, errors.New(msg)
+	}
+
 	if req.Status != "ok" {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessingFailed
 		updatedFields["last_error_message"] = req.Result.Message
@@ -225,11 +238,12 @@ func (uc *knowledgeUsecase) Webhook(ctx context.Context, req *models.RagResponse
 	} else if kn.KbId == "" {
 		updatedFields["kb_id"] = req.Result.Kb
 		updatedFields["status"] = models.KnowledgeBaseStatusDone
+		uc.SendMessage(ctx, fmt.Sprintf("Process update kb_id for agent via webhook DONE (kb_id: %d: %s)", kn.ID, req.Result.Kb), uc.notiActChanId)
 	} else {
 		updatedFields["status"] = models.KnowledgeBaseStatusProcessUpdate
+		uc.SendMessage(ctx, fmt.Sprintf("Process update kb_id for agent via webhook DONE (kb_id: %d: %s)", kn.ID, req.Result.Kb), uc.notiActChanId)
 	}
 
-	uc.SendMessage(ctx, fmt.Sprintf("webhook_status update kb_id for agent_id %d: %s", kn.ID, req.Result.Kb), uc.notiActChanId)
 	if err := uc.knowledgeBaseRepo.UpdateById(ctx, kn.ID, updatedFields); err != nil {
 		return nil, err
 	}

@@ -179,8 +179,13 @@ class ASyncBasedEternalAI(OpenAILLMBase):
         submit_time = time.time()
         estimation = get_time_estimation()
 
+        openai_messages = [
+            convert_message_to_dict(m) if not isinstance(m, dict) else m
+            for m in messages
+        ]
+
         logger.info(
-            f"Submitted async request; Receipt: {receipt}; Messages: {json.dumps(messages)}"
+            f"Submitted async request; Receipt: {receipt}; Messages: {json.dumps(openai_messages)}"
         )
         try:
             result: dict = await self.wait(

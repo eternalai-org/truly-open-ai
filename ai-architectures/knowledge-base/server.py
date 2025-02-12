@@ -17,7 +17,7 @@ import time
 from pymilvus import connections
 from app import constants as const
 from typing import Annotated
-import asyncio, nest_asyncio; nest_asyncio.apply()
+import asyncio
 
 SECRET_TOKEN = os.environ.get("API_SECRET_TOKEN", "")
 

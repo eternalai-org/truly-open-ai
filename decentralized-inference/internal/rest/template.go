@@ -43,6 +43,11 @@ type Response struct {
 	Data     interface{} `json:"data,omitempty"`
 }
 
+type StreamResponse struct {
+	IsNotStream bool
+	Data        interface{}
+}
+
 type handlerFunc func(c *gin.Context) (interface{}, error)
 
 func ResponseJSON(h handlerFunc, c *gin.Context) {
@@ -52,6 +57,21 @@ func ResponseJSON(h handlerFunc, c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, NewSuccessResponse(resp))
+}
+
+func StreamResponseJSON(h handlerFunc, c *gin.Context) {
+	resp, err := h(c)
+	if err != nil {
+		errorHandler(c, err)
+		return
+	}
+	_resp := resp.(*StreamResponse)
+
+	if _resp.IsNotStream {
+		c.JSON(http.StatusOK, NewSuccessResponse(_resp.Data))
+		return
+	}
+
 }
 
 func errorHandler(c *gin.Context, err error) {
