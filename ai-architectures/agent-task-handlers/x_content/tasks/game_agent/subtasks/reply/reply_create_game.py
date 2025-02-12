@@ -45,17 +45,17 @@ def _filter_create_game_tweets(tweet_infos):
 
 
 # Update the existing functions to use the Redis cache class
-def _is_create_game_pending(_tweet_id):
+def is_create_game_pending(_tweet_id):
     try:
         game_redis = _get_game_redis_cache()
         status = game_redis.get_game_status(_tweet_id)
         logger.info(
-            f"[_is_create_game_pending] Retrieved game status for tweet {_tweet_id}: {status}"
+            f"[is_create_game_pending] Retrieved game status for tweet {_tweet_id}: {status}"
         )
         return status == GameStatus.CREATE_PENDING or status == GameStatus.NONE
     except Exception as err:
         logger.error(
-            f"[_is_create_game_pending] Failed to check pending status for tweet {_tweet_id}: {err}"
+            f"[is_create_game_pending] Failed to check pending status for tweet {_tweet_id}: {err}"
         )
         return False
 
@@ -327,7 +327,7 @@ class CreateGameSubtask(ReplySubtaskBase):
         tweet_id = self.tweet_info.tweet_object.tweet_id
         tweet_object = self.tweet_info.tweet_object.to_dict()
 
-        if not _is_create_game_pending(tweet_id):
+        if not is_create_game_pending(tweet_id):
             logger.info(
                 f"[CreateGameSubtask.run] Game {tweet_id} is not in pending state, skipping"
             )
