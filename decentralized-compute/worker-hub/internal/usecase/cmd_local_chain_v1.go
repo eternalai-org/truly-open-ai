@@ -9,6 +9,7 @@ import (
 	"github.com/go-redis/redis"
 	"math/big"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -302,6 +303,15 @@ func (c *cmdLocalChainV1) CreateConfigENV(minerAddress string, index int) error 
 	}
 
 	cnf := c.ReadLocalChainCnf()
+
+	apiURL := cnf.RunPodInternal
+	if strings.Contains(apiURL, "localhost") {
+		_os := runtime.GOOS
+		if _os == "darwin" {
+			apiURL = strings.ReplaceAll(apiURL, "localhost", "host.docker.internal")
+			fmt.Print(pkg.PrintText("OS", _os))
+		}
+	}
 
 	env := ""
 	env += fmt.Sprintf("PUBSUB_URL=%v\n", cnf.PubSubURL)
