@@ -28,13 +28,13 @@ type ListGameResponse struct {
 }
 
 type Game struct {
-	Model        `bson:",inline" json:",inline"`
-	TweetId      string         `json:"tweet_id" bson:"tweet_id"`
-	StartTime    time.Time      `json:"start_time" bson:"start_time"`
-	EndTime      time.Time      `json:"end_time" bson:"end_time"`
-	AgentWallets []*AgentWallet `json:"agent_wallets" bson:"agent_wallets"`
-	Status       GameStatus     `json:"status" bson:"status"`
-
+	Model                 `bson:",inline" json:",inline"`
+	TweetId               string                    `json:"tweet_id" bson:"tweet_id"`
+	StartTime             time.Time                 `json:"start_time" bson:"start_time"`
+	EndTime               time.Time                 `json:"end_time" bson:"end_time"`
+	BetEndTime            time.Time                 `json:"bet_end_time" bson:"bet_end_time"`
+	AgentWallets          []*AgentWallet            `json:"agent_wallets" bson:"agent_wallets"`
+	Status                GameStatus                `json:"status" bson:"status"`
 	Players               []*Player                 `json:"players" bson:"players"`
 	Address               string                    `json:"-" bson:"address,omitempty"`
 	PrivKey               string                    `json:"-" bson:"priv_key,omitempty"`
@@ -47,6 +47,9 @@ type Game struct {
 	TotalBetAmountWinners cryptoamount.CryptoAmount `json:"-" bson:"total_bet_amount_winners,omitempty"`
 	GameFeeTxHash         string                    `json:"-" bson:"game_fee_tx_hash,omitempty"`
 	CurrentBlock          uint64                    `json:"-" bson:"current_block,omitempty"`
+
+	// ExpiredPlayers stores the players who have not bet within the bet time out
+	ExpiredPlayers []*Player `json:"-" bson:"expired_players,omitempty"`
 }
 
 func (Game) CollectionName() string {
@@ -121,6 +124,19 @@ func (a *Game) CalculateRefundAmountPerPlayer() map[string]*Player {
 	return refundAmountPerPlayer
 }
 
+func (a *Game) CalculateRefundAmountPerExpiredPlayer() map[string]*Player {
+	refundAmountPerPlayer := make(map[string]*Player)
+	for _, p := range a.ExpiredPlayers {
+		if player, ok := refundAmountPerPlayer[p.Address]; ok {
+			player.RefundAmount += p.Amount
+		} else {
+			p.RefundAmount = p.Amount
+			refundAmountPerPlayer[p.Address] = p
+		}
+	}
+	return refundAmountPerPlayer
+}
+
 // DeterminePlayerWinner determines the player winner based on the agent winner
 func (a *Game) DeterminePlayerWinner(gasFeePercentage float64) *Game {
 	winner := a.GetWinner()
@@ -169,16 +185,16 @@ func (a Game) GetFirstPlayerWinner() *Player {
 }
 
 type Player struct {
-	Address      string                    `json:"address" bson:"address"`
-	Amount       cryptoamount.CryptoAmount `json:"amount" bson:"amount"`
-	TxHash       string                    `json:"tx_hash" bson:"tx_hash,omitempty"`
+	Address            string                    `json:"address" bson:"address"`
+	Amount             cryptoamount.CryptoAmount `json:"amount" bson:"amount"`
+	TxHash             string                    `json:"tx_hash" bson:"tx_hash,omitempty"`
 	BetToAgentAddress  string                    `bson:"bet_to_agent_address" json:"bet_to_agent_address"`
 	BetToAgentUsername string                    `json:"bet_to_agent_username" bson:"bet_to_agent_username,omitempty"`
-	PrizeTxHash  string                    `json:"prize_tx_hash" bson:"prize_tx_hash,omitempty"`
-	PrizeAmount  cryptoamount.CryptoAmount `json:"prize_amount" bson:"prize_amount,omitempty"`
-	RefundTxHash string                    `json:"refund_tx_hash" bson:"refund_tx_hash,omitempty"`
-	RefundAmount cryptoamount.CryptoAmount `json:"refund_amount" bson:"refund_amount,omitempty"`
-	Win          bool                      `json:"win" bson:"win,omitempty"`
+	PrizeTxHash        string                    `json:"prize_tx_hash" bson:"prize_tx_hash,omitempty"`
+	PrizeAmount        cryptoamount.CryptoAmount `json:"prize_amount" bson:"prize_amount,omitempty"`
+	RefundTxHash       string                    `json:"refund_tx_hash" bson:"refund_tx_hash,omitempty"`
+	RefundAmount       cryptoamount.CryptoAmount `json:"refund_amount" bson:"refund_amount,omitempty"`
+	Win                bool                      `json:"win" bson:"win,omitempty"`
 }
 
 type AgentWallet struct {
@@ -201,9 +217,10 @@ func (a *AgentWallet) CannotTransferFundsToGameWallet() bool {
 }
 
 type StartGameRequest struct {
-	TweetId   string   `json:"tweet_id" query:"tweet_id" bson:"tweet_id"`
-	TimeOut   uint64   `json:"time_out" bson:"time_out"`
-	Usernames []string `json:"usernames" query:"usernames" bson:"usernames"`
+	TweetId    string   `json:"tweet_id" query:"tweet_id" bson:"tweet_id"`
+	TimeOut    uint64   `json:"time_out" bson:"time_out"`
+	BetTimeOut uint64   `json:"bet_time_out" bson:"bet_time_out"`
+	Usernames  []string `json:"usernames" query:"usernames" bson:"usernames"`
 }
 
 type GameResultRequest struct {

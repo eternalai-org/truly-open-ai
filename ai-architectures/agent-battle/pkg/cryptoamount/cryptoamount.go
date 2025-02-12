@@ -34,7 +34,7 @@ func (a CryptoAmount) ToString(decimals int) string {
 
 	// round the CryptoAmount to the value like int with places is 0
 	rounded := round(a.ToFloat64(), defaultRoundOn, 0)
-	floatValueWithDecimals := rounded/math.Pow10(decimals)
+	floatValueWithDecimals := rounded / math.Pow10(decimals)
 
 	// round again with the defaultStringDecimals
 	floatValueWithDecimals = round(floatValueWithDecimals, defaultRoundOn, defaultStringDecimals)
@@ -64,9 +64,11 @@ func round(floatValue float64, roundOn float64, places int) float64 {
 	return round / pow
 }
 
+// NewCryptoAmountFromBigInt creates a new CryptoAmount from the given big.Int.
 func NewCryptoAmountFromBigInt(a *big.Int) CryptoAmount {
 	if a == nil {
 		return 0
 	}
-	return CryptoAmount(a.Int64())
+	floatValue, _ := a.Float64()
+	return CryptoAmount(floatValue).Round(0)
 }
