@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { dagentCharacter } from "./dagentCharacter";
 import { getEnvironment } from "./utils/environment";
 import { DagentTwitter } from "@eternalai-dagent/client-dagent";
+import { printTableAgents } from "./utils/helpers";
 
 class AgentTwitter {
   protected environment: IENV;
@@ -29,14 +30,8 @@ class AgentTwitter {
       limit: 30,
       page: 1,
     }))?.filter(agent => !!agent?.agent_info?.eth_address);
-    console.table((agents || []).map(agent => {
-      return {
-        agent_name: `${agent.agent_name}`,
-        id: agent.id,
-        topup_evm_address: agent.agent_info.eth_address,
-        topup_sol_address: agent.agent_info.sol_address,
-      };
-    }));
+
+    printTableAgents(agents);
     return agents;
   };
 
