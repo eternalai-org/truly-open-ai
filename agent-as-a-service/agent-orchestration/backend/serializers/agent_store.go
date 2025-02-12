@@ -29,6 +29,7 @@ type AgentStoreMissionReq struct {
 	Icon        string           `json:"icon"`
 	NetworkID   uint64           `json:"network_id"`
 	Model       string           `json:"model"`
+	Status      string           `json:"status"`
 }
 
 type AuthenAgentStoreCallback struct {
@@ -90,6 +91,7 @@ type AgentStoreMissionResp struct {
 	ToolList     string           `json:"tool_list"`
 	Icon         string           `json:"icon"`
 	NumUsed      uint             `json:"num_used"`
+	Status       string           `json:"status"`
 }
 
 func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionResp {
@@ -107,6 +109,7 @@ func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionRes
 		ToolList:     m.ToolList,
 		Icon:         m.Icon,
 		NumUsed:      m.NumUsed,
+		Status:       string(m.Status),
 	}
 }
 func NewAgentStoreMissionRespArray(arr []*models.AgentStoreMission) []*AgentStoreMissionResp {

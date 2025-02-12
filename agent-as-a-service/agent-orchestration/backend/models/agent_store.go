@@ -9,6 +9,8 @@ type (
 	AgentStoreType   string
 	AgentStoreStatus string
 
+	AgentStoreMissionStatus string
+
 	AgentStoreInstallStatus string
 	AgentStoreInstallType   string
 )
@@ -22,8 +24,9 @@ const (
 	AgentStoreTypeStore AgentStoreType = "store"
 	AgentStoreTypeInfra AgentStoreType = "infra"
 
-	AgentStoreStatusNew     AgentStoreStatus = "new"
-	AgentStoreStatusActived AgentStoreStatus = "actived"
+	AgentStoreStatusNew       AgentStoreStatus = "new"
+	AgentStoreStatusActived   AgentStoreStatus = "actived"
+	AgentStoreStatusInActived AgentStoreStatus = "inactived"
 )
 
 type AgentStore struct {
@@ -60,6 +63,7 @@ type AgentStoreMission struct {
 	Rating       float64 `gorm:"type:decimal(5,2);default:0"`
 	NumRating    uint
 	NumUsed      uint
+	Status       AgentStoreStatus
 	Icon         string `gorm:"type:text"`
 }
 

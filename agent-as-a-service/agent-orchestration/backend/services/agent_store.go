@@ -160,6 +160,9 @@ func (s *Service) SaveMissionStore(ctx context.Context, userAddress string, agen
 				mission.Description = req.Description
 				mission.UserPrompt = req.Prompt
 				mission.ToolList = req.ToolList
+				if req.Status != "" {
+					mission.Status = models.AgentStoreStatus(req.Status)
+				}
 			} else {
 				mission = &models.AgentStoreMission{
 					AgentStoreID: agentStoreID,
@@ -169,6 +172,7 @@ func (s *Service) SaveMissionStore(ctx context.Context, userAddress string, agen
 					Price:        req.Price,
 					ToolList:     req.ToolList,
 					Icon:         req.Icon,
+					Status:       models.AgentStoreStatusActived,
 				}
 			}
 			if err != nil {
