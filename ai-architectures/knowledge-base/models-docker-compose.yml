@@ -1,0 +1,27 @@
+version: '3.5'
+
+services:
+  emb:
+    container_name: kb-emb
+    image: james123454321/cogembeddings:latest 
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/kb-emb-cache:/root/.cache
+    ports:
+      - "5000:5000"
+    devices:
+      - /dev/nvidia0
+
+  lm:
+    container_name: kb-lm
+    image: vllm/vllm-openai:latest
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/kb-lm-cache:/root/.cache
+    command: python3 -m vllm.entrypoints.openai.api_server --model unsloth/Hermes-3-Llama-3.1-8B-bnb-4bit --load-format "bitsandbytes" --quantization "bitsandbytes" --max_model_len 16384 --max_num_seqs 1 --disable_log_requests --uvicorn_log_level error
+    ports:
+      - "8000:8000"
+    devices:
+      - /dev/nvidia0
+
+networks:
+  default:
+    name: kb-models
