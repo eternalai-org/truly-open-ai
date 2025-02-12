@@ -236,6 +236,12 @@ func (s *Service) RunJobs(ctx context.Context) error {
 		},
 	)
 
+	gocron.Every(1).Minutes().Do(
+		func() {
+			s.JobCreateAgentKnowledgeBase(context.Background())
+		},
+	)
+
 	// create launchpad
 	// gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
 	// gocron.Every(30).Second().Do(
@@ -256,18 +262,11 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	// 		)
 	// 	},
 	// )
-
-	gocron.Every(1).Minutes().Do(
-		func() {
-			s.JobCreateAgentKnowledgeBase(context.Background())
-		},
-	)
-
-	gocron.Every(1).Minutes().Do(
-		func() {
-			s.JobScanRepliesByLaunchpadTweetID(context.Background())
-		},
-	)
+	// gocron.Every(1).Minutes().Do(
+	// 	func() {
+	// 		s.JobScanRepliesByLaunchpadTweetID(context.Background())
+	// 	},
+	// )
 
 	<-gocron.Start()
 	return nil
