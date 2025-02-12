@@ -29,6 +29,7 @@ func NewGameHandler(router fiber.Router, gameUsecase port.IGameUsecase) {
 		r.Get("", handler.listGame)
 		r.Post("/:tweet_id/end", handler.endGame)
 		r.Post("/:tweet_id/result", handler.gameResult)
+		r.Post("/:tweet_id/refund-expired-players", handler.refundExpiredPlayers)
 		r.Post("/start", handler.startGame)
 		r.Get("/:tweet_id", handler.detailGame)
 	}
@@ -132,5 +133,22 @@ func (h gameHandler) startGame(ctx *fiber.Ctx) error {
 			}
 
 			return h.gameUsecase.StartGame(requestCtx, req)
+		}).ResponseJSON(ctx)
+}
+
+// @Summary Refund expired players
+// @Tags Game
+// @Accept json
+// @Produce json
+// @Param tweet_id path string true "Tweet ID"
+// @Success 200
+// @Router /api/v1/game/{tweet_id}/refund-expired-players [post]
+func (h gameHandler) refundExpiredPlayers(ctx *fiber.Ctx) error {
+	return rest.NewFiberHandlerTemplate(
+		func(ctx *fiber.Ctx, _ string) (interface{}, error) {
+			c, cancel := context.WithTimeout(ctx.UserContext(), constants.FiberRequestTimeoutInSec*time.Second)
+			defer cancel()
+
+			return nil, h.gameUsecase.RefundsExpiredPlayers(c, ctx.Params("tweet_id"))
 		}).ResponseJSON(ctx)
 }

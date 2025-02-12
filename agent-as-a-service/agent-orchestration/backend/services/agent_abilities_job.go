@@ -2074,7 +2074,7 @@ func (s *Service) getTaskToolSet(assistant *models.AgentInfo, taskReq string) (s
 }
 
 func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *models.AgentInfo) (string, error) {
-	if logRequest.AgentBaseModel == "" && assistant != nil {
+	if assistant != nil {
 		logRequest.AgentBaseModel = assistant.AgentBaseModel
 	}
 	var agentMetaDataRequest models.AgentMetadataRequest
@@ -2124,6 +2124,9 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 			}
 		}
 		request.MetaData.TwitterUsername = assistant.TwitterUsername
+	} else {
+		request.MetaData.ChainId = strconv.Itoa(int(logRequest.NetworkID))
+		request.MetaData.AgentContractId = "1"
 	}
 	body, err := helpers.CurlURLString(
 		s.conf.AgentOffchain.Url+"/async/enqueue",
