@@ -18,7 +18,7 @@ yarn && yarn build
 
 ### Create and Manage Your Agent
 
-1. Modify the Default Characte
+1. Modify the Default character:
     - Open `/dagent/src/dagentCharacter.ts` to modify the default character. Uncomment and edit.
 
 2. Set `OWNER_PRIVATE_KEY`:
