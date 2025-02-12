@@ -416,36 +416,36 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
-
-			chargeMore := k.CalcChargeMore() // Ensure charge_more is executed before the file's status is changed.
+			// TODO
+			// chargeMore := k.CalcChargeMore() // Ensure charge_more is executed before the file's status is changed.
 			if k.Status == models.KnowledgeBaseStatusPaymentReceipt {
-				_, kbFileIds, err := uc.insertFilesToRAG(ctx, k)
+				_, _, err := uc.insertFilesToRAG(ctx, k)
 				if err != nil {
 					continue
 				}
 
-				// transfer fee to backend wallet
-				i := 0
-				var transferErr error
-				var hash string
-				for i < 10 {
-					amount := new(big.Int).SetInt64(int64(chargeMore))
-					hash, transferErr = uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
-					if transferErr != nil {
-						i += 1
-						time.Sleep(3 * time.Second)
-						continue
-					}
+				// TODO transfer fee to backend wallet
+				// i := 0
+				// var transferErr error
+				// var hash string
+				// for i < 10 {
+				// 	amount := new(big.Int).SetInt64(int64(chargeMore))
+				// 	hash, transferErr = uc.transferFund(k.DepositPrivKey, uc.conf.KnowledgeBaseConfig.BackendWallet, amount, k.NetworkID)
+				// 	if transferErr != nil {
+				// 		i += 1
+				// 		time.Sleep(3 * time.Second)
+				// 		continue
+				// 	}
 
-					if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
-						return err
-					}
-					break
-				}
+				// 	if err := uc.knowledgeBaseFileRepo.UpdateTransferHash(ctx, kbFileIds, hash); err != nil {
+				// 		return err
+				// 	}
+				// 	break
+				// }
 
-				if transferErr != nil && hash == "" {
-					_, _ = uc.SendMessage(ctx, fmt.Sprintf("transferFund for agent %s (%d) - has error: %s ", k.Name, k.ID, transferErr.Error()), uc.notiErrorChanId)
-				}
+				// if transferErr != nil && hash == "" {
+				// 	_, _ = uc.SendMessage(ctx, fmt.Sprintf("transferFund for agent %s (%d) - has error: %s ", k.Name, k.ID, transferErr.Error()), uc.notiErrorChanId)
+				// }
 			}
 		}
 
@@ -455,7 +455,12 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 }
 
 func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.KnowledgeBase) error {
-	knPrice := new(big.Float).SetFloat64(kn.CalcChargeMore())
+	price, err := uc.knowledgeBaseFileRepo.CalcTotalFee(ctx, kn.ID)
+	if err != nil {
+		return err
+	}
+
+	knPrice := new(big.Float).SetFloat64(price)
 	knPrice = knPrice.Mul(knPrice, big.NewFloat(1e18))
 	_knPrice := new(big.Int)
 	_knPrice, _ = knPrice.Int(_knPrice)
@@ -626,7 +631,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
 			r := &lighthouse.FileInLightHouse{}
 			if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
-				r.IsInsert = true
+				r.IsInserted = true
 				result = append(result, r)
 				continue
 			}
@@ -649,7 +654,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 			map[string]interface{}{"filecoin_hash_raw_data": f.FilecoinHashRawData, "status": models.KnowledgeBaseFileStatusDone},
 		)
 		kbFileIds = append(kbFileIds, f.ID)
-		r.IsInsert = false
+		r.IsInserted = false
 		result = append(result, r)
 	}
 
