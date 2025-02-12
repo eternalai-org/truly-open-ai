@@ -22,6 +22,7 @@ fi
 #DeepSeek-R1-Distill-Qwen-1.5B-Q8 is being tested.
 #ollama create DeepSeek-R1-Distill-Qwen-1.5B-Q8 -f Modelfile
 # use this instead
+ollama start &
 ollama run deepseek-r1:1.5b-qwen-distill-q8_0 > output.log 2>&1 &
 
 cd ../..
