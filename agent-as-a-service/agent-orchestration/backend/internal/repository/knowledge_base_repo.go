@@ -21,6 +21,7 @@ type KnowledgeBaseRepo interface {
 	UpdateStatus(ctx context.Context, model *models.KnowledgeBase) error
 	UpdateById(ctx context.Context, id uint, updatedFields map[string]interface{}) error
 	GetByKBId(context.Context, string) (*models.KnowledgeBase, error)
+	GetByKBTokenId(context.Context, string) (*models.KnowledgeBase, error)
 	GetManyByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error)
 	GetKBAgentsUsedOfSocialAgent(ctx context.Context, socialAgentId uint) ([]*models.KnowledgeBase, error)
 }
@@ -121,6 +122,18 @@ func (r *knowledgeBaseRepo) GetByKBId(ctx context.Context, kbId string) (*models
 	err := r.db.WithContext(ctx).
 		Preload("KnowledgeBaseFiles").
 		Where("kb_id = ? ", kbId).
+		First(knowledge).Error
+	if err != nil {
+		return nil, err
+	}
+	return knowledge, nil
+}
+
+func (r *knowledgeBaseRepo) GetByKBTokenId(ctx context.Context, kbTokenId string) (*models.KnowledgeBase, error) {
+	knowledge := &models.KnowledgeBase{}
+	err := r.db.WithContext(ctx).
+		Preload("KnowledgeBaseFiles").
+		Where("kb_token_id = ? ", kbTokenId).
 		First(knowledge).Error
 	if err != nil {
 		return nil, err

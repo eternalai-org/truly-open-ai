@@ -29,6 +29,7 @@ type AgentStoreMissionReq struct {
 	Icon        string           `json:"icon"`
 	NetworkID   uint64           `json:"network_id"`
 	Model       string           `json:"model"`
+	Status      string           `json:"status"`
 }
 
 type AuthenAgentStoreCallback struct {
@@ -40,6 +41,7 @@ type AgentStoreResp struct {
 	ID                 uint                     `json:"id"`
 	CreatedAt          time.Time                `json:"created_at"`
 	Name               string                   `json:"name"`
+	Owner              string                   `json:"owner"`
 	Description        string                   `json:"description"`
 	AuthenUrl          string                   `json:"authen_url"`
 	Icon               string                   `json:"icon"`
@@ -48,6 +50,8 @@ type AgentStoreResp struct {
 	Status             models.AgentStoreStatus  `json:"status"`
 	Price              numeric.BigFloat         `json:"price"`
 	NumInstall         uint                     `json:"num_install"`
+	NumUsage           uint                     `json:"num_usage"`
+	Type               string                   `json:"type"`
 	AgentStoreMissions []*AgentStoreMissionResp `json:"agent_store_missions"`
 }
 
@@ -67,6 +71,9 @@ func NewAgentStoreResp(m *models.AgentStore) *AgentStoreResp {
 		NumInstall:         m.NumInstall,
 		Status:             m.Status,
 		Price:              m.Price,
+		Owner:              m.OwnerAddress,
+		Type:               string(m.Type),
+		NumUsage:           m.NumUsage,
 		AgentStoreMissions: NewAgentStoreMissionRespArray(m.AgentStoreMissions),
 	}
 }
@@ -90,6 +97,7 @@ type AgentStoreMissionResp struct {
 	ToolList     string           `json:"tool_list"`
 	Icon         string           `json:"icon"`
 	NumUsed      uint             `json:"num_used"`
+	Status       string           `json:"status"`
 }
 
 func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionResp {
@@ -107,6 +115,7 @@ func NewAgentStoreMissionResp(m *models.AgentStoreMission) *AgentStoreMissionRes
 		ToolList:     m.ToolList,
 		Icon:         m.Icon,
 		NumUsed:      m.NumUsed,
+		Status:       string(m.Status),
 	}
 }
 func NewAgentStoreMissionRespArray(arr []*models.AgentStoreMission) []*AgentStoreMissionResp {

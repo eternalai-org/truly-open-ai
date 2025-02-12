@@ -73,12 +73,15 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 	return agentStore, nil
 }
 
-func (s *Service) GetListAgentStore(ctx context.Context, types string, page, limit int) ([]*models.AgentStore, uint, error) {
+func (s *Service) GetListAgentStore(ctx context.Context, search, types string, page, limit int) ([]*models.AgentStore, uint, error) {
 	filters := map[string][]interface{}{
 		"status = ?": {models.AgentStoreStatusActived},
 	}
 	if types != "" {
 		filters["type in (?)"] = []interface{}{strings.Split(types, ",")}
+	}
+	if search != "" {
+		filters["name like ?"] = []interface{}{"%" + search + "%"}
 	}
 	res, count, err := s.dao.FindAgentStore4Page(
 		daos.GetDBMainCtx(ctx),
@@ -104,7 +107,7 @@ func (s *Service) GetListAgentStoreByOwner(ctx context.Context, userAddress stri
 	res, count, err := s.dao.FindAgentStore4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"user_id = ?": {user.ID},
+			"owner_id = ?": {user.ID},
 		},
 		map[string][]interface{}{
 			"AgentStoreMissions": {},
@@ -160,6 +163,9 @@ func (s *Service) SaveMissionStore(ctx context.Context, userAddress string, agen
 				mission.Description = req.Description
 				mission.UserPrompt = req.Prompt
 				mission.ToolList = req.ToolList
+				if req.Status != "" {
+					mission.Status = models.AgentStoreStatus(req.Status)
+				}
 			} else {
 				mission = &models.AgentStoreMission{
 					AgentStoreID: agentStoreID,
@@ -169,6 +175,7 @@ func (s *Service) SaveMissionStore(ctx context.Context, userAddress string, agen
 					Price:        req.Price,
 					ToolList:     req.ToolList,
 					Icon:         req.Icon,
+					Status:       models.AgentStoreStatusActived,
 				}
 			}
 			if err != nil {

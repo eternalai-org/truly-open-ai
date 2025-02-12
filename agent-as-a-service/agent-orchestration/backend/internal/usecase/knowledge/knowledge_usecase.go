@@ -413,11 +413,6 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 		}
 
 		for _, k := range resp {
-			// TODO Remove before commit
-			if k.ID != 41 {
-				continue
-			}
-
 			if err := uc.checkBalance(ctx, k); err != nil {
 				continue
 			}
@@ -460,7 +455,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 }
 
 func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.KnowledgeBase) error {
-	knPrice := new(big.Float).SetFloat64(kn.ChargeMore)
+	knPrice := new(big.Float).SetFloat64(kn.CalcChargeMore())
 	knPrice = knPrice.Mul(knPrice, big.NewFloat(1e18))
 	_knPrice := new(big.Int)
 	_knPrice, _ = knPrice.Int(_knPrice)
@@ -607,6 +602,10 @@ func (uc *knowledgeUsecase) GetKnowledgeBaseByKBId(ctx context.Context, kbId str
 	return uc.knowledgeBaseRepo.GetByKBId(ctx, kbId)
 }
 
+func (uc *knowledgeUsecase) GetKnowledgeBaseByKBTokenId(ctx context.Context, kbId string) (*models.KnowledgeBase, error) {
+	return uc.knowledgeBaseRepo.GetByKBTokenId(ctx, kbId)
+}
+
 func (uc *knowledgeUsecase) GetManyKnowledgeBaseByQuery(ctx context.Context, query string, orderOption string, offset int, limit int) ([]*models.KnowledgeBase, error) {
 	return uc.knowledgeBaseRepo.GetManyByQuery(ctx, query, orderOption, offset, limit)
 }
@@ -668,7 +667,6 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 }
 
 func (uc *knowledgeUsecase) transferFund(priKeyFrom string, toAddress string, fund *big.Int, networkId uint64) (string, error) {
-	return "", nil
 	_, pubKey, err := eth.GetAccountInfo(priKeyFrom)
 	if err != nil {
 		return "", fmt.Errorf("get account info: %v", err)
