@@ -2074,7 +2074,7 @@ func (s *Service) getTaskToolSet(assistant *models.AgentInfo, taskReq string) (s
 }
 
 func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *models.AgentInfo) (string, error) {
-	if logRequest.AgentBaseModel == "" && assistant != nil {
+	if assistant != nil {
 		logRequest.AgentBaseModel = assistant.AgentBaseModel
 	}
 	var agentMetaDataRequest models.AgentMetadataRequest
