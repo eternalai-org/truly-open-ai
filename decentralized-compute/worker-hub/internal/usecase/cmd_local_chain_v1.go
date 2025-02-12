@@ -316,7 +316,7 @@ func (c *cmdLocalChainV1) CreateConfigENV(minerAddress string, index int) error 
 	env := ""
 	env += fmt.Sprintf("PUBSUB_URL=%v\n", cnf.PubSubURL)
 	env += fmt.Sprintf("PLATFORM=%v\n", cnf.Platform)
-	env += fmt.Sprintf("API_URL=%v\n", cnf.RunPodInternal)
+	env += fmt.Sprintf("API_URL=%v\n", apiURL)
 	env += fmt.Sprintf("API_KEY=%v\n", cnf.RunPodAPIKEY)
 	env += fmt.Sprintf("LIGHT_HOUSE_API_KEY=%v\n", os.Getenv("LIGHT_HOUSE_API_KEY"))
 	env += fmt.Sprintf("CLUSTER_ID=%v\n", cnf.ModelID)
