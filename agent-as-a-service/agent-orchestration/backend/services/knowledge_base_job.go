@@ -68,7 +68,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		return fmt.Errorf("file coin hash is empty")
 	}
 	if len(info.KBTokenID) > 0 {
-		oldStatus := info.Status
+		/*oldStatus := info.Status
 		info.Status = models.KnowledgeBaseStatusMinted
 		err := s.KnowledgeUsecase.UpdateKnowledgeBaseById(ctx, info.ID, map[string]interface{}{
 			"status": info.Status,
@@ -79,7 +79,7 @@ func (s *Service) DeployAgentKnowledgeBase(ctx context.Context, info *models.Kno
 		s.SendTeleMsgToKBChannel(ctx,
 			fmt.Sprintf("Update KB Status \n kb_id:%v \n old_status:%v \n new_status:%v \n mint id :%v \n tx:%v",
 				info.ID, oldStatus, info.Status, info.KBTokenID, info.KBTokenMintTx),
-			s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert)
+			s.conf.KnowledgeBaseConfig.KBActivitiesTelegramAlert)*/
 		return nil
 	}
 	appConfig, err := s.AppConfigUseCase.GetAllNameValueInAppConfig(ctx, strconv.FormatUint(info.NetworkID, 10))
