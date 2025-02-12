@@ -73,12 +73,15 @@ func (s *Service) SaveAgentStore(ctx context.Context, userAddress string, req *s
 	return agentStore, nil
 }
 
-func (s *Service) GetListAgentStore(ctx context.Context, types string, page, limit int) ([]*models.AgentStore, uint, error) {
+func (s *Service) GetListAgentStore(ctx context.Context, search, types string, page, limit int) ([]*models.AgentStore, uint, error) {
 	filters := map[string][]interface{}{
 		"status = ?": {models.AgentStoreStatusActived},
 	}
 	if types != "" {
 		filters["type in (?)"] = []interface{}{strings.Split(types, ",")}
+	}
+	if search != "" {
+		filters["name like ?"] = []interface{}{"%" + search + "%"}
 	}
 	res, count, err := s.dao.FindAgentStore4Page(
 		daos.GetDBMainCtx(ctx),
