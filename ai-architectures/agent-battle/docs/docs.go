@@ -157,7 +157,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Tweet ID",
                         "name": "tweet_id",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],

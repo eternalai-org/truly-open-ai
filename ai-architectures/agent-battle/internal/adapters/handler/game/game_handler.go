@@ -140,7 +140,7 @@ func (h gameHandler) startGame(ctx *fiber.Ctx) error {
 // @Tags Game
 // @Accept json
 // @Produce json
-// @Param tweet_id query string true "Tweet ID"
+// @Param tweet_id path string true "Tweet ID"
 // @Success 200
 // @Router /api/v1/game/{tweet_id}/refund-expired-players [post]
 func (h gameHandler) refundExpiredPlayers(ctx *fiber.Ctx) error {

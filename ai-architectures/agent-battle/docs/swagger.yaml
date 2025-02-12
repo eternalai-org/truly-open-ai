@@ -183,7 +183,7 @@ paths:
       - application/json
       parameters:
       - description: Tweet ID
-        in: query
+        in: path
         name: tweet_id
         required: true
         type: string
