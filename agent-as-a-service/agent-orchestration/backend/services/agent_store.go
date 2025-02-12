@@ -104,7 +104,7 @@ func (s *Service) GetListAgentStoreByOwner(ctx context.Context, userAddress stri
 	res, count, err := s.dao.FindAgentStore4Page(
 		daos.GetDBMainCtx(ctx),
 		map[string][]interface{}{
-			"user_id = ?": {user.ID},
+			"owner_id = ?": {user.ID},
 		},
 		map[string][]interface{}{
 			"AgentStoreMissions": {},
