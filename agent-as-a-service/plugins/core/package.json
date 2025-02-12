@@ -1,6 +1,6 @@
 {
   "name": "@eternalai-dagent/core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/eternalai-org/eternal-ai"
@@ -18,12 +18,12 @@
     "publish:skip-tag": "yarn publish --no-git-tag-version"
   },
   "dependencies": {
+    "@ai-sdk/openai": "1.0.5",
+    "ai": "3.4.33",
     "axios": "^1.6.5",
     "ethers": "5.7.2",
-    "ai": "3.4.33",
-    "zod": "3.23.8",
     "openai": "4.73.0",
-    "@ai-sdk/openai": "1.0.5"
+    "zod": "3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
