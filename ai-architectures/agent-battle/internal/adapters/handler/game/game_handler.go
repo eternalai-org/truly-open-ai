@@ -142,7 +142,7 @@ func (h gameHandler) startGame(ctx *fiber.Ctx) error {
 // @Produce json
 // @Param tweet_id query string true "Tweet ID"
 // @Success 200
-// @Router /api/v1/game/refund-expired-players [post]
+// @Router /api/v1/game/{tweet_id}/refund-expired-players [post]
 func (h gameHandler) refundExpiredPlayers(ctx *fiber.Ctx) error {
 	return rest.NewFiberHandlerTemplate(
 		func(ctx *fiber.Ctx, _ string) (interface{}, error) {

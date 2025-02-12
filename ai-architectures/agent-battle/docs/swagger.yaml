@@ -177,6 +177,24 @@ paths:
       summary: End game
       tags:
       - Game
+  /api/v1/game/{tweet_id}/refund-expired-players:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tweet ID
+        in: query
+        name: tweet_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Refund expired players
+      tags:
+      - Game
   /api/v1/game/{tweet_id}/result:
     post:
       consumes:
@@ -201,24 +219,6 @@ paths:
           schema:
             $ref: '#/definitions/agent-battle_internal_core_model.Game'
       summary: Game result
-      tags:
-      - Game
-  /api/v1/game/refund-expired-players:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Tweet ID
-        in: query
-        name: tweet_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Refund expired players
       tags:
       - Game
   /api/v1/game/start:
