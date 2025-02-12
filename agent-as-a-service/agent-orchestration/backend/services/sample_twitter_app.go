@@ -12,7 +12,7 @@ import (
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/types/numeric"
 )
 
-func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode string) (string, error) {
+func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode string, installUri string) (string, error) {
 	if installCode == "" {
 		return "", errs.NewError(errs.ErrBadRequest)
 	}
@@ -20,6 +20,7 @@ func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode
 		s.conf.SampleTwitterApp.RedirectUri,
 		map[string]string{
 			"install_code": installCode,
+			"install_uri":  installUri,
 		},
 	)
 	return helpers.BuildUri(
@@ -36,7 +37,7 @@ func (s *Service) SampleTwitterAppAuthenInstall(ctx context.Context, installCode
 	), nil
 }
 
-func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCode string, code string) (string, error) {
+func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCode string, installUri string, code string) (string, error) {
 	if installCode == "" || code == "" {
 		return "", errs.NewError(errs.ErrBadRequest)
 	}
@@ -45,6 +46,7 @@ func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCod
 			s.conf.SampleTwitterApp.RedirectUri,
 			map[string]string{
 				"install_code": installCode,
+				"install_uri":  installUri,
 			},
 		)
 		respOauth, err := s.twitterAPI.TwitterOauthCallbackForSampleApp(
@@ -118,7 +120,7 @@ func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCod
 	}()
 	if err != nil {
 		return helpers.BuildUri(
-			s.conf.SampleTwitterApp.ReturnUri,
+			installUri,
 			map[string]string{
 				"install_code": installCode,
 				"error":        err.Error(),
@@ -130,7 +132,7 @@ func (s *Service) SampleTwitterAppAuthenCallback(ctx context.Context, installCod
 	}
 	returnData := base64.StdEncoding.EncodeToString([]byte(helpers.ConvertJsonString(params)))
 	return helpers.BuildUri(
-		s.conf.SampleTwitterApp.ReturnUri,
+		installUri,
 		map[string]string{
 			"install_code": installCode,
 			"return_data":  returnData,
