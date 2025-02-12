@@ -36,7 +36,9 @@ async def async_batching(data: AsyncGenerator, batch_size=1):
             
     if len(current_batch) > 0:
         yield current_batch
-     
+
+def get_hash(*items):
+    return md5("".join(items).encode()).hexdigest()
 
 def sync2async(sync_func: Callable):
     async def async_func(*args, **kwargs):

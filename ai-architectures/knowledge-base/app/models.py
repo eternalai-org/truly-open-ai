@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, model_validator
 from typing import List, Optional, Any, Dict
 from enum import Enum
 import uuid
+from pathlib import Path
 
 class EmbeddedItem(BaseModel):
     embedding: Optional[List[float]] = None
@@ -32,10 +33,10 @@ class InsertInputSchema(BaseModel):
         if isinstance(data['texts'], str):
             data['texts'] = [data['texts']]
 
-        if 'kb' not in data and 'ref' not in data:
+        if data.get('kb', '') == '' and 'ref' not in data:
             raise ValueError("Either a reference or a knowledge base must be provided")
 
-        if data.get('kb') is None:
+        if data.get('kb', '') == '':
             data['kb'] = 'kb-' + data['ref']
 
         assert len(data['kb']) > 0, "Knowledge base must not be empty"
@@ -164,3 +165,20 @@ class QueryResult(BaseModel):
     content: str
     score: float
     reference: Optional[str] = None
+    
+class FilecoinData(BaseModel):
+    identifier: str
+    address: str
+
+    @model_validator(mode='before')
+    def validate_address(cls, data: dict):
+        if not isinstance(data, dict):
+            raise ValueError("Data must be a dictionary")
+
+        if 'address' not in data:
+            raise ValueError("Address must be provided")
+
+        if isinstance(data['address'], Path):
+            data['address'] = str(data['address'])
+
+        return data
