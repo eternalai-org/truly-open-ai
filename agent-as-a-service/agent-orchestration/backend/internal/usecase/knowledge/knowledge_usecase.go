@@ -455,7 +455,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 }
 
 func (uc *knowledgeUsecase) checkBalance(ctx context.Context, kn *models.KnowledgeBase) error {
-	knPrice := new(big.Float).SetFloat64(kn.ChargeMore)
+	knPrice := new(big.Float).SetFloat64(kn.CalcChargeMore())
 	knPrice = knPrice.Mul(knPrice, big.NewFloat(1e18))
 	_knPrice := new(big.Int)
 	_knPrice, _ = knPrice.Int(_knPrice)
@@ -663,7 +663,6 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 }
 
 func (uc *knowledgeUsecase) transferFund(priKeyFrom string, toAddress string, fund *big.Int, networkId uint64) (string, error) {
-	return "", nil
 	_, pubKey, err := eth.GetAccountInfo(priKeyFrom)
 	if err != nil {
 		return "", fmt.Errorf("get account info: %v", err)
