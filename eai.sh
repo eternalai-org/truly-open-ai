@@ -117,9 +117,12 @@ handle_api_commands() {
     case "$1" in
         "start")
           echo $api_folder
+          for pid in $(lsof -t -i:8484); do kill -9 $pid; done && \
+          rm -rf "./eai-chat" && \
           cd $api_folder  &&  \
           go build -o eai-chat main.go  && \
-          cp -i config.json.example config.json && \
+          rm -rf config.json && \
+          cp -i  config.json.example config.json && \
           cp -i "$api_folder/eai-chat"  "$current_dir/eai-chat" && \
           cd "$current_dir"  && \
           ./eai-chat server &
