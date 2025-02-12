@@ -46,8 +46,6 @@ async def update(request: UpdateInputSchema, background_tasks: BackgroundTasks) 
     handler = get_insertion_request_handler()
     handler.insert(request)
 
-    await drop_kb(request.kb)
-
     background_tasks.add_task(
         process_data, 
         request, 

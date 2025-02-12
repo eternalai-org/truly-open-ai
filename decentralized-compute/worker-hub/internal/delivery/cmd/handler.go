@@ -543,7 +543,12 @@ func (c *CMD) SetUpAutomaticallyOneStep() {
 
 func (c *CMD) handleCreateInfer(reader *bufio.Reader, node *pkg.Command) {
 	contextMsg := []model.LLMInferMessage{}
+	useStream := true
+
 	for {
+		var err error
+		var inferID *uint64
+
 		input := c.buildInputData(reader, node)
 		_prompt, ok := input[pkg.COMMAND_INFER_PROMPT]
 		if !ok {
@@ -561,24 +566,64 @@ func (c *CMD) handleCreateInfer(reader *bufio.Reader, node *pkg.Command) {
 				Content: _prompt,
 			})
 
-			_, inferID, result, err := c.localChainCMD.CreateInfer(contextMsg)
-			if err != nil {
-				fmt.Println("create infer error", err)
-				return
-			}
-
-			if result == nil {
-				err = errors.New("error while get result")
-				fmt.Println("create infer error", err)
-				return
-			}
-
 			fmt.Print(pkg.Line)
-			fmt.Print(pkg.PrintText("InferID#", *inferID))
 			fmt.Print(pkg.PrintText("Prompt", _prompt))
-			fmt.Print(pkg.PrintText("Result", *result))
-			fmt.Print(pkg.Line)
+			result := new(string)
+			if useStream {
+				outChan := make(chan model.StreamDataChannel)
+				errFChan := make(chan error)
 
+				go func(errFChan chan error, outChan chan model.StreamDataChannel) {
+					_, _, _, err = c.localChainCMD.CreateInferWithStream(contextMsg, outChan)
+				}(errFChan, outChan)
+
+				if err != nil {
+					fmt.Println("create infer error", err)
+					return
+				}
+
+				for v := range outChan {
+					if v.Err != nil {
+						err = v.Err
+						fmt.Println("create infer error", err)
+						return
+					}
+
+					if v.Data != nil {
+						if len(v.Data.Choices) > 0 {
+							msg := v.Data.Choices[0].Message.Content
+							fmt.Print(msg)
+							*result += msg
+						}
+
+						if inferID == nil {
+							inferID = &v.InferID
+						}
+					}
+
+				}
+
+				//fmt.Print(pkg.PrintText("InferID#", *inferID))
+
+			} else {
+				_, inferID, result, err = c.localChainCMD.CreateInfer(contextMsg)
+				if err != nil {
+					fmt.Println("create infer error", err)
+					return
+				}
+
+				if result == nil {
+					err = errors.New("error while get result")
+					fmt.Println("create infer error", err)
+					return
+				}
+
+				fmt.Print(pkg.PrintText("InferID#", *inferID))
+				fmt.Print(pkg.PrintText("Result", *result))
+			}
+
+			fmt.Println("")
+			fmt.Print(pkg.Line)
 			contextMsg = append(contextMsg, model.LLMInferMessage{
 				Role:    "assistant",
 				Content: *result,
@@ -661,6 +706,11 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 		rpc = "http://localhost:8545"
 	}
 
+	pubsub, ok := input[pkg.COMMAND_LOCAL_PUBSUB]
+	if !ok {
+		pubsub = "localhost:6380"
+	}
+
 	chainID, ok := input[pkg.COMMAND_LOCAL_CHAIN_ID]
 	if !ok {
 		chainID = "31337"
@@ -682,7 +732,10 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 
 	modelName, ok := input[pkg.COMMAND_LOCAL_MODEL_NAME]
 	if !ok {
-		modelName = "DeepSeek-R1-Distill-Qwen-1.5B-Q8"
+		modelName = "deepseek-r1:1.5b-qwen-distill-q8_0"
+
+		//TODO - wait util fix bug of DeepSeek-R1-Distill-Qwen-1.5B-Q8
+		//modelName = "DeepSeek-R1-Distill-Qwen-1.5B-Q8"
 	}
 
 	runPod, ok := input[pkg.COMMAND_LOCAL_RUN_POD_URL]
@@ -706,6 +759,7 @@ func (c *CMD) _startCreateConfigLogic(input map[string]string) error {
 	cnf.ChainID = chainID
 	cnf.ModelName = modelName
 	cnf.RunPodAPIKEY = runPodAPIKey
+	cnf.PubSubURL = pubsub
 
 	if runPod != "" && runPod != "1" {
 		cnf.RunPodInternal = runPod

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis"
 	"math/big"
 	"os"
 	"strconv"
@@ -33,6 +34,7 @@ type cmdLocalChainV1 struct {
 	rpc     string
 	chainID string
 	prvKey  string
+	rdb     *redis.Client
 }
 
 func NewCMDLocalChainV1() port.ICMDLocalChainV1 {
@@ -48,8 +50,16 @@ func NewCMDLocalChainV1() port.ICMDLocalChainV1 {
 		c.rpc = localCnf.Rpc
 		c.chainID = localCnf.ChainID
 		c.prvKey = localCnf.PrivateKey
-	}
 
+		// Connect to the Redis server
+		rdb := redis.NewClient(&redis.Options{
+			Addr:     localCnf.PubSubURL,
+			Password: "", // no password set
+			DB:       0,  // default DB
+		})
+
+		c.rdb = rdb
+	}
 	return c
 }
 
@@ -294,6 +304,7 @@ func (c *cmdLocalChainV1) CreateConfigENV(minerAddress string, index int) error 
 	cnf := c.ReadLocalChainCnf()
 
 	env := ""
+	env += fmt.Sprintf("PUBSUB_URL=%v\n", cnf.PubSubURL)
 	env += fmt.Sprintf("PLATFORM=%v\n", cnf.Platform)
 	env += fmt.Sprintf("API_URL=%v\n", cnf.RunPodInternal)
 	env += fmt.Sprintf("API_KEY=%v\n", cnf.RunPodAPIKEY)
@@ -522,6 +533,158 @@ break_here:
 
 		index += 1
 	}
+
+	// if chatCompletion == nil {
+	// 	return tx, &inferId, nil, errors.New("error while parse response")
+	// }
+
+	if len(chatCompletion.Choices) == 0 {
+		return tx, &inferId, nil, errors.New("error get data")
+	}
+
+	_ = txReceipt
+	_ = receipt
+	_ = pubkey
+
+	return tx, &inferId, &chatCompletion.Choices[0].Message.Content, nil
+}
+
+func (c *cmdLocalChainV1) CreateInferWithStream(prompt []model.LLMInferMessage, out chan model.StreamDataChannel) (*types.Transaction, *uint64, *string, error) {
+	ctx := context.Background()
+	cnf := c.ReadLocalChainCnf()
+	privKey := cnf.PrivateKey
+	chatCompletion := &model.LLMInferResponse{}
+	pubsub := c.rdb.Subscribe(pkg.STREAM_DATA_CHANNEL)
+
+	defer pubsub.Close()
+
+	client, err := eth.NewEthClient(cnf.Rpc)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	auth, err := eth.CreateBindTransactionOpts(ctx, client, privKey, pkg.LOCAL_CHAIN_GAS_LIMIT)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	p, err := hybrid_model.NewHybridModel(common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1]), client)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	_, pubkey, err := eth.GetAccountInfo(privKey)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	request := model.LLMInferRequest{
+		Model:    cnf.ModelName,
+		Messages: prompt,
+	}
+	_b, err := json.Marshal(request)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	tx, err := p.Infer(auth, _b, true)
+	if err != nil {
+		fmt.Println("wkHubAddress:", cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_HYBRID_MODEL_V1])
+		fmt.Println("err:", err)
+		return nil, nil, nil, err
+	}
+
+	txReceipt, err := eth.WaitForTxReceipt(client, tx.Hash())
+	if err != nil {
+		return nil, nil, nil, errors.Join(err, errors.New("error while waiting for tx"))
+	}
+
+	receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	_ = txReceipt
+
+	wkHub, err := worker_hub.NewWorkerHub(common.HexToAddress(cnf.Contracts[pkg.COMMAND_LOCAL_CONTRACTS_DEPLOY_ONE_C_PROMPT_SCHEULER_V1]), client)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	logs := receipt.Logs
+	inferIdBig := big.NewInt(0)
+	for _, item := range logs {
+		inferData, err := wkHub.ParseNewInference(*item)
+		if err == nil {
+			inferIdBig = inferData.InferenceId
+			break
+		}
+	}
+
+	inferId := inferIdBig.Uint64()
+	// wait for result
+	func(pubsub *redis.PubSub) {
+		existed := make(map[string]bool)
+		format := "%s_%d"
+
+		//PUSH data to the stream
+		fullMSG := ""
+		for {
+			//currentTime := time.Now().UTC()
+			msg, err := pubsub.ReceiveMessage()
+			if err != nil {
+				continue
+			}
+
+			//fmt.Printf("[%s] - Received message: %s\n", "INFO", msg.Payload)
+
+			_b := []byte(msg.Payload)
+			_dt := model.StreamingData{}
+
+			err1 := json.Unmarshal(_b, &_dt)
+			if err1 != nil {
+				continue
+			}
+
+			_, ok := existed[fmt.Sprintf(format, _dt.InferenceID, _dt.StreamID)]
+			if ok {
+				continue
+			}
+
+			if inferIdBig.String() != _dt.InferenceID {
+				continue
+			}
+
+			chatCompletion.Choices = make([]model.LLMInferChoice, len(_dt.Data.Choices))
+			chatCompletion.Id = _dt.Data.Id
+			chatCompletion.Object = _dt.Data.Object
+			chatCompletion.Model = _dt.Data.Model
+			chatCompletion.Created = _dt.Data.Created
+			chatCompletion.IsStop = _dt.Stop
+			for k, choice := range _dt.Data.Choices {
+				chatCompletion.Choices[k].Message.Role = choice.Delta.Role
+				chatCompletion.Choices[k].Message.Content = choice.Delta.Content
+				fullMSG += choice.Delta.Content
+			}
+
+			_out := model.StreamDataChannel{
+				Err:  err,
+				Data: chatCompletion,
+			}
+
+			if chatCompletion != nil {
+				_out.InferID = chatCompletion.OnchainData.InferId
+			}
+
+			out <- _out
+			existed[fmt.Sprintf(format, _dt.InferenceID, _dt.StreamID)] = true
+			if _dt.Stop {
+				break
+			}
+			//time.Sleep(500 * time.Microsecond)
+		}
+
+		close(out)
+	}(pubsub)
 
 	// if chatCompletion == nil {
 	// 	return tx, &inferId, nil, errors.New("error while parse response")

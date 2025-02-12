@@ -9,19 +9,18 @@ from .models import (
     QueryResult,
     EmbeddedItem,
     APIStatus,
-    ResponseMessage
+    ResponseMessage,
+    FilecoinData
 )
 import requests
 import subprocess
 import os
-import aiohttp
 import aiofiles
 import asyncio
 import json
 import os
 import shutil
 import subprocess
-from pathlib import Path
 
 from docling.datamodel.base_models import InputFormat, DocItemLabel
 from docling.datamodel.pipeline_options import PdfPipelineOptions
@@ -32,7 +31,7 @@ import logging
 from docling.chunking import HybridChunker
 from docling.document_converter import DocumentConverter, FormatOption, ConversionResult
 from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
-from typing import List, Union
+from typing import List, Union, Optional
 import random
 
 from . import constants as const
@@ -40,7 +39,15 @@ from .embedding import get_embedding_models, get_default_embedding_model, get_to
 from pymilvus import MilvusClient, FieldSchema, CollectionSchema, DataType, Collection
 from .wrappers import milvus_kit, redis_kit
 import httpx
-from .utils import async_batching, get_content_checksum, sync2async, limit_asyncio_concurrency, get_tmp_directory, batching
+from .utils import (
+    async_batching, 
+    get_content_checksum,
+    sync2async,
+    limit_asyncio_concurrency, 
+    get_tmp_directory,
+    batching,
+    get_hash
+)
 import json
 import os
 import numpy as np
@@ -247,8 +254,11 @@ async def inserting(_data: List[EmbeddedItem], model_use: EmbeddingModel, metada
     logger.info(f"Successfully inserted {insert_cnt} items to {metadata['kb']} (collection: {model_use.identity()});")
     return insert_cnt
 
-async def chunking_and_embedding(url_or_texts: Union[str, List[str]], model_use: EmbeddingModel) -> AsyncGenerator:
+async def chunking_and_embedding(url_or_texts: Union[str, List[str], FilecoinData], model_use: EmbeddingModel) -> AsyncGenerator:
     to_retry = []   
+    
+    if isinstance(url_or_texts, FilecoinData):
+        url_or_texts = url_or_texts.address
     
     if isinstance(url_or_texts, str):
         async for item in url_chunking(url_or_texts, model_use):
@@ -302,7 +312,13 @@ async def chunking_and_embedding(url_or_texts: Union[str, List[str]], model_use:
     else:
         raise ValueError("Invalid input type; Expecting str or list of str, got {}".format(type(url_or_texts)))
 
-async def export_collection_data(collection: str, workspace_directory: str, filter_expr='', include_embedding=True, include_identity=False) -> str:
+async def export_collection_data(
+    collection: str, 
+    workspace_directory: str, 
+    filter_expr='', 
+    include_embedding=True, 
+    include_identity=False
+) -> str:
     fields_output = ['content', 'reference', 'hash']
 
     if include_embedding:   
@@ -394,10 +410,15 @@ async def export_collection_data(collection: str, workspace_directory: str, filt
 _running_tasks = set([])
 
 
-
-async def smaller_task(url_or_texts: Union[List[str], str], kb: str, model_use: EmbeddingModel):
+async def smaller_task(url_or_texts: Union[List[str], str, FilecoinData], kb: str, model_use: EmbeddingModel):
 
     n_chunks, fails_count = 0, 0
+    identifier = ""
+    
+    if isinstance(url_or_texts, str):
+        identifier = url_or_texts
+    elif isinstance(url_or_texts, FilecoinData):
+        identifier = url_or_texts.identifier
 
     async for data in async_batching(
         chunking_and_embedding(url_or_texts, model_use), 
@@ -410,62 +431,113 @@ async def smaller_task(url_or_texts: Union[List[str], str], kb: str, model_use: 
             model_use=model_use, 
             metadata = {
                 'kb': kb, 
-                'reference': url_or_texts if isinstance(url_or_texts, str) else ""
+                'reference': identifier
             }
         )
 
-        fails_count += len([e for e in data if e.error is not None])
+        fails_count += len([
+            e for e in data 
+            if e.error is not None
+        ])
 
     return n_chunks, fails_count
 
-async def download_file(session, url, path):
-    async with session.get(url) as response:
-        response.raise_for_status()
+@limit_asyncio_concurrency(4)
+async def download_file(
+    session: httpx.AsyncClient, url: str, path: str
+):
+    async with session.stream("GET", url) as response:
         async with aiofiles.open(path, 'wb') as f:
-            async for chunk in response.content.iter_chunked(8192):
+            async for chunk in response.aiter_bytes(8192):
                 await f.write(chunk)
-    print(f"Downloaded {path}")
 
-async def download_and_extract_from_filecoin(url: str, tmp_dir: str):
-    list_files = []
-    metadata_path = Path(tmp_dir) / "metadata.json"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            async with aiofiles.open(metadata_path, 'wb') as f:
-                await f.write(await response.read())
+    logger.info(f"Downloaded {path}")
 
-        with open(metadata_path, 'r') as f:
-            list_metadata = json.load(f)
+async def get_filecoin_file_identifier(metadata: dict) -> str:
+    if metadata["is_part"]:
+        parts = sorted(metadata["files"], key=lambda x: x["index"])
+        return await sync2async(get_hash)(*[p['hash'] for p in parts])
+    
+    return metadata['files'][0]['hash']
+    
+async def download_filecoin_item(
+    metadata: dict, tmp_dir: str, session: httpx.AsyncClient
+) -> Optional[FilecoinData]:
+    identifier = await get_filecoin_file_identifier(metadata)
+    
+    if metadata["is_part"]:
+        parts = sorted(metadata["files"], key=lambda x: x["index"])
+        zip_parts, tasks = [], []
 
-        tasks = []
+        for part in parts:
+            part_url = f"{GATEWAY_IPFS_PREFIX}/{part['hash']}"
+            part_path = PathL(tmp_dir) / part['name']
+            tasks.append(download_file(session, part_url, part_path))
+            zip_parts.append(part_path)
+
+        await asyncio.gather(*tasks)
+
+        name = metadata['name']
+        destination = PathL(tmp_dir) / name
+        command = f"cat {tmp_dir}/{name}.zip.part-* | pigz -p 2 -d | tar -xf - -C {tmp_dir}"
+
+        await sync2async(subprocess.run)(
+            command, shell=True, check=True
+        )
+
+        logger.info(f"Successfully extracted files to {destination}")
+        afiles = []
+
+        for root, dirs, files in os.walk(destination):
+            for file in files:
+                afiles.append(os.path.join(root, file))
+
+        if len(afiles) > 0:
+            return FilecoinData(
+                identifier=identifier,
+                address=afiles[0]
+            )
+
+        logger.warning(f"No files extracted from {destination}")
+
+    else:
+        url = f"{GATEWAY_IPFS_PREFIX}/{metadata['files'][0]['hash']}"
+        path = PathL(tmp_dir) / metadata['files'][0]['name']
+        await download_file(session, url, path)
+
+        return FilecoinData(
+            identifier=identifier,
+            address=path
+        )
+        
+    return None
+
+async def download_and_extract_from_filecoin(
+    url: str, tmp_dir: str, ignore_inserted: bool=True
+) -> List[FilecoinData]:
+    list_files: List[FilecoinData] = []
+
+    async with httpx.AsyncClient() as session:
+        response = await session.get(url)
+
+        if response.status_code != 200:
+            raise ValueError(f"Failed to get metadata from {url}; Reason: {response.text}")
+
+        list_metadata = json.loads(response.content)
+
         for metadata in list_metadata:
-            print(metadata)
-            if metadata["is_part"]:
-                parts = sorted(metadata["files"], key=lambda x: x["index"])
-                zip_parts = []
-                for part in parts:
-                    part_url = f"{GATEWAY_IPFS_PREFIX}/{part['hash']}"
-                    part_path = Path(tmp_dir) / part['name']
-                    tasks.append(download_file(session, part_url, part_path))
-                    zip_parts.append(part_path)
+            metadata: dict
+            logger.info(metadata)
+            
+            if ignore_inserted and metadata.get("is_inserted", False):
+                continue
 
-                await asyncio.gather(*tasks)
+            fcdata = await download_filecoin_item(metadata, tmp_dir, session)
+            
+            if fcdata is not None:
+                list_files.append(fcdata)
 
-                destination = Path(tmp_dir) / metadata['name']
-                command = f"cat {tmp_dir}/{metadata['name']}.zip.part-* | pigz -p 2 -d | tar -xf - -C {tmp_dir}"
-                subprocess.run(command, shell=True, check=True)
-
-                print(f"Successfully extracted files to {destination}")
-                for root, dirs, files in os.walk(destination):
-                    for file in files:
-                        list_files.append(os.path.join(root, file))
-            else:
-                url = f"{GATEWAY_IPFS_PREFIX}/{metadata['files'][0]['hash']}"
-                path = Path(tmp_dir) / metadata['files'][0]['name']
-                await download_file(session, url, path)
-                list_files.append(str(path))
-    print("List of files to be processed: ", list_files)
+    logger.info(f"List of files to be processed: {list_files}")
     return list_files
 
 @limit_asyncio_concurrency(4)
@@ -474,6 +546,10 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
         return
 
     try:
+        # tmp dir preparation
+        tmp_dir = get_tmp_directory()
+        os.makedirs(tmp_dir, exist_ok=True)
+
         _running_tasks.add(req.id)
         kb = req.kb
         n_chunks, fails_count = 0, 0
@@ -485,17 +561,14 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
         logger.info(f"Received {json.dumps(verbosed_info_for_logging, indent=2)};\nStart handling task: {req.id}")
 
-
         futures = []
         sqrt_length_texts = int(len(req.texts) ** 0.5)
-        tmp_dir = get_tmp_directory()
-        
+
         if req.filecoin_metadata_url is not None:
-            os.makedirs(tmp_dir, exist_ok=True)
-            list_files = await download_and_extract_from_filecoin(req.filecoin_metadata_url, tmp_dir)
-            for file in list_files:
-                futures.append(asyncio.ensure_future(smaller_task(file, kb, model_use)))
-        
+            filecoin_files = await download_and_extract_from_filecoin(req.filecoin_metadata_url, tmp_dir)
+
+            for fc_file in filecoin_files:
+                futures.append(asyncio.ensure_future(smaller_task(fc_file, kb, model_use)))
 
         if len(req.texts) > 0:
             for chunk_of_texts in batching(req.texts, sqrt_length_texts):
@@ -506,15 +579,12 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
         if len(futures) > 0:
             results = await asyncio.gather(*futures)
-            shutil.rmtree(tmp_dir, ignore_errors=True)
-
             n_chunks = sum([r[0] for r in results])
             fails_count = sum([r[1] for r in results])
 
         logger.info(f"(overall) Inserted {n_chunks} items to {kb} (collection: {model_use.identity()});\nCompleted handling task: {req.id}")
 
         if req.hook is not None:
-
             response = InsertResponse(
                 ref=req.ref,
                 message=f"Inserted {n_chunks} (chunks); {fails_count} (fails); {len(req.file_urls)} (urls).",
@@ -522,7 +592,7 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
                 artifact_submitted=False
             )
 
-            status = APIStatus.OK if n_chunks > 0 else APIStatus.ERROR
+            status = APIStatus.OK if n_chunks > 0 or len(futures) == 0 else APIStatus.ERROR
             err_msg = None
 
             if status == APIStatus.ERROR:
@@ -530,25 +600,27 @@ async def process_data(req: InsertInputSchema, model_use: EmbeddingModel):
 
                 if n_chunks == 0:
                     err_msg += "No data extracted from the provided documents."
-                
+
+            body = ResponseMessage(
+                result=response.model_dump(),
+                status=status,
+                error=err_msg
+            ).model_dump()
 
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     const.ETERNALAI_RESULT_HOOK_URL,
-                    json=ResponseMessage(
-                        result=response.model_dump(),
-                        status=status,
-                        error=err_msg
-                    ).model_dump(),
+                    json=body,
                     timeout=httpx.Timeout(60.0),
                 )
 
-            logger.info(f"Hook response: {response.status_code}; {response.text}")
+            logger.info(f"Hook response: {response.status_code}; {response.text}; Body: {json.dumps(body, indent=2)}")
 
         await sync2async(get_insertion_request_handler().delete)(req.id)
         return n_chunks
 
     finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
         _running_tasks.remove(req.id)
 
 @schedule.every(5).minutes.do
