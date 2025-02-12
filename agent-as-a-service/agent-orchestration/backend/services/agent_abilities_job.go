@@ -2124,6 +2124,9 @@ func (s *Service) callWakeup(logRequest *models.AgentSnapshotPost, assistant *mo
 			}
 		}
 		request.MetaData.TwitterUsername = assistant.TwitterUsername
+	} else {
+		request.MetaData.ChainId = strconv.Itoa(int(logRequest.NetworkID))
+		request.MetaData.AgentContractId = "1"
 	}
 	body, err := helpers.CurlURLString(
 		s.conf.AgentOffchain.Url+"/async/enqueue",
