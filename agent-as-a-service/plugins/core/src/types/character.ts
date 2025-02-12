@@ -1,6 +1,6 @@
 import { IDeployAgentTokenParams } from "./api";
 import { AgentChainId } from "./chain";
-import { FarcasterAgentSnapshotMission, TwitterAgentSnapshotMission } from "./agent";
+import {FarcasterAgentSnapshotMission, AgentSnapshotMissionVer2, TwitterAgentSnapshotMission} from "./agent";
 
 export interface ModelConfiguration {
   maxSteps?: number;
@@ -61,6 +61,7 @@ export interface IAgentCharacter {
   deployToken?: IDeployAgentTokenParams;
   twitterMissions?: TwitterAgentSnapshotMission[];
   farcasterMissions?: FarcasterAgentSnapshotMission[];
+  agentMissions?: AgentSnapshotMissionVer2[]
   settings?: {
     aiProvider: AiProvider;
     modelConfig?: ModelConfiguration;

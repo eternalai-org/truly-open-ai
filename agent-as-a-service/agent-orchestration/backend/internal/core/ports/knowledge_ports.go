@@ -27,4 +27,6 @@ type IKnowledgeUsecase interface {
 	GetManyKnowledgeBaseByQuery(context.Context, string, string, int, int) ([]*models.KnowledgeBase, error)
 	SendMessage(_ context.Context, content string, chanId int64) (int, error)
 	CalcFeeByKnowledgeBaseId(ctx context.Context, kbId uint) (float64, error)
+	CheckBalance(ctx context.Context, kn *models.KnowledgeBase) error
+	ScanKnowledgeBaseStatusPaymentReceipt(ctx context.Context)
 }

@@ -8,10 +8,8 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "run:twitter": "node --loader ts-node/esm src/twitter.ts",
-    "run:farcaster": "node --loader ts-node/esm src/farcaster.ts",
+    "run:agent": "node --loader ts-node/esm src/agent/index.ts",
     "run:direct": "node --loader ts-node/esm src/direct/index.ts"
-
   },
   "dependencies": {
     "@eternalai-dagent/client-dagent": "*",

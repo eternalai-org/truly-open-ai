@@ -186,3 +186,11 @@ export type AgentApps = {
   icon: string;
   agent_store_missions: AgentAppMission[];
 }
+
+export interface AgentSnapshotMissionVer2 {
+  user_prompt: string,
+  interval: number,
+  tool_set: string,
+  agent_base_model: string,
+  agent_store_mission_id?: number
+}

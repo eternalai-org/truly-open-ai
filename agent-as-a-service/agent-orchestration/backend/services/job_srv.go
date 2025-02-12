@@ -135,6 +135,9 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	gocron.Every(180).Second().Do(func() {
 		s.KnowledgeUsecase.WatchWalletChange(context.Background())
 	})
+	gocron.Every(30).Second().Do(func() {
+		s.KnowledgeUsecase.ScanKnowledgeBaseStatusPaymentReceipt(context.Background())
+	})
 
 	gocron.Every(30).Second().Do(func() {
 		s.JobScanEventsByChain(context.Background())
