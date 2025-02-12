@@ -603,7 +603,7 @@ func (uc *knowledgeUsecase) insertFilesToRAG(ctx context.Context, kn *models.Kno
 	}{
 		FilecoinMetadataUrl: fmt.Sprintf("https://gateway.lighthouse.storage/ipfs/%s", hash),
 		Ref:                 fmt.Sprintf("%d", kn.ID),
-		Hook:                fmt.Sprintf("%s/%d", uc.webhookUrl, kn.ID),
+		Hook:                uc.webhookUrl,
 		Kb:                  kn.KbId,
 	}
 	logger.Info(categoryNameTracer, "insert_file_to_rag", zap.Any("body", body))
