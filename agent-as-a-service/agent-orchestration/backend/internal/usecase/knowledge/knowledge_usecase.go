@@ -437,7 +437,7 @@ func (uc *knowledgeUsecase) WatchWalletChange(ctx context.Context) error {
 	return nil
 }
 
-func (uc *knowledgeUsecase) ScanKnowledgeBaseStatusPaymentReceipt(ctx context.Context) error {
+func (uc *knowledgeUsecase) ScanKnowledgeBaseStatusPaymentReceipt(ctx context.Context) {
 	start := time.Now()
 	defer logger.Info(categoryNameTracer, "scan_knowledge_base_payment_receipt", zap.Any("start", start), zap.Any("end", time.Now()))
 	offset := 0
@@ -447,7 +447,7 @@ func (uc *knowledgeUsecase) ScanKnowledgeBaseStatusPaymentReceipt(ctx context.Co
 			ctx, models.KnowledgeBaseStatusPaymentReceipt, offset, limit,
 		)
 		if err != nil {
-			return err
+			return
 		}
 
 		if len(resp) == 0 {
@@ -487,7 +487,6 @@ func (uc *knowledgeUsecase) ScanKnowledgeBaseStatusPaymentReceipt(ctx context.Co
 		}
 		offset += len(resp)
 	}
-	return nil
 }
 
 func (uc *knowledgeUsecase) CheckBalance(ctx context.Context, kn *models.KnowledgeBase) error {
