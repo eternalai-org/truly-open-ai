@@ -67,22 +67,21 @@ class ReplyTaskBase(MultiStepTaskBase):
                     f"[{self.__class__.__name__}.process_task] Retrieved {len(mentioned_tweets)} recent mentions for {log.meta_data.twitter_username}"
                 )
 
-                async def get_specialties(tweet_info: ExtendedTweetInfo):
-                    return tweet_info, await sync2async(
-                        detect_tweet_specialties
-                    )(tweet_info)
-
-                futures = [
-                    asyncio.ensure_future(get_specialties(tweet_info))
-                    for tweet_info in mentioned_tweets
-                ]
+                futures = {
+                    asyncio.ensure_future(
+                        sync2async(detect_tweet_specialties)(tweet_info)
+                    ): idx
+                    for idx, tweet_info in enumerate(mentioned_tweets)
+                }
 
                 mentioned_data = []
 
                 totals = len(futures)
                 for idx, future in enumerate(asyncio.as_completed(futures)):
+                    og_idx = futures[future]
+                    tweet_info = mentioned_tweets[og_idx]
                     try:
-                        tweet_info, specialties = await future
+                        specialties = await future
                     except Exception as err:
                         logger.info(
                             f"[{log.id}] Error while processing index {idx+1} (out of {totals}): {err} (getting tweet specialties fail)."
@@ -158,18 +157,17 @@ class ReplyTaskBase(MultiStepTaskBase):
                 f"[{self.__class__.__name__}.process_task] Start processing {len(subtasks)} subtasks"
             )
 
-            async def execute_subtask(subtask: ReplySubtaskBase):
-                return subtask.tweet_info, await subtask.run()
-
-            futures = [
-                asyncio.ensure_future(execute_subtask(subtask))
-                for subtask in subtasks
-            ]
+            futures = {
+                asyncio.ensure_future(subtask.run()): idx
+                for idx, subtask in enumerate(subtasks)
+            }
 
             totals = len(futures)
             for idx, future in enumerate(asyncio.as_completed(futures)):
+                og_idx = futures[future]
+                tweet_info = subtasks[og_idx].tweet_info
                 try:
-                    tweet_info, result = await future
+                    result = await future
                     log.execute_info["task_result"].append(result)
                     logger.info(
                         f"[{log.id}] Successfully processed subtask index {idx+1} (out of {totals}) (tweet_id={tweet_info.tweet_object.tweet_id})"
