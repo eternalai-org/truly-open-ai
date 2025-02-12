@@ -31,11 +31,11 @@ type FileDetail struct {
 }
 
 type FileInLightHouse struct {
-	Name      string        `json:"name"`
-	IsInsert  bool          `json:"is_insert"`
-	IsPart    bool          `json:"is_part"`
-	CountPart int           `json:"count_part"`
-	Files     []*FileDetail `json:"files"`
+	Name       string        `json:"name"`
+	IsInserted bool          `json:"is_inserted"`
+	IsPart     bool          `json:"is_part"`
+	CountPart  int           `json:"count_part"`
+	Files      []*FileDetail `json:"files"`
 }
 
 func getBashExecutable() string {

@@ -631,7 +631,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 		if f.FilecoinHashRawData != "" && f.Status == models.KnowledgeBaseFileStatusDone {
 			r := &lighthouse.FileInLightHouse{}
 			if err := json.Unmarshal([]byte(f.FilecoinHashRawData), r); err == nil {
-				r.IsInsert = true
+				r.IsInserted = true
 				result = append(result, r)
 				continue
 			}
@@ -654,7 +654,7 @@ func (uc *knowledgeUsecase) uploadKBFileToLighthouseAndProcess(ctx context.Conte
 			map[string]interface{}{"filecoin_hash_raw_data": f.FilecoinHashRawData, "status": models.KnowledgeBaseFileStatusDone},
 		)
 		kbFileIds = append(kbFileIds, f.ID)
-		r.IsInsert = false
+		r.IsInserted = false
 		result = append(result, r)
 	}
 
