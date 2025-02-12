@@ -35,6 +35,8 @@ type gameUsecase struct {
 	setting      *model.Setting
 }
 
+var _ port.IGameUsecase = (*gameUsecase)(nil)
+
 func (uc *gameUsecase) ListGame(ctx context.Context, req *model.ListGameRequest) (*model.ListGameResponse, error) {
 	result := []*model.Game{}
 	filters := make(bson.M)
@@ -157,10 +159,9 @@ func (uc *gameUsecase) WatchGameState(ctx context.Context) error {
 
 		// If game end time has passed, then mark end game
 		if game.EndTime.Before(time.Now()) {
-			// check game balance and update players the last time,
-			// to make sure that the game balance is correct
-			if err := uc.checkGameBalance(ctx, game); err != nil {
-				logger.GetLoggerInstanceFromContext(ctx).Error("check_game_balance err", zap.Error(err))
+			// check expired players for refund
+			if err := uc.checkExpiredPlayers(ctx, game); err != nil {
+				logger.GetLoggerInstanceFromContext(ctx).Error("check_expired_players", zap.Error(err))
 			}
 
 			if err := uc.markEndGame(ctx, game); err != nil {
@@ -170,11 +171,36 @@ func (uc *gameUsecase) WatchGameState(ctx context.Context) error {
 		}
 
 		// If game is running, then check game balance and update players
-		if err := uc.checkGameBalance(ctx, game); err != nil {
-			logger.GetLoggerInstanceFromContext(ctx).Error("check_game_balance err", zap.Error(err))
+		if game.BetEndTime.Before(time.Now()) {
+			if err := uc.checkGameBalance(ctx, game); err != nil {
+				logger.GetLoggerInstanceFromContext(ctx).Error("check_game_balance err", zap.Error(err))
+			}
 		}
 	}
 	return nil
+}
+
+func (uc *gameUsecase) RefundsExpiredPlayers(ctx context.Context, tweetId string) error {
+	game, err := uc.gameByTweetId(ctx, tweetId)
+	if err != nil {
+		return err
+	}
+
+	if game.Status != model.GameStatusCompleted {
+		return errors.New("game is not completed")
+	}
+
+	// scan expired players
+	if err := uc.checkExpiredPlayers(ctx, game); err != nil {
+		logger.GetLoggerInstanceFromContext(ctx).Error(
+			"[RefundsExpiredPlayers] check_expired_players",
+			zap.Error(err),
+			zap.String("tweet_id", tweetId),
+		)
+		return err
+	}
+
+	return uc.refundToExpiredPlayers(ctx, game)
 }
 
 func (uc *gameUsecase) markEndGame(ctx context.Context, game *model.Game) error {
@@ -461,6 +487,34 @@ func (uc *gameUsecase) refundToPlayers(ctx context.Context, game *model.Game) er
 	return nil
 }
 
+func (uc *gameUsecase) refundToExpiredPlayers(ctx context.Context, game *model.Game) error {
+	refundAmountPerPlayer := game.CalculateRefundAmountPerExpiredPlayer()
+	for _, p := range refundAmountPerPlayer {
+		if p.RefundTxHash != "" {
+			continue
+		}
+
+		err := uc.handlerRefundTokenFromGameToPlayer(ctx, game, p)
+		if err != nil {
+			logger.GetLoggerInstanceFromContext(ctx).Error(
+				"[refundToExpiredPlayers] refund token from game to player failed",
+				zap.Error(err),
+				zap.String("fromAddress", game.Address),
+				zap.String("toAddress", p.Address),
+				zap.String("tweetId", game.TweetId),
+			)
+			return err
+		}
+
+		// update current refund result to game
+		if err := uc.updateGame(ctx, game); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // handlerRefundTokenFromGameToPlayer transfer token from game to player address
 func (uc *gameUsecase) handlerRefundTokenFromGameToPlayer(
 	ctx context.Context,
@@ -573,6 +627,65 @@ func (uc *gameUsecase) checkGameBalance(ctx context.Context, game *model.Game) e
 	return uc.updateGame(ctx, game)
 }
 
+func (uc *gameUsecase) checkExpiredPlayers(ctx context.Context, game *model.Game) error {
+	logger.GetLoggerInstanceFromContext(ctx).Info("check_expired_players", zap.String("tweet_id", game.TweetId))
+	currentBlock, err := uc.erc20Usecase.CurrentBlockNumber(ctx)
+	if err != nil {
+		return err
+	}
+
+	fromBlock := currentBlock - 10_000
+	if game.CurrentBlock != 0 {
+		fromBlock = game.CurrentBlock
+	}
+
+	iter, err := uc.erc20Usecase.FilterTransfer(ctx, fromBlock, currentBlock, nil, game.AgentAddresses())
+	if err != nil {
+		return err
+	}
+
+	for iter.Next() {
+		isSkip := false
+		e := iter.Event
+		if len(game.Players) == 0 {
+			game.Players = make([]*model.Player, 0)
+		}
+
+		for _, p := range game.Players {
+			// If player is exist, then skipping
+			// not checking the case-insensitivity of the address and txHash
+			if strings.EqualFold(e.From.Hex(), p.Address) &&
+				strings.EqualFold(e.Raw.TxHash.Hex(), p.TxHash) {
+				isSkip = true
+				break
+			}
+		}
+
+		for _, p := range game.ExpiredPlayers {
+			// If player is exist, then skipping
+			// not checking the case-insensitivity of the address and txHash
+			if strings.EqualFold(e.From.Hex(), p.Address) &&
+				strings.EqualFold(e.Raw.TxHash.Hex(), p.TxHash) {
+				isSkip = true
+				break
+			}
+		}
+
+		if isSkip {
+			continue
+		}
+
+		game.ExpiredPlayers = append(game.ExpiredPlayers, &model.Player{
+			Address:           utils.BeatifyWalletAddress(e.From.Hex()),
+			BetToAgentAddress: utils.BeatifyWalletAddress(e.To.Hex()),
+			Amount:            cryptoamount.NewCryptoAmountFromBigInt(e.Value),
+			TxHash:            e.Raw.TxHash.Hex(),
+		})
+	}
+
+	return uc.updateGame(ctx, game)
+}
+
 func (uc *gameUsecase) StartGame(ctx context.Context, request *model.StartGameRequest) (*model.Game, error) {
 	logger.GetLoggerInstanceFromContext(ctx).Info("start_game", zap.Any("request", request))
 	game, err := uc.gameByTweetId(ctx, request.TweetId)
@@ -587,6 +700,11 @@ func (uc *gameUsecase) StartGame(ctx context.Context, request *model.StartGameRe
 	game = &model.Game{
 		TweetId: request.TweetId,
 		EndTime: time.Now().Add(time.Duration(request.TimeOut) * time.Second),
+	}
+	if request.BetTimeOut > 0 {
+		game.BetEndTime = time.Now().Add(time.Duration(request.BetTimeOut) * time.Second)
+	} else {
+		game.BetEndTime = game.EndTime
 	}
 
 	encryptedTempKey, tempAddr, err := utils.GenerateAddress(uc.secretKey)

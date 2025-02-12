@@ -18,4 +18,5 @@ type IGameUsecase interface {
 	ListGame(context.Context, *model.ListGameRequest) (*model.ListGameResponse, error)
 	GameResult(context.Context, *model.GameResultRequest) (*model.Game, error)
 	WatchGameState(context.Context) error
+	RefundsExpiredPlayers(context.Context, string) error
 }

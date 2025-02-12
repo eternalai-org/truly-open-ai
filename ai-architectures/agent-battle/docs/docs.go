@@ -45,6 +45,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/game/refund-expired-players": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Game"
+                ],
+                "summary": "Refund expired players",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tweet ID",
+                        "name": "tweet_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/api/v1/game/start": {
             "post": {
                 "consumes": [
@@ -211,6 +239,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/agent-battle_internal_core_model.AgentWallet"
                     }
                 },
+                "bet_end_time": {
+                    "type": "string"
+                },
                 "created_user_id": {
                     "type": "string"
                 },
@@ -333,6 +364,9 @@ const docTemplate = `{
         "agent-battle_internal_core_model.StartGameRequest": {
             "type": "object",
             "properties": {
+                "bet_time_out": {
+                    "type": "integer"
+                },
                 "time_out": {
                     "type": "integer"
                 },
