@@ -42,6 +42,15 @@ Here are the key ongoing research projects.
 * [Go 1.23.0+](https://go.dev/doc/install)
 * [Ollama 0.5.7+](https://ollama.com/download)
 
+## Quickstart (Recommended for Beginners)
+
+Run the following command to start the whole system.
+```
+sudo bash quickstart.sh
+```
+
+## Step-by-Step Setup (For Advanced Users)
+
 ## Step 1: Deploy a local AI-powered blockchain on your computer
 
 We provide a CLI `eai` to simplify the process.
