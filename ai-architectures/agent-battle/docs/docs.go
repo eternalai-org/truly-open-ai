@@ -226,9 +226,6 @@ const docTemplate = `{
                 "end_time": {
                     "type": "string"
                 },
-                "game_fee": {
-                    "type": "number"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -240,9 +237,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/agent-battle_internal_core_model.Player"
                     }
-                },
-                "prize_per_player_winner": {
-                    "type": "number"
                 },
                 "start_time": {
                     "type": "string"
@@ -369,7 +363,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Game Imagine API",
+	Title:            "Agent Battle API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

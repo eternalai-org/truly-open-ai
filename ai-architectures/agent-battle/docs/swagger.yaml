@@ -28,8 +28,6 @@ definitions:
         type: string
       end_time:
         type: string
-      game_fee:
-        type: number
       id:
         type: string
       modified_user_id:
@@ -38,8 +36,6 @@ definitions:
         items:
           $ref: '#/definitions/agent-battle_internal_core_model.Player'
         type: array
-      prize_per_player_winner:
-        type: number
       start_time:
         type: string
       status:
@@ -115,7 +111,7 @@ definitions:
     type: object
 info:
   contact: {}
-  title: Game Imagine API
+  title: Agent Battle API
   version: 1.0.0
 paths:
   /api/v1/game:

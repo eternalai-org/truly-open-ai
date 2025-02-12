@@ -10,7 +10,7 @@ import (
 
 func (s *Server) SampleTwitterAppAuthenInstall(c *gin.Context) {
 	ctx := s.requestContext(c)
-	authUrl, err := s.nls.SampleTwitterAppAuthenInstall(ctx, s.stringFromContextQuery(c, "install_code"))
+	authUrl, err := s.nls.SampleTwitterAppAuthenInstall(ctx, s.stringFromContextQuery(c, "install_code"), s.stringFromContextQuery(c, "install_uri"))
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -20,7 +20,7 @@ func (s *Server) SampleTwitterAppAuthenInstall(c *gin.Context) {
 
 func (s *Server) SampleTwitterAppAuthenCallback(c *gin.Context) {
 	ctx := s.requestContext(c)
-	returnUri, err := s.nls.SampleTwitterAppAuthenCallback(ctx, s.stringFromContextQuery(c, "install_code"), s.stringFromContextQuery(c, "code"))
+	returnUri, err := s.nls.SampleTwitterAppAuthenCallback(ctx, s.stringFromContextQuery(c, "install_code"), s.stringFromContextQuery(c, "install_uri"), s.stringFromContextQuery(c, "code"))
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

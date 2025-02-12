@@ -42,7 +42,16 @@ Here are the key ongoing research projects.
 * [Go 1.23.0+](https://go.dev/doc/install)
 * [Ollama 0.5.7+](https://ollama.com/download)
 
-## Step 1: Deploy a local AI-powered blockchain on your computer
+## Quickstart (Recommended for Beginners)
+
+Run the following command to start the whole system.
+```
+sudo bash quickstart.sh
+```
+
+## Step-by-Step Setup (For Advanced Users)
+
+### Step 1: Deploy a local AI-powered blockchain on your computer
 
 We provide a CLI `eai` to simplify the process.
 
@@ -70,7 +79,7 @@ Suppose you want to custom-install, press `2`. This will give you the option to 
 - 5. Start System APIs
 ```
 
-## Step 2: Deploy Decentralized Compute
+### Step 2: Deploy Decentralized Compute
 
 For this tutorial, we'll simplify the process by having the three local miners on the same compute node. In production, each miner should have their own compute.
 
@@ -120,7 +129,7 @@ Note that the model info is stored in the `Modelfile` file. In the future, if yo
 FROM DeepSeek-R1-Distill-Qwen-1.5B-Q8_0/DeepSeek-R1-Distill-Qwen-1.5B-Q8_0.gguf 
 ```
 
-## Step 3: Deploy your production-grade Agent as a Service infrastructure
+### Step 3: Deploy your production-grade Agent as a Service infrastructure
 
 In this step, we'll deploy a production-grade agent orchestration platform in one single line of code. It provides powerful tools for you to deploy, manage, and scale your agents onchain.
 
@@ -129,7 +138,7 @@ Run the following command:
 eai aaas start
 ```
 
-## Step 4: Deploy your Decentralized Inference API
+### Step 4: Deploy your Decentralized Inference API
 
 In this step, we'll deploy Eternal AI Decentralized Inference API that can be used instead of centralized OpenAI API. There are a lot of things to like about Decentralized Inference API. It's permissionless, trustless, censorship-resistant, tamper-proof, and onchain verifiable.
 
@@ -138,9 +147,9 @@ Run the following command:
 eai apis start
 ```
 
-## Step 5: Deploy your first Decentralized Agent with AI-721
+### Step 5: Deploy your first Decentralized Agent with AI-721
 
-### Step 5.1. Deploy contract AI-721
+#### Step 5.1. Deploy contract AI-721
 
 Eternal AI treats each agent as a non-fungible. [AI-721](https://github.com/eternalai-org/eternal-ai/blob/master/decentralized-agents/contracts/standards/AI721.sol) inherits ERC-721 and adds AI features.
 
@@ -149,7 +158,7 @@ Run the following script to install dependencies and deploy the AI-721 contract:
 eai aaas deploy-contract
 ```
 
-### Step 5.2. Mint an agent
+#### Step 5.2. Mint an agent
 
 Let's create an agent who is a Donald Trump twin.
 
@@ -171,15 +180,15 @@ Also, to list out all agents on your machine, run this:
 eai agent list
 ```
 
-## Step 6: Interact with the agent 
+### Step 6: Interact with the agent 
 
-### 6.1. Chat with the agent
+#### 6.1. Chat with the agent
 
 ```bash
 eai agent chat <agent_id>
 ```
 
-### 6.2. Set up Twitter for the agent with the Eliza Engine
+#### 6.2. Set up Twitter for the agent with the Eliza Engine
 
 Navigate to the `./developer-guides/run-an-end-to-end-decentralized-for-ai-agents/5.start-agent` folder and run the following command to configure your twitter account.
 
@@ -199,7 +208,7 @@ And start an Eliza agent by running the following command.
 docker run --env-file .env  -v ./config.json:/app/eliza/agents/config.json eliza
 ```
 
-## Step 7 (Optional): Enter the 10,000 EAI Raffle 🎁 
+### Step 7 (Optional): Enter the 10,000 EAI Raffle 🎁 
 
 Congrats! You made it! You've deployed a decentralized operating system for AI agents on your computer. 
 

@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "Game Imagine API",
+        "title": "Agent Battle API",
         "contact": {},
         "version": "1.0.0"
     },
@@ -217,9 +217,6 @@
                 "end_time": {
                     "type": "string"
                 },
-                "game_fee": {
-                    "type": "number"
-                },
                 "id": {
                     "type": "string"
                 },
@@ -231,9 +228,6 @@
                     "items": {
                         "$ref": "#/definitions/agent-battle_internal_core_model.Player"
                     }
-                },
-                "prize_per_player_winner": {
-                    "type": "number"
                 },
                 "start_time": {
                     "type": "string"

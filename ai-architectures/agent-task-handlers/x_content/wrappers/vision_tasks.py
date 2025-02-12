@@ -19,7 +19,12 @@ def get_image_description(url: str):
                         "type": "text",
                         "text": "Analyze this image and describe its semantic meaning in detail with a single paragraph. Include the implied context, emotions, relationships between elements, possible symbolic interpretations, and the overall message or story conveyed by the image.",
                     },
-                    {"type": "image_url", "image_url": {"url": url}},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": "https://pbs.twimg.com/media/GjchTR9bQAAlnlB.jpg"
+                        },
+                    },
                 ],
             }
         ],

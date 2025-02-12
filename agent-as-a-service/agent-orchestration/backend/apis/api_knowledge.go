@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/errs"
 	"github.com/eternalai-org/eternal-ai/agent-as-a-service/agent-orchestration/backend/models"
@@ -279,8 +280,13 @@ func (s *Server) updateKnowledgeBaseInContractWithSignature(c *gin.Context) {
 		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
 	}
-
-	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, req.KnowledgeId)
+	num, err := strconv.ParseUint(req.KnowledgeBaseId, 10, 0)
+	if err != nil {
+		ctxJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
+		return
+	}
+	knowledgeId := uint(num)
+	info, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, knowledgeId)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
 		return
