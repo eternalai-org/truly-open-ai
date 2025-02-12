@@ -354,9 +354,11 @@ func (s *Server) checkBalance(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
 		return
 	}
-	if err := s.nls.KnowledgeUsecase.CheckBalance(ctx, resp); err != nil {
-		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
-		return
+	if resp.Status == models.KnowledgeBaseStatusWaitingPayment {
+		if err := s.nls.KnowledgeUsecase.CheckBalance(ctx, resp); err != nil {
+			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
+			return
+		}
 	}
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
