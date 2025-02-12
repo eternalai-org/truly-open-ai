@@ -132,7 +132,7 @@ func (s *Service) DisableJobs() {
 }
 
 func (s *Service) RunJobs(ctx context.Context) error {
-	gocron.Every(300).Second().Do(func() {
+	gocron.Every(60).Second().Do(func() {
 		s.KnowledgeUsecase.WatchWalletChange(context.Background())
 	})
 
