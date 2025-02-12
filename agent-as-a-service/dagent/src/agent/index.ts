@@ -88,6 +88,8 @@ class BasicAgent extends BaseDagent {
 const basicAgent = new BasicAgent();
 await basicAgent.init();
 
+// Create a new agent and deploy the token if available in the character configuration.
 await basicAgent.create();
 
-// await basicAgent.getAgentById("6763d7524ee1600e1122b6f6");
+// Get your agent information.
+await basicAgent.getAgentById("6763d7524ee1600e1122b6f6");
