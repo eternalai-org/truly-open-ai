@@ -4,7 +4,8 @@ import (
 
 "agent-battle/internal/contract/erc20"
 "agent-battle/internal/core/port"
-"context"
+	"agent-battle/pkg/cryptoamount"
+	"context"
 "github.com/ethereum/go-ethereum/common"
 "github.com/spf13/viper"
 "math/big"
@@ -116,6 +117,7 @@ func Test_contractErc20Usecase_FilterTransfer(t *testing.T) {
 		t.Error(err)
 		return
 	}
+	currentBlock = 26238476
 
 	fromBlock := currentBlock - 10_000
 
@@ -161,7 +163,9 @@ func Test_contractErc20Usecase_FilterTransfer(t *testing.T) {
 			}
 			for got.Next() {
 				e := got.Event
-				t.Logf("Block Number: %v, txHash: %v, From: %v, To: %v, Value: %v", e.Raw.BlockNumber, e.Raw.TxHash, e.From.Hex(), e.To.Hex(), e.Value)
+				cryptoAmount := cryptoamount.NewCryptoAmountFromBigInt(e.Value)
+
+				t.Logf("Block Number: %v, txHash: %v, From: %v, To: %v, Value: %v, cryptoAmount: %v", e.Raw.BlockNumber, e.Raw.TxHash, e.From.Hex(), e.To.Hex(), e.Value, cryptoAmount)
 			}
 		})
 	}

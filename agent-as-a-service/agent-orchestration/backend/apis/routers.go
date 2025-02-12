@@ -359,6 +359,7 @@ func (s *Server) Routers() {
 			knowledgeApi.PATCH("/:id", s.updateKnowledge)
 			knowledgeApi.GET("/:id", s.detailKnowledge)
 			knowledgeApi.DELETE("/:id", s.deleteKnowledge)
+			knowledgeApi.POST("/:id/check_balance", s.checkBalance)
 			knowledgeApi.POST("/update-with-signature", s.updateKnowledgeBaseInContractWithSignature)
 		}
 

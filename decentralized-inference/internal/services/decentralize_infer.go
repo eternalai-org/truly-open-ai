@@ -9,6 +9,7 @@ import (
 	"decentralized-inference/internal/libs/http_client"
 	"decentralized-inference/internal/logger"
 	"decentralized-inference/internal/models"
+	"decentralized-inference/internal/types"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -424,4 +425,97 @@ func (s *Service) CreateDecentralizeInferNoAgent(ctx context.Context, info *mode
 		InferId:   inferId,
 		ChainInfo: info.ChainInfo,
 	}, nil
+}
+
+func (s *Service) CreateDecentralizeInferV2WithStream(ctx context.Context, info *models.DecentralizeInferRequest, printChan chan types.StreamData) (interface{}, error) {
+
+	fmt.Println(fmt.Sprintf("Client is chatting with agent: %v, contractAddress: %v", info.AgentId, info.AgentContractAddress))
+	var systemPromptStr = "You are a helpful assistant."
+	var err error
+	systemPromptStrFromAAAS := s.GetSystemPromptFromAAAS(info.AgentId)
+	if systemPromptStrFromAAAS != "" {
+		systemPromptStr = systemPromptStrFromAAAS
+	} else {
+		systemPromptStr, err = func() (string, error) {
+			agentId, ok := new(big.Int).SetString(info.AgentId, 10)
+			if !ok {
+				return "", fmt.Errorf("agentId :%v is not valid", info.AgentId)
+			}
+
+			ethClient, _err := client.NewClient(info.ChainInfo.Rpc, models.ChainTypeEth,
+				false,
+				"", "")
+			if _err != nil {
+				return "", fmt.Errorf("init ethClient err: %w", err)
+			}
+
+			agentContract, _err := abi.NewAI721Contract(common.HexToAddress(info.AgentContractAddress), ethClient.ETHClient)
+			if _err != nil {
+				return "", _err
+			}
+
+			systemPromptContract, _err := agentContract.GetAgentSystemPrompt(nil, agentId)
+			if _err != nil {
+				return "", fmt.Errorf("get agent system prompt err: %w", err)
+			}
+
+			if len(systemPromptContract) > 0 {
+				systemPromptStr = string(systemPromptContract[0])
+			}
+
+			return systemPromptStr, nil
+		}()
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("get system prompt err: %w", err)
+	}
+
+	fmt.Println("Agent system prompt:", systemPromptStr)
+
+	if systemPromptStr == "" {
+		systemPromptStr = "You are a helpful assistant."
+	}
+
+	chatRequest := &openai.ChatCompletionRequest{
+		Model: info.Model,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleSystem,
+				Content: systemPromptStr,
+			},
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: info.Input,
+			},
+		},
+		MaxTokens: 4096,
+		Stream:    true,
+	}
+
+	fullUrl := "http://localhost:8004/v1/chat/completions"
+	input, _ := json.Marshal(chatRequest)
+
+	fmt.Println("Full request to LLM :", string(input))
+
+	go http_client.RequestHttpWithStream(fullUrl, http.MethodPost, map[string]string{}, bytes.NewBuffer(input), 10, printChan)
+
+	/*
+		if err != nil {
+			return nil, err
+		}
+
+
+		if statusCode != http.StatusOK {
+			return nil, fmt.Errorf("call api %v , status code %v != 200 , body:%v", fullUrl, statusCode, string(chatCompletionResp))
+		}
+		var response struct {
+			Data openai.ChatCompletionResponse `json:"data"`
+		}
+		if err := json.Unmarshal(chatCompletionResp, &response); err != nil {
+			return nil, err
+		}
+	*/
+
+	return nil, nil
 }

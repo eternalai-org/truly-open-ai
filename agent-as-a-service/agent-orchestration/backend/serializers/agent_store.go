@@ -41,6 +41,7 @@ type AgentStoreResp struct {
 	ID                 uint                     `json:"id"`
 	CreatedAt          time.Time                `json:"created_at"`
 	Name               string                   `json:"name"`
+	Owner              string                   `json:"owner"`
 	Description        string                   `json:"description"`
 	AuthenUrl          string                   `json:"authen_url"`
 	Icon               string                   `json:"icon"`
@@ -49,6 +50,8 @@ type AgentStoreResp struct {
 	Status             models.AgentStoreStatus  `json:"status"`
 	Price              numeric.BigFloat         `json:"price"`
 	NumInstall         uint                     `json:"num_install"`
+	NumUsage           uint                     `json:"num_usage"`
+	Type               string                   `json:"type"`
 	AgentStoreMissions []*AgentStoreMissionResp `json:"agent_store_missions"`
 }
 
@@ -68,6 +71,9 @@ func NewAgentStoreResp(m *models.AgentStore) *AgentStoreResp {
 		NumInstall:         m.NumInstall,
 		Status:             m.Status,
 		Price:              m.Price,
+		Owner:              m.OwnerAddress,
+		Type:               string(m.Type),
+		NumUsage:           m.NumUsage,
 		AgentStoreMissions: NewAgentStoreMissionRespArray(m.AgentStoreMissions),
 	}
 }

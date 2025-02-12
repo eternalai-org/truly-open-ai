@@ -49,6 +49,7 @@ type AgentStore struct {
 	Price              numeric.BigFloat `gorm:"type:decimal(36,18);default:0"`
 	AgentStoreMissions []*AgentStoreMission
 	NumInstall         uint
+	NumUsage           uint
 }
 
 type AgentStoreMission struct {

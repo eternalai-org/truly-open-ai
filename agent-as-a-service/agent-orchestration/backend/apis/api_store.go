@@ -120,7 +120,8 @@ func (s *Server) SaveAgentStore(c *gin.Context) {
 func (s *Server) GetListAgentStore(c *gin.Context) {
 	ctx := s.requestContext(c)
 	page, limit := s.pagingFromContext(c)
-	res, count, err := s.nls.GetListAgentStore(ctx, s.stringFromContextQuery(c, "type"), page, limit)
+	search := s.stringFromContextQuery(c, "search")
+	res, count, err := s.nls.GetListAgentStore(ctx, search, s.stringFromContextQuery(c, "type"), page, limit)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return
@@ -249,9 +250,8 @@ func (s *Server) MissionStoreResult(c *gin.Context) {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(errs.ErrUnAuthorization)})
 		return
 	}
-
 	responseId := s.stringFromContextQuery(c, "id")
-	resp, err := s.nls.GetMissionStoreResult(ctx, responseId)
+	resp, err := s.nls.GetMissionStoreResult(ctx, userAddress, responseId)
 	if err != nil {
 		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errs.NewError(err)})
 		return

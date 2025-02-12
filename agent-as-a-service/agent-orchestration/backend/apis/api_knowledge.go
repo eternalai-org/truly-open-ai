@@ -334,3 +334,31 @@ func (s *Server) retrieveKnowledge(c *gin.Context) {
 
 	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
 }
+
+func (s *Server) checkBalance(c *gin.Context) {
+	ctx := s.requestContext(c)
+	userAddress, err := s.getUserAddressFromTK1Token(c)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	id := s.uintFromContextParam(c, "id")
+	resp, err := s.nls.KnowledgeUsecase.GetKnowledgeBaseById(ctx, id)
+	if err != nil {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: err})
+		return
+	}
+
+	if resp.UserAddress != userAddress {
+		ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
+		return
+	}
+	if resp.Status == models.KnowledgeBaseStatusWaitingPayment {
+		if err := s.nls.KnowledgeUsecase.CheckBalance(ctx, resp); err != nil {
+			ctxAbortWithStatusJSON(c, http.StatusBadRequest, &serializers.Resp{Error: errors.New("You not owner")})
+			return
+		}
+	}
+	ctxJSON(c, http.StatusOK, &serializers.Resp{Result: resp})
+}
