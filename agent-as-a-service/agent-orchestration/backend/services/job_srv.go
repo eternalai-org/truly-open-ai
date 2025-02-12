@@ -237,25 +237,25 @@ func (s *Service) RunJobs(ctx context.Context) error {
 	)
 
 	// create launchpad
-	gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
-	gocron.Every(30).Second().Do(
-		func() {
-			s.JobRunCheck(
-				context.Background(),
-				"JobAgentLaunchpad",
-				func() error {
-					s.JobAgentTwitterPostCreateLaunchpad(context.Background())
-					s.JobAgentLaunchpadEnd(context.Background())
-					s.JobAgentDeployDAOToken(context.Background())
-					s.JobAgentSettleDAOToken(context.Background())
-					s.JobAgentTgeTransferDAOToken(context.Background())
-					s.JobAgentAddLiquidityDAOToken(context.Background())
-					s.JobAgentTgeRefundBaseToken(context.Background())
-					return nil
-				},
-			)
-		},
-	)
+	// gocron.Every(5).Minute().Do(s.JobScanAgentTwitterPostForCreateLaunchpad, context.Background())
+	// gocron.Every(30).Second().Do(
+	// 	func() {
+	// 		s.JobRunCheck(
+	// 			context.Background(),
+	// 			"JobAgentLaunchpad",
+	// 			func() error {
+	// 				s.JobAgentTwitterPostCreateLaunchpad(context.Background())
+	// 				s.JobAgentLaunchpadEnd(context.Background())
+	// 				s.JobAgentDeployDAOToken(context.Background())
+	// 				s.JobAgentSettleDAOToken(context.Background())
+	// 				s.JobAgentTgeTransferDAOToken(context.Background())
+	// 				s.JobAgentAddLiquidityDAOToken(context.Background())
+	// 				s.JobAgentTgeRefundBaseToken(context.Background())
+	// 				return nil
+	// 			},
+	// 		)
+	// 	},
+	// )
 
 	gocron.Every(1).Minutes().Do(
 		func() {
