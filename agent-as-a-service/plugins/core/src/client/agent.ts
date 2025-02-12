@@ -2,6 +2,7 @@ import {
   AgentApps,
   FarcasterAgentSnapshotMission,
   IAgent,
+  AgentSnapshotMissionVer2,
   TwitterAgentSnapshotMission
 } from "../types";
 import {
@@ -9,14 +10,13 @@ import {
   IDeployAgentTokenParams,
   IGetAgentsParams,
   IUpdateAgentParams,
-  IGetAccessTokenParams,
   IGenerateText,
 } from "../types";
 import { IChainConnected } from "../types";
 import { ICharacter } from "../types";
 import { IAgentToken, IGetAgentTokensParams } from "../types/token";
 import BaseAPI from "./base";
-import {generationTextOpenAi} from "../utils/generation";
+import { generationTextOpenAi } from "../utils/generation";
 import dagentLogger from "../logger";
 
 export interface IAgentClient {
@@ -181,6 +181,13 @@ export class AgentClient extends BaseAPI implements IAgentClient {
     dagentLogger.info(`Setting up missions for agent ${params.agentId}`, params.missions);
     await this.api.post(`/agent/mission/update/${params.agentId}`, params.missions);
   };
+
+  setupMissionsVer2 = async (params: {
+    agentId: string, missions: Array<AgentSnapshotMissionVer2>
+  }) => {
+    dagentLogger.info(`Setting up missions for agent ${params.agentId}`, params.missions);
+    await this.api.post(`/agent/mission/update/${params.agentId}`, params.missions);
+  }
 
   generateText = async (params: IGenerateText): Promise<string> => {
     let generatedText: string = "";

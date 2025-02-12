@@ -1,8 +1,8 @@
 import {
   AgentChainId,
   AgentTokenChainId,
-  ETwitterMissionToolSet,
-  EFarcasterMissionToolSet,
+  // ETwitterMissionToolSet,
+  // EFarcasterMissionToolSet,
   IAgentCharacter,
   TokenSetupMode
 } from "@eternalai-dagent/core";
@@ -78,20 +78,37 @@ export const dagentCharacter: IAgentCharacter = {
     chain_id: AgentChainId.Base,
     token_chain_id: AgentTokenChainId.Base,
   },
-  twitterMissions: [
+
+  // twitterMissions: [
+  //   {
+  //     user_prompt: "Check and follow Twitter accounts that look interesting to you. Share your favorite stories and riddles with them!",
+  //     interval: 7200,
+  //     tool_set: ETwitterMissionToolSet.FOLLOW,
+  //     agent_type: 0
+  //   }
+  // ],
+  // farcasterMissions: [
+  //   {
+  //     user_prompt: "Reply to non-mentions with a fun story or riddle.",
+  //     interval: 7200,
+  //     tool_set: EFarcasterMissionToolSet.REPLY_NON_MENTIONS,
+  //     agent_type: 0
+  //   }
+  // ]
+
+  agentMissions: [
     {
-      user_prompt: "Check and follow Twitter accounts that look interesting to you. Share your favorite stories and riddles with them!",
-      interval: 7200,
-      tool_set: ETwitterMissionToolSet.FOLLOW,
-      agent_type: 0
-    }
-  ],
-  farcasterMissions: [
+      user_prompt: "",
+      interval: 14400,
+      tool_set: "16",
+      agent_base_model: "DeepSeek-R1-Distill-Llama-70B",
+      agent_store_mission_id: 16
+    },
     {
-      user_prompt: "Reply to non-mentions with a fun story or riddle.",
+      user_prompt: "Check and follow Twitter accounts that look interesting to you.",
       interval: 7200,
-      tool_set: EFarcasterMissionToolSet.REPLY_NON_MENTIONS,
-      agent_type: 0
-    }
+      tool_set: "follow",
+      agent_base_model: "DeepSeek-R1-Distill-Llama-70B",
+    },
   ]
 };

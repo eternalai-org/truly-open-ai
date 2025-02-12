@@ -1,7 +1,7 @@
 import { BaseDagent, dagentLogger, IENV, IGetAccessTokenParams } from "@eternalai-dagent/core";
-import { getEnvironment } from "./utils/environment";
-import { dagentCharacter } from "./dagentCharacter";
-import { printTableAgents } from "./utils/helpers";
+import { getEnvironment } from "../utils/environment";
+import { dagentCharacter } from "../dagentCharacter";
+import { printTableAgents } from "../utils/helpers";
 
 class BasicAgent extends BaseDagent {
     protected environment: IENV;
@@ -63,7 +63,7 @@ class BasicAgent extends BaseDagent {
     }
 
     /**
-     * Sets up missions for a Twitter agent.
+     * \[DEPRECATED\] Sets up missions for a Twitter agent.
      * @param agentId - The ID of the agent to set up missions for.
      */
     setupMissionForTwitter = async (agentId: string) => {
@@ -72,11 +72,22 @@ class BasicAgent extends BaseDagent {
             missions: this.dagentCharacter.twitterMissions || [],
         });
     }
+
+    /**
+     * Sets up missions for app agent.
+     * @param agentId - The ID of the agent to set up missions for.
+     */
+    setupStoreMission = async (agentId: string) => {
+        await this.coreAPI.setupMissionsVer2({
+            agentId: agentId,
+            missions: this.dagentCharacter?.agentMissions || [],
+        })
+    }
 }
 
 const basicAgent = new BasicAgent();
 await basicAgent.init();
 
-// await basicAgent.create();
+await basicAgent.create();
 
 // await basicAgent.getAgentById("6763d7524ee1600e1122b6f6");
